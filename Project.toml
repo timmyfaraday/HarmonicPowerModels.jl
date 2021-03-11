@@ -1,0 +1,13 @@
+name = "HarmonicPowerModels"
+uuid = "56365af1-a032-4c1d-861b-3c9f15bdb54e"
+authors = ["Frederik Geth", "Tom Van Acker"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
