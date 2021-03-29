@@ -1,11 +1,11 @@
 ""
-function run_harmonic_opf_iv(file, model_type::Type, optimizer; kwargs...)
-    return run_model(file, model_type, optimizer, build_harmonic_opf_iv; multinetwork=true, kwargs...)
+function run_hopf_iv(file, model_type::Type, optimizer; kwargs...)
+    return run_model(file, model_type, optimizer, build_hopf_iv; multinetwork=true, kwargs...)
 end
 
 ""
-function build_harmonic_opf_iv(pm::AbstractPowerModel)
-    for n in nws(pm)
+function build_hopf_iv(pm::AbstractPowerModel)
+    for (n, network) in nws(pm)
         _PMs.variable_bus_voltage(pm, nw=n)
         variable_transformer_voltage(pm, nw=n)
         
@@ -50,5 +50,5 @@ function build_harmonic_opf_iv(pm::AbstractPowerModel)
         constraint_voltage_transformer(pm, t)
     end
 
-    objective_min_fuel_and_flow_cost(pm)
+    _PMs.objective_min_fuel_and_flow_cost(pm)
 end
