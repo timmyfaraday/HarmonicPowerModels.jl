@@ -9,6 +9,7 @@ function build_hopf_iv(pm::AbstractPowerModel)
         _PMs.variable_bus_voltage(pm, nw=n)
         variable_transformer_voltage(pm, nw=n)
         
+        _PMs.variable_gen_current(pm, nw=n)
         _PMs.variable_branch_current(pm, nw=n)
         _PMs.variable_dcline_current(pm, nw=n)
         variable_transformer_current(pm, nw=n)
@@ -32,9 +33,13 @@ function build_hopf_iv(pm::AbstractPowerModel)
             _PMs.constraint_thermal_limit_to(pm, b, nw=n)
         end
         
-        for t in ids(pm, :transformer, nw=n)
-            constraint_current_transformer(pm, t, nw=n)
-            constraint_voltage_drop_transformer(pm, t, nw=n)
+        for t in ids(pm, :xfmr, nw=n)
+            constraint_transformer_core_voltage_drop(pm, t, nw=n)
+            constraint_transformer_core_voltage_balance(pm, t, nw=n)
+            constraint_transformer_core_current_balance(pm, t, nw=n)
+            
+            constraint_transformer_winding_config(pm, t, nw=n)
+            constraint_transformer_winding_current_balance(pm, t, nw=n)
         end
 
         for d in ids(pm, :dcline, nw=n)
@@ -42,12 +47,8 @@ function build_hopf_iv(pm::AbstractPowerModel)
         end
     end
 
-    for i in ids(pm, :bus)
-        constraint_voltage_magnitude_rms(pm, i)
-    end
-
-    for t in ids(pm, :transformer)
-        constraint_voltage_transformer(pm, t)
+    for b in ids(pm, :bus)
+        constraint_voltage_magnitude_rms(pm, i, nw=n)
     end
 
     _PMs.objective_min_fuel_and_flow_cost(pm)

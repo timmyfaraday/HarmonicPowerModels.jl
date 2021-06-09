@@ -8,7 +8,7 @@ module HarmonicPowerModels
 
     # import types
     import PowerModels: AbstractPowerModel, AbstractIVRModel
-    import InfrastructureModels: ids, ref, var, con, sol, nw_ids, nws
+    import InfrastructureModels: ids, ref, var, con, sol, nw_ids, nws, replicate
 
     # pkg constants 
     const _PMs = PowerModels
@@ -28,14 +28,18 @@ module HarmonicPowerModels
     const BASE_DIR = dirname(@__DIR__)
 
     # include
+    include("core/constraint_template.jl")
+    include("core/data.jl")
     include("core/variable.jl")
 
     include("form/iv.jl")
 
-    include("prob/run_hopf_iv")
+    include("prob/hopf_iv.jl")
 
     # export
     export BASE_DIR
+
+    export replicate
 
     export run_hopf_iv
 

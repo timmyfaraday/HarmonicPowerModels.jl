@@ -1,5 +1,59 @@
 
 ""
+function variable_transformer_voltage_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    windings = Dict(t => xfmr["windings"] for (t,xfmr) in ref(pm, nw, :xfmr))
+
+    vrt = var(pm, nw)[:vrt] = Dict(t => JuMP.@variable(pm.model,
+            [w in windings[t]], base_name="$(nw)_vrt_$(t)",
+            start = _PMs.comp_start_value(ref(pm, nw, :xfmr, t), "vrt_start", 0.0)
+        ) for t in ids(pm, nw, :xfmr)
+    )
+
+    ## bounds are needed
+
+    report && _IMs.sol_component_value(pm, nw, :xfmr, :vrt, ids(pm, nw, :xfmr), vrt)
+end
+
+""
+function variable_transformer_voltage_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    windings = Dict(t => xfmr["windings"] for (t,xfmr) in ref(pm, nw, :xfmr))
+
+    vit = var(pm, nw)[:vit] = Dict(t => JuMP.@variable(pm.model,
+            [w in windings[t]], base_name="$(nw)_vit_$(t)",
+            start = _PMs.comp_start_value(ref(pm, nw, :xfmr, t), "vit_start", 0.0)
+        ) for t in ids(pm, nw, :xfmr)
+    )
+
+    ## bounds are needed
+
+    report && _IMs.sol_component_value(pm, nw, :xfmr, :vit, ids(pm, nw, :xfmr), vit)
+end
+
+""
+function variable_transformer_voltage_excitation_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    ert = var(pm, nw)[:ert] = JuMP.@variable(pm.model,
+            [t in ids(pm, nw, :xfmr)], base_name="$(nw)_ert",
+            start = _PMs.comp_start_value(ref(pm, nw, :xfmr, t), "ert_start", 0.0)
+    )
+
+    ## bounds are needed
+
+    report && _IMs.sol_component_value(pm, nw, :xfmr, :ert, ids(pm, nw, :xfmr), ert)
+end
+
+""
+function variable_transformer_voltage_excitation_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    eit = var(pm, nw)[:eit] = JuMP.@variable(pm.model,
+            [t in ids(pm, nw, :xfmr)], base_name="$(nw)_eit",
+            start = _PMs.comp_start_value(ref(pm, nw, :xfmr, t), "eit_start", 0.0)
+    )
+
+    ## bounds are needed
+
+    report && _IMs.sol_component_value(pm, nw, :xfmr, :eit, ids(pm, nw, :xfmr), eit)
+end
+
+""
 function variable_transformer_current_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
     windings = Dict(t => xfmr["windings"] for (t,xfmr) in ref(pm, nw, :xfmr))
 
@@ -60,30 +114,6 @@ function variable_transformer_current_series_imaginary(pm::AbstractPowerModel; n
 end
 
 ""
-function variable_transformer_current_delta_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-    cdrt = var(pm, nw)[:cdrt] = JuMP.@variable(pm.model,
-            [t in ids(pm, nw, :xfmr)], base_name="$(nw)_cdrt",
-            start = _PMs.comp_start_value(ref(pm, nw, :xfmr, t), "cdrt_start", 0.0)
-    )
-
-    ## bounds are needed
-
-    report && _IMs.sol_component_value(pm, nw, :xfmr, :cdrt, ids(pm, nw, :xfmr), cdrt)
-end
-
-""
-function variable_transformer_current_delta_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-    cdit = var(pm, nw)[:cdit] = JuMP.@variable(pm.model,
-            [t in ids(pm, nw, :xfmr)], base_name="$(nw)_cdit",
-            start = _PMs.comp_start_value(ref(pm, nw, :xfmr, t), "cdit_start", 0.0)
-    )
-
-    ## bounds are needed
-
-    report && _IMs.sol_component_value(pm, nw, :xfmr, :cdit, ids(pm, nw, :xfmr), cdit)
-end
-
-""
 function variable_transformer_current_excitation_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
     cert = var(pm, nw)[:cert] = JuMP.@variable(pm.model,
             [t in ids(pm, nw, :xfmr)], base_name="$(nw)_cert",
@@ -105,34 +135,4 @@ function variable_transformer_current_excitation_imaginary(pm::AbstractPowerMode
     ## bounds are needed
 
     report && _IMs.sol_component_value(pm, nw, :xfmr, :ceit, ids(pm, nw, :xfmr), ceit)
-end
-
-""
-function variable_transformer_voltage_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-    windings = Dict(t => xfmr["windings"] for (t,xfmr) in ref(pm, nw, :xfmr))
-
-    ert = var(pm, nw)[:ert] = Dict(t => JuMP.@variable(pm.model,
-            [w in windings[t]], base_name="$(nw)_ert_$(t)",
-            start = _PMs.comp_start_value(ref(pm, nw, :xfmr, t), "ert_start", 0.0)
-        ) for t in ids(pm, nw, :xfmr)
-    )
-
-    ## bounds are needed
-
-    report && _IMs.sol_component_value(pm, nw, :xfmr, :ert, ids(pm, nw, :xfmr), ert)
-end
-
-""
-function variable_transformer_voltage_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-    windings = Dict(t => xfmr["windings"] for (t,xfmr) in ref(pm, nw, :xfmr))
-
-    eit = var(pm, nw)[:eit] = Dict(t => JuMP.@variable(pm.model,
-            [w in windings[t]], base_name="$(nw)_eit_$(t)",
-            start = _PMs.comp_start_value(ref(pm, nw, :xfmr, t), "eit_start", 0.0)
-        ) for t in ids(pm, nw, :xfmr)
-    )
-
-    ## bounds are needed
-
-    report && _IMs.sol_component_value(pm, nw, :xfmr, :eit, ids(pm, nw, :xfmr), eit)
 end
