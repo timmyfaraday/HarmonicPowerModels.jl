@@ -27,12 +27,12 @@ mpc.gen = [
 ];
 
 %% branch data
-%   fbus	tbus	r	    x	    b	    rateA	rateB	rateC	ratio	angle	status	angmin	angmax
+%   f_bus	t_bus	r	    x	    b	    rateA	rateB	rateC	ratio	angle	status	angmin	angmax
 mpc.branch = [ 
 ];
 
 %% transformer data
-%column_names%  fbus    tbus    xsc     r1      r2      vg      gnd1    gnd2    re1     xe1     re2     xe2     
+%column_names%  f_bus   t_bus   xsc     r1      r2      vg      gnd1    gnd2    re1     xe1     re2     xe2   
 mpc.xfmr = [
                 1       2       0.001   0.12336 0.01644 'Yy0'   1       1       0.0     0.0     0.0     0.0
 ]

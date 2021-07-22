@@ -1,25 +1,35 @@
 module HarmonicPowerModels
 
+    # using pkgs 
+    using ProgressMeter
+
     # import pkgs
     import JuMP
     import PowerModels
+    import SignalDecomposition
     import InfrastructureModels
+    import Interpolations
     import Memento
 
     # import types
     import PowerModels: AbstractPowerModel, AbstractIVRModel
-    import InfrastructureModels: ids, ref, var, con, sol, nw_ids, nws, replicate
+    import PowerModels: ids, ref, var, con, sol, nw_ids, nws
+    import InfrastructureModels: replicate, sol_component_value_edge
 
     # pkg constants 
     const _PMs = PowerModels
+    const _HPM = HarmonicPowerModels
+    const _SDC = SignalDecomposition
     const _IMs = InfrastructureModels
+    const _INT = Interpolations
 
     function __init__()
         global _LOGGER = Memento.getlogger(PowerModels)
     end
 
     # const 
-    const nw_id_default = 0
+    const freq = 50.0
+    const nw_id_default = 1
 
     # funct
     sorted_nw_ids(pm) = sort(collect(nw_ids(pm)))

@@ -1,11 +1,16 @@
 """
-    HarmonicPowerModels.replicate(data::Dict{String,<:Any})
+    HarmonicPowerModels.replicate(data::Dict{String,<:Any};
+                                  harmonics::Array{Int}=Int[],
+                                  xfmr_exc::Bool=false)
 
 Creates a multinetwork data-file for all considered harmonics based on the data
 specified for the fundamental harmonic.
 
 The considered harmonics are provided by the user through the named 
 argument harmonics, and collected based on the harmonic bus data.
+
+Additionally, a Bool `xfmr_exc` may be passed to include the excitation current
+of the transformers.
 
 NOTES:
 i) branch
@@ -16,9 +21,11 @@ ii) transformer
 -   The transformer configuration defaults to Yy0.
 -   The resistance r of any transformer is scaled using the square of the harmonic.
 """
-function replicate(data::Dict{String, <:Any}; harmonics::Array{Int}=Int[])
+function _HPM.replicate(data::Dict{String, <:Any}; 
+                        harmonics::Array{Int}=Int[],
+                        xfmr_exc::Dict{String, <:Any}=Dict{String, <:Any}())
     # extend the user-provided harmonics based on the data
-    collect_harmonics!(data, harmonics)
+    collect_harmonics!(data, harmonics, xfmr_exc)
 
     # create a multinetwork data structure
     Nh = length(harmonics)
@@ -26,6 +33,9 @@ function replicate(data::Dict{String, <:Any}; harmonics::Array{Int}=Int[])
     
     # add the harmonics to the overall data
     data["harmonics"] = Dict("$nw" => harmonics[nw] for nw in 1:Nh)
+
+    # add the xfmr excitation
+    sample_xfmr_excitation(data, xfmr_exc)
 
     # re-evaluate the data for each harmonic 
     for nw in keys(data["nw"])
@@ -84,15 +94,134 @@ function replicate(data::Dict{String, <:Any}; harmonics::Array{Int}=Int[])
     return data
 end
 
-function collect_harmonics!(data::Dict{String, <:Any}, harmonics::Array{Int})
+function collect_harmonics!(data::Dict{String, <:Any}, harmonics::Array{Int}, xfmr_exc::Dict{String, <:Any})
     bus_harmonics = [parse(Int,ni[4:end])   for ni in keys(data["bus"]["1"]) 
                                             if  ni[1:2] == "nh"]
     push!(harmonics, bus_harmonics...)
+    if haskey(xfmr_exc, "voltage_harmonics") 
+        push!(harmonics, xfmr_exc["voltage_harmonics"]...)
+    end
+    if haskey(xfmr_exc, "current_harmonics")
+        push!(harmonics, xfmr_exc["current_harmonics"]...)
+    end  
     unique!(sort!(harmonics))
 end
-
 
 is_pos_sequence(nh::Int) = nh % 3 == 1
 is_neg_sequence(nh::Int) = nh % 3 == 2
 is_zero_sequence(nh::Int) = nh % 3 == 0
+
+
+### TRANSFORMER EXCITATION ###
+""
+excitation_flux_polar(V, θ, w, t) = 
+    sum(V[n] ./ w[n] .* sin.(w[n] .* t .+ θ[n]) for n in 1:length(V))
+excitation_flux_rectangular(Vre, Vim, w, t) =
+    excitation_flux_polar(sqrt.(Vre.^2 .+ Vim.^2), atan.(Vim./(Vre.+1e-8)), w, t)
+excitation_current_sigmoid(inom, ψmax, ψ) = 
+    -inom .* log.(2.0 ./ (ψ ./ ψmax .+ 1.0) .- 1.0)
+
+""
+function sample_voltage_polar(voltage_harmonics, dv, vmin, vmax, dθ, θmin, θmax)
+    S = reduce(vcat,[[vmin[ni]:dv[ni]:vmax[ni],θmin[ni]:dθ[ni]:θmax[ni]] 
+                      for (ni,nh) in enumerate(voltage_harmonics)])
+    R = [1:length(s) for s in S]
+    return S, R
+end
+function sample_voltage_rectangular(voltage_harmonics, dv, vmin, vmax)
+    S = reduce(vcat,[[vmin[ni]:dv[ni]:vmax[ni],vmin[ni]:dv[ni]:vmax[ni]] 
+                      for (ni,nh) in enumerate(voltage_harmonics)])
+    R = [1:length(s) for s in S]
+    return S, R
+end
+
+""
+function sample_xfmr_excitation(data::Dict{String, <:Any}, xfmr_exc::Dict{String, <:Any})
+    
+    ## HARMONICS
+    voltage_harmonics = xfmr_exc["voltage_harmonics"]
+    current_harmonics = xfmr_exc["current_harmonics"]
+
+    ## TIME
+    N = xfmr_exc["N"]
+
+    ## EXCITATION CURRENT 
+    current_type = xfmr_exc["current_type"]
+
+    ## EXCITATION FLUX 
+    excitation_type = xfmr_exc["excitation_type"] 
+    inom = xfmr_exc["inom"]
+    ψmax = xfmr_exc["ψmax"]
+
+    ## EXCITATION VOLTAGE 
+    voltage_type = xfmr_exc["voltage_type"]
+    dv   = xfmr_exc["dv"]
+    vmin = xfmr_exc["vmin"]
+    vmax = xfmr_exc["vmax"]
+    dθ   = xfmr_exc["dθ"]
+    θmin = xfmr_exc["θmin"]
+    θmax = xfmr_exc["θmax"]
+
+    ## TIME
+    w = (2.0 * pi * freq) .* voltage_harmonics
+    t = 0.0:(1 / (freq * N * maximum(current_harmonics))):(5.0 / freq)
+
+    ## DECOMPOSITION 
+    fq = _SDC.Sinusoidal(freq .* current_harmonics)
+
+    ## SAMPLE VOLTAGE
+    if voltage_type == :polar
+        S, R = sample_voltage_polar(voltage_harmonics, dv, vmin, vmax, dθ, θmin, θmax)
+    elseif voltage_type == :rectangular
+        S, R = sample_voltage_rectangular(voltage_harmonics, dv, vmin, vmax)
+    end
+
+    ## INITIALIZE EXCITATION CURRENT DICTIONARIES
+    Ia = Dict(nh => zeros(R...) for nh in current_harmonics)
+    Ib = Dict(nh => zeros(R...) for nh in current_harmonics)
+
+    ## SAMPLING LOOP   
+    @showprogress for nr in Iterators.product(R...)
+        sample = [S[ni][ns] for (ni,ns) in enumerate(nr)]
+
+        if voltage_type == :polar
+            V, θ = sample[1:2:end], sample[2:2:end]
+            ψexc = excitation_flux_polar(V, θ, w, t)
+        else voltage_type == :rectangular 
+            Vre, Vim = sample[1:2:end], sample[2:2:end]
+            ψexc = excitation_flux_rectangular(Vre, Vim, w, t) 
+        end
+
+        if excitation_type == :sigmoid
+            I_exc = excitation_current_sigmoid(inom, ψmax, ψexc)
+        end
+
+        _SDC.decompose(t, I_exc, fq)
+
+        if current_type == :polar 
+            I, φ = fq.A[2:end], fq.φ[2:end]
+            for (ni,nh) in enumerate(current_harmonics)
+                Ia[nh][nr...], Ib[nh][nr...] = I[ni], φ[ni]
+            end
+        elseif current_type == :rectangular
+            Ire, Iim = fq.A[2:end] .* sin.(fq.φ[2:end]), fq.A[2:end] .* cos.(fq.φ[2:end])
+            for (ni,nh) in enumerate(current_harmonics)
+                Ia[nh][nr...], Ib[nh][nr...] = Ire[ni], Iim[ni]
+            end
+        end
+    end
+
+    method = _INT.BSpline(_INT.Cubic(_INT.Line(_INT.OnGrid())))
+    for nw in keys(data["nw"]) 
+        nh = data["harmonics"][nw]
+        for xfmr in values(data["nw"][nw]["xfmr"])
+            if nh in current_harmonics
+                xfmr["EXC_A"] = _INT.scale(_INT.interpolate(Ia[nh], method), S...)
+                xfmr["EXC_B"] = _INT.scale(_INT.interpolate(Ib[nh], method), S...)
+            else
+                xfmr["EXC_A"] = 0.0
+                xfmr["EXC_B"] = 0.0
+            end
+    end end
+end
 
