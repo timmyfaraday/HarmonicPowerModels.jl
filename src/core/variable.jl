@@ -29,7 +29,12 @@ function variable_transformer_voltage_excitation_real(pm::AbstractPowerModel; nw
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "ert_start", 0.0)
     )
 
-    ## bounds are needed
+    if bounded
+        for (t, xfmr) in ref(pm, nw, :xfmr)
+            JuMP.set_lower_bound(ert[t], xfmr["ert_min"])
+            JuMP.set_upper_bound(ert[t], xfmr["ert_max"])
+        end
+    end
 
     report && _PMs.sol_component_value(pm, nw, :xfmr, :ert, _PMs.ids(pm, nw, :xfmr), ert)
 end
@@ -41,7 +46,12 @@ function variable_transformer_voltage_excitation_imaginary(pm::AbstractPowerMode
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "eit_start", 0.0)
     )
 
-    ## bounds are needed
+    if bounded
+        for (t, xfmr) in ref(pm, nw, :xfmr)
+            JuMP.set_lower_bound(eit[t], xfmr["eit_min"])
+            JuMP.set_upper_bound(eit[t], xfmr["eit_max"])
+        end
+    end
 
     report && _PMs.sol_component_value(pm, nw, :xfmr, :eit, _PMs.ids(pm, nw, :xfmr), eit)
 end

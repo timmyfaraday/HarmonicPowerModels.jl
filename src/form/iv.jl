@@ -56,32 +56,32 @@ function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, b
 end
 
 ""
-function constraint_transformer_core_excitation(pm::AbstractIVRModel, n::Int, t, exc_a, exc_b)
+function constraint_transformer_core_excitation(pm::AbstractIVRModel, n::Int, t)
+    cert = var(pm, n, :cert, t)
+    ceit = var(pm, n, :ceit, t)
+
+    JuMP.@constraint(pm.model, cert == 0.0)
+    JuMP.@constraint(pm.model, ceit == 0.0)
+end
+
+""
+function constraint_transformer_core_excitation(pm::AbstractIVRModel, n::Int, t, int_a, int_b, grad_a, grad_b)
     cert = var(pm, n, :cert, t)
     ceit = var(pm, n, :ceit, t)
 
     voltage_harmonics_ntws = [1,2]
-    current_harmonics_ntws = [1,2,3,4,5,6,7]
 
     et = reduce(vcat,[[var(pm, nw, :ert, t),var(pm, nw, :eit, t)] 
                        for nw in voltage_harmonics_ntws])
 
-    f(x...) = exc_a(x...)
-    g(x...) = exc_b(x...)
+    sym_exc_a = Symbol("exc_a_",n,"_",t)
+    sym_exc_b = Symbol("exc_b_",n,"_",t)
 
-    if n in current_harmonics_ntws
-        sym_exc_a = Symbol("exc_a_",n,"_",t)
-        sym_exc_b = Symbol("exc_b_",n,"_",t)
+    JuMP.register(pm.model, sym_exc_a, length(et), int_a; autodiff=true)
+    JuMP.register(pm.model, sym_exc_b, length(et), int_b; autodiff=true)
 
-        JuMP.register(pm.model, sym_exc_a, length(et), f; autodiff=true)
-        JuMP.register(pm.model, sym_exc_b, length(et), g; autodiff=true)
-
-        JuMP.add_NL_constraint(pm.model, :($(cert) == $(sym_exc_a)($(et...))))
-        JuMP.add_NL_constraint(pm.model, :($(ceit) == $(sym_exc_b)($(et...))))
-    else
-        JuMP.@constraint(pm.model, cert == 0.0)
-        JuMP.@constraint(pm.model, ceit == 0.0)
-    end
+    JuMP.add_NL_constraint(pm.model, :($(cert) == $(sym_exc_a)($(et...))))
+    JuMP.add_NL_constraint(pm.model, :($(ceit) == $(sym_exc_b)($(et...))))
 end
 
 ""

@@ -213,14 +213,23 @@ function sample_xfmr_excitation(data::Dict{String, <:Any}, xfmr_exc::Dict{String
 
     method = _INT.BSpline(_INT.Cubic(_INT.Line(_INT.OnGrid())))
     for nw in keys(data["nw"]) 
+        ni = parse(Int, nw)
         nh = data["harmonics"][nw]
         for xfmr in values(data["nw"][nw]["xfmr"])
-            if nh in current_harmonics
-                xfmr["EXC_A"] = _INT.scale(_INT.interpolate(Ia[nh], method), S...)
-                xfmr["EXC_B"] = _INT.scale(_INT.interpolate(Ib[nh], method), S...)
+            if nh in voltage_harmonics
+                xfmr["ert_min"], xfmr["ert_max"] = vmin[ni], vmax[ni] 
+                xfmr["eit_min"], xfmr["eit_max"] = vmin[ni], vmax[ni]
             else
-                xfmr["EXC_A"] = 0.0
-                xfmr["EXC_B"] = 0.0
+                xfmr["ert_min"], xfmr["ert_max"] = 0.0, 1.1 
+                xfmr["eit_min"], xfmr["eit_max"] = 0.0, 1.1
+            end
+            if nh in current_harmonics
+                xfmr["EXC_A"]  = _INT.scale(_INT.interpolate(Ia[nh], method), S...)
+                xfmr["EXC_B"]  = _INT.scale(_INT.interpolate(Ib[nh], method), S...)
+                xfmr["INT_A"]  = (x...) -> xfmr["EXC_A"](x...)
+                xfmr["INT_B"]  = (x...) -> xfmr["EXC_B"](x...)
+                xfmr["GRAD_A"] = (x...) -> _INT.gradient(xfmr["EXC_A"], x...)
+                xfmr["GRAD_B"] = (x...) -> _INT.gradient(xfmr["EXC_B"], x...)
             end
     end end
 end
