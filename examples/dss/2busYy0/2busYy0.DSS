@@ -5,7 +5,7 @@ clear
 ! IEEE 4-bus test case   Y-Y Stepdown Balanced
 ! Based on script developed by Alan Dunn and Steve Sparling
 
-new circuit.2BusYYbal basekV=12.47 phases=3 
+new circuit.2BusYy0 basekV=12.47 phases=3 
 ! **** HAVE TO STIFFEN THE SOURCE UP A LITTLE; THE TEST CASE ASSUMES AN INFINITE BUS
 ~ mvasc3=200000 200000
 

@@ -1,11 +1,11 @@
 clear
-!2-bus YGd11 example (grounded). 
+!2-bus Yd11 example (ungrounded). 
 
 ! adapted from:
-! IEEE 4-bus test case   grounded-Y-Delta Stepdown Balanced
+! IEEE 4-bus test case   ungrounded-Y-Delta Stepdown Balanced
 ! Based on script developed by Alan Dunn and Steve Sparling
 
-new circuit.2busYDBal   basekV=12.47 phases=3 
+new circuit.2busYd11   basekV=12.47 phases=3 
 ! **** HAVE TO STIFFEN THE SOURCE UP A LITTLE; THE TEST CASE ASSUMES AN INFINITE BUS
 ~ mvasc3=200000 200000
 
@@ -27,7 +27,7 @@ new circuit.2busYDBal   basekV=12.47 phases=3
 
 ! **** 3-PHASE STEP-DOWN TRANSFORMER 12.47/4.16 KV ungrdY-Delta
 new transformer.t1 xhl=6
-~ wdg=1 bus=sourcebus.1.2.3.0 conn=wye     kV=12.47 kVA=6000 %r=0.5  ! Ground the neutral of wye winding
+~ wdg=1 bus=sourcebus.1.2.3.4 conn=wye     kV=12.47 kVA=6000 %r=0.5  ! Float the neutral of wye winding
 ~ wdg=2 bus=n3         conn=Delta   kV=4.16  kVA=6000 %r=0.5 
 
 ! **** 4.16 KV LINE
