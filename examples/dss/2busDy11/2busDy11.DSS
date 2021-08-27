@@ -21,6 +21,10 @@ new load.load1 phases=3 bus1=n3 conn=wye kV=4.16 kW=5400 pf=0.9  model=1
 ! **** DEFAULT IN DSS IS .95, BELOW WHICH IT REVERTS TO LINEAR MODEL
 ~ vminpu=0.75    ! model will remain const p,q down to 0.75 pu voltage    
 
+New "Spectrum.Spectrum_1" NumHarm=8 CSVFile=Spectrum_Load_1.csv 
+New "Spectrum.Spectrum_2" NumHarm=8 CSVFile=Spectrum_Load_2.csv
+
+
 set voltagebases=[12.47, 4.16] 
 calcvoltagebases     ! **** let DSS compute voltage bases
 solve
