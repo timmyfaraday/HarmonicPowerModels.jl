@@ -15,20 +15,36 @@ new transformer.t1 xhl=6
 ~ wdg=1 bus=sourcebus.1.2.3.0 conn=wye     kV=12.47 kVA=6000 %r=0.5  ! Ground the neutral of wye winding
 ~ wdg=2 bus=n3         conn=Delta   kV=4.16  kVA=6000 %r=0.5 
 
+
+New "Spectrum.Spectrum_1" NumHarm=8 CSVFile=Spectrum_Load_1.csv 
+New "Spectrum.Spectrum_2" NumHarm=8 CSVFile=Spectrum_Load_2.csv
+
 ! **** Delta-CONNECTED 4.16 KV LOAD
-new load.load1 phases=3 bus1=n3 conn=Delta kV=4.16 kW=5400 pf=0.9  model=1
+new load.load1 phases=3 bus1=n3 conn=Delta kV=4.16 kW=5400 pf=0.9  model=1 spectrum=spectrum_2
 ! **** HAVE TO ALLOW P, Q TO REMAIN CONSTANT TO ABOUT .79 PU -- THIS IS ASSUMED IN TEST CASE
 ! **** DEFAULT IN DSS IS .95, BELOW WHICH IT REVERTS TO LINEAR MODEL
 ~ vminpu=0.75    ! model will remain const p,q down to 0.75 pu voltage    
 
-New "Spectrum.Spectrum_1" NumHarm=8 CSVFile=Spectrum_Load_1.csv 
-New "Spectrum.Spectrum_2" NumHarm=8 CSVFile=Spectrum_Load_2.csv
+!needed to get harmonics results out
+New monitor.MPCC element=transformer.t1 mode=0
 
 
 set voltagebases=[12.47, 4.16] 
 calcvoltagebases     ! **** let DSS compute voltage bases
 solve
 
+!verify fundamental results
 show voltages LN Nodes 
 
 
+
+
+!Set harmonics solution mode now
+set mode=harmonicT
+
+!Calculate harmonics 
+solve
+
+!export harmonics results
+export monitor MPCC
+show monitor MPCC
