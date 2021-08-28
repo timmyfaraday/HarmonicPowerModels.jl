@@ -62,7 +62,19 @@ New LineGeometry.NA2XS3x1x240/25 nconds=3 nphases=3 reduce=no
 
 
 
-
+!http://www.tim-kabel.hr/images/stories/katalog/datasheetHRV/0501_NYY_ENG.pdf
+! external diam - 2x sheet = concentric neutral diameter
+! external diameter = avg(,) = 
+! conductor diameter = mm
+! concentric neutral diam = - 2 x  = 
+! insulation thickness =  mm
+! diains = diameter + 2x inslayer = + 2x = 
+New CNData.NYY240
+~ Runits=km radunits=mm GMRunits=mm
+~ InsLayer= DiaIns=DiaCable= !Cable
+~ Rdc=  Diam= !Phase Conductor
+~ Rstrand=! -> copper, 25mm
+~ DiaStrand=  k= !Neutral 
 
 
 New line.section1 phases=3 bus1=b2 bus2=b3 geometry=NA2XS3x1x400/35  length=1500 units=m
