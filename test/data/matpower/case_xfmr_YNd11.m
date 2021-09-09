@@ -34,5 +34,5 @@ mpc.branch = [
 %% transformer data
 %column_names%  f_bus   t_bus   xsc     r1      r2      vg      gnd1    gnd2    re1     xe1     re2     xe2   
 mpc.xfmr = [
-                1       2       6.0     0.5     0.5     'Yy0'   1       1       0.0     0.0     0.0     0.0
+                1       2       6.0     0.5     0.5     'Yd11'  1       0       0.0     0.0     0.0     0.0
 ]
