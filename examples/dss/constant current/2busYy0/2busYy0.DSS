@@ -12,8 +12,8 @@ new circuit.2BusYy0 basekV=12.47 phases=3
 
 ! **** 3-PHASE STEP-DOWN TRANSFORMER 12.47/4.16 KV Y-Y
 new transformer.t1 xhl=6
-~ wdg=1 bus=sourcebus conn=wye kV=12.47 kVA=6000 %r=0.5 
-~ wdg=2 bus=n3 conn=wye kV=4.16  kVA=6000 %r=0.5 
+~ wdg=1 bus=sourcebus.1.2.3.0 conn=wye kV=12.47 kVA=6000 %r=0.5 
+~ wdg=2 bus=n3.1.2.3.0 conn=wye kV=4.16  kVA=6000 %r=0.5 
 
 
 New "Spectrum.Spectrum_1" NumHarm=8 CSVFile=Spectrum_Load_1.csv 
