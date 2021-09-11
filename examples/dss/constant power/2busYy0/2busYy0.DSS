@@ -18,9 +18,10 @@ new transformer.t1 xhl=6
 
 New "Spectrum.Spectrum_1" NumHarm=8 CSVFile=Spectrum_Load_1.csv 
 New "Spectrum.Spectrum_2" NumHarm=8 CSVFile=Spectrum_Load_2.csv
+New "Spectrum.Spectrum_3" NumHarm=8 CSVFile=Spectrum_Load_3-0degrees.csv
 
 ! **** WYE-CONNECTED 4.16 KV LOAD
-new load.load1 phases=3 bus1=n3 conn=wye kV=4.16 kW=5400 pf=0.9  model=1 spectrum=spectrum_2
+new load.load1 phases=3 bus1=n3 conn=wye kV=4.16 kW=5400 pf=0.9  model=1 spectrum=Spectrum_3
 ! **** HAVE TO ALLOW P, Q TO REMAIN CONSTANT TO ABOUT .79 PU -- THIS IS ASSUMED IN TEST CASE
 ! **** DEFAULT IN DSS IS .95, BELOW WHICH IT REVERTS TO LINEAR MODEL
 ~ vminpu=0.75    ! model will remain const p,q down to 0.75 pu voltage    
