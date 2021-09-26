@@ -35,6 +35,7 @@ s_01 = complexpower.(V0,i_01)
 
 # solve Ohm's law to obtain voltage at bus 1
 V1 = V0 .- z_branch.* i_01
+@show V1
 s_10 = complexpower.(V1,-i_01) 
 
 # complex power flowing in the branch in the direction of bus 1 to bus 0
@@ -45,7 +46,7 @@ s_01_loss = s_01 + s_10
 #complex losses at fundamental
 @show s_01_loss[1]
 #complex losses due to harmonics
-s_01_loss_harmonics = sum(real(s_01_loss[2:end]))
+s_01_loss_harmonics = sum((s_01_loss[2:end]))
 @show s_01_loss_harmonics
 
 
