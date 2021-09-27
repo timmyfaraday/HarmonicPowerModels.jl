@@ -212,8 +212,8 @@ function constraint_voltage_thd(pm::AbstractIVRModel, i, fundamental, thdmax)
     vr = [var(pm, nw, :vr, i) for nw in nonfundementalharmonics]
     vi = [var(pm, nw, :vi, i) for nw in nonfundementalharmonics]
 
-    vrfun = var(pm, nw, :vr, fundamental)
-    vifun = var(pm, nw, :vi, fundamental)
+    vrfun = var(pm, fundamental, :vr, i)
+    vifun = var(pm, fundamental, :vi, i)
 
     JuMP.@constraint(pm.model, sum(vr.^2 + vi.^2) <= thdmax^2*(vrfun^2 + vifun^2) )
 end
