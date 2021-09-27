@@ -162,3 +162,4 @@ function variable_load_current(pm::AbstractPowerModel; nw::Int=nw_id_default, bo
     report && _PMs.sol_component_value(pm, nw, :load, :pd, ids(pm, nw, :load), pd)
     report && _PMs.sol_component_value(pm, nw, :load, :qd, ids(pm, nw, :load), qd)
 end
+

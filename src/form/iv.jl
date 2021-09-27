@@ -215,11 +215,11 @@ function constraint_voltage_thd(pm::AbstractIVRModel, i, fundamental, thdmax)
     vrfun = var(pm, nw, :vr, fundamental)
     vifun = var(pm, nw, :vi, fundamental)
 
-    JuMP.@constraint(pm.model, sum(vr.^2 + vi.^2) <= thdmax^2 (vrfun^2 + vifun^2) )
+    JuMP.@constraint(pm.model, sum(vr.^2 + vi.^2) <= thdmax^2*(vrfun^2 + vifun^2) )
 end
 
 
-function constraint_load_power(pm::AbstractIVRModel, n::Int, i, bus, pd, qd)
+function constraint_load_constant_power(pm::AbstractIVRModel, n::Int, i, bus, pd, qd)
     vr = var(pm, n, :vr, bus)
     vi = var(pm, n, :vi, bus)
     crd = var(pm, n, :crd, i)
@@ -227,4 +227,27 @@ function constraint_load_power(pm::AbstractIVRModel, n::Int, i, bus, pd, qd)
 
     JuMP.@constraint(pm.model, pd == vr*crd  + vi*cid)
     JuMP.@constraint(pm.model, qd == vi*crd  - vr*cid)
+end
+
+
+function constraint_load_constant_current(pm::AbstractIVRModel, n::Int, i, bus, pd, qd, vref)
+    vr = var(pm, n, :vr, bus)
+    vi = var(pm, n, :vi, bus)
+    vm = var(pm, n, :vm, bus)
+
+    crd = var(pm, n, :crd, i)
+    cid = var(pm, n, :cid, i)
+
+    #TODO update expression with vm variable
+    JuMP.@constraint(pm.model, pd*(vm/vref) == vr*crd  + vi*cid)
+    JuMP.@constraint(pm.model, qd*(vm/vref) == vi*crd  - vr*cid)
+end
+
+
+function constraint_vm_auxiliary_variable(pm::AbstractIVRModel, n::Int, i)
+    vr = var(pm, n, :vr, i)
+    vi = var(pm, n, :vi, i)
+    vm = var(pm, n, :vm, i)
+
+    JuMP.@constraint(pm.model, vm^2 == vr^2  + vi^2)
 end

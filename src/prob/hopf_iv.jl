@@ -7,6 +7,7 @@ end
 function build_hopf_iv(pm::AbstractPowerModel)
     for (n, network) in _PMs.nws(pm)
         _PMs.variable_bus_voltage(pm, nw=n)
+        _PMs.variable_bus_voltage_magnitude(pm, nw=n)
         variable_transformer_voltage(pm, nw=n)
         
         _PMs.variable_gen_current(pm, nw=n)
@@ -25,6 +26,7 @@ function build_hopf_iv(pm::AbstractPowerModel)
 
         for i in _PMs.ids(pm, :bus, nw=n)
             constraint_current_balance(pm, i, nw=n)
+            constraint_vm_auxiliary_variable(pm, i, nw=n)
         end
 
         for i in _PMs.ids(pm, :load, nw=n)

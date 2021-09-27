@@ -123,6 +123,21 @@ end
 
 function constraint_load_power(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     load = ref(pm, nw, :load, i)
-    bus = load["load_bus"]
-    constraint_load_power(pm, nw, i, bus, load["pd"], load["qd"])
+    busi = load["load_bus"]
+    bus = ref(pm, nw, :bus, busi)
+    vref = bus["vm"]
+    @assert vref>0
+
+    if nw == 1
+        constraint_load_constant_power(pm, nw, i, busi, load["pd"], load["qd"])
+    else
+        constraint_load_constant_current(pm, nw, i, busi, load["pd"], load["qd"], vref)
+    end
 end
+
+
+""
+function constraint_vm_auxiliary_variable(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+    constraint_vm_auxiliary_variable(pm, nw, i)
+end
+
