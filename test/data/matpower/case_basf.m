@@ -47,16 +47,16 @@ mpc.gen = [
 %% branch data
 %   f_bus	t_bus	r	    x	    b	    rateA	rateB	rateC	ratio	angle	status	angmin	angmax
 mpc.branch = [ 
-    2       3       ; %% TODO FRE
-    4       5       ;
-    6       7       ;
+    2       3       1       1       0       100    100    100           1   0       1       -60        60; %% TODO FRE
+    4       5       1       1       0       100    100    100           1   0       1       -60        60;
+    6       7       1       1       0       100    100    100           1   0       1       -60        60;
 ];
 
 %% transformer data
 %column_names%  f_bus   t_bus   xsc     r1      r2      vg      gnd1    gnd2    re1     xe1     re2     xe2   
 mpc.xfmr = [
-                1       2       XXX     XXX     XXX     'Yd11'  0       0       0.0     0.0     0.0     0.0;
-                3       4       XXX     XXX     XXX     'Yy0'   0       0       0.0     0.0     0.0     0.0;
-                5       6       XXX     XXX     XXX     'Dy11'  0       1       XXX     XXX     XXX     XXX;
-                7       8       XXX     XXX     XXX     'Dz0'   0       1       XXX     XXX     XXX     XXX;
+                1       2       6.0     0.5     0.5     'Yd11'  0       0       0.0     0.0     0.0     0.0;
+                3       4       6.0     0.5     0.5     'Yy0'   0       0       0.0     0.0     0.0     0.0;
+                5       6       6.0     0.5     0.5     'Dy11'  0       1       0.0     0.0     0.0     0.0;
+                7       8       6.0     0.5     0.5     'Dz0'   0       1       0.0     0.0     0.0     0.0;
 ]
