@@ -1,3 +1,5 @@
+using Pkg
+Pkg.activate("./")
 # load pkgs
 using Ipopt, HarmonicPowerModels, PowerModels
 
@@ -6,11 +8,12 @@ const _PMs = PowerModels
 const _HPM = HarmonicPowerModels
 
 # path to the data
-path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_basf.m")
+# path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_basf.m")
+path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_line.m")
 
 # transformer excitation data
 xfmr = Dict("voltage_harmonics" => [1,3],
-            "current_harmonics" => [1,3,5,7,9,11,13],
+            "current_harmonics" => [1,3],
             "N" => 50,
             "current_type" => :rectangular,
             "excitation_type" => :sigmoid,
@@ -23,6 +26,22 @@ xfmr = Dict("voltage_harmonics" => [1,3],
             "dθ" => [π/5,π/5],
             "θmin" => [0.0,0.0],
             "θmax" => [2π,2π])
+
+
+            # xfmr = Dict("voltage_harmonics" => [1,3],
+            # "current_harmonics" => [1,3,5,7,9,11,13],
+            # "N" => 50,
+            # "current_type" => :rectangular,
+            # "excitation_type" => :sigmoid,
+            # "inom" => 0.4,
+            # "ψmax" => 0.5,
+            # "voltage_type" => :rectangular,
+            # "dv" => [0.1,0.1],
+            # "vmin" => [0.0,0.0],
+            # "vmax" => [1.1,1.1],
+            # "dθ" => [π/5,π/5],
+            # "θmin" => [0.0,0.0],
+            # "θmax" => [2π,2π])
 
 # load data
 data  = _PMs.parse_file(path)

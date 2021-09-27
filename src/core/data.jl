@@ -64,29 +64,31 @@ function _HPM.replicate(data::Dict{String, Any};
         end
 
         # re-evaluate the transformer data
-        for xfmr in values(data["nw"][nw]["xfmr"])
-            haskey(xfmr, "xsc") ? xfmr["xsc"] *= mh : ~ ;
-            haskey(xfmr, "r1")  ? xfmr["r1"] *= sqrt(nh) : ~ ;
-            haskey(xfmr, "r2")  ? xfmr["r2"] *= sqrt(nh) : ~ ;
+        if haskey(data["nw"][nw], "xfmr")
+            for xfmr in values(data["nw"][nw]["xfmr"])
+                haskey(xfmr, "xsc") ? xfmr["xsc"] *= mh : ~ ;
+                haskey(xfmr, "r1")  ? xfmr["r1"] *= sqrt(nh) : ~ ;
+                haskey(xfmr, "r2")  ? xfmr["r2"] *= sqrt(nh) : ~ ;
 
-            haskey(xfmr, "xe1") ? xfmr["xe1"] *= mh : ~ ;
-            haskey(xfmr, "xe2") ? xfmr["xe2"] *= mh : ~ ;
-            haskey(xfmr, "re1") ? xfmr["re1"] *= sqrt(nh) : ~ ;
-            haskey(xfmr, "re2") ? xfmr["re2"] *= sqrt(nh) : ~ ;
+                haskey(xfmr, "xe1") ? xfmr["xe1"] *= mh : ~ ;
+                haskey(xfmr, "xe2") ? xfmr["xe2"] *= mh : ~ ;
+                haskey(xfmr, "re1") ? xfmr["re1"] *= sqrt(nh) : ~ ;
+                haskey(xfmr, "re2") ? xfmr["re2"] *= sqrt(nh) : ~ ;
 
-            xfmr["cnf1"] = haskey(xfmr, "vg") ? uppercase(xfmr["vg"][1]) : "Y" ;
-            xfmr["cnf2"] = haskey(xfmr, "vg") ? uppercase(xfmr["vg"][2]) : "Y" ;
+                xfmr["cnf1"] = haskey(xfmr, "vg") ? uppercase(xfmr["vg"][1]) : "Y" ;
+                xfmr["cnf2"] = haskey(xfmr, "vg") ? uppercase(xfmr["vg"][2]) : "Y" ;
 
-            shift = haskey(xfmr, "vg") ? parse(Int, xfmr["vg"][3]) : 0 ;
-            if is_pos_sequence(nh)
-                xfmr["tr"] = cosd(-30.0 * shift)
-                xfmr["ti"] = sind(-30.0 * shift)
-            elseif is_neg_sequence(nh)
-                xfmr["tr"] = cosd(30.0 * shift)
-                xfmr["ti"] = sind(30.0 * shift)
-            elseif is_zero_sequence(nh)
-                xfmr["tr"] = 1.0
-                xfmr["ti"] = 0.0
+                shift = haskey(xfmr, "vg") ? parse(Int, xfmr["vg"][3]) : 0 ;
+                if is_pos_sequence(nh)
+                    xfmr["tr"] = cosd(-30.0 * shift)
+                    xfmr["ti"] = sind(-30.0 * shift)
+                elseif is_neg_sequence(nh)
+                    xfmr["tr"] = cosd(30.0 * shift)
+                    xfmr["ti"] = sind(30.0 * shift)
+                elseif is_zero_sequence(nh)
+                    xfmr["tr"] = 1.0
+                    xfmr["ti"] = 0.0
+                end
             end
         end
     end
@@ -225,24 +227,27 @@ function sample_xfmr_excitation(data::Dict{String, <:Any}, xfmr_exc::Dict{String
     for nw in keys(data["nw"]) 
         ni = parse(Int, nw)
         nh = data["harmonics"][nw]
-        for xfmr in values(data["nw"][nw]["xfmr"])
-            xfmr["current_harmonics_ntws"] = current_harmonics_ntws
-            xfmr["voltage_harmonics_ntws"] = voltage_harmonics_ntws
-            if nh in current_harmonics
-                xfmr["EXC_A"]  = _INT.scale(_INT.interpolate(Ia[nh], method), S...)
-                xfmr["EXC_B"]  = _INT.scale(_INT.interpolate(Ib[nh], method), S...)
-                xfmr["INT_A"]  = (x...) -> xfmr["EXC_A"](x...)
-                xfmr["INT_B"]  = (x...) -> xfmr["EXC_B"](x...)
-                xfmr["GRAD_A"] = (x...) -> _INT.gradient(xfmr["EXC_A"], x...)
-                xfmr["GRAD_B"] = (x...) -> _INT.gradient(xfmr["EXC_B"], x...)
-            end
-            if nh in voltage_harmonics
-                xfmr["ert_min"], xfmr["ert_max"] = vmin[ni], vmax[ni] 
-                xfmr["eit_min"], xfmr["eit_max"] = vmin[ni], vmax[ni]
-            else
-                xfmr["ert_min"], xfmr["ert_max"] = 0.0, 1.1 
-                xfmr["eit_min"], xfmr["eit_max"] = 0.0, 1.1
-            end
-    end end
+        if haskey(data["nw"][nw], "xfmr")
+            for xfmr in values(data["nw"][nw]["xfmr"])
+                xfmr["current_harmonics_ntws"] = current_harmonics_ntws
+                xfmr["voltage_harmonics_ntws"] = voltage_harmonics_ntws
+                if nh in current_harmonics
+                    xfmr["EXC_A"]  = _INT.scale(_INT.interpolate(Ia[nh], method), S...)
+                    xfmr["EXC_B"]  = _INT.scale(_INT.interpolate(Ib[nh], method), S...)
+                    xfmr["INT_A"]  = (x...) -> xfmr["EXC_A"](x...)
+                    xfmr["INT_B"]  = (x...) -> xfmr["EXC_B"](x...)
+                    xfmr["GRAD_A"] = (x...) -> _INT.gradient(xfmr["EXC_A"], x...)
+                    xfmr["GRAD_B"] = (x...) -> _INT.gradient(xfmr["EXC_B"], x...)
+                end
+                if nh in voltage_harmonics
+                    xfmr["ert_min"], xfmr["ert_max"] = vmin[ni], vmax[ni] 
+                    xfmr["eit_min"], xfmr["eit_max"] = vmin[ni], vmax[ni]
+                else
+                    xfmr["ert_min"], xfmr["ert_max"] = 0.0, 1.1 
+                    xfmr["eit_min"], xfmr["eit_max"] = 0.0, 1.1
+                end
+            end 
+        end
+    end
 end
 

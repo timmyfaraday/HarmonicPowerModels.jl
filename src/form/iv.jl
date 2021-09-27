@@ -37,6 +37,9 @@ function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, b
     crg = var(pm, n, :crg)
     cig = var(pm, n, :cig)
 
+    crd = var(pm, n, :crd)
+    cid = var(pm, n, :cid)
+
     JuMP.@NLconstraint(pm.model, sum(cr[a] for a in bus_arcs)
                                 + sum(crdc[d] for d in bus_arcs_dc)
                                 + sum(crt[t] for t in bus_arcs_xfmr)

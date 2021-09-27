@@ -127,3 +127,27 @@ function variable_transformer_current_excitation_imaginary(pm::AbstractPowerMode
 
     report && _PMs.sol_component_value(pm, nw, :xfmr, :ceit, _PMs.ids(pm, nw, :xfmr), ceit)
 end
+
+""
+function variable_load_current_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    crd = _PMs.var(pm, nw)[:crd] = JuMP.@variable(pm.model,
+            [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_crd",
+            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "crd_start", 0.0)
+    )
+
+    ## bounds are needed
+
+    report && _PMs.sol_component_value(pm, nw, :load, :crd, _PMs.ids(pm, nw, :load), crd)
+end
+
+""
+function variable_load_current_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    cid = _PMs.var(pm, nw)[:cid] = JuMP.@variable(pm.model,
+            [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_cid",
+            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "cid_start", 0.0)
+    )
+
+    ## bounds are needed
+
+    report && _PMs.sol_component_value(pm, nw, :load, :cid, _PMs.ids(pm, nw, :load), cid)
+end
