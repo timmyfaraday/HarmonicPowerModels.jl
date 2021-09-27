@@ -14,8 +14,7 @@ function build_hopf_iv(pm::AbstractPowerModel)
         _PMs.variable_dcline_current(pm, nw=n)
         variable_transformer_current(pm, nw=n)
 
-        variable_load_current_real(pm, nw=n)
-        variable_load_current_imaginary(pm, nw=n)
+        variable_load_current(pm, nw=n)
         
     end 
 
@@ -26,6 +25,10 @@ function build_hopf_iv(pm::AbstractPowerModel)
 
         for i in _PMs.ids(pm, :bus, nw=n)
             constraint_current_balance(pm, i, nw=n)
+        end
+
+        for i in _PMs.ids(pm, :load, nw=n)
+            constraint_load_power(pm, i, nw=n)
         end
 
         for b in _PMs.ids(pm, :branch, nw=n)
@@ -49,16 +52,16 @@ function build_hopf_iv(pm::AbstractPowerModel)
             constraint_transformer_winding_current_balance(pm, t, nw=n)
         end
 
-        for d in _PMs.ids(pm, :dcline, nw=n)
-            _PMs.constraint_dcline_power_losses(pm, d, nw=n)
-        end
+        # for d in _PMs.ids(pm, :dcline, nw=n)
+        #     _PMs.constraint_dcline_power_losses(pm, d, nw=n)
+        # end
     end
 
     # for b in _PMs.ids(pm, :bus, nw=nw_id_default)
     #     constraint_voltage_magnitude_rms(pm, b)
     # end
 
-    # _PMs.objective_min_fuel_and_flow_cost(pm)
+    _PMs.objective_min_fuel_and_flow_cost(pm)
 end
 
 function ref_add_xfmr!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any}) ## data not actually needed!

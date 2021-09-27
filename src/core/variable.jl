@@ -129,25 +129,36 @@ function variable_transformer_current_excitation_imaginary(pm::AbstractPowerMode
 end
 
 ""
-function variable_load_current_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_load_current(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
     crd = _PMs.var(pm, nw)[:crd] = JuMP.@variable(pm.model,
             [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_crd",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "crd_start", 0.0)
     )
 
-    ## bounds are needed
 
     report && _PMs.sol_component_value(pm, nw, :load, :crd, _PMs.ids(pm, nw, :load), crd)
-end
 
-""
-function variable_load_current_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
     cid = _PMs.var(pm, nw)[:cid] = JuMP.@variable(pm.model,
             [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_cid",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "cid_start", 0.0)
     )
 
-    ## bounds are needed
-
     report && _PMs.sol_component_value(pm, nw, :load, :cid, _PMs.ids(pm, nw, :load), cid)
+
+    # store active and reactive power expressions for use in objective + post processing
+    pd = Dict()
+    qd = Dict()
+    for (i,load) in ref(pm, nw, :load)
+        busid = load["load_bus"]
+        vr = var(pm, nw, :vr, busid)
+        vi = var(pm, nw, :vi, busid)
+        crd = var(pm, nw, :crd, i)
+        cid = var(pm, nw, :cid, i)
+        pd[i] = JuMP.@NLexpression(pm.model, vr*crd  + vi*cid)
+        qd[i] = JuMP.@NLexpression(pm.model, vi*crd  - vr*cid)
+    end
+    var(pm, nw)[:pd] = pd
+    var(pm, nw)[:qd] = qd
+    report && _PMs.sol_component_value(pm, nw, :load, :pd, ids(pm, nw, :load), pd)
+    report && _PMs.sol_component_value(pm, nw, :load, :qd, ids(pm, nw, :load), qd)
 end

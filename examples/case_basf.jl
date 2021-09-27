@@ -2,6 +2,7 @@ using Pkg
 Pkg.activate("./")
 # load pkgs
 using Ipopt, HarmonicPowerModels, PowerModels
+using JuMP #avoids problems with Revise
 
 # pkg const
 const _PMs = PowerModels
@@ -51,4 +52,4 @@ hdata = _HPM.replicate(data, xfmr_exc=xfmr)
 solver = Ipopt.Optimizer
 
 # solve the hopf
-run_hopf_iv(hdata, _PMs.IVRPowerModel, solver)
+result = run_hopf_iv(hdata, _PMs.IVRPowerModel, solver)

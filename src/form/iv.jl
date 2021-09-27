@@ -23,7 +23,7 @@ end
 
 # constraints
 ""
-function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, bus_arcs_dc, bus_arcs_xfmr, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
+function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, bus_arcs_dc, bus_arcs_xfmr, bus_gens, bus_loads, bus_gs, bus_bs)
     vr = var(pm, n, :vr, i)
     vi = var(pm, n, :vi, i)
 
@@ -36,7 +36,6 @@ function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, b
 
     crg = var(pm, n, :crg)
     cig = var(pm, n, :cig)
-
     crd = var(pm, n, :crd)
     cid = var(pm, n, :cid)
 
@@ -45,7 +44,7 @@ function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, b
                                 + sum(crt[t] for t in bus_arcs_xfmr)
                                 ==
                                 sum(crg[g] for g in bus_gens)
-                                - (sum(pd for pd in values(bus_pd))*vr + sum(qd for qd in values(bus_qd))*vi)/(vr^2 + vi^2)
+                                - sum(crd[d] for d in bus_loads)
                                 - sum(gs for gs in values(bus_gs))*vr + sum(bs for bs in values(bus_bs))*vi
                                 )
     JuMP.@NLconstraint(pm.model, sum(ci[a] for a in bus_arcs)
@@ -53,9 +52,10 @@ function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, b
                                 + sum(cit[t] for t in bus_arcs_xfmr)
                                 ==
                                 sum(cig[g] for g in bus_gens)
-                                - (sum(pd for pd in values(bus_pd))*vi - sum(qd for qd in values(bus_qd))*vr)/(vr^2 + vi^2)
+                                - sum(cid[d] for d in bus_loads)
                                 - sum(gs for gs in values(bus_gs))*vi - sum(bs for bs in values(bus_bs))*vr
                                 )
+
 end
 
 ""
@@ -200,4 +200,15 @@ function constraint_voltage_magnitude_rms(pm::AbstractIVRModel, i, vmin, vmax)
 
     JuMP.@constraint(pm.model, vmin^2 <= sum(vr.^2 + vi.^2))
     JuMP.@constraint(pm.model, sum(vr.^2 + vi.^2) <= vmax^2)
+end
+
+
+function constraint_load_power(pm::AbstractIVRModel, n::Int, i, bus, pd, qd)
+    vr = var(pm, n, :vr, bus)
+    vi = var(pm, n, :vi, bus)
+    crd = var(pm, n, :crd, i)
+    cid = var(pm, n, :cid, i)
+
+    JuMP.@constraint(pm.model, pd == vr*crd  + vi*cid)
+    JuMP.@constraint(pm.model, qd == vi*crd  - vr*cid)
 end
