@@ -56,10 +56,13 @@ function build_hopf_iv(pm::AbstractPowerModel)
         #     _PMs.constraint_dcline_power_losses(pm, d, nw=n)
         # end
     end
-
-    # for b in _PMs.ids(pm, :bus, nw=nw_id_default)
-    #     constraint_voltage_magnitude_rms(pm, b)
-    # end
+    
+    #constraints across harmonics
+    fundamental = 1
+    for i in _PMs.ids(pm, :bus, nw=fundamental)
+        constraint_voltage_magnitude_rms(pm, i)
+        constraint_voltage_thd(pm, i, fundamental=fundamental)
+    end
 
     _PMs.objective_min_fuel_and_flow_cost(pm)
 end

@@ -105,12 +105,20 @@ function constraint_transformer_winding_current_balance(pm::AbstractPowerModel, 
 end
 
 ""
-function constraint_voltage_magnitude_rms(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-    vmin = ref(pm, nw, :bus, i, "vmin")
-    vmax = ref(pm, nw, :bus, i, "vmax")
+function constraint_voltage_magnitude_rms(pm::AbstractPowerModel, i::Int; fundamental::Int=1)
+    vmin = ref(pm, fundamental, :bus, i, "vmin")
+    vmax = ref(pm, fundamental, :bus, i, "vmax")
 
     constraint_voltage_magnitude_rms(pm, i, vmin, vmax)
 end
+
+
+""
+function constraint_voltage_thd(pm::AbstractPowerModel, i::Int; fundamental::Int=1)
+    thdmax = ref(pm, fundamental, :bus, i, "thdmax")
+    constraint_voltage_thd(pm, i, fundamental, thdmax)
+end
+
 
 
 function constraint_load_power(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)

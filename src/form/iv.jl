@@ -198,8 +198,24 @@ function constraint_voltage_magnitude_rms(pm::AbstractIVRModel, i, vmin, vmax)
     vr = [var(pm, nw, :vr, i) for nw in _PMs.nw_ids(pm)]
     vi = [var(pm, nw, :vi, i) for nw in _PMs.nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, vmin^2 <= sum(vr.^2 + vi.^2))
-    JuMP.@constraint(pm.model, sum(vr.^2 + vi.^2) <= vmax^2)
+    JuMP.@constraint(pm.model, vmin^2 <=    sum(vr.^2 + vi.^2)              )
+    JuMP.@constraint(pm.model,              sum(vr.^2 + vi.^2)  <= vmax^2   )
+end
+
+
+""
+function constraint_voltage_thd(pm::AbstractIVRModel, i, fundamental, thdmax)
+    @show _PMs.nw_ids(pm)
+
+    harmonics = Set(_PMs.nw_ids(pm))
+    nonfundementalharmonics = setdiff(harmonics, fundamental)
+    vr = [var(pm, nw, :vr, i) for nw in nonfundementalharmonics]
+    vi = [var(pm, nw, :vi, i) for nw in nonfundementalharmonics]
+
+    vrfun = var(pm, nw, :vr, fundamental)
+    vifun = var(pm, nw, :vi, fundamental)
+
+    JuMP.@constraint(pm.model, sum(vr.^2 + vi.^2) <= thdmax^2 (vrfun^2 + vifun^2) )
 end
 
 
