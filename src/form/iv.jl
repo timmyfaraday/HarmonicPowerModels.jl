@@ -110,7 +110,7 @@ function constraint_transformer_core_voltage_balance(pm::AbstractIVRModel, n::In
     vrt = var(pm, n, :vrt, t_idx)
     vit = var(pm, n, :vit, t_idx)
 
-    JuMP.@constraint(pm.model, vrt == tr * ert + ti * eit)
+    JuMP.@constraint(pm.model, vrt == tr * ert - ti * eit)
     JuMP.@constraint(pm.model, vit == tr * eit + ti * ert)
 end
 
@@ -128,7 +128,7 @@ function constraint_transformer_core_current_balance(pm::AbstractIVRModel, n::In
     JuMP.@constraint(pm.model, csrt_fr + tr * csrt_to - ti * csit_to 
                                 == cert 
                     )
-    JuMP.@constraint(pm.model, csit_fr + tr * csit_to - ti * csrt_to
+    JuMP.@constraint(pm.model, csit_fr + tr * csit_to + ti * csrt_to
                                 == ceit
                     )
 end
@@ -234,20 +234,14 @@ end
 
 
 function constraint_load_constant_current(pm::AbstractIVRModel, n::Int, i, bus, multiplier)
-    # vr = var(pm, n, :vr, bus)
-    # vi = var(pm, n, :vi, bus)
-    # vm = var(pm, n, :vm, bus)
-
     crd = var(pm, n, :crd, i)
     cid = var(pm, n, :cid, i)
     ccmd = var(pm, n, :ccmd, i)
 
     #current magnitude squared of fundamental
     ccmdfundamental = var(pm, 1, :ccmd, i)
-    @show multiplier
 
     JuMP.@constraint(pm.model, ccmd == crd^2  + cid^2)
-    
     JuMP.@constraint(pm.model, ccmd == (multiplier)^2 * ccmdfundamental)
 end
 
