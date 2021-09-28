@@ -38,7 +38,8 @@ for (g,gen) in data["gen"]
     gen["c_rating"] = abs(gen["pmax"] + im* gen["qmax"])/vmmin
 end
 
-hdata = _HPM.replicate(data, xfmr_exc=xfmr)
+hdata = _HPM.replicate(data)
+# hdata = _HPM.replicate(data, xfmr_exc=xfmr)
 
 # set the solver
 solver = Ipopt.Optimizer
@@ -51,6 +52,8 @@ result = optimize_model!(pm, optimizer=solver)
 
 ##
 print(pm.model)
+
+##
 
 result["termination_status"]
 sol = result["solution"]
@@ -70,11 +73,11 @@ cmxfmr1 = hypot(sol["nw"]["1"]["xfmr"]["1"]["crt_fr"], sol["nw"]["1"]["xfmr"]["1
 vmsb2 = sol["nw"]["2"]["bus"]["1"]["vm"]
 vmload2 = sol["nw"]["2"]["bus"]["2"]["vm"]
 
-cmbranch2 = hypot(sol["nw"]["2"]["xfmr"]["1"]["crt_fr"], sol["nw"]["2"]["xfmr"]["1"]["cit_fr"])
+cmxfmr2 = hypot(sol["nw"]["2"]["xfmr"]["1"]["crt_fr"], sol["nw"]["2"]["xfmr"]["1"]["cit_fr"])
 
 
 multiplier = hdata["nw"]["2"]["load"]["1"]["multiplier"]
-cmbranch2/cmbranch1
+cmxfmr2/cmxfmr1
 
 pd2 = sol["nw"]["2"]["load"]["1"]["pd"]
 qd2 = sol["nw"]["2"]["load"]["1"]["qd"]

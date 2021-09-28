@@ -144,6 +144,8 @@ function constraint_transformer_winding_config(pm::AbstractIVRModel, n::Int, nh,
     crt = var(pm, n, :crt, idx)
     cit = var(pm, n, :cit, idx)
 
+    @show nh, i, idx, r, re, xe, gnd, is_zero_sequence(nh)
+
     # h ∈ 𝓗⁺ ⋃ 𝓗⁻
     if !is_zero_sequence(nh)
         JuMP.@constraint(pm.model, vrt == vr - r * crt)
@@ -259,7 +261,7 @@ end
 function constraint_ref_bus(pm::AbstractIVRModel, n::Int, i::Int)
     if n == 1 #fundamental frequency, fix reference angle
         JuMP.@constraint(pm.model, var(pm, n, :vi)[i] == 0.0)
-        JuMP.@constraint(pm.model, var(pm, n, :vr)[i] >= 0.0)
+        JuMP.@constraint(pm.model, var(pm, n, :vr)[i] >= 0.9)
     else #fix harmonic voltage at reference bus to 0+j0
         JuMP.@constraint(pm.model, var(pm, n, :vi)[i] == 0.0)
         JuMP.@constraint(pm.model, var(pm, n, :vr)[i] == 0.0)

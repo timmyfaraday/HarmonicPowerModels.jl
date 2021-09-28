@@ -82,12 +82,12 @@ function _HPM.replicate(data::Dict{String, Any};
         # re-evaluate the transformer data
         if haskey(data["nw"][nw], "xfmr")
             for xfmr in values(data["nw"][nw]["xfmr"])
-                haskey(xfmr, "xsc") ? xfmr["xsc"] *= mh : ~ ;
+                haskey(xfmr, "xsc") ? xfmr["xsc"] *= nh : ~ ;
                 haskey(xfmr, "r1")  ? xfmr["r1"] *= sqrt(nh) : ~ ;
                 haskey(xfmr, "r2")  ? xfmr["r2"] *= sqrt(nh) : ~ ;
 
-                haskey(xfmr, "xe1") ? xfmr["xe1"] *= mh : ~ ;
-                haskey(xfmr, "xe2") ? xfmr["xe2"] *= mh : ~ ;
+                haskey(xfmr, "xe1") ? xfmr["xe1"] *= nh : ~ ;
+                haskey(xfmr, "xe2") ? xfmr["xe2"] *= nh : ~ ;
                 haskey(xfmr, "re1") ? xfmr["re1"] *= sqrt(nh) : ~ ;
                 haskey(xfmr, "re2") ? xfmr["re2"] *= sqrt(nh) : ~ ;
 

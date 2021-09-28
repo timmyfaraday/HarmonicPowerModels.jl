@@ -10,7 +10,7 @@ mpc.baseMVA =  100.00;
 %	bus_id	type    Pd      Qd	    Gs	    Bs	    area	Vm	    Va	    baseKV  zone	Vmax	Vmin
 mpc.bus = [
     1       3       0.000   0.000   0.00    0.00    1       1.00    0.00    12.47   1       1.10    0.90;
-    2       1       6.000   0.000   0.00    0.00    1       1.00	0.00    4.16    1       1.10    0.90;
+    2       1       0.0001   0.000   0.00    0.00    1       1.00	0.00    4.16    1       1.10    0.90;
 ];
 
 %% bus harmonic data 
@@ -38,5 +38,5 @@ mpc.branch = [
 %% transformer data
 %column_names%  f_bus   t_bus   xsc     r1      r2      vg      gnd1    gnd2    re1     xe1     re2     xe2   
 mpc.xfmr = [
-                1       2       .0     0.0     0.0     'Yy0'   1       1       0.0     0.0     0.0     0.0
+                1       2       0.1     0.01     0.01     'Yy0'   1       1       0.0     0.0     0.0     0.0
 ]

@@ -81,7 +81,7 @@ function constraint_transformer_winding_config(pm::AbstractPowerModel, t::Int; n
 
     for w in 1:2
         constraint_transformer_winding_config(pm, nw, nh, bus[w], idx[w], r[w], re[w], xe[w], gnd[w])
-    end
+    end #                                               nh, i,      idx,    r,  re,     xe,     gnd)
 end
 
 ""
