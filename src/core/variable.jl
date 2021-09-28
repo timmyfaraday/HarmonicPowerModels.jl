@@ -144,13 +144,24 @@ function variable_load_current(pm::AbstractPowerModel; nw::Int=nw_id_default, bo
 
     report && _PMs.sol_component_value(pm, nw, :load, :cid, _PMs.ids(pm, nw, :load), cid)
 
+    ccmd = _PMs.var(pm, nw)[:ccmd] = JuMP.@variable(pm.model,
+    [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_ccmd",
+    start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "ccmd_start", 0.00)
+    )   
+
+    report && _PMs.sol_component_value(pm, nw, :load, :ccmd, _PMs.ids(pm, nw, :load), ccmd)
+
     if bounded
         for (d, load) in ref(pm, nw, :load)
             c_rating = load["c_rating"]
             JuMP.set_lower_bound(crd[d], -c_rating)
             JuMP.set_upper_bound(crd[d],  c_rating)
+
             JuMP.set_lower_bound(cid[d], -c_rating)
             JuMP.set_upper_bound(cid[d],  c_rating)
+
+            JuMP.set_lower_bound(ccmd[d],  0)
+            JuMP.set_upper_bound(ccmd[d],  c_rating^2)
         end
     end
 
@@ -212,7 +223,7 @@ function variable_gen_current(pm::AbstractPowerModel; nw::Int=nw_id_default, bou
     end
     var(pm, nw)[:pg] = pg
     var(pm, nw)[:qg] = qg
-    report && _PMs.sol_component_value(pm, nw, :load, :pg, ids(pm, nw, :gen), pg)
-    report && _PMs.sol_component_value(pm, nw, :load, :qg, ids(pm, nw, :gen), qg)
+    report && _PMs.sol_component_value(pm, nw, :gen, :pg, ids(pm, nw, :gen), pg)
+    report && _PMs.sol_component_value(pm, nw, :gen, :qg, ids(pm, nw, :gen), qg)
 end
 

@@ -49,6 +49,14 @@ function _HPM.replicate(data::Dict{String, Any};
             multiplier = haskey(bus, "nh_$nh") ? bus["nh_$nh"] : 0.0 ;
             haskey(load, "pd") ? load["pd"] *= multiplier : ~ ;
             haskey(load, "qd") ? load["qd"] *= multiplier : ~ ;
+            load["multiplier"] = multiplier
+        end
+
+        # re-evaluate gen 
+        for gen in values(data["nw"][nw]["gen"])
+            if nw !="1" #cost of harmonics set to 0 TODO define total gen cost in terms of energy across all harmonics
+                gen["cost"] *= 0 
+            end
         end
 
         # re-evaluate the bus data 
@@ -58,7 +66,7 @@ function _HPM.replicate(data::Dict{String, Any};
             bus["vmaxrms"] = bus["vmax"]
             
             # true harmonics don't have minimum voltage
-            if nw !=1 
+            if nw !="1" 
                 bus["vmin"] = 0 
             end
         end

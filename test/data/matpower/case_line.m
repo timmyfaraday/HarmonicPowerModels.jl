@@ -4,7 +4,7 @@
 
 function mpc = case_xfmr_Yy0
 mpc.version = '2';
-mpc.baseMVA =  100.00;
+mpc.baseMVA =  1.00;
 
 %% bus data
 %	bus_id	type    Pd      Qd	    Gs	    Bs	    area	Vm	    Va	    baseKV  zone	Vmax	Vmin
@@ -33,6 +33,6 @@ mpc.gencost = [
 %% branch data
 %   f_bus	t_bus	r	    x	    b	    rateA	rateB	rateC	ratio	angle	status	angmin	angmax
 mpc.branch = [ 
-    1       2     0.2    0.4       0       10    10    10           1   0       1       -60        60;
+    1       2     0.004    0.008       0       10    10    10           1   0       1       -60        60;
 ];
 

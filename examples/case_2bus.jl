@@ -19,6 +19,7 @@ data  = _PMs.parse_file(path)
 # sanity check
 pm_fundamental = _PMs.instantiate_model(data, _PMs.IVRPowerModel, _PMs.build_opf_iv);
 result_fundamental = optimize_model!(pm_fundamental, optimizer=solver)
+result_fundamental["termination_status"]
 
 # set up current ratings consistently
 #assume minimum voltage
@@ -34,6 +35,7 @@ for (g,gen) in data["gen"]
 end
 hdata = _HPM.replicate(data)
 
+##
 # solve the hopf
 # result = run_hopf_iv(hdata, _PMs.IVRPowerModel, solver)
 pm = _PMs.instantiate_model(hdata, _PMs.IVRPowerModel, _HPM.build_hopf_iv; ref_extensions=[_HPM.ref_add_xfmr!]);
@@ -47,6 +49,7 @@ qd1 = hdata["nw"]["1"]["load"]["1"]["qd"]
 
 pd1 = sol["nw"]["1"]["load"]["1"]["pd"]
 qd1 = sol["nw"]["1"]["load"]["1"]["qd"]
+ccmd1 = sol["nw"]["1"]["load"]["1"]["ccmd"]
 
 vmsb1 = sol["nw"]["1"]["bus"]["1"]["vm"]
 vmload1 = sol["nw"]["1"]["bus"]["2"]["vm"]
@@ -62,13 +65,14 @@ zbranch2 = hdata["nw"]["2"]["branch"]["1"]["br_r"] + im* hdata["nw"]["2"]["branc
 cmbranch2 = hypot(sol["nw"]["2"]["branch"]["1"]["cr_fr"], sol["nw"]["2"]["branch"]["1"]["ci_fr"])
 
 
-pd2 = hdata["nw"]["2"]["load"]["1"]["pd"]
-qd2 = hdata["nw"]["2"]["load"]["1"]["qd"]
+multiplier = hdata["nw"]["2"]["load"]["1"]["multiplier"]
+cmbranch2/cmbranch1
 
 pd2 = sol["nw"]["2"]["load"]["1"]["pd"]
 qd2 = sol["nw"]["2"]["load"]["1"]["qd"]
+ccmd2 = sol["nw"]["2"]["load"]["1"]["ccmd"]
 
 ##
-print(pm.model)
+# print(pm.model)
 
 result

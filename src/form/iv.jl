@@ -208,9 +208,9 @@ end
 ""
 function constraint_voltage_thd(pm::AbstractIVRModel, i, fundamental, thdmax)
     harmonics = Set(_PMs.nw_ids(pm))
-    nonfundementalharmonics = setdiff(harmonics, fundamental)
-    vr = [var(pm, nw, :vr, i) for nw in nonfundementalharmonics]
-    vi = [var(pm, nw, :vi, i) for nw in nonfundementalharmonics]
+    nonfundamentalharmonics = setdiff(harmonics, fundamental)
+    vr = [var(pm, nw, :vr, i) for nw in nonfundamentalharmonics]
+    vi = [var(pm, nw, :vi, i) for nw in nonfundamentalharmonics]
 
     vrfun = var(pm, fundamental, :vr, fundamental)
     vifun = var(pm, fundamental, :vi, fundamental)
@@ -224,23 +224,31 @@ function constraint_load_constant_power(pm::AbstractIVRModel, n::Int, i, bus, pd
     vi = var(pm, n, :vi, bus)
     crd = var(pm, n, :crd, i)
     cid = var(pm, n, :cid, i)
+    ccmd = var(pm, n, :ccmd, i)
 
     JuMP.@constraint(pm.model, pd == vr*crd  + vi*cid)
     JuMP.@constraint(pm.model, qd == vi*crd  - vr*cid)
+
+    JuMP.@constraint(pm.model, ccmd == crd^2  + cid^2)
 end
 
 
-function constraint_load_constant_current(pm::AbstractIVRModel, n::Int, i, bus, pd, qd, vref)
-    vr = var(pm, n, :vr, bus)
-    vi = var(pm, n, :vi, bus)
-    vm = var(pm, n, :vm, bus)
+function constraint_load_constant_current(pm::AbstractIVRModel, n::Int, i, bus, multiplier)
+    # vr = var(pm, n, :vr, bus)
+    # vi = var(pm, n, :vi, bus)
+    # vm = var(pm, n, :vm, bus)
 
     crd = var(pm, n, :crd, i)
     cid = var(pm, n, :cid, i)
+    ccmd = var(pm, n, :ccmd, i)
 
-    #TODO update expression with vm variable
-    JuMP.@constraint(pm.model, pd*(vm/vref) == vr*crd  + vi*cid)
-    JuMP.@constraint(pm.model, qd*(vm/vref) == vi*crd  - vr*cid)
+    #current magnitude squared of fundamental
+    ccmdfundamental = var(pm, 1, :ccmd, i)
+    @show multiplier
+
+    JuMP.@constraint(pm.model, ccmd == crd^2  + cid^2)
+    
+    JuMP.@constraint(pm.model, ccmd == (multiplier)^2 * ccmdfundamental)
 end
 
 
@@ -256,11 +264,11 @@ end
 "reference bus angle constraint"
 function constraint_ref_bus(pm::AbstractIVRModel, n::Int, i::Int)
     if n == 1 #fundamental frequency, fix reference angle
-        JuMP.@constraint(pm.model, var(pm, n, :vi)[i] == 0)
-        JuMP.@constraint(pm.model, var(pm, n, :vr)[i] >= 0)
+        JuMP.@constraint(pm.model, var(pm, n, :vi)[i] == 0.0)
+        JuMP.@constraint(pm.model, var(pm, n, :vr)[i] >= 0.0)
     else #fix harmonic voltage at reference bus to 0+j0
-        JuMP.@constraint(pm.model, var(pm, n, :vi)[i] == 0)
-        JuMP.@constraint(pm.model, var(pm, n, :vr)[i] == 0)
+        JuMP.@constraint(pm.model, var(pm, n, :vi)[i] == 0.0)
+        JuMP.@constraint(pm.model, var(pm, n, :vr)[i] == 0.0)
     end
 end
 

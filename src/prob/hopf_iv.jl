@@ -10,7 +10,6 @@ function build_hopf_iv(pm::AbstractPowerModel)
         _PMs.variable_bus_voltage_magnitude(pm, nw=n)
         variable_transformer_voltage(pm, nw=n)
         
-        # _PMs.variable_gen_current(pm, nw=n, bounded=false)
         _PMs.variable_branch_current(pm, nw=n)
         _PMs.variable_dcline_current(pm, nw=n)
         variable_transformer_current(pm, nw=n)
@@ -44,12 +43,9 @@ function build_hopf_iv(pm::AbstractPowerModel)
             _PMs.constraint_current_to(pm, b, nw=n)
             
             _PMs.constraint_voltage_drop(pm, b, nw=n)
-            # _PMs.constraint_voltage_angle_difference(pm, b, nw=n)
 
             #TODO add current magnitude constraints instead
-            # _PMs.constraint_current_limit(pm, b, nw=n)
-            # _PMs.constraint_thermal_limit_from(pm, b, nw=n)
-            # _PMs.constraint_thermal_limit_to(pm, b, nw=n)
+            _PMs.constraint_current_limit(pm, b, nw=n)
         end
         
         for t in _PMs.ids(pm, :xfmr, nw=n)
