@@ -7,15 +7,15 @@ end
 function build_hopf_iv(pm::AbstractPowerModel)
     for (n, network) in _PMs.nws(pm)
         _PMs.variable_bus_voltage(pm, nw=n, bounded=true)
-        _PMs.variable_bus_voltage_magnitude(pm, nw=n, bounded=false)
-        variable_transformer_voltage(pm, nw=n, bounded=false)
+        _PMs.variable_bus_voltage_magnitude_sqr(pm, nw=n)
+        variable_transformer_voltage(pm, nw=n)
         
         _PMs.variable_branch_current(pm, nw=n)
         _PMs.variable_dcline_current(pm, nw=n)
-        variable_transformer_current(pm, nw=n, bounded=false)
+        variable_transformer_current(pm, nw=n)
 
-        variable_load_current(pm, nw=n, bounded=false)
-        variable_gen_current(pm, nw=n, bounded=false)
+        variable_load_current(pm, nw=n)
+        variable_gen_current(pm, nw=n)
         
     end 
 
@@ -30,8 +30,8 @@ function build_hopf_iv(pm::AbstractPowerModel)
         end
     
         for g in _PMs.ids(pm, :gen, nw=n)
-            # _PMs.constraint_gen_active_bounds(pm, g, nw=n)
-            # _PMs.constraint_gen_reactive_bounds(pm, g, nw=n)
+            _PMs.constraint_gen_active_bounds(pm, g, nw=n)
+            _PMs.constraint_gen_reactive_bounds(pm, g, nw=n)
         end
 
         for i in _PMs.ids(pm, :load, nw=n)
@@ -45,7 +45,7 @@ function build_hopf_iv(pm::AbstractPowerModel)
             _PMs.constraint_voltage_drop(pm, b, nw=n)
 
             #TODO add current magnitude constraints instead
-            # _PMs.constraint_current_limit(pm, b, nw=n)
+            _PMs.constraint_current_limit(pm, b, nw=n)
         end
         
         for t in _PMs.ids(pm, :xfmr, nw=n)
@@ -66,7 +66,7 @@ function build_hopf_iv(pm::AbstractPowerModel)
     #constraints across harmonics
     fundamental = 1
     for i in _PMs.ids(pm, :bus, nw=fundamental)
-        # constraint_voltage_magnitude_rms(pm, i)
+        constraint_voltage_magnitude_rms(pm, i)
         # constraint_voltage_thd(pm, i, fundamental=fundamental)
     end
 

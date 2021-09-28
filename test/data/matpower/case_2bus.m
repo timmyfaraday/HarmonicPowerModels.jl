@@ -17,7 +17,7 @@ mpc.bus = [
 %column_names%  nh_1    nh_3     thdmax
 mpc.bus_harmonics = [
                 1.000   0.0000      0.5
-                1.000   0.2         0.5
+                1.000   0.1         0.5
 ]
 
 %% generator data

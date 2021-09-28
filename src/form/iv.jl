@@ -197,13 +197,12 @@ end
 
 ""
 function constraint_voltage_magnitude_rms(pm::AbstractIVRModel, i, vminrms, vmaxrms, nharmonics)
-    vr = [var(pm, nw, :vr, i) for nw in _PMs.nw_ids(pm)]
-    vi = [var(pm, nw, :vi, i) for nw in _PMs.nw_ids(pm)]
+    w = [var(pm, nw, :w, i) for nw in _PMs.nw_ids(pm)]
     @assert vminrms>0
     @assert vmaxrms>vminrms
 
-    JuMP.@constraint(pm.model, vminrms^2 <= sum(vr.^2 + vi.^2)/nharmonics               )
-    JuMP.@constraint(pm.model,              sum(vr.^2 + vi.^2)/nharmonics  <= vmaxrms^2 )
+    JuMP.@constraint(pm.model, vminrms^2 <= sum(w)/nharmonics               )
+    JuMP.@constraint(pm.model,              sum(w)/nharmonics  <= vmaxrms^2 )
 end
 
 
@@ -211,13 +210,10 @@ end
 function constraint_voltage_thd(pm::AbstractIVRModel, i, fundamental, thdmax)
     harmonics = Set(_PMs.nw_ids(pm))
     nonfundamentalharmonics = setdiff(harmonics, fundamental)
-    vr = [var(pm, nw, :vr, i) for nw in nonfundamentalharmonics]
-    vi = [var(pm, nw, :vi, i) for nw in nonfundamentalharmonics]
+    w = [var(pm, nw, :w, i) for nw in nonfundamentalharmonics]
+    wfun = var(pm, fundamental, :w, i)
 
-    vrfun = var(pm, fundamental, :vr, fundamental)
-    vifun = var(pm, fundamental, :vi, fundamental)
-
-    JuMP.@constraint(pm.model, sum(vr.^2 + vi.^2) <= thdmax^2*(vrfun^2 + vifun^2))
+    JuMP.@constraint(pm.model, sum(w) <= thdmax^2*(wfun))
 end
 
 
@@ -226,12 +222,10 @@ function constraint_load_constant_power(pm::AbstractIVRModel, n::Int, i, bus, pd
     vi = var(pm, n, :vi, bus)
     crd = var(pm, n, :crd, i)
     cid = var(pm, n, :cid, i)
-    ccmd = var(pm, n, :ccmd, i)
 
     JuMP.@constraint(pm.model, pd == vr*crd  + vi*cid)
     JuMP.@constraint(pm.model, qd == vi*crd  - vr*cid)
 
-    JuMP.@constraint(pm.model, ccmd == crd^2  + cid^2)
 end
 
 
@@ -243,23 +237,15 @@ function constraint_load_constant_current(pm::AbstractIVRModel, n::Int, i, bus, 
 
     JuMP.@constraint(pm.model, crd == multiplier * crd_fund)
     JuMP.@constraint(pm.model, cid == multiplier * cid_fund)
-
-    
-    # ccmd = var(pm, n, :ccmd, i)
-    #current magnitude squared of fundamental
-    # ccmdfundamental = var(pm, 1, :ccmd, i)
-
-    # JuMP.@constraint(pm.model, ccmd == crd^2  + cid^2)
-    # JuMP.@constraint(pm.model, ccmd == (multiplier)^2 * ccmdfundamental)
 end
 
 
 function constraint_vm_auxiliary_variable(pm::AbstractIVRModel, n::Int, i)
     vr = var(pm, n, :vr, i)
     vi = var(pm, n, :vi, i)
-    vm = var(pm, n, :vm, i)
+    w  = var(pm, n, :w, i)
 
-    JuMP.@constraint(pm.model, vm^2 == vr^2  + vi^2)
+    JuMP.@constraint(pm.model, w >= vr^2  + vi^2)
 end
 
 
