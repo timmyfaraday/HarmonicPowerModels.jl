@@ -39,7 +39,7 @@ function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, b
     crd = var(pm, n, :crd)
     cid = var(pm, n, :cid)
 
-    JuMP.@constraint(pm.model, sum(cr[a] for a in bus_arcs)
+    JuMP.@constraint(pm.model,  sum(cr[a] for a in bus_arcs)
                                 + sum(crdc[d] for d in bus_arcs_dc)
                                 + sum(crt[t] for t in bus_arcs_xfmr)
                                 ==
@@ -47,7 +47,7 @@ function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, b
                                 - sum(crd[d] for d in bus_loads)
                                 - sum(gs for gs in values(bus_gs))*vr + sum(bs for bs in values(bus_bs))*vi
                                 )
-    JuMP.@constraint(pm.model, sum(ci[a] for a in bus_arcs)
+    JuMP.@constraint(pm.model,  sum(ci[a] for a in bus_arcs)
                                 + sum(cidc[d] for d in bus_arcs_dc)
                                 + sum(cit[t] for t in bus_arcs_xfmr)
                                 ==
@@ -183,13 +183,13 @@ function constraint_transformer_winding_current_balance(pm::AbstractIVRModel, n:
     end
 
     # h ∈ 𝓗⁰, cnf ∈ {Y(e), Z(e)}
-    if is_zero_sequence(nh) && cnf in ["Y","Z"]
+    if is_zero_sequence(nh) && cnf in ['Y','Z']
         JuMP.@constraint(pm.model, crt == csrt - g_sh * vrt + b_sh * vit)
         JuMP.@constraint(pm.model, cit == csit - g_sh * vit - b_sh * vrt)
     end
 
     # h ∈ 𝓗⁰, cnf ∈ {D}
-    if is_zero_sequence(nh) && cnf in ["D"]
+    if is_zero_sequence(nh) && cnf in ['D']
         JuMP.@constraint(pm.model, crt == csrt - g_sh * vrt + b_sh * vit - vrt / r)
         JuMP.@constraint(pm.model, crt == csit - g_sh * vit - b_sh * vrt - vit / r)
     end
@@ -238,13 +238,19 @@ end
 function constraint_load_constant_current(pm::AbstractIVRModel, n::Int, i, bus, multiplier)
     crd = var(pm, n, :crd, i)
     cid = var(pm, n, :cid, i)
-    ccmd = var(pm, n, :ccmd, i)
+    crd_fund = var(pm, 1, :crd, i)
+    cid_fund = var(pm, 1, :cid, i)
 
+    JuMP.@constraint(pm.model, crd == multiplier * crd_fund)
+    JuMP.@constraint(pm.model, cid == multiplier * cid_fund)
+
+    
+    # ccmd = var(pm, n, :ccmd, i)
     #current magnitude squared of fundamental
-    ccmdfundamental = var(pm, 1, :ccmd, i)
+    # ccmdfundamental = var(pm, 1, :ccmd, i)
 
-    JuMP.@constraint(pm.model, ccmd == crd^2  + cid^2)
-    JuMP.@constraint(pm.model, ccmd == (multiplier)^2 * ccmdfundamental)
+    # JuMP.@constraint(pm.model, ccmd == crd^2  + cid^2)
+    # JuMP.@constraint(pm.model, ccmd == (multiplier)^2 * ccmdfundamental)
 end
 
 

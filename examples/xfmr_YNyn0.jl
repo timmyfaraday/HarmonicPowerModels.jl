@@ -38,8 +38,8 @@ for (g,gen) in data["gen"]
     gen["c_rating"] = abs(gen["pmax"] + im* gen["qmax"])/vmmin
 end
 
-hdata = _HPM.replicate(data)
-# hdata = _HPM.replicate(data, xfmr_exc=xfmr)
+# hdata = _HPM.replicate(data)
+hdata = _HPM.replicate(data, xfmr_exc=xfmr)
 
 # set the solver
 solver = Ipopt.Optimizer
@@ -53,32 +53,95 @@ result = optimize_model!(pm, optimizer=solver)
 ##
 print(pm.model)
 
-##
+# Checking Kirchhoff
 
-result["termination_status"]
-sol = result["solution"]
-pd1 = hdata["nw"]["1"]["load"]["1"]["pd"]
-qd1 = hdata["nw"]["1"]["load"]["1"]["qd"]
+# Remarks for F:
+# 1) scaling of the harmonic load seems to be inconsistent 
 
-pd1 = sol["nw"]["1"]["load"]["1"]["pd"]
-qd1 = sol["nw"]["1"]["load"]["1"]["qd"]
-ccmd1 = sol["nw"]["1"]["load"]["1"]["ccmd"]
+cd = [  result["solution"]["nw"]["1"]["load"]["1"]["crd"],
+        result["solution"]["nw"]["1"]["load"]["1"]["cid"],
+        result["solution"]["nw"]["2"]["load"]["1"]["crd"],
+        result["solution"]["nw"]["2"]["load"]["1"]["cid"]]
+ct_to =[result["solution"]["nw"]["1"]["xfmr"]["1"]["crt_to"],
+        result["solution"]["nw"]["1"]["xfmr"]["1"]["cit_to"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["crt_to"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["cit_to"]]
+cst_to =[result["solution"]["nw"]["1"]["xfmr"]["1"]["csrt_to"],
+        result["solution"]["nw"]["1"]["xfmr"]["1"]["csit_to"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["csrt_to"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["csit_to"]]
+cet =[  result["solution"]["nw"]["1"]["xfmr"]["1"]["cert"],
+        result["solution"]["nw"]["1"]["xfmr"]["1"]["ceit"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["cert"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["ceit"]]
+cst_fr =[result["solution"]["nw"]["1"]["xfmr"]["1"]["csrt_fr"],
+        result["solution"]["nw"]["1"]["xfmr"]["1"]["csit_fr"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["csrt_fr"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["csit_fr"]]
+ct_fr =[result["solution"]["nw"]["1"]["xfmr"]["1"]["crt_fr"],
+        result["solution"]["nw"]["1"]["xfmr"]["1"]["cit_fr"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["crt_fr"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["cit_fr"]]
+cg =[   result["solution"]["nw"]["1"]["gen"]["1"]["crg"],
+        result["solution"]["nw"]["1"]["gen"]["1"]["cig"],
+        result["solution"]["nw"]["2"]["gen"]["1"]["crg"],
+        result["solution"]["nw"]["2"]["gen"]["1"]["cig"]]
 
-vmsb1 = sol["nw"]["1"]["bus"]["1"]["vm"]
-vmload1 = sol["nw"]["1"]["bus"]["2"]["vm"]
 
-cmxfmr1 = hypot(sol["nw"]["1"]["xfmr"]["1"]["crt_fr"], sol["nw"]["1"]["xfmr"]["1"]["cit_fr"])
+# enforced by constraint_current_balance
+# 1_crt[(1, 2, 1)] + 1_crd[1] == 0.0
+# 1_cit[(1, 2, 1)] + 1_cid[1] == 0.0
+# 2_crt[(1, 2, 1)] + 2_crd[1] == 0.0
+# 2_cit[(1, 2, 1)] + 2_cid[1] == 0.0
+
+# TESTS
+@assert isapprox(cd[3], 0.092 * cd[1], rtol=1e-6)
+@assert isapprox(cd[4], 0.092 * cd[2], rtol=1e-6)
+@assert all(isapprox.(cd, -ct_to, rtol=1e-6))
+@assert all(isapprox.(ct_to, cst_to, rtol=1e-6))
+@assert all(isapprox.(cst_fr, -cst_to, rtol=1e-6))
+@assert all(isapprox.(ct_fr, cst_fr, rtol=1e-6))
+@assert all(isapprox.(ct_fr, cg, rtol=1e-6))
+
+### Kirchhoff without shunts works and without excitation
+
+vd = [  result["solution"]["nw"]["1"]["bus"]["2"]["vr"],
+        result["solution"]["nw"]["1"]["bus"]["2"]["vi"],
+        result["solution"]["nw"]["2"]["bus"]["2"]["vr"],
+        result["solution"]["nw"]["2"]["bus"]["2"]["vi"]]
+vt_to =[result["solution"]["nw"]["1"]["xfmr"]["1"]["vrt_to"],
+        result["solution"]["nw"]["1"]["xfmr"]["1"]["vit_to"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["vrt_to"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["vit_to"]]
+cst_to =[result["solution"]["nw"]["1"]["xfmr"]["1"]["csrt_to"],
+        result["solution"]["nw"]["1"]["xfmr"]["1"]["csit_to"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["csrt_to"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["csit_to"]]
+cet =[  result["solution"]["nw"]["1"]["xfmr"]["1"]["cert"],
+        result["solution"]["nw"]["1"]["xfmr"]["1"]["ceit"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["cert"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["ceit"]]
+cst_fr =[result["solution"]["nw"]["1"]["xfmr"]["1"]["csrt_fr"],
+        result["solution"]["nw"]["1"]["xfmr"]["1"]["csit_fr"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["csrt_fr"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["csit_fr"]]
+ct_fr =[result["solution"]["nw"]["1"]["xfmr"]["1"]["crt_fr"],
+        result["solution"]["nw"]["1"]["xfmr"]["1"]["cit_fr"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["crt_fr"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["cit_fr"]]
+cg =[   result["solution"]["nw"]["1"]["gen"]["1"]["crg"],
+        result["solution"]["nw"]["1"]["gen"]["1"]["cig"],
+        result["solution"]["nw"]["2"]["gen"]["1"]["crg"],
+        result["solution"]["nw"]["2"]["gen"]["1"]["cig"]]
+
+        vd = [  result["solution"]["nw"]["1"]["bus"]["2"]["vr"],
+        result["solution"]["nw"]["1"]["bus"]["2"]["vi"],
+        result["solution"]["nw"]["2"]["bus"]["2"]["vr"],
+        result["solution"]["nw"]["2"]["bus"]["2"]["vi"]]
+vt_to =[result["solution"]["nw"]["1"]["xfmr"]["1"]["vrt_to"],
+        result["solution"]["nw"]["1"]["xfmr"]["1"]["vit_to"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["vrt_to"],
+        result["solution"]["nw"]["2"]["xfmr"]["1"]["vit_to"]]
 
 
-vmsb2 = sol["nw"]["2"]["bus"]["1"]["vm"]
-vmload2 = sol["nw"]["2"]["bus"]["2"]["vm"]
-
-cmxfmr2 = hypot(sol["nw"]["2"]["xfmr"]["1"]["crt_fr"], sol["nw"]["2"]["xfmr"]["1"]["cit_fr"])
-
-
-multiplier = hdata["nw"]["2"]["load"]["1"]["multiplier"]
-cmxfmr2/cmxfmr1
-
-pd2 = sol["nw"]["2"]["load"]["1"]["pd"]
-qd2 = sol["nw"]["2"]["load"]["1"]["qd"]
-ccmd2 = sol["nw"]["2"]["load"]["1"]["ccmd"]
+@assert all(isapprox.(vd .- vt_to, 0.01 .* ct_to, rtol=1e-6))
