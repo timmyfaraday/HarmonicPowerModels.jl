@@ -144,8 +144,6 @@ function constraint_transformer_winding_config(pm::AbstractIVRModel, n::Int, nh,
     crt = var(pm, n, :crt, idx)
     cit = var(pm, n, :cit, idx)
 
-    @show nh, i, idx, r, re, xe, gnd, is_zero_sequence(nh)
-
     # h ∈ 𝓗⁺ ⋃ 𝓗⁻
     if !is_zero_sequence(nh)
         JuMP.@constraint(pm.model, vrt == vr - r * crt)
@@ -201,8 +199,8 @@ function constraint_voltage_magnitude_rms(pm::AbstractIVRModel, i, vminrms, vmax
     @assert vminrms>0
     @assert vmaxrms>vminrms
 
-    JuMP.@constraint(pm.model, vminrms^2 <= sum(w)/nharmonics               )
-    JuMP.@constraint(pm.model,              sum(w)/nharmonics  <= vmaxrms^2 )
+    JuMP.@constraint(pm.model, vminrms^2 <= sum(w)/nharmonics^2               )
+    JuMP.@constraint(pm.model,              sum(w)/nharmonics^2  <= vmaxrms^2 )
 end
 
 
@@ -253,7 +251,7 @@ end
 function constraint_ref_bus(pm::AbstractIVRModel, n::Int, i::Int)
     if n == 1 #fundamental frequency, fix reference angle
         JuMP.@constraint(pm.model, var(pm, n, :vi)[i] == 0.0)
-        JuMP.@constraint(pm.model, var(pm, n, :vr)[i] >= 0.9)
+        JuMP.@constraint(pm.model, var(pm, n, :vr)[i] == 1.0)
     else #fix harmonic voltage at reference bus to 0+j0
         JuMP.@constraint(pm.model, var(pm, n, :vi)[i] == 0.0)
         JuMP.@constraint(pm.model, var(pm, n, :vr)[i] == 0.0)
@@ -270,6 +268,6 @@ function constraint_current_limit_rms(pm::AbstractIVRModel, f_idx, c_rating, nha
     crt =  [var(pm, n, :cr, t_idx) for n in _PMs.nw_ids(pm)]
     cit =  [var(pm, n, :ci, t_idx) for n in _PMs.nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, sum(crf^2 + cif^2)/nharmonics <= c_rating^2)
-    JuMP.@constraint(pm.model, sum(crt^2 + cit^2)/nharmonics <= c_rating^2)
+    JuMP.@constraint(pm.model, sum(crf^2 + cif^2)/nharmonics^2 <= c_rating^2)
+    JuMP.@constraint(pm.model, sum(crt^2 + cit^2)/nharmonics^2 <= c_rating^2)
 end

@@ -21,6 +21,9 @@ mpc.bus = [
 
 % note that it is realistic to add additional fundamental power consumption to
 % nodes 2 and 4, at 40% of the preceeding transformer power and cos(phi) = 0.95
+% today harmonic filters at 690 V
+% dont forget to add capacitor banks again
+
 
 %% bus harmonic data 
 %column_names%  nh_1    nh_3    nh_5    nh_7    nh_9    nh_13   nh_17   nh_19 thdmax 
@@ -41,11 +44,13 @@ mpc.bus_harmonics = [
 %% generator data
 %   bus     Pg      Qg      Qmax    Qmin    Vg      mBase   status  Pmax    Pmin
 mpc.gen = [
-    1       0.0     0.0     200.00  -200.00 1.05    100.0   1       400.00  0.0;
+    1       0.0     0.0     100.00  -100.00 1.05    100.0   1       100.00   -100;
+    7       0.0     0.0     1.00    -1.00   1.05    100.0   1         1.00  -1;
 ];
 
 mpc.gencost = [
 	2	 0.0	 0.0	 3	   0.110000	   5.000000	   0.000000;
+	2	 0.0	 0.0	 3	   0.100000	   4.000000	   0.000000;
 ];
 
 %% branch data
