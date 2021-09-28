@@ -106,10 +106,11 @@ end
 
 ""
 function constraint_voltage_magnitude_rms(pm::AbstractPowerModel, i::Int; fundamental::Int=1)
-    vmin = ref(pm, fundamental, :bus, i, "vmin")
-    vmax = ref(pm, fundamental, :bus, i, "vmax")
+    vminrms = ref(pm, fundamental, :bus, i, "vminrms")
+    vmaxrms = ref(pm, fundamental, :bus, i, "vmaxrms")
+    nharmonics = length(_PMs.nws(pm))
 
-    constraint_voltage_magnitude_rms(pm, i, vmin, vmax)
+    constraint_voltage_magnitude_rms(pm, i, vminrms, vmaxrms, nharmonics)
 end
 
 
@@ -126,7 +127,7 @@ function constraint_load_power(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_def
     busi = load["load_bus"]
     bus = ref(pm, nw, :bus, busi)
     vref = bus["vm"]
-    @assert vref>0
+    @assert vref > 0
 
     if nw == 1
         constraint_load_constant_power(pm, nw, i, busi, load["pd"], load["qd"])
@@ -141,3 +142,20 @@ function constraint_vm_auxiliary_variable(pm::AbstractPowerModel, i::Int; nw::In
     constraint_vm_auxiliary_variable(pm, nw, i)
 end
 
+function constraint_ref_bus(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+    constraint_ref_bus(pm, nw, i)
+end
+
+
+function constraint_current_limit_rms(pm::AbstractPowerModel, i::Int; fundamental::Int=1)
+    branch = ref(pm, fundamental, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+
+    nharmonics = length(_PMs.nws(pm))
+
+    if haskey(branch, "c_rating_a")
+        constraint_current_limit_rms(pm, f_idx, branch["c_rating_a"], nharmonics)
+    end
+end

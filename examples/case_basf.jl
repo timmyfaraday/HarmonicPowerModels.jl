@@ -9,8 +9,7 @@ const _PMs = PowerModels
 const _HPM = HarmonicPowerModels
 
 # path to the data
-# path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_basf.m")
-path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_line.m")
+path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_basf.m")
 
 # transformer excitation data
 xfmr = Dict("voltage_harmonics" => [1,3],

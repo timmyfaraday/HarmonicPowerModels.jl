@@ -51,16 +51,24 @@ function _HPM.replicate(data::Dict{String, Any};
             haskey(load, "qd") ? load["qd"] *= multiplier : ~ ;
         end
 
-        # re-evaluate the bus data -- NEEDS DISCUSSION
-        # for bus in values(data["nw"][nw]["bus"])
-
-        # end
+        # re-evaluate the bus data 
+        for bus in values(data["nw"][nw]["bus"])
+            #use fundamental as limit for rms
+            bus["vminrms"] = bus["vmin"]
+            bus["vmaxrms"] = bus["vmax"]
+            
+            # true harmonics don't have minimum voltage
+            if nw !=1 
+                bus["vmin"] = 0 
+            end
+        end
 
         # re-evaluate the branch data 
         for branch in values(data["nw"][nw]["branch"])
-            haskey(branch, "x") ? branch["x"] *= mh : ~ ;
-            haskey(branch, "b") ? branch["b"] *= mh : ~ ;
-            haskey(branch, "r") ? branch["r"] *= sqrt(nh) : ~ ;
+            haskey(branch, "br_r") ? branch["br_r"] *= sqrt(nh) : ~ ;
+            haskey(branch, "br_x") ? branch["br_x"] *= nh : ~ ;
+            haskey(branch, "b_fr") ? branch["b_fr"] *= nh : ~ ;
+            haskey(branch, "b_to") ? branch["b_to"] *= nh : ~ ;
         end
 
         # re-evaluate the transformer data
