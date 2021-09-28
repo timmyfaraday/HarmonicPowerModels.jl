@@ -45,6 +45,19 @@ xfmr = Dict("voltage_harmonics" => [1,3],
 
 # load data
 data  = _PMs.parse_file(path)
+
+vmmin = 0.8
+for (b,branch) in data["branch"]
+    branch["c_rating"] = branch["rate_a"]/vmmin
+end
+for (d,load) in data["load"]
+    load["c_rating"] = abs(load["pd"] + im* load["qd"])/vmmin
+end
+for (g,gen) in data["gen"]
+    gen["c_rating"] = abs(gen["pmax"] + im* gen["qmax"])/vmmin
+end
+
+
 hdata = _HPM.replicate(data, xfmr_exc=xfmr)
 
 # set the solver

@@ -14,16 +14,16 @@ mpc.bus = [
 ];
 
 %% bus harmonic data 
-%column_names%  nh_1    nh_3    nh_5    nh_7    nh_9    nh_11   nh_13   nh_15 thdmax 
+%column_names%  nh_1    nh_3   thdmax 
 mpc.bus_harmonics = [
-                1.000   0.0000  0.0000  0.0000  0.0000  0.0000  0.0000  0.0000 0.1
-                1.000   0.0920  0.6320  0.4180  0.0148  0.0708  0.0312  0.0048 0.1
+                1.000   0.0000  0.1
+                1.000   0.0920  0.1
 ]
 
 %% generator data
 %   bus     Pg      Qg      Qmax    Qmin    Vg      mBase   status  Pmax    Pmin
 mpc.gen = [
-    1       0.0     0.0     200.00  -200.00 1.05    100.0   1       400.00  0.0;
+    1       0.0     0.0     20.00  -20.00 1.05    100.0   1       10.00  -10.0;
 ];
 
 mpc.gencost = [
@@ -38,5 +38,5 @@ mpc.branch = [
 %% transformer data
 %column_names%  f_bus   t_bus   xsc     r1      r2      vg      gnd1    gnd2    re1     xe1     re2     xe2   
 mpc.xfmr = [
-                1       2       6.0     0.5     0.5     'Yy0'   1       1       0.0     0.0     0.0     0.0
+                1       2       .0     0.0     0.0     'Yy0'   1       1       0.0     0.0     0.0     0.0
 ]
