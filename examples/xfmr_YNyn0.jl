@@ -38,8 +38,8 @@ for (g,gen) in data["gen"]
     gen["c_rating"] = abs(gen["pmax"] + im* gen["qmax"])/vmmin
 end
 
-# hdata = _HPM.replicate(data)
-hdata = _HPM.replicate(data, xfmr_exc=xfmr)
+hdata = _HPM.replicate(data)
+# hdata = _HPM.replicate(data, xfmr_exc=xfmr)
 
 # set the solver
 solver = Ipopt.Optimizer
@@ -134,7 +134,7 @@ cg =[   result["solution"]["nw"]["1"]["gen"]["1"]["crg"],
         result["solution"]["nw"]["2"]["gen"]["1"]["crg"],
         result["solution"]["nw"]["2"]["gen"]["1"]["cig"]]
 
-        vd = [  result["solution"]["nw"]["1"]["bus"]["2"]["vr"],
+vd = [  result["solution"]["nw"]["1"]["bus"]["2"]["vr"],
         result["solution"]["nw"]["1"]["bus"]["2"]["vi"],
         result["solution"]["nw"]["2"]["bus"]["2"]["vr"],
         result["solution"]["nw"]["2"]["bus"]["2"]["vi"]]
@@ -144,4 +144,4 @@ vt_to =[result["solution"]["nw"]["1"]["xfmr"]["1"]["vrt_to"],
         result["solution"]["nw"]["2"]["xfmr"]["1"]["vit_to"]]
 
 
-@assert all(isapprox.(vd .- vt_to, 0.01 .* ct_to, rtol=1e-6))
+@assert all(isapprox.(vd .- vt_to, [0.01,0.01,sqrt(3)*0.01,sqrt(3)*0.01] .* ct_to, rtol=1e-6))
