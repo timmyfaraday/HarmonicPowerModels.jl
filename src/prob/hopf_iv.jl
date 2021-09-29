@@ -10,7 +10,7 @@ function build_hopf_iv(pm::AbstractPowerModel)
     for (n, network) in _PMs.nws(pm)
         _PMs.variable_bus_voltage(pm, nw=n, bounded=bounded)
         _PMs.variable_bus_voltage_magnitude_sqr(pm, nw=n, bounded=bounded)
-        variable_transformer_voltage(pm, nw=n, bounded=bounded)
+        variable_transformer_voltage(pm, nw=n, bounded=false)
         
         _PMs.variable_branch_current(pm, nw=n)
         _PMs.variable_dcline_current(pm, nw=n)

@@ -172,7 +172,6 @@ function constraint_active_filter(pm::AbstractPowerModel, i::Int; fundamental::I
     gen = ref(pm, fundamental, :gen, i)
 
     if haskey(gen, "isfilter") && gen["isfilter"] == 1
-        @show "adding filter constraints"
         constraint_active_filter(pm, i, fundamental)
     end
 end

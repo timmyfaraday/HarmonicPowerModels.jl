@@ -76,7 +76,7 @@ function constraint_transformer_core_excitation(pm::AbstractIVRModel, n::Int, t,
     cert = var(pm, n, :cert, t)
     ceit = var(pm, n, :ceit, t)
 
-    voltage_harmonics_ntws = _PMs.ref(pm, nw, :xfmr, t, "voltage_harmonics_ntws")
+    voltage_harmonics_ntws = _PMs.ref(pm, n, :xfmr, t, "voltage_harmonics_ntws")
 
     et = reduce(vcat,[[var(pm, nw, :ert, t),var(pm, nw, :eit, t)] 
                        for nw in voltage_harmonics_ntws])

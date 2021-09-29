@@ -21,7 +21,7 @@ xfmr = Dict("voltage_harmonics" => [1,3],
             "ψmax" => 0.5,
             "voltage_type" => :rectangular,
             "dv" => [0.1,0.1],
-            "vmin" => [0.0,0.0],
+            "vmin" => [-1.1,-1.1],
             "vmax" => [1.1,1.1],
             "dθ" => [π/5,π/5],
             "θmin" => [0.0,0.0],
@@ -58,8 +58,8 @@ for (g,gen) in data["gen"]
 end
 
 
-# hdata = _HPM.replicate(data, xfmr_exc=xfmr)
-hdata = _HPM.replicate(data)
+hdata = _HPM.replicate(data, xfmr_exc=xfmr)
+# hdata = _HPM.replicate(data)
 
 # set the solver
 solver = Ipopt.Optimizer

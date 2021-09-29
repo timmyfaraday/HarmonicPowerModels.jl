@@ -23,7 +23,7 @@ function variable_transformer_voltage_imaginary(pm::AbstractPowerModel; nw::Int=
 end
 
 ""
-function variable_transformer_voltage_excitation_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_transformer_voltage_excitation_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, epsilon::Float64=1E-6)
     ert = _PMs.var(pm, nw)[:ert] = JuMP.@variable(pm.model,
             [t in _PMs.ids(pm, nw, :xfmr)], base_name="$(nw)_ert",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "ert_start", 0.0)
@@ -31,8 +31,8 @@ function variable_transformer_voltage_excitation_real(pm::AbstractPowerModel; nw
 
     if bounded
         for (t, xfmr) in ref(pm, nw, :xfmr)
-            JuMP.set_lower_bound(ert[t], xfmr["ert_min"])
-            JuMP.set_upper_bound(ert[t], xfmr["ert_max"])
+            JuMP.set_lower_bound(ert[t], xfmr["ert_min"] + epsilon)
+            JuMP.set_upper_bound(ert[t], xfmr["ert_max"] - epsilon)
         end
     end
 
@@ -40,7 +40,7 @@ function variable_transformer_voltage_excitation_real(pm::AbstractPowerModel; nw
 end
 
 ""
-function variable_transformer_voltage_excitation_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_transformer_voltage_excitation_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, epsilon::Float64=1E-6)
     eit = _PMs.var(pm, nw)[:eit] = JuMP.@variable(pm.model,
             [t in _PMs.ids(pm, nw, :xfmr)], base_name="$(nw)_eit",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "eit_start", 0.0)
@@ -48,8 +48,8 @@ function variable_transformer_voltage_excitation_imaginary(pm::AbstractPowerMode
 
     if bounded
         for (t, xfmr) in ref(pm, nw, :xfmr)
-            JuMP.set_lower_bound(eit[t], xfmr["eit_min"])
-            JuMP.set_upper_bound(eit[t], xfmr["eit_max"])
+            JuMP.set_lower_bound(eit[t], xfmr["eit_min"] + epsilon)
+            JuMP.set_upper_bound(eit[t], xfmr["eit_max"] - epsilon)
         end
     end
 

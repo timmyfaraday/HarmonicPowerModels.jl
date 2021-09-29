@@ -130,7 +130,7 @@ function collect_harmonics!(data::Dict{String, Any}, harmonics::Array{Int}, xfmr
                                             if  ni[1:2] == "nh"]
     push!(harmonics, bus_harmonics...)
     if haskey(xfmr_exc, "voltage_harmonics") 
-        push!(harmonics, xfmr_exc["voltage_harmonics"]...)
+        push!(harmonics,  xfmr_exc["voltage_harmonics"]...)
     end
     if haskey(xfmr_exc, "current_harmonics")
         push!(harmonics, xfmr_exc["current_harmonics"]...)
@@ -248,9 +248,9 @@ function sample_xfmr_excitation(data::Dict{String, <:Any}, xfmr_exc::Dict{String
     end
     reverse_harmonics = Dict(value => key for (key, value) in data["harmonics"])
     current_harmonics_ntws = 
-        [reverse_harmonics[nc] for nc in current_harmonics]
+        [parse(Int,reverse_harmonics[nc]) for nc in current_harmonics]
     voltage_harmonics_ntws = 
-        [reverse_harmonics[nv] for nv in voltage_harmonics]
+        [parse(Int,reverse_harmonics[nv]) for nv in voltage_harmonics]
 
     method = _INT.BSpline(_INT.Cubic(_INT.Line(_INT.OnGrid())))
     for nw in keys(data["nw"]) 
@@ -261,8 +261,8 @@ function sample_xfmr_excitation(data::Dict{String, <:Any}, xfmr_exc::Dict{String
                 xfmr["current_harmonics_ntws"] = current_harmonics_ntws
                 xfmr["voltage_harmonics_ntws"] = voltage_harmonics_ntws
                 if nh in current_harmonics
-                    xfmr["EXC_A"]  = _INT.scale(_INT.interpolate(Ia[nh], method), S...)
-                    xfmr["EXC_B"]  = _INT.scale(_INT.interpolate(Ib[nh], method), S...)
+                    xfmr["EXC_A"]  = _INT.extrapolate(_INT.scale(_INT.interpolate(Ia[nh], method), S...), _INT.Line())
+                    xfmr["EXC_B"]  = _INT.extrapolate(_INT.scale(_INT.interpolate(Ib[nh], method), S...), _INT.Line())
                     xfmr["INT_A"]  = (x...) -> xfmr["EXC_A"](x...)
                     xfmr["INT_B"]  = (x...) -> xfmr["EXC_B"](x...)
                     xfmr["GRAD_A"] = (x...) -> _INT.gradient(xfmr["EXC_A"], x...)
