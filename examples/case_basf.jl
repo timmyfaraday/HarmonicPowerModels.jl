@@ -58,8 +58,8 @@ for (g,gen) in data["gen"]
 end
 
 
-# hdata = _HPM.replicate(data, xfmr_exc=xfmr)
-hdata = _HPM.replicate(data)
+hdata = _HPM.replicate(data, xfmr_exc=xfmr)
+# hdata = _HPM.replicate(data)
 
 # set the solver
 solver = Ipopt.Optimizer

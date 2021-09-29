@@ -240,8 +240,9 @@ end
 function constraint_load_constant_current(pm::AbstractIVRModel, n::Int, i, bus, multiplier)
     crd = var(pm, n, :crd, i)
     cid = var(pm, n, :cid, i)
-    crd_fund = var(pm, 1, :crd, i)
-    cid_fund = var(pm, 1, :cid, i)
+    fundamental = 1 
+    crd_fund = var(pm, fundamental, :crd, i)
+    cid_fund = var(pm, fundamental, :cid, i)
 
     JuMP.@constraint(pm.model, crd == multiplier * crd_fund)
     JuMP.@constraint(pm.model, cid == multiplier * cid_fund)
@@ -261,6 +262,7 @@ end
 function constraint_ref_bus(pm::AbstractIVRModel, n::Int, i::Int)
     if n == 1 #fundamental frequency, fix reference angle
         JuMP.@constraint(pm.model, var(pm, n, :vi)[i] == 0.0)
+        #TODO you should be able to set this more freely
         JuMP.@constraint(pm.model, var(pm, n, :vr)[i] == 1.0)
     else #fix harmonic voltage at reference bus to 0+j0
         JuMP.@constraint(pm.model, var(pm, n, :vi)[i] == 0.0)
@@ -287,6 +289,6 @@ function constraint_active_filter(pm::AbstractIVRModel, i, fundamental)
     pgfun = var(pm, fundamental, :pg, i)
     pg =  [var(pm, n, :pg, i) for n in _PMs.nw_ids(pm)]
 
-    JuMP.@NLconstraint(pm.model,   pgfun == 0)
+    JuMP.@NLconstraint(pm.model, pgfun == 0)
     JuMP.@NLconstraint(pm.model, sum(pg[n] for n in _PMs.nw_ids(pm)) == 0)
 end
