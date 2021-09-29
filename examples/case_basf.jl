@@ -9,8 +9,7 @@ const _PMs = PowerModels
 const _HPM = HarmonicPowerModels
 
 # path to the data
-# path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_basf_simplified.m")
-path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_basf_simplified_no_power_balance.m")
+path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_basf_simplified.m")
 
 # transformer excitation data
 xfmr = Dict("voltage_harmonics" => [1,3],
@@ -59,8 +58,8 @@ for (g,gen) in data["gen"]
 end
 
 
-# hdata = _HPM.replicate(data, xfmr_exc=xfmr)
-hdata = _HPM.replicate(data)
+hdata = _HPM.replicate(data, xfmr_exc=xfmr)
+# hdata = _HPM.replicate(data)
 
 # set the solver
 solver = Ipopt.Optimizer
@@ -71,8 +70,18 @@ pm = _PMs.instantiate_model(hdata, _PMs.IVRPowerModel, _HPM.build_hopf_iv; ref_e
 result = optimize_model!(pm, optimizer=solver)
 # print(pm.model)
 
-println("Harmonic 1")
-_PMs.print_summary(result["solution"]["nw"]["1"])
+for (n,nw) in result["solution"]["nw"]
+    for (i,bus) in nw["bus"]
+            bus["vm"] =  abs(bus["vr"] +im*  bus["vi"])
+            bus["va"] =  angle(bus["vr"] +im*  bus["vi"])*180/pi
+    end
+end
+
+println("Harmonic 5")
+_PMs.print_summary(result["solution"]["nw"]["3"])
 println("Harmonic 3")
 _PMs.print_summary(result["solution"]["nw"]["2"])
+println("Harmonic 1")
+_PMs.print_summary(result["solution"]["nw"]["1"])
+result["objective"]
 result["termination_status"]
