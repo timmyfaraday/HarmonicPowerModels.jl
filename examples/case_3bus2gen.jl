@@ -43,8 +43,15 @@ result = optimize_model!(pm, optimizer=solver)
 
 ##
 ##
-println("Harmonic 1")
-_PMs.print_summary(result["solution"]["nw"]["1"])
+for (n,nw) in result["solution"]["nw"]
+    for (i,bus) in nw["bus"]
+            bus["vm"] =  abs(bus["vr"] +im*  bus["vi"])
+            bus["va"] =  angle(bus["vr"] +im*  bus["vi"])*180/pi
+    end
+end
 println("Harmonic 3")
 _PMs.print_summary(result["solution"]["nw"]["2"])
+println("Harmonic 1")
+_PMs.print_summary(result["solution"]["nw"]["1"])
+result["objective"]
 result["termination_status"]

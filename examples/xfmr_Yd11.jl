@@ -58,90 +58,103 @@ print(pm.model)
 # Remarks for F:
 # 1) scaling of the harmonic load seems to be inconsistent 
 
-cd = [  result["solution"]["nw"]["1"]["load"]["1"]["crd"],
-        result["solution"]["nw"]["1"]["load"]["1"]["cid"],
-        result["solution"]["nw"]["2"]["load"]["1"]["crd"],
-        result["solution"]["nw"]["2"]["load"]["1"]["cid"]]
-ct_to =[result["solution"]["nw"]["1"]["xfmr"]["1"]["crt_to"],
-        result["solution"]["nw"]["1"]["xfmr"]["1"]["cit_to"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["crt_to"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["cit_to"]]
-cst_to =[result["solution"]["nw"]["1"]["xfmr"]["1"]["csrt_to"],
-        result["solution"]["nw"]["1"]["xfmr"]["1"]["csit_to"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["csrt_to"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["csit_to"]]
-cet =[  result["solution"]["nw"]["1"]["xfmr"]["1"]["cert"],
-        result["solution"]["nw"]["1"]["xfmr"]["1"]["ceit"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["cert"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["ceit"]]
-cst_fr =[result["solution"]["nw"]["1"]["xfmr"]["1"]["csrt_fr"],
-        result["solution"]["nw"]["1"]["xfmr"]["1"]["csit_fr"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["csrt_fr"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["csit_fr"]]
-ct_fr =[result["solution"]["nw"]["1"]["xfmr"]["1"]["crt_fr"],
-        result["solution"]["nw"]["1"]["xfmr"]["1"]["cit_fr"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["crt_fr"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["cit_fr"]]
-cg =[   result["solution"]["nw"]["1"]["gen"]["1"]["crg"],
-        result["solution"]["nw"]["1"]["gen"]["1"]["cig"],
-        result["solution"]["nw"]["2"]["gen"]["1"]["crg"],
-        result["solution"]["nw"]["2"]["gen"]["1"]["cig"]]
+# cd = [  result["solution"]["nw"]["1"]["load"]["1"]["crd"],
+#         result["solution"]["nw"]["1"]["load"]["1"]["cid"],
+#         result["solution"]["nw"]["2"]["load"]["1"]["crd"],
+#         result["solution"]["nw"]["2"]["load"]["1"]["cid"]]
+# ct_to =[result["solution"]["nw"]["1"]["xfmr"]["1"]["crt_to"],
+#         result["solution"]["nw"]["1"]["xfmr"]["1"]["cit_to"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["crt_to"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["cit_to"]]
+# cst_to =[result["solution"]["nw"]["1"]["xfmr"]["1"]["csrt_to"],
+#         result["solution"]["nw"]["1"]["xfmr"]["1"]["csit_to"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["csrt_to"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["csit_to"]]
+# cet =[  result["solution"]["nw"]["1"]["xfmr"]["1"]["cert"],
+#         result["solution"]["nw"]["1"]["xfmr"]["1"]["ceit"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["cert"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["ceit"]]
+# cst_fr =[result["solution"]["nw"]["1"]["xfmr"]["1"]["csrt_fr"],
+#         result["solution"]["nw"]["1"]["xfmr"]["1"]["csit_fr"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["csrt_fr"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["csit_fr"]]
+# ct_fr =[result["solution"]["nw"]["1"]["xfmr"]["1"]["crt_fr"],
+#         result["solution"]["nw"]["1"]["xfmr"]["1"]["cit_fr"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["crt_fr"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["cit_fr"]]
+# cg =[   result["solution"]["nw"]["1"]["gen"]["1"]["crg"],
+#         result["solution"]["nw"]["1"]["gen"]["1"]["cig"],
+#         result["solution"]["nw"]["2"]["gen"]["1"]["crg"],
+#         result["solution"]["nw"]["2"]["gen"]["1"]["cig"]]
 
 
-# enforced by constraint_current_balance
-# 1_crt[(1, 2, 1)] + 1_crd[1] == 0.0
-# 1_cit[(1, 2, 1)] + 1_cid[1] == 0.0
-# 2_crt[(1, 2, 1)] + 2_crd[1] == 0.0
-# 2_cit[(1, 2, 1)] + 2_cid[1] == 0.0
+# # enforced by constraint_current_balance
+# # 1_crt[(1, 2, 1)] + 1_crd[1] == 0.0
+# # 1_cit[(1, 2, 1)] + 1_cid[1] == 0.0
+# # 2_crt[(1, 2, 1)] + 2_crd[1] == 0.0
+# # 2_cit[(1, 2, 1)] + 2_cid[1] == 0.0
 
-# TESTS
-# @assert isapprox(cd[3], 0.092 * cd[1], rtol=1e-6)
-# @assert isapprox(cd[4], 0.092 * cd[2], rtol=1e-6)
-# @assert all(isapprox.(cd, -ct_to, rtol=1e-6))
-# @assert all(isapprox.(ct_to, cst_to, rtol=1e-6))
-# @assert all(isapprox.(cst_fr, -cst_to, rtol=1e-6))
-# @assert all(isapprox.(ct_fr, cst_fr, rtol=1e-6))
-# @assert all(isapprox.(ct_fr, cg, rtol=1e-6))
+# # TESTS
+# # @assert isapprox(cd[3], 0.092 * cd[1], rtol=1e-6)
+# # @assert isapprox(cd[4], 0.092 * cd[2], rtol=1e-6)
+# # @assert all(isapprox.(cd, -ct_to, rtol=1e-6))
+# # @assert all(isapprox.(ct_to, cst_to, rtol=1e-6))
+# # @assert all(isapprox.(cst_fr, -cst_to, rtol=1e-6))
+# # @assert all(isapprox.(ct_fr, cst_fr, rtol=1e-6))
+# # @assert all(isapprox.(ct_fr, cg, rtol=1e-6))
 
-### Kirchhoff without shunts works and without excitation
+# ### Kirchhoff without shunts works and without excitation
 
-vd = [  result["solution"]["nw"]["1"]["bus"]["2"]["vr"],
-        result["solution"]["nw"]["1"]["bus"]["2"]["vi"],
-        result["solution"]["nw"]["2"]["bus"]["2"]["vr"],
-        result["solution"]["nw"]["2"]["bus"]["2"]["vi"]]
-vt_to =[result["solution"]["nw"]["1"]["xfmr"]["1"]["vrt_to"],
-        result["solution"]["nw"]["1"]["xfmr"]["1"]["vit_to"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["vrt_to"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["vit_to"]]
-cst_to =[result["solution"]["nw"]["1"]["xfmr"]["1"]["csrt_to"],
-        result["solution"]["nw"]["1"]["xfmr"]["1"]["csit_to"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["csrt_to"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["csit_to"]]
-cet =[  result["solution"]["nw"]["1"]["xfmr"]["1"]["cert"],
-        result["solution"]["nw"]["1"]["xfmr"]["1"]["ceit"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["cert"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["ceit"]]
-cst_fr =[result["solution"]["nw"]["1"]["xfmr"]["1"]["csrt_fr"],
-        result["solution"]["nw"]["1"]["xfmr"]["1"]["csit_fr"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["csrt_fr"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["csit_fr"]]
-ct_fr =[result["solution"]["nw"]["1"]["xfmr"]["1"]["crt_fr"],
-        result["solution"]["nw"]["1"]["xfmr"]["1"]["cit_fr"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["crt_fr"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["cit_fr"]]
-cg =[   result["solution"]["nw"]["1"]["gen"]["1"]["crg"],
-        result["solution"]["nw"]["1"]["gen"]["1"]["cig"],
-        result["solution"]["nw"]["2"]["gen"]["1"]["crg"],
-        result["solution"]["nw"]["2"]["gen"]["1"]["cig"]]
+# vd = [  result["solution"]["nw"]["1"]["bus"]["2"]["vr"],
+#         result["solution"]["nw"]["1"]["bus"]["2"]["vi"],
+#         result["solution"]["nw"]["2"]["bus"]["2"]["vr"],
+#         result["solution"]["nw"]["2"]["bus"]["2"]["vi"]]
+# vt_to =[result["solution"]["nw"]["1"]["xfmr"]["1"]["vrt_to"],
+#         result["solution"]["nw"]["1"]["xfmr"]["1"]["vit_to"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["vrt_to"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["vit_to"]]
+# cst_to =[result["solution"]["nw"]["1"]["xfmr"]["1"]["csrt_to"],
+#         result["solution"]["nw"]["1"]["xfmr"]["1"]["csit_to"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["csrt_to"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["csit_to"]]
+# cet =[  result["solution"]["nw"]["1"]["xfmr"]["1"]["cert"],
+#         result["solution"]["nw"]["1"]["xfmr"]["1"]["ceit"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["cert"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["ceit"]]
+# cst_fr =[result["solution"]["nw"]["1"]["xfmr"]["1"]["csrt_fr"],
+#         result["solution"]["nw"]["1"]["xfmr"]["1"]["csit_fr"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["csrt_fr"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["csit_fr"]]
+# ct_fr =[result["solution"]["nw"]["1"]["xfmr"]["1"]["crt_fr"],
+#         result["solution"]["nw"]["1"]["xfmr"]["1"]["cit_fr"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["crt_fr"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["cit_fr"]]
+# cg =[   result["solution"]["nw"]["1"]["gen"]["1"]["crg"],
+#         result["solution"]["nw"]["1"]["gen"]["1"]["cig"],
+#         result["solution"]["nw"]["2"]["gen"]["1"]["crg"],
+#         result["solution"]["nw"]["2"]["gen"]["1"]["cig"]]
 
-vd = [  result["solution"]["nw"]["1"]["bus"]["2"]["vr"],
-        result["solution"]["nw"]["1"]["bus"]["2"]["vi"],
-        result["solution"]["nw"]["2"]["bus"]["2"]["vr"],
-        result["solution"]["nw"]["2"]["bus"]["2"]["vi"]]
-vt_to =[result["solution"]["nw"]["1"]["xfmr"]["1"]["vrt_to"],
-        result["solution"]["nw"]["1"]["xfmr"]["1"]["vit_to"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["vrt_to"],
-        result["solution"]["nw"]["2"]["xfmr"]["1"]["vit_to"]]
+# vd = [  result["solution"]["nw"]["1"]["bus"]["2"]["vr"],
+#         result["solution"]["nw"]["1"]["bus"]["2"]["vi"],
+#         result["solution"]["nw"]["2"]["bus"]["2"]["vr"],
+#         result["solution"]["nw"]["2"]["bus"]["2"]["vi"]]
+# vt_to =[result["solution"]["nw"]["1"]["xfmr"]["1"]["vrt_to"],
+#         result["solution"]["nw"]["1"]["xfmr"]["1"]["vit_to"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["vrt_to"],
+#         result["solution"]["nw"]["2"]["xfmr"]["1"]["vit_to"]]
 
 
 # @assert all(isapprox.(vd .- vt_to, [0.01,0.01,sqrt(3)*0.01,sqrt(3)*0.01] .* ct_to, rtol=1e-6))
+
+for (n,nw) in result["solution"]["nw"]
+        for (i,bus) in nw["bus"]
+                bus["vm"] =  abs(bus["vr"] +im*  bus["vi"])
+                bus["va"] =  angle(bus["vr"] +im*  bus["vi"])*180/pi
+        end
+end
+println("Harmonic 3")
+_PMs.print_summary(result["solution"]["nw"]["2"])
+println("Harmonic 1")
+_PMs.print_summary(result["solution"]["nw"]["1"])
+result["objective"]
+result["termination_status"]

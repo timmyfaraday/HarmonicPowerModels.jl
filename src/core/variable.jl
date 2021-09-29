@@ -82,7 +82,6 @@ end
 
 ""
 function expression_transformer_power(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-    # store active and reactive power expressions for use in objective + post processing
     pt = Dict()
     qt = Dict()
 
@@ -145,6 +144,46 @@ function variable_transformer_current_series_imaginary(pm::AbstractPowerModel; n
 end
 
 ""
+function expression_transformer_series_power(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    pt = Dict()
+    qt = Dict()
+
+    ptloss = Dict()
+    qtloss = Dict()
+    for (t,xfmr) in ref(pm, nw, :xfmr)
+        i = f_bus = xfmr["f_bus"]
+        j = t_bus = xfmr["t_bus"]
+
+        #TODO  relative to internal voltage V
+        vr_fr = var(pm, nw, :vrt, (t,i,j))
+        vi_fr = var(pm, nw, :vit, (t,i,j))
+        vr_to = var(pm, nw, :vrt, (t,j,i))
+        vi_to = var(pm, nw, :vit, (t,j,i))
+
+        crt_fr = var(pm, nw, :csrt, (t,i,j))
+        cit_fr = var(pm, nw, :csit, (t,i,j))
+        crt_to = var(pm, nw, :csrt, (t,j,i))
+        cit_to = var(pm, nw, :csit, (t,j,i))
+
+        pt[(t,i,j)] = JuMP.@NLexpression(pm.model, vr_fr*crt_fr  + vi_fr*cit_fr)
+        qt[(t,i,j)] = JuMP.@NLexpression(pm.model, vi_fr*crt_fr  - vr_fr*cit_fr)
+        pt[(t,j,i)] = JuMP.@NLexpression(pm.model, vr_to*crt_to  + vi_to*cit_to)
+        qt[(t,j,i)] = JuMP.@NLexpression(pm.model, vi_to*crt_to  - vr_to*cit_to)
+
+        ptloss[t] = JuMP.@NLexpression(pm.model, vr_fr*crt_fr  + vi_fr*cit_fr + vr_to*crt_to  + vi_to*cit_to)
+        qtloss[t] = JuMP.@NLexpression(pm.model, vi_fr*crt_fr  - vr_fr*cit_fr + vi_to*crt_to  - vr_to*cit_to)
+    end
+    var(pm, nw)[:pst] = pt
+    var(pm, nw)[:qst] = qt
+    var(pm, nw)[:pstloss] = ptloss
+    var(pm, nw)[:qstloss] = qtloss
+    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :pst_fr, :pst_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), pt)
+    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :qst_fr, :qst_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), qt)
+    report && _PMs.sol_component_value(pm, nw, :xfmr, :pstloss, _PMs.ids(pm, nw, :xfmr), ptloss)
+    report && _PMs.sol_component_value(pm, nw, :xfmr, :qstloss, _PMs.ids(pm, nw, :xfmr), qtloss)
+end
+
+""
 function variable_transformer_current_excitation_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
     cert = _PMs.var(pm, nw)[:cert] = JuMP.@variable(pm.model,
             [t in _PMs.ids(pm, nw, :xfmr)], base_name="$(nw)_cert",
@@ -167,6 +206,31 @@ function variable_transformer_current_excitation_imaginary(pm::AbstractPowerMode
 
     report && _PMs.sol_component_value(pm, nw, :xfmr, :ceit, _PMs.ids(pm, nw, :xfmr), ceit)
 end
+
+function expression_transformer_excitation_power(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    p = Dict()
+    q = Dict()
+
+    for (t,xfmr) in ref(pm, nw, :xfmr)
+
+        #TODO  relative to internal voltage V
+        vr = var(pm, nw, :ert, t)
+        vi = var(pm, nw, :eit, t)
+
+        cr = var(pm, nw, :cert, t)
+        ci = var(pm, nw, :ceit, t)
+
+        p[t] = JuMP.@NLexpression(pm.model, vr*cr  + vi*ci)
+        q[t] = JuMP.@NLexpression(pm.model, vi*cr  - vr*ci)
+
+    end
+    var(pm, nw)[:pexc] = p
+    var(pm, nw)[:qexc] = q
+
+    report && _PMs.sol_component_value(pm, nw, :xfmr, :pexc, _PMs.ids(pm, nw, :xfmr), p)
+    report && _PMs.sol_component_value(pm, nw, :xfmr, :qexc, _PMs.ids(pm, nw, :xfmr), q)
+end
+
 
 ""
 function variable_load_current(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)

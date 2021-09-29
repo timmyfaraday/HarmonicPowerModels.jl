@@ -21,6 +21,8 @@ function variable_transformer_current(pm::AbstractIVRModel; nw::Int=nw_id_defaul
     variable_transformer_current_excitation_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 
     expression_transformer_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    expression_transformer_series_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    expression_transformer_excitation_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 
 # constraints
@@ -127,10 +129,10 @@ function constraint_transformer_core_current_balance(pm::AbstractIVRModel, n::In
     csrt_to = var(pm, n, :csrt, t_idx)
     csit_to = var(pm, n, :csit, t_idx)
 
-    JuMP.@constraint(pm.model, csrt_fr + tr * csrt_to - ti * csit_to 
+    JuMP.@constraint(pm.model, csrt_fr + tr * csrt_to + ti * csit_to 
                                 == cert 
                     )
-    JuMP.@constraint(pm.model, csit_fr + tr * csit_to + ti * csrt_to
+    JuMP.@constraint(pm.model, csit_fr + tr * csit_to - ti * csrt_to
                                 == ceit
                     )
 end
