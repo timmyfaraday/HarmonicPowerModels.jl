@@ -29,6 +29,7 @@ function build_hopf_iv(pm::AbstractPowerModel)
         for i in _PMs.ids(pm, :bus, nw=n)
             constraint_current_balance(pm, i, nw=n)
             constraint_vm_auxiliary_variable(pm, i, nw=n)
+            constraint_voltage_harmonics_relative_magnitude(pm, i, nw=n)
         end
     
         for g in _PMs.ids(pm, :gen, nw=n)

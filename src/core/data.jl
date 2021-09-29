@@ -54,11 +54,23 @@ function _HPM.replicate(data::Dict{String, Any};
 
         # re-evaluate gen 
         for gen in values(data["nw"][nw]["gen"])
-            if nw !="1" #cost of harmonics set to 0 TODO define total gen cost in terms of energy across all harmonics
-                gen["cost"] *= 0 
-                #harmonics can generate complex power. 
-                gen["pmin"] = -abs(gen["pmax"])
-                gen["qmin"] = -abs(gen["qmax"])
+            if haskey(gen, "isfilter") && gen["isfilter"] == 1
+                if nw =="1"
+                    gen["pmin"] = 0
+                    gen["pmax"] = 0
+                    gen["qmin"] = 0
+                    gen["qmax"] = 0
+                else
+                    #do nothing, use user-specified bounds
+                end
+
+            else #is true generator
+                if nw !="1" #cost of harmonics set to 0 
+                    gen["cost"] *= 0 
+                    #harmonics can be injected/absorbed to match load 
+                    gen["pmin"] = -abs(gen["pmax"])
+                    gen["qmin"] = -abs(gen["qmax"])
+                end
             end
 
         end
@@ -73,6 +85,9 @@ function _HPM.replicate(data::Dict{String, Any};
             if nw !="1" 
                 bus["vmin"] = 0 
             end
+            rm = Dict(3=> 0.2, 5=>0.06, 7=> 0.02, 9=> 0.007, 11=>0.003)
+            # inject relative magnitude limits for harmonics
+            bus["rm"] = rm
         end
 
         # re-evaluate the branch data 

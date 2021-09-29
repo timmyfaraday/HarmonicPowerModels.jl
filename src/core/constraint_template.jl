@@ -121,6 +121,16 @@ function constraint_voltage_thd(pm::AbstractPowerModel, i::Int; fundamental::Int
 end
 
 
+""
+function constraint_voltage_harmonics_relative_magnitude(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default, fundamental::Int=1)
+    rm = ref(pm, fundamental, :bus, i, "rm")
+    hmap = pm.ref[:it][:pm][:harmonics]
+    hnumber = hmap["$nw"]
+    if haskey(rm, hnumber)
+        constraint_voltage_harmonics_relative_magnitude(pm, nw, i, rm[hnumber], fundamental)
+    end
+end
+
 
 function constraint_load_power(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     load = ref(pm, nw, :load, i)

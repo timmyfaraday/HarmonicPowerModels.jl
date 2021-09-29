@@ -69,10 +69,10 @@ solver = Ipopt.Optimizer
 # result = run_hopf_iv(hdata, _PMs.IVRPowerModel, solver)
 pm = _PMs.instantiate_model(hdata, _PMs.IVRPowerModel, _HPM.build_hopf_iv; ref_extensions=[_HPM.ref_add_xfmr!]);
 result = optimize_model!(pm, optimizer=solver)
-result
 # print(pm.model)
 
 println("Harmonic 1")
 _PMs.print_summary(result["solution"]["nw"]["1"])
 println("Harmonic 3")
 _PMs.print_summary(result["solution"]["nw"]["2"])
+result["termination_status"]

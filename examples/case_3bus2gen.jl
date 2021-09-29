@@ -42,33 +42,9 @@ pm = _PMs.instantiate_model(hdata, _PMs.IVRPowerModel, _HPM.build_hopf_iv; ref_e
 result = optimize_model!(pm, optimizer=solver)
 
 ##
-result["termination_status"]
-sol = result["solution"]
-pd1 = hdata["nw"]["1"]["load"]["1"]["pd"]
-qd1 = hdata["nw"]["1"]["load"]["1"]["qd"]
-
-pd1 = sol["nw"]["1"]["load"]["1"]["pd"]
-qd1 = sol["nw"]["1"]["load"]["1"]["qd"]
-
-vmsb1   = abs(sol["nw"]["1"]["bus"]["1"]["vr"] + im* sol["nw"]["1"]["bus"]["1"]["vi"])
-vmload1 = abs(sol["nw"]["1"]["bus"]["2"]["vr"] + im* sol["nw"]["1"]["bus"]["2"]["vi"])
-vmgen1 = abs(sol["nw"]["1"]["bus"]["3"]["vr"] + im* sol["nw"]["1"]["bus"]["3"]["vi"])
-
-cmload1 = hypot(sol["nw"]["1"]["load"]["1"]["crd"], sol["nw"]["1"]["load"]["1"]["cid"])
-cmgen1 = hypot(sol["nw"]["1"]["gen"]["1"]["crg"], sol["nw"]["1"]["gen"]["1"]["cig"])
-cmgen2 = hypot(sol["nw"]["1"]["gen"]["2"]["crg"], sol["nw"]["1"]["gen"]["2"]["cig"])
-
-vmsb2 = abs(sol["nw"]["2"]["bus"]["1"]["vr"] + im*sol["nw"]["2"]["bus"]["1"]["vi"] )
-vmload2 = abs(sol["nw"]["2"]["bus"]["2"]["vr"] + im* sol["nw"]["2"]["bus"]["2"]["vi"])
-cmgen1_2 = hypot(sol["nw"]["2"]["gen"]["1"]["crg"], sol["nw"]["2"]["gen"]["1"]["cig"])
-cmgen2_2 = hypot(sol["nw"]["2"]["gen"]["2"]["crg"], sol["nw"]["2"]["gen"]["2"]["cig"])
-
-cmload2 = hypot(sol["nw"]["2"]["load"]["1"]["crd"], sol["nw"]["2"]["load"]["1"]["cid"])
-
-multiplier = hdata["nw"]["2"]["load"]["1"]["multiplier"]
-cmload2/cmload1
-
 ##
-# print(pm.model)
-
-# result
+println("Harmonic 1")
+_PMs.print_summary(result["solution"]["nw"]["1"])
+println("Harmonic 3")
+_PMs.print_summary(result["solution"]["nw"]["2"])
+result["termination_status"]

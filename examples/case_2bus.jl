@@ -42,35 +42,8 @@ pm = _PMs.instantiate_model(hdata, _PMs.IVRPowerModel, _HPM.build_hopf_iv; ref_e
 result = optimize_model!(pm, optimizer=solver)
 
 ##
+println("Harmonic 1")
+_PMs.print_summary(result["solution"]["nw"]["1"])
+println("Harmonic 3")
+_PMs.print_summary(result["solution"]["nw"]["2"])
 result["termination_status"]
-sol = result["solution"]
-pd1 = hdata["nw"]["1"]["load"]["1"]["pd"]
-qd1 = hdata["nw"]["1"]["load"]["1"]["qd"]
-
-pd1 = sol["nw"]["1"]["load"]["1"]["pd"]
-qd1 = sol["nw"]["1"]["load"]["1"]["qd"]
-
-vmsb1   = abs(sol["nw"]["1"]["bus"]["1"]["vr"] + im* sol["nw"]["1"]["bus"]["1"]["vi"])
-vmload1 = abs(sol["nw"]["1"]["bus"]["2"]["vr"] + im* sol["nw"]["1"]["bus"]["2"]["vi"])
-
-zbranch1 = hdata["nw"]["1"]["branch"]["1"]["br_r"] + im* hdata["nw"]["1"]["branch"]["1"]["br_x"]
-cmbranch1 = hypot(sol["nw"]["1"]["branch"]["1"]["cr_fr"], sol["nw"]["1"]["branch"]["1"]["ci_fr"])
-
-
-vmsb2 = abs(sol["nw"]["2"]["bus"]["1"]["vr"] + im*sol["nw"]["2"]["bus"]["1"]["vi"] )
-vmload2 = abs(sol["nw"]["2"]["bus"]["2"]["vr"] + im* sol["nw"]["2"]["bus"]["2"]["vi"])
-
-zbranch2 = hdata["nw"]["2"]["branch"]["1"]["br_r"] + im* hdata["nw"]["2"]["branch"]["1"]["br_x"]
-cmbranch2 = hypot(sol["nw"]["2"]["branch"]["1"]["cr_fr"], sol["nw"]["2"]["branch"]["1"]["ci_fr"])
-
-
-multiplier = hdata["nw"]["2"]["load"]["1"]["multiplier"]
-cmbranch2/cmbranch1
-
-pd2 = sol["nw"]["2"]["load"]["1"]["pd"]
-qd2 = sol["nw"]["2"]["load"]["1"]["qd"]
-
-##
-# print(pm.model)
-
-# result

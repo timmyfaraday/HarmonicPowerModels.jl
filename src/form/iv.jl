@@ -216,6 +216,12 @@ function constraint_voltage_thd(pm::AbstractIVRModel, i, fundamental, thdmax)
     JuMP.@constraint(pm.model, sum(w) <= thdmax^2*(wfun))
 end
 
+function constraint_voltage_harmonics_relative_magnitude(pm::AbstractIVRModel, n::Int, i, rm, fundamental)
+    w  = var(pm, n, :w, i)
+    wfun  = var(pm, fundamental, :w, i)
+
+    JuMP.@constraint(pm.model, w <= rm*wfun)
+end
 
 function constraint_load_constant_power(pm::AbstractIVRModel, n::Int, i, bus, pd, qd)
     vr = var(pm, n, :vr, bus)
