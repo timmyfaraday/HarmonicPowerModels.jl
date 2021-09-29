@@ -68,19 +68,19 @@ mpc.gencost = [
 %column_names%  isfilter
 mpc.gen_extra = [
 	0;
-	0;
+	1;
 %	0;
-	0;
+	1;
 %	0;
 %	0;
 %	0;
-	0;
+	1;
 ];
 
 %% branch data
 %   f_bus	t_bus	r	    x	    b	    rateA	rateB	rateC	ratio	angle	status	angmin	angmax
 mpc.branch = [ 
-    2       3       0.001    0.001       0       100    100    100           1   0       1       -60        60; 
+    2       3       0.005    0.005       0       100    100    100           1   0       1       -60        60; 
     4       5       0.001    0.001       0       100    100    100           1   0       1       -60        60;
     6       7       0.001    0.001       0       100    100    100           1   0       1       -60        60;
 ];
@@ -88,7 +88,7 @@ mpc.branch = [
 %% transformer data
 %column_names%  f_bus   t_bus   xsc     r1      r2      vg      gnd1    gnd2    re1     xe1     re2     xe2     rate_a  
 mpc.xfmr = [
-                1       2       0.005     0.005     0.005     'Yd11'  0       0       0.0     0.0     0.0     0.0     125;
+                1       2       0.002     0.002     0.002     'Yd11'  0       0       0.0     0.0     0.0     0.0     125;
                 3       4       0.005     0.005     0.005     'Yy0'   0       0       0.0     0.0     0.0     0.0     31.5;
                 5       6       0.1     0.1     0.1     'Dy11'  0       1       0.0     0.0     0.0     0.0     2.5;
                 7       8       0.1     0.1     0.1     'Dz0'   0       1       0.0     0.0     0.0     0.0     0.25;

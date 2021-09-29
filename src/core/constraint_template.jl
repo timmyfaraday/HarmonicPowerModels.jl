@@ -166,3 +166,13 @@ function constraint_current_limit_rms(pm::AbstractPowerModel, i::Int; fundamenta
         constraint_current_limit_rms(pm, f_idx, branch["c_rating_a"], nharmonics)
     end
 end
+
+
+function constraint_active_filter(pm::AbstractPowerModel, i::Int; fundamental::Int=1)
+    gen = ref(pm, fundamental, :gen, i)
+
+    if haskey(gen, "isfilter") && gen["isfilter"] == 1
+        @show "adding filter constraints"
+        constraint_active_filter(pm, i, fundamental)
+    end
+end

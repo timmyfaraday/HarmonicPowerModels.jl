@@ -77,6 +77,10 @@ function build_hopf_iv(pm::AbstractPowerModel)
         # constraint_current_limit_rms(pm, b)
     end
 
+    for g in _PMs.ids(pm, :gen, nw=fundamental)
+        constraint_active_filter(pm, g, fundamental=fundamental)
+    end
+
     _PMs.objective_min_fuel_and_flow_cost(pm)
 end
 

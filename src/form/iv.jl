@@ -281,3 +281,12 @@ function constraint_current_limit_rms(pm::AbstractIVRModel, f_idx, c_rating, nha
     JuMP.@constraint(pm.model, sum(crf^2 + cif^2)/nharmonics^2 <= c_rating^2)
     JuMP.@constraint(pm.model, sum(crt^2 + cit^2)/nharmonics^2 <= c_rating^2)
 end
+
+
+function constraint_active_filter(pm::AbstractIVRModel, i, fundamental)
+    pgfun = var(pm, fundamental, :pg, i)
+    pg =  [var(pm, n, :pg, i) for n in _PMs.nw_ids(pm)]
+
+    JuMP.@NLconstraint(pm.model,   pgfun == 0)
+    JuMP.@NLconstraint(pm.model, sum(pg[n] for n in _PMs.nw_ids(pm)) == 0)
+end

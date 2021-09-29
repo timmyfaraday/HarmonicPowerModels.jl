@@ -55,15 +55,9 @@ function _HPM.replicate(data::Dict{String, Any};
         # re-evaluate gen 
         for gen in values(data["nw"][nw]["gen"])
             if haskey(gen, "isfilter") && gen["isfilter"] == 1
-                if nw =="1"
-                    gen["pmin"] = 0
-                    gen["pmax"] = 0
-                    gen["qmin"] = 0
-                    gen["qmax"] = 0
-                else
-                    #do nothing, use user-specified bounds
-                end
-
+                # do nothing, is handled by constraints constraint_active_filter
+                gen["pmin"] = -abs(gen["pmax"])
+                gen["qmin"] = -abs(gen["qmax"])
             else #is true generator
                 if nw !="1" #cost of harmonics set to 0 
                     gen["cost"] *= 0 
