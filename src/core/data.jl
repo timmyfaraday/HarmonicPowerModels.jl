@@ -56,7 +56,11 @@ function _HPM.replicate(data::Dict{String, Any};
         for gen in values(data["nw"][nw]["gen"])
             if nw !="1" #cost of harmonics set to 0 TODO define total gen cost in terms of energy across all harmonics
                 gen["cost"] *= 0 
+                #harmonics can generate complex power. 
+                gen["pmin"] = -abs(gen["pmax"])
+                gen["qmin"] = -abs(gen["qmax"])
             end
+
         end
 
         # re-evaluate the bus data 

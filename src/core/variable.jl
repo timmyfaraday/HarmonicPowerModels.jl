@@ -81,6 +81,46 @@ function variable_transformer_current_imaginary(pm::AbstractPowerModel; nw::Int=
 end
 
 ""
+function expression_transformer_power(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    # store active and reactive power expressions for use in objective + post processing
+    pt = Dict()
+    qt = Dict()
+
+    ptloss = Dict()
+    qtloss = Dict()
+    for (t,xfmr) in ref(pm, nw, :xfmr)
+        i = f_bus = xfmr["f_bus"]
+        j = t_bus = xfmr["t_bus"]
+
+        vr_fr = var(pm, nw, :vr, f_bus)
+        vi_fr = var(pm, nw, :vi, f_bus)
+        vr_to = var(pm, nw, :vr, t_bus)
+        vi_to = var(pm, nw, :vi, t_bus)
+
+        crt_fr = var(pm, nw, :crt, (t,i,j))
+        cit_fr = var(pm, nw, :cit, (t,i,j))
+        crt_to = var(pm, nw, :crt, (t,j,i))
+        cit_to = var(pm, nw, :cit, (t,j,i))
+
+        pt[(t,i,j)] = JuMP.@NLexpression(pm.model, vr_fr*crt_fr  + vi_fr*cit_fr)
+        qt[(t,i,j)] = JuMP.@NLexpression(pm.model, vi_fr*crt_fr  - vr_fr*cit_fr)
+        pt[(t,j,i)] = JuMP.@NLexpression(pm.model, vr_to*crt_to  + vi_to*cit_to)
+        qt[(t,j,i)] = JuMP.@NLexpression(pm.model, vi_to*crt_to  - vr_to*cit_to)
+
+        ptloss[t] = JuMP.@NLexpression(pm.model, vr_fr*crt_fr  + vi_fr*cit_fr + vr_to*crt_to  + vi_to*cit_to)
+        qtloss[t] = JuMP.@NLexpression(pm.model, vi_fr*crt_fr  - vr_fr*cit_fr + vi_to*crt_to  - vr_to*cit_to)
+    end
+    var(pm, nw)[:pt] = pt
+    var(pm, nw)[:qt] = qt
+    var(pm, nw)[:ptloss] = ptloss
+    var(pm, nw)[:qtloss] = qtloss
+    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :pt_fr, :pt_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), pt)
+    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :qt_fr, :qt_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), qt)
+    report && _PMs.sol_component_value(pm, nw, :xfmr, :ptloss, _PMs.ids(pm, nw, :xfmr), ptloss)
+    report && _PMs.sol_component_value(pm, nw, :xfmr, :qtloss, _PMs.ids(pm, nw, :xfmr), qtloss)
+end
+
+""
 function variable_transformer_current_series_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
     csrt = _PMs.var(pm, nw)[:csrt] = JuMP.@variable(pm.model,
             [(t,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_csrt",
@@ -216,4 +256,6 @@ function variable_gen_current(pm::AbstractPowerModel; nw::Int=nw_id_default, bou
     report && _PMs.sol_component_value(pm, nw, :gen, :pg, ids(pm, nw, :gen), pg)
     report && _PMs.sol_component_value(pm, nw, :gen, :qg, ids(pm, nw, :gen), qg)
 end
+
+
 

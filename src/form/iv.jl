@@ -19,6 +19,8 @@ function variable_transformer_current(pm::AbstractIVRModel; nw::Int=nw_id_defaul
 
     variable_transformer_current_excitation_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_transformer_current_excitation_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+
+    expression_transformer_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 
 # constraints

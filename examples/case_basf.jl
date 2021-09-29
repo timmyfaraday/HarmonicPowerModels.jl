@@ -9,7 +9,8 @@ const _PMs = PowerModels
 const _HPM = HarmonicPowerModels
 
 # path to the data
-path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_basf_simplified.m")
+# path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_basf_simplified.m")
+path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_basf_simplified_no_power_balance.m")
 
 # transformer excitation data
 xfmr = Dict("voltage_harmonics" => [1,3],
@@ -68,5 +69,10 @@ solver = Ipopt.Optimizer
 # result = run_hopf_iv(hdata, _PMs.IVRPowerModel, solver)
 pm = _PMs.instantiate_model(hdata, _PMs.IVRPowerModel, _HPM.build_hopf_iv; ref_extensions=[_HPM.ref_add_xfmr!]);
 result = optimize_model!(pm, optimizer=solver)
+result
+# print(pm.model)
 
-print(pm.model)
+println("Harmonic 1")
+_PMs.print_summary(result["solution"]["nw"]["1"])
+println("Harmonic 3")
+_PMs.print_summary(result["solution"]["nw"]["2"])
