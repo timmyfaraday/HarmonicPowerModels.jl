@@ -322,4 +322,3 @@ function variable_gen_current(pm::AbstractPowerModel; nw::Int=nw_id_default, bou
 end
 
 
-

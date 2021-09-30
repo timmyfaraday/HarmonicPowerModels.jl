@@ -108,9 +108,8 @@ end
 function constraint_voltage_magnitude_rms(pm::AbstractPowerModel, i::Int; fundamental::Int=1)
     vminrms = ref(pm, fundamental, :bus, i, "vminrms")
     vmaxrms = ref(pm, fundamental, :bus, i, "vmaxrms")
-    nharmonics = length(_PMs.nws(pm))
 
-    constraint_voltage_magnitude_rms(pm, i, vminrms, vmaxrms, nharmonics)
+    constraint_voltage_magnitude_rms(pm, i, vminrms, vmaxrms)
 end
 
 
@@ -160,10 +159,9 @@ function constraint_current_limit_rms(pm::AbstractPowerModel, i::Int; fundamenta
     t_bus = branch["t_bus"]
     f_idx = (i, f_bus, t_bus)
 
-    nharmonics = length(_PMs.nws(pm))
 
     if haskey(branch, "c_rating_a")
-        constraint_current_limit_rms(pm, f_idx, branch["c_rating_a"], nharmonics)
+        constraint_current_limit_rms(pm, f_idx, branch["c_rating_a"])
     end
 end
 

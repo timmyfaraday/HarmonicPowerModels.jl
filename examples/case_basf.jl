@@ -58,8 +58,8 @@ for (g,gen) in data["gen"]
 end
 
 
-hdata = _HPM.replicate(data, xfmr_exc=xfmr)
-# hdata = _HPM.replicate(data)
+# hdata = _HPM.replicate(data, xfmr_exc=xfmr)
+hdata = _HPM.replicate(data)
 
 # set the solver
 solver = Ipopt.Optimizer
@@ -75,6 +75,33 @@ for (n,nw) in result["solution"]["nw"]
             bus["vm"] =  abs(bus["vr"] +im*  bus["vi"])
             bus["va"] =  angle(bus["vr"] +im*  bus["vi"])*180/pi
     end
+end
+
+
+
+gh = Dict()
+for (n,nw) in result["solution"]["nw"]
+    for (i,gen) in nw["gen"]
+            gh[n] = abs(gen["crg"] +im*  gen["cig"])
+    end
+end
+gh
+
+##
+
+for (i,bus) in result["solution"]["nw"]["1"]["bus"]
+    fundamental = "1"
+    harmonics = Set(n for (n,nw) in result["solution"]["nw"])
+    nonfundamentalharmonics = setdiff(harmonics, [fundamental])
+    vfun = result["solution"]["nw"]["1"]["bus"][i]["vr"] + im*result["solution"]["nw"]["1"]["bus"][i]["vi"]
+    v   = [result["solution"]["nw"][n]["bus"][i]["vr"] + im*result["solution"]["nw"][n]["bus"][i]["vi"]  for n in harmonics]
+    vnonfun = [result["solution"]["nw"][n]["bus"][i]["vr"] + im*result["solution"]["nw"][n]["bus"][i]["vi"]  for n in nonfundamentalharmonics]
+    
+    rms = sqrt(sum(abs.(v).^2))
+    thd = sqrt(sum(abs.(vnonfun).^2)/abs(vfun)^2)
+
+    result["solution"]["nw"]["1"]["bus"][i]["rms"] = rms
+    result["solution"]["nw"]["1"]["bus"][i]["thd"] = thd
 end
 
 println("Harmonic 5")

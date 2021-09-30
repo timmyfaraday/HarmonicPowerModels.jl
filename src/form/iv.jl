@@ -197,21 +197,23 @@ function constraint_transformer_winding_current_balance(pm::AbstractIVRModel, n:
     end
 end
 
+
+
 ""
-function constraint_voltage_magnitude_rms(pm::AbstractIVRModel, i, vminrms, vmaxrms, nharmonics)
+function constraint_voltage_magnitude_rms(pm::AbstractIVRModel, i, vminrms, vmaxrms)
     w = [var(pm, nw, :w, i) for nw in _PMs.nw_ids(pm)]
     @assert vminrms>0
     @assert vmaxrms>vminrms
 
-    JuMP.@constraint(pm.model, vminrms^2 <= sum(w)/nharmonics^2               )
-    JuMP.@constraint(pm.model,              sum(w)/nharmonics^2  <= vmaxrms^2 )
+    JuMP.@constraint(pm.model, vminrms^2 <= sum(w)               )
+    JuMP.@constraint(pm.model,              sum(w)  <= vmaxrms^2 )
 end
 
 
 ""
 function constraint_voltage_thd(pm::AbstractIVRModel, i, fundamental, thdmax)
     harmonics = Set(_PMs.nw_ids(pm))
-    nonfundamentalharmonics = setdiff(harmonics, fundamental)
+    nonfundamentalharmonics = setdiff(harmonics, [fundamental])
     w = [var(pm, nw, :w, i) for nw in nonfundamentalharmonics]
     wfun = var(pm, fundamental, :w, i)
 
@@ -253,7 +255,7 @@ function constraint_vm_auxiliary_variable(pm::AbstractIVRModel, n::Int, i)
     vr = var(pm, n, :vr, i)
     vi = var(pm, n, :vi, i)
     w  = var(pm, n, :w, i)
-
+    #TODO choose whether this is relaxation or exact
     JuMP.@constraint(pm.model, w >= vr^2  + vi^2)
 end
 
@@ -262,7 +264,7 @@ end
 function constraint_ref_bus(pm::AbstractIVRModel, n::Int, i::Int)
     if n == 1 #fundamental frequency, fix reference angle
         JuMP.@constraint(pm.model, var(pm, n, :vi)[i] == 0.0)
-        #TODO you should be able to set this more freely
+        #TODO you should be able to set this more freely, but it helps a lot with stability, keeping it in for now.
         JuMP.@constraint(pm.model, var(pm, n, :vr)[i] == 1.0)
     else #fix harmonic voltage at reference bus to 0+j0
         JuMP.@constraint(pm.model, var(pm, n, :vi)[i] == 0.0)
@@ -270,7 +272,7 @@ function constraint_ref_bus(pm::AbstractIVRModel, n::Int, i::Int)
     end
 end
 
-function constraint_current_limit_rms(pm::AbstractIVRModel, f_idx, c_rating, nharmonics)
+function constraint_current_limit_rms(pm::AbstractIVRModel, f_idx, c_rating)
     (l, f_bus, t_bus) = f_idx
     t_idx = (l, t_bus, f_bus)
 
@@ -280,8 +282,8 @@ function constraint_current_limit_rms(pm::AbstractIVRModel, f_idx, c_rating, nha
     crt =  [var(pm, n, :cr, t_idx) for n in _PMs.nw_ids(pm)]
     cit =  [var(pm, n, :ci, t_idx) for n in _PMs.nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, sum(crf^2 + cif^2)/nharmonics^2 <= c_rating^2)
-    JuMP.@constraint(pm.model, sum(crt^2 + cit^2)/nharmonics^2 <= c_rating^2)
+    JuMP.@constraint(pm.model, sum(crf^2 + cif^2) <= c_rating^2)
+    JuMP.@constraint(pm.model, sum(crt^2 + cit^2) <= c_rating^2)
 end
 
 
@@ -291,4 +293,17 @@ function constraint_active_filter(pm::AbstractIVRModel, i, fundamental)
 
     JuMP.@NLconstraint(pm.model, pgfun == 0)
     JuMP.@NLconstraint(pm.model, sum(pg[n] for n in _PMs.nw_ids(pm)) == 0)
+end
+
+
+""
+function objective_distortion_minimization(pm::AbstractIVRModel; gen_id=1, fundamental=1)
+    harmonics = Set(_PMs.nw_ids(pm))
+    nonfundamentalharmonics = setdiff(harmonics, [fundamental])
+
+    crg = [var(pm, n, :cert, gen_id) for n in nonfundamentalharmonics]
+    cig = [var(pm, n, :ceit, gen_id) for n in nonfundamentalharmonics]
+
+    #minimize magnitude of nonfundamental harmonics
+    JuMP.@objective(pm.model, Min, sum(crg.^2 + cig.^2))
 end

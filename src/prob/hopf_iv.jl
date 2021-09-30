@@ -5,7 +5,7 @@ end
 
 ""
 function build_hopf_iv(pm::AbstractPowerModel)
-    bounded= false
+    bounded= true
 
     for (n, network) in _PMs.nws(pm)
         _PMs.variable_bus_voltage(pm, nw=n, bounded=bounded)
@@ -29,7 +29,7 @@ function build_hopf_iv(pm::AbstractPowerModel)
         for i in _PMs.ids(pm, :bus, nw=n)
             constraint_current_balance(pm, i, nw=n)
             constraint_vm_auxiliary_variable(pm, i, nw=n)
-            # constraint_voltage_harmonics_relative_magnitude(pm, i, nw=n)
+            constraint_voltage_harmonics_relative_magnitude(pm, i, nw=n)
         end
     
         for g in _PMs.ids(pm, :gen, nw=n)
@@ -47,7 +47,6 @@ function build_hopf_iv(pm::AbstractPowerModel)
             
             _PMs.constraint_voltage_drop(pm, b, nw=n)
 
-            #TODO add current magnitude constraints instead
             _PMs.constraint_current_limit(pm, b, nw=n)
         end
         
@@ -69,12 +68,12 @@ function build_hopf_iv(pm::AbstractPowerModel)
     #constraints across harmonics
     fundamental = 1
     for i in _PMs.ids(pm, :bus, nw=fundamental)
-        # constraint_voltage_magnitude_rms(pm, i)
-        # constraint_voltage_thd(pm, i, fundamental=fundamental)
+        constraint_voltage_magnitude_rms(pm, i)
+        constraint_voltage_thd(pm, i, fundamental=fundamental)
     end
 
     for b in _PMs.ids(pm, :branch, nw=fundamental)
-        # constraint_current_limit_rms(pm, b)
+        constraint_current_limit_rms(pm, b)
     end
 
     for g in _PMs.ids(pm, :gen, nw=fundamental)
@@ -82,6 +81,7 @@ function build_hopf_iv(pm::AbstractPowerModel)
     end
 
     _PMs.objective_min_fuel_and_flow_cost(pm)
+    # objective_distortion_minimization(pm)
 end
 
 function ref_add_xfmr!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any}) ## data not actually needed!
