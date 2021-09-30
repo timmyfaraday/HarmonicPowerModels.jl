@@ -10,6 +10,7 @@ const _HPM = HarmonicPowerModels
 
 # path to the data
 path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_basf_simplified.m")
+# path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_basf.m")
 
 # transformer excitation data
 xfmr = Dict("voltage_harmonics" => [1,3],
@@ -58,8 +59,8 @@ for (g,gen) in data["gen"]
 end
 
 
-# hdata = _HPM.replicate(data, xfmr_exc=xfmr)
-hdata = _HPM.replicate(data)
+hdata = _HPM.replicate(data, xfmr_exc=xfmr)
+# hdata = _HPM.replicate(data)
 
 # set the solver
 solver = Ipopt.Optimizer
@@ -67,43 +68,16 @@ solver = Ipopt.Optimizer
 # solve the hopf
 # result = run_hopf_iv(hdata, _PMs.IVRPowerModel, solver)
 pm = _PMs.instantiate_model(hdata, _PMs.IVRPowerModel, _HPM.build_hopf_iv; ref_extensions=[_HPM.ref_add_xfmr!]);
-result = optimize_model!(pm, optimizer=solver)
+result = optimize_model!(pm, optimizer=solver, solution_processors=[ _HPM.sol_data_model!])
+_HPM.append_indicators!(result, hdata)
+
 # print(pm.model)
 
-for (n,nw) in result["solution"]["nw"]
-    for (i,bus) in nw["bus"]
-            bus["vm"] =  abs(bus["vr"] +im*  bus["vi"])
-            bus["va"] =  angle(bus["vr"] +im*  bus["vi"])*180/pi
-    end
-end
 
+pg = result["solution"]["nw"]["1"]["gen"]["1"]["pg"]
 
-
-gh = Dict()
-for (n,nw) in result["solution"]["nw"]
-    for (i,gen) in nw["gen"]
-            gh[n] = abs(gen["crg"] +im*  gen["cig"])
-    end
-end
-gh
-
-##
-
-for (i,bus) in result["solution"]["nw"]["1"]["bus"]
-    fundamental = "1"
-    harmonics = Set(n for (n,nw) in result["solution"]["nw"])
-    nonfundamentalharmonics = setdiff(harmonics, [fundamental])
-    vfun = result["solution"]["nw"]["1"]["bus"][i]["vr"] + im*result["solution"]["nw"]["1"]["bus"][i]["vi"]
-    v   = [result["solution"]["nw"][n]["bus"][i]["vr"] + im*result["solution"]["nw"][n]["bus"][i]["vi"]  for n in harmonics]
-    vnonfun = [result["solution"]["nw"][n]["bus"][i]["vr"] + im*result["solution"]["nw"][n]["bus"][i]["vi"]  for n in nonfundamentalharmonics]
-    
-    rms = sqrt(sum(abs.(v).^2))
-    thd = sqrt(sum(abs.(vnonfun).^2)/abs(vfun)^2)
-
-    result["solution"]["nw"]["1"]["bus"][i]["rms"] = rms
-    result["solution"]["nw"]["1"]["bus"][i]["thd"] = thd
-end
-
+println("Harmonic 7")
+_PMs.print_summary(result["solution"]["nw"]["4"])
 println("Harmonic 5")
 _PMs.print_summary(result["solution"]["nw"]["3"])
 println("Harmonic 3")
@@ -112,3 +86,6 @@ println("Harmonic 1")
 _PMs.print_summary(result["solution"]["nw"]["1"])
 result["objective"]
 result["termination_status"]
+
+##
+# original cost 65.01954705548785

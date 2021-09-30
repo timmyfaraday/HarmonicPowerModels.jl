@@ -22,7 +22,7 @@ mpc.bus = [
 % note that it is realistic to add additional fundamental power consumption to
 % nodes 2 and 4, at 40% of the preceeding transformer power and cos(phi) = 0.95
 % today harmonic filters at 690 V
-% dont forget to add capacitor banks again
+% lighting -> cos phi of 0.6
 
 
 %% bus harmonic data 
@@ -44,28 +44,29 @@ mpc.bus_harmonics = [
 %% generator data
 %   bus     Pg      Qg      Qmax    Qmin    Vg      mBase   status  Pmax    Pmin
 mpc.gen = [
-    1       0.0     0.0     100.00  -100.00 1.05    100.0   1       100.00   -100;
-    7       0.0     0.0     1.00    -1.00   1.05    100.0   1         1.00  -1;
+    1       0.0     0.0     100.00  -100.00 1.05    100.0   1       100.00   0;
+    7       0.0     0.0     1.00    -1.00   1.05    100.0   1         1.00  0;
 ];
 
 mpc.gencost = [
-	2	 0.0	 0.0	 3	   0.110000	   5.000000	   0.000000;
-	2	 0.0	 0.0	 3	   0.100000	   4.000000	   0.000000;
+	2	 0.0	 0.0	 3	   0.00000	   1.000000	   0.000000;
+	2	 0.0	 0.0	 3	   0.0000	   6.00000	   0.000000;
 ];
 
 %% branch data
 %   f_bus	t_bus	r	    x	    b	    rateA	rateB	rateC	ratio	angle	status	angmin	angmax
 mpc.branch = [ 
-    2       3       0.01    0.01       0       100    100    100           1   0       1       -60        60; 
-    4       5       0.01    0.01       0       100    100    100           1   0       1       -60        60;
-    6       7       0.01    0.01       0       100    100    100           1   0       1       -60        60;
+    2       3       0.00060    0.00053       0       125    100    100           1   0       1       -60        60; 
+    4       5       0.0002     0.0001       0       31.5    100    100           1   0       1       -60        60;
+    6       7       0.0001     0.00005       0       2.5    100    100           1   0       1       -60        60;
 ];
 
 %% transformer data
 %column_names%  f_bus   t_bus   xsc     r1      r2      vg      gnd1    gnd2    re1     xe1     re2     xe2 rate_a  
 mpc.xfmr = [
-                1       2       0.1     0.1     0.1     'Yd11'  0       0       0.0     0.0     0.0     0.0 125;
-                3       4       0.1     0.1     0.1     'Yy0'   0       0       0.0     0.0     0.0     0.0 31.5;
-                5       6       0.1     0.1     0.1     'Dy11'  0       1       0.0     0.0     0.0     0.0 2.5;
-                7       8       0.1     0.2     0.1     'Dz0'   0       1       0.0     0.0     0.0     0.0 0.25;
+                1       2       0.13     0.00211      0.00211     'Yd11'  0       0       0.0     0.0     0.0     0.0     125; 
+                3       4       0.0229    0.0003      0.0003     'Yy0'   0       0       0.0     0.0     0.0     0.0     31.5;
+                5       6       0.0107     0.0007     0.0007     'Dy11'  0       1       0.0     0.0     0.0     0.0     2.5; % add PEN to re2 + jxe2
+                7       8       0.0002     0.00005     0.00005     'Dz0'   0       1       0.0     0.0     0.0     0.0     0.25; % 
+
 ]

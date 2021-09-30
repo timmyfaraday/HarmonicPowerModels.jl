@@ -79,7 +79,7 @@ function _HPM.replicate(data::Dict{String, Any};
             if nw !="1" 
                 bus["vmin"] = 0 
             end
-            rm = Dict(3=> 0.2, 5=>0.06, 7=> 0.02, 9=> 0.007, 11=>0.003)
+            rm = Dict(3=> 0.05, 5=>0.06, 7=> 0.05, 9=> 0.015, 11=>0.035)
             # inject relative magnitude limits for harmonics
             bus["rm"] = rm
         end
@@ -148,7 +148,7 @@ is_zero_sequence(nh::Int) = nh % 3 == 0
 excitation_flux_polar(V, θ, w, t) = 
     sum(V[n] ./ w[n] .* sin.(w[n] .* t .+ θ[n]) for n in 1:length(V))
 excitation_flux_rectangular(Vre, Vim, w, t) =
-    excitation_flux_polar(sqrt.(Vre.^2 .+ Vim.^2), atan.(Vim./(Vre.+1e-8)), w, t)
+    excitation_flux_polar(hypot.(Vre,Vim), atan.(Vim,Vre), w, t)
 excitation_current_sigmoid(inom, ψmax, ψ) = 
     -inom .* log.(2.0 ./ (ψ ./ ψmax .+ 1.0) .- 1.0)
 
@@ -232,14 +232,14 @@ function sample_xfmr_excitation(data::Dict{String, <:Any}, xfmr_exc::Dict{String
             end
 
             _SDC.decompose(t, I_exc, fq)
-
+            # angle convention is reversed -> therefore - sign in the I, φ expressions below
             if current_type == :polar 
-                I, φ = fq.A[2:end], fq.φ[2:end]
+                I, φ = fq.A[2:end], -fq.φ[2:end]
                 for (ni,nh) in enumerate(current_harmonics)
                     Ia[nh][nr...], Ib[nh][nr...] = I[ni], φ[ni]
                 end
             elseif current_type == :rectangular
-                Ire, Iim = fq.A[2:end] .* sin.(fq.φ[2:end]), fq.A[2:end] .* cos.(fq.φ[2:end])
+                Ire, Iim = fq.A[2:end] .* sin.(-fq.φ[2:end]), fq.A[2:end] .* cos.(-fq.φ[2:end])
                 for (ni,nh) in enumerate(current_harmonics)
                     Ia[nh][nr...], Ib[nh][nr...] = Ire[ni], Iim[ni]
                 end

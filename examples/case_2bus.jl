@@ -33,21 +33,19 @@ end
 for (g,gen) in data["gen"]
     gen["c_rating"] = abs(gen["pmax"] + im* gen["qmax"])/vmmin
 end
+
+
 hdata = _HPM.replicate(data)
+# hdata = _HPM.replicate(data, xfmr_exc=xfmr)
 
 ##
 # solve the hopf
 # result = run_hopf_iv(hdata, _PMs.IVRPowerModel, solver)
 pm = _PMs.instantiate_model(hdata, _PMs.IVRPowerModel, _HPM.build_hopf_iv; ref_extensions=[_HPM.ref_add_xfmr!]);
-result = optimize_model!(pm, optimizer=solver)
-
+result = optimize_model!(pm, optimizer=solver, solution_processors=[ _HPM.sol_data_model!])
+_HPM.append_indicators!(result, hdata)
 ##
-for (n,nw) in result["solution"]["nw"]
-    for (i,bus) in nw["bus"]
-            bus["vm"] =  abs(bus["vr"] +im*  bus["vi"])
-            bus["va"] =  angle(bus["vr"] +im*  bus["vi"])*180/pi
-    end
-end
+
 println("Harmonic 3")
 _PMs.print_summary(result["solution"]["nw"]["2"])
 println("Harmonic 1")

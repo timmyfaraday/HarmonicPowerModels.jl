@@ -10,14 +10,14 @@ mpc.baseMVA =  1.00;
 %	bus_id	type    Pd      Qd	    Gs	    Bs	    area	Vm	    Va	    baseKV  zone	Vmax	Vmin
 mpc.bus = [
     1       3       0.000   0.000   0.00    0.00    1       1.00    0.00    10    1      1.10    0.90;
-    2       1       5.000   2.000   0.00    0.00    1       1.00	0.00    10    1      1.10    0.90;
+    2       1       4.000   2.000   0.00    0.00    1       1.00	0.00    10    1      1.10    0.90;
 ];
 
 %% bus harmonic data 
 %column_names%  nh_1    nh_3     thdmax
 mpc.bus_harmonics = [
                 1.000   0.0000      0.5
-                1.000   0.1         0.5
+                1.000   0.2         0.5
 ]
 
 %% generator data

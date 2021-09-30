@@ -10,7 +10,7 @@ mpc.baseMVA =  100.00;
 %	bus_id	type    Pd      Qd	    Gs	    Bs	    area	Vm	    Va	    baseKV  zone	Vmax	Vmin
 mpc.bus = [
     1       3       0.000   0.000   0.00    0.00    1       1.00    0.00    12.47   1       1.10    0.90;
-    2       1       2.000   1.00   0.00    0.00    1       1.00	0.00    4.16    1       1.10    0.90;
+    2       1       1.500   1.00   0.00    0.00    1       1.00	0.00    4.16    1       1.10    0.90;
 ];
 
 %% bus harmonic data 
@@ -20,7 +20,7 @@ mpc.bus_harmonics = [
                 1.000   0.4000   0.5
 ]
 
-% we need to add a generator on the load side to avoid infeasibility - the transformer blocks 3rd harmonics
+% we need to add a filter on the load side to avoid infeasibility - the transformer blocks 3rd harmonics
 %% generator data
 %   bus     Pg      Qg      Qmax    Qmin    Vg      mBase   status  Pmax    Pmin
 mpc.gen = [

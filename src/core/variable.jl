@@ -106,17 +106,17 @@ function expression_transformer_power(pm::AbstractPowerModel; nw::Int=nw_id_defa
         pt[(t,j,i)] = JuMP.@NLexpression(pm.model, vr_to*crt_to  + vi_to*cit_to)
         qt[(t,j,i)] = JuMP.@NLexpression(pm.model, vi_to*crt_to  - vr_to*cit_to)
 
-        ptloss[t] = JuMP.@NLexpression(pm.model, vr_fr*crt_fr  + vi_fr*cit_fr + vr_to*crt_to  + vi_to*cit_to)
-        qtloss[t] = JuMP.@NLexpression(pm.model, vi_fr*crt_fr  - vr_fr*cit_fr + vi_to*crt_to  - vr_to*cit_to)
+        # ptloss[t] = JuMP.@NLexpression(pm.model, vr_fr*crt_fr  + vi_fr*cit_fr + vr_to*crt_to  + vi_to*cit_to)
+        # qtloss[t] = JuMP.@NLexpression(pm.model, vi_fr*crt_fr  - vr_fr*cit_fr + vi_to*crt_to  - vr_to*cit_to)
     end
     var(pm, nw)[:pt] = pt
     var(pm, nw)[:qt] = qt
-    var(pm, nw)[:ptloss] = ptloss
-    var(pm, nw)[:qtloss] = qtloss
+    # var(pm, nw)[:ptloss] = ptloss
+    # var(pm, nw)[:qtloss] = qtloss
     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :pt_fr, :pt_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), pt)
     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :qt_fr, :qt_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), qt)
-    report && _PMs.sol_component_value(pm, nw, :xfmr, :ptloss, _PMs.ids(pm, nw, :xfmr), ptloss)
-    report && _PMs.sol_component_value(pm, nw, :xfmr, :qtloss, _PMs.ids(pm, nw, :xfmr), qtloss)
+    # report && _PMs.sol_component_value(pm, nw, :xfmr, :ptloss, _PMs.ids(pm, nw, :xfmr), ptloss)
+    # report && _PMs.sol_component_value(pm, nw, :xfmr, :qtloss, _PMs.ids(pm, nw, :xfmr), qtloss)
 end
 
 ""
@@ -212,8 +212,6 @@ function expression_transformer_excitation_power(pm::AbstractPowerModel; nw::Int
     q = Dict()
 
     for (t,xfmr) in ref(pm, nw, :xfmr)
-
-        #TODO  relative to internal voltage V
         vr = var(pm, nw, :ert, t)
         vi = var(pm, nw, :eit, t)
 
