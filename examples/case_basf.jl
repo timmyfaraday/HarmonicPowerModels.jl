@@ -58,26 +58,23 @@ for (g,gen) in data["gen"]
     gen["c_rating"] = abs(gen["pmax"] + im* gen["qmax"])/vmmin
 end
 
-
 hdata = _HPM.replicate(data, xfmr_exc=xfmr)
 # hdata = _HPM.replicate(data)
 
 # set the solver
 solver = Ipopt.Optimizer
 
+
+##
 # solve the hopf
 # result = run_hopf_iv(hdata, _PMs.IVRPowerModel, solver)
 pm = _PMs.instantiate_model(hdata, _PMs.IVRPowerModel, _HPM.build_hopf_iv; ref_extensions=[_HPM.ref_add_xfmr!]);
 result = optimize_model!(pm, optimizer=solver, solution_processors=[ _HPM.sol_data_model!])
 _HPM.append_indicators!(result, hdata)
 
-# print(pm.model)
-
-
 pg = result["solution"]["nw"]["1"]["gen"]["1"]["pg"]
 
-println("Harmonic 7")
-_PMs.print_summary(result["solution"]["nw"]["4"])
+
 println("Harmonic 5")
 _PMs.print_summary(result["solution"]["nw"]["3"])
 println("Harmonic 3")
