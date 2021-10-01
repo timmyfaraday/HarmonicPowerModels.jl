@@ -27,12 +27,12 @@ function _HPM.replicate(data::Dict{String, Any};
     # extend the user-provided harmonics based on the data
     collect_harmonics!(data, harmonics, xfmr_exc)
 
-    for (t, xfmr) in data["xfmr"]
-        xfmr["voltage_harmonics"] = []
-        xfmr["current_harmonics"] = []
-        xfmr["voltage_harmonics_ntws"] = []
-        xfmr["current_harmonics_ntws"] = []
-    end
+    # for (t, xfmr) in data["xfmr"]
+    #     xfmr["voltage_harmonics"] = []
+    #     xfmr["current_harmonics"] = []
+    #     xfmr["voltage_harmonics_ntws"] = []
+    #     xfmr["current_harmonics_ntws"] = []
+    # end
     @show harmonics
     # create a multinetwork data structure
     Nh = length(harmonics)
@@ -167,6 +167,7 @@ function sample_voltage_polar(voltage_harmonics, dv, vmin, vmax, dθ, θmin, θm
     return S, R
 end
 function sample_voltage_rectangular(voltage_harmonics, dv, vmin, vmax)
+    @show voltage_harmonics, dv, vmin, vmax
     S = reduce(vcat,[[vmin[ni]:dv[ni]:vmax[ni],vmin[ni]:dv[ni]:vmax[ni]] 
                       for (ni,nh) in enumerate(voltage_harmonics)])
     R = [1:length(s) for s in S]
@@ -261,8 +262,9 @@ function sample_xfmr_excitation(data::Dict{String, <:Any}, xfmr_exc::Dict{String
 
     method = _INT.BSpline(_INT.Cubic(_INT.Line(_INT.OnGrid())))
     for nw in keys(data["nw"]) 
-        ni = parse(Int, nw)
+        nih = parse(Int, nw)
         nh = data["harmonics"][nw]
+        ni = findfirst(x->x==nh, voltage_harmonics)
         if haskey(data["nw"][nw], "xfmr")
             for xfmr in values(data["nw"][nw]["xfmr"])
                 xfmr["current_harmonics_ntws"] = current_harmonics_ntws
@@ -276,11 +278,12 @@ function sample_xfmr_excitation(data::Dict{String, <:Any}, xfmr_exc::Dict{String
                     xfmr["GRAD_B"] = (x...) -> _INT.gradient(xfmr["EXC_B"], x...)
                 end
                 if nh in voltage_harmonics
+                    @show voltage_harmonics,  vmin
                     xfmr["ert_min"], xfmr["ert_max"] = vmin[ni], vmax[ni] 
                     xfmr["eit_min"], xfmr["eit_max"] = vmin[ni], vmax[ni]
                 else
-                    xfmr["ert_min"], xfmr["ert_max"] = 0.0, 1.1 
-                    xfmr["eit_min"], xfmr["eit_max"] = 0.0, 1.1
+                    xfmr["ert_min"], xfmr["ert_max"] = -1.1, 1.1 
+                    xfmr["eit_min"], xfmr["eit_max"] = -1.1, 1.1
                 end
             end 
         end

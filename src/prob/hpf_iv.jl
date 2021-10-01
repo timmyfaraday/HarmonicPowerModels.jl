@@ -10,11 +10,11 @@ function build_hpf_iv(pm::AbstractPowerModel)
     for (n, network) in _PMs.nws(pm)
         _PMs.variable_bus_voltage(pm, nw=n, bounded=bounded)
         _PMs.variable_bus_voltage_magnitude_sqr(pm, nw=n, bounded=bounded)
-        variable_transformer_voltage(pm, nw=n, bounded=false)
+        variable_transformer_voltage(pm, nw=n, bounded=bounded)
         
-        _PMs.variable_branch_current(pm, nw=n)
+        _PMs.variable_branch_current(pm, nw=n, bounded=bounded)
         _PMs.variable_dcline_current(pm, nw=n)
-        variable_transformer_current(pm, nw=n, bounded=false)
+        variable_transformer_current(pm, nw=n, bounded=bounded)
 
         variable_load_current(pm, nw=n, bounded=bounded)
         variable_gen_current(pm, nw=n, bounded=bounded)
@@ -29,12 +29,12 @@ function build_hpf_iv(pm::AbstractPowerModel)
         for i in _PMs.ids(pm, :bus, nw=n)
             constraint_current_balance(pm, i, nw=n)
             constraint_vm_auxiliary_variable(pm, i, nw=n)
-            constraint_voltage_harmonics_relative_magnitude(pm, i, nw=n)
+            # constraint_voltage_harmonics_relative_magnitude(pm, i, nw=n)
         end
     
         for g in _PMs.ids(pm, :gen, nw=n)
-            _PMs.constraint_gen_active_bounds(pm, g, nw=n)
-            _PMs.constraint_gen_reactive_bounds(pm, g, nw=n)
+            # _PMs.constraint_gen_active_bounds(pm, g, nw=n)
+            # _PMs.constraint_gen_reactive_bounds(pm, g, nw=n)
         end
 
         for i in _PMs.ids(pm, :load, nw=n)

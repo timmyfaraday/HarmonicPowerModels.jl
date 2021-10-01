@@ -7,6 +7,7 @@ const _HPM = HarmonicPowerModels
 
 # path to the data
 path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_xfmr_Yd11_simplified.m") 
+# path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_xfmr_Yd11_simplified_noload.m") 
 
 # transformer excitation data
 xfmr = Dict("voltage_harmonics" => [1,3],
@@ -14,8 +15,8 @@ xfmr = Dict("voltage_harmonics" => [1,3],
             "N" => 50,
             "current_type" => :rectangular,
             "excitation_type" => :sigmoid,
-            "inom" => 0.1,
-            "ψmax" => 0.05,
+            "inom" => 0.13,
+            "ψmax" => 1,
             "voltage_type" => :rectangular,
             "dv" => [0.1,0.1],
             "vmin" => -[1.1,1.1],
@@ -62,5 +63,6 @@ _PMs.print_summary(result["solution"]["nw"]["1"])
 result["objective"]
 result["termination_status"]
 
-
+@show result["solution"]["nw"]["1"]["xfmr"]["1"]["pexc"]
 ##
+@show target = 77/1000/100

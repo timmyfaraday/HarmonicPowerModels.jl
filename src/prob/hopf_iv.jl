@@ -12,7 +12,7 @@ function build_hopf_iv(pm::AbstractPowerModel)
         _PMs.variable_bus_voltage_magnitude_sqr(pm, nw=n, bounded=bounded)
         variable_transformer_voltage(pm, nw=n, bounded=false)
         
-        _PMs.variable_branch_current(pm, nw=n)
+        _PMs.variable_branch_current(pm, nw=n, bounded=bounded)
         _PMs.variable_dcline_current(pm, nw=n)
         variable_transformer_current(pm, nw=n, bounded=false)
 
@@ -81,7 +81,8 @@ function build_hopf_iv(pm::AbstractPowerModel)
     end
 
     # _PMs.objective_min_fuel_and_flow_cost(pm)
-    objective_distortion_minimization(pm)
+    # objective_current_distortion_minimization(pm)
+    objective_voltage_distortion_minimization(pm)
 end
 
 function ref_add_xfmr!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any}) ## data not actually needed!

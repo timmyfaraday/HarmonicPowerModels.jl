@@ -9,6 +9,21 @@ const _INT = Interpolations
 const freq = 50.0
 const nw_id_default = 1
 
+xfmr = Dict("voltage_harmonics" => [1,3],
+            "current_harmonics" => [1,3], #this one has to match the data in the matpower file
+            "N" => 50,
+            "current_type" => :rectangular,
+            "excitation_type" => :sigmoid,
+            "inom" => 0.7,
+            "ψmax" => 0.005,
+            "voltage_type" => :rectangular,
+            "dv" => [0.1,0.1],
+            "vmin" => -[1.1,1.1],
+            "vmax" => [1.1,1.1],
+            "dθ" => [π/5,π/5],
+            "θmin" => [0.0,0.0],
+            "θmax" => [2π,2π])
+
 excitation_flux_polar(V, θ, w, t) = 
     sum(V[n] ./ w[n] .* sin.(w[n] .* t .+ θ[n]) for n in 1:length(V))
 excitation_flux_rectangular(Vre, Vim, w, t) =
@@ -32,22 +47,22 @@ end
 
 xfmr_exc = xfmr
 
-## HARMONICS
+# HARMONICS
 voltage_harmonics = xfmr_exc["voltage_harmonics"]
 current_harmonics = xfmr_exc["current_harmonics"]
 
-## TIME
+# TIME
 N = xfmr_exc["N"]
 
-## EXCITATION CURRENT 
+# EXCITATION CURRENT 
 current_type = xfmr_exc["current_type"]
 
-## EXCITATION FLUX 
+# EXCITATION FLUX 
 excitation_type = xfmr_exc["excitation_type"] 
 inom = xfmr_exc["inom"]
 ψmax = xfmr_exc["ψmax"]
 
-## EXCITATION VOLTAGE 
+# EXCITATION VOLTAGE 
 voltage_type = xfmr_exc["voltage_type"]
 dv   = xfmr_exc["dv"]
 vmin = xfmr_exc["vmin"]
@@ -56,14 +71,14 @@ dθ   = xfmr_exc["dθ"]
 θmin = xfmr_exc["θmin"]
 θmax = xfmr_exc["θmax"]
 
-## TIME
+# TIME
 w = (2.0 * pi * freq) .* voltage_harmonics
 t = 0.0:(1 / (freq * N * maximum(current_harmonics))):(5.0 / freq)
 
-## DECOMPOSITION 
+# DECOMPOSITION 
 fq = _SDC.Sinusoidal(freq .* current_harmonics)
 
-## SAMPLE VOLTAGE
+# SAMPLE VOLTAGE
 if voltage_type == :polar
     S, R = sample_voltage_polar(voltage_harmonics, dv, vmin, vmax, dθ, θmin, θmax)
 elseif voltage_type == :rectangular
@@ -89,7 +104,7 @@ I_exc = excitation_current_sigmoid(inom, ψmax, ψexc)
 
 
 plot(t,ψexc)
-plot!(t,I_exc)
+plot(t,I_exc)
 
 _SDC.decompose(t, I_exc, fq)
 

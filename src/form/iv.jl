@@ -297,19 +297,36 @@ end
 
 
 ""
-function objective_distortion_minimization(pm::AbstractIVRModel; gen_id=1, fundamental=1)
+function objective_current_distortion_minimization(pm::AbstractIVRModel; gen_id=1, fundamental=1)
     harmonics = Set(_PMs.nw_ids(pm))
     nonfundamentalharmonics = setdiff(harmonics, [fundamental])
 
-    crg = [var(pm, n, :cert, gen_id) for n in nonfundamentalharmonics]
-    cig = [var(pm, n, :ceit, gen_id) for n in nonfundamentalharmonics]
+    crg = [var(pm, n, :crg, gen_id) for n in nonfundamentalharmonics]
+    cig = [var(pm, n, :cig, gen_id) for n in nonfundamentalharmonics]
 
     pg = var(pm, fundamental, :pg, gen_id)
 
-    JuMP.@NLconstraint(pm.model, pg <= 1.01*0.650192886805081)
+    JuMP.@NLconstraint(pm.model, pg <= 1.001*0.643386)
 
     #minimize magnitude of nonfundamental harmonics
     JuMP.@objective(pm.model, Min, sum(crg.^2 + cig.^2))
+end
+
+
+""
+function objective_voltage_distortion_minimization(pm::AbstractIVRModel; bus_id=6, fundamental=1, gen_id=1)
+    harmonics = Set(_PMs.nw_ids(pm))
+    nonfundamentalharmonics = setdiff(harmonics, [fundamental])
+
+    vr = [var(pm, n, :vr, bus_id) for n in nonfundamentalharmonics]
+    vi = [var(pm, n, :vi, bus_id) for n in nonfundamentalharmonics]
+
+    pg = var(pm, fundamental, :pg, gen_id)
+
+    JuMP.@NLconstraint(pm.model, pg <= 1.001*0.643386)
+
+    #minimize magnitude of nonfundamental harmonics
+    JuMP.@objective(pm.model, Min, sum(vr.^2 + vi.^2))
 end
 
 
@@ -416,16 +433,18 @@ function append_indicators!(result, hdata)
         solu["nw"][fundamental]["gen"][i]["pmax"] = hdata["nw"][fundamental]["gen"][i]["pmax"]
     end
 
-    for (i,load) in solu["nw"][fundamental]["load"]
+    if haskey(solu["nw"][fundamental], "load")
+        for (i,load) in solu["nw"][fundamental]["load"]
 
-        cfun = solu["nw"][fundamental]["load"][i]["crd"] + im*solu["nw"][fundamental]["load"][i]["cid"]
-        call   = [solu["nw"][n]["load"][i]["crd"] + im*solu["nw"][n]["load"][i]["cid"]  for n in harmonics]
-        cnonfun = [solu["nw"][n]["load"][i]["crd"] + im*solu["nw"][n]["load"][i]["cid"]  for n in nonfundamentalharmonics]
+            cfun = solu["nw"][fundamental]["load"][i]["crd"] + im*solu["nw"][fundamental]["load"][i]["cid"]
+            call   = [solu["nw"][n]["load"][i]["crd"] + im*solu["nw"][n]["load"][i]["cid"]  for n in harmonics]
+            cnonfun = [solu["nw"][n]["load"][i]["crd"] + im*solu["nw"][n]["load"][i]["cid"]  for n in nonfundamentalharmonics]
 
-        rms = sqrt(sum(abs.(call).^2))
-        thd = sqrt(sum(abs.(cnonfun).^2))/abs(cfun)
-        
-        solu["nw"][fundamental]["load"][i]["crms"] = rms
-        solu["nw"][fundamental]["load"][i]["cthd"] = thd
+            rms = sqrt(sum(abs.(call).^2))
+            thd = sqrt(sum(abs.(cnonfun).^2))/abs(cfun)
+            
+            solu["nw"][fundamental]["load"][i]["crms"] = rms
+            solu["nw"][fundamental]["load"][i]["cthd"] = thd
+        end 
     end
 end
