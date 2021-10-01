@@ -384,11 +384,16 @@ function append_indicators!(result, hdata)
         rms = sqrt(sum(abs.(v).^2))
         thd = sqrt(sum(abs.(vnonfun).^2))/abs(vfun)
 
+        delete!(solu["nw"][fundamental]["bus"][i], "w")
+        delete!(solu["nw"][fundamental]["bus"][i], "vr")
+        delete!(solu["nw"][fundamental]["bus"][i], "vi")
+
         solu["nw"][fundamental]["bus"][i]["vrms"] = rms
         solu["nw"][fundamental]["bus"][i]["vthd"] = thd
         solu["nw"][fundamental]["bus"][i]["vmaxrms"] = hdata["nw"][fundamental]["bus"][i]["vmaxrms"]
         solu["nw"][fundamental]["bus"][i]["vminrms"] = hdata["nw"][fundamental]["bus"][i]["vminrms"]
         solu["nw"][fundamental]["bus"][i]["thdmax"] = hdata["nw"][fundamental]["bus"][i]["thdmax"]
+
     end
 
     for (i,gen) in solu["nw"][fundamental]["gen"]

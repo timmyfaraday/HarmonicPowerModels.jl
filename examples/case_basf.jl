@@ -13,7 +13,7 @@ path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_basf_simplified.m")
 # path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_basf.m")
 
 # transformer excitation data
-xfmr = Dict("voltage_harmonics" => [1,3],
+exc_1 = Dict("voltage_harmonics" => [1,3],
             "current_harmonics" => [1,3],
             "N" => 50,
             "current_type" => :rectangular,
@@ -28,21 +28,22 @@ xfmr = Dict("voltage_harmonics" => [1,3],
             "θmin" => [0.0,0.0],
             "θmax" => [2π,2π])
 
+exc_2 = Dict("voltage_harmonics" => [1,3],
+            "current_harmonics" => [1,3],
+            "N" => 50,
+            "current_type" => :rectangular,
+            "excitation_type" => :sigmoid,
+            "inom" => 0.4,
+            "ψmax" => 0.5,
+            "voltage_type" => :rectangular,
+            "dv" => [0.1,0.1],
+            "vmin" => [-1.1,-1.1],
+            "vmax" => [1.1,1.1],
+            "dθ" => [π/5,π/5],
+            "θmin" => [0.0,0.0],
+            "θmax" => [2π,2π])
 
-            # xfmr = Dict("voltage_harmonics" => [1,3],
-            # "current_harmonics" => [1,3,5,7,9,11,13],
-            # "N" => 50,
-            # "current_type" => :rectangular,
-            # "excitation_type" => :sigmoid,
-            # "inom" => 0.4,
-            # "ψmax" => 0.5,
-            # "voltage_type" => :rectangular,
-            # "dv" => [0.1,0.1],
-            # "vmin" => [0.0,0.0],
-            # "vmax" => [1.1,1.1],
-            # "dθ" => [π/5,π/5],
-            # "θmin" => [0.0,0.0],
-            # "θmax" => [2π,2π])
+xfmr_exc = Dict("1" => exc_1, "2" => exc_2)
 
 # load data
 data  = _PMs.parse_file(path)
@@ -58,7 +59,7 @@ for (g,gen) in data["gen"]
     gen["c_rating"] = abs(gen["pmax"] + im* gen["qmax"])/vmmin
 end
 
-hdata = _HPM.replicate(data, xfmr_exc=xfmr)
+hdata = _HPM.replicate(data, xfmr_exc=exc_1)
 # hdata = _HPM.replicate(data)
 
 # set the solver

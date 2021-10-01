@@ -27,6 +27,13 @@ function _HPM.replicate(data::Dict{String, Any};
     # extend the user-provided harmonics based on the data
     collect_harmonics!(data, harmonics, xfmr_exc)
 
+    for (t, xfmr) in data["xfmr"]
+        xfmr["voltage_harmonics"] = []
+        xfmr["current_harmonics"] = []
+        xfmr["voltage_harmonics_ntws"] = []
+        xfmr["current_harmonics_ntws"] = []
+    end
+    @show harmonics
     # create a multinetwork data structure
     Nh = length(harmonics)
     data = _PMs.replicate(data, Nh)
@@ -130,7 +137,7 @@ function collect_harmonics!(data::Dict{String, Any}, harmonics::Array{Int}, xfmr
                                             if  ni[1:2] == "nh"]
     push!(harmonics, bus_harmonics...)
     if haskey(xfmr_exc, "voltage_harmonics") 
-        push!(harmonics,  xfmr_exc["voltage_harmonics"]...)
+        push!(harmonics, xfmr_exc["voltage_harmonics"]...)
     end
     if haskey(xfmr_exc, "current_harmonics")
         push!(harmonics, xfmr_exc["current_harmonics"]...)
