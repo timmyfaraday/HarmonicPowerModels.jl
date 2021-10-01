@@ -394,7 +394,9 @@ function append_indicators!(result, hdata)
     for (i,gen) in solu["nw"][fundamental]["gen"]
         gencost = hdata["nw"][fundamental]["gen"][i]["cost"]
         pg = gen["pg"]
-        gen["totcost"] = sum(gencost[c]*(pg)^c for c in 1:length(gencost))
+        if length(gencost) >0
+            gen["totcost"] = sum(gencost[c]*(pg)^c for c in 1:length(gencost))
+        end
 
         cfun = solu["nw"][fundamental]["gen"][i]["crg"] + im*solu["nw"][fundamental]["gen"][i]["cig"]
         call   = [solu["nw"][n]["gen"][i]["crg"] + im*solu["nw"][n]["gen"][i]["cig"]  for n in harmonics]

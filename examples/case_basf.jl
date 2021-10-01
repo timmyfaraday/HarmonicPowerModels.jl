@@ -65,12 +65,27 @@ hdata = _HPM.replicate(data, xfmr_exc=xfmr)
 solver = Ipopt.Optimizer
 
 
+#solve power flow
+resultpf = run_hpf_iv(hdata, _PMs.IVRPowerModel, solver)
+@assert resultpf["termination_status"] == LOCALLY_SOLVED
+_HPM.append_indicators!(resultpf, hdata)
+
+println("Harmonic 5")
+_PMs.print_summary(resultpf["solution"]["nw"]["3"])
+println("Harmonic 3")
+_PMs.print_summary(resultpf["solution"]["nw"]["2"])
+println("Harmonic 1")
+_PMs.print_summary(resultpf["solution"]["nw"]["1"])
+
+
 ##
 # solve the hopf
 # result = run_hopf_iv(hdata, _PMs.IVRPowerModel, solver)
 pm = _PMs.instantiate_model(hdata, _PMs.IVRPowerModel, _HPM.build_hopf_iv; ref_extensions=[_HPM.ref_add_xfmr!]);
 result = optimize_model!(pm, optimizer=solver, solution_processors=[ _HPM.sol_data_model!])
+@assert result["termination_status"] == LOCALLY_SOLVED
 _HPM.append_indicators!(result, hdata)
+
 
 pg = result["solution"]["nw"]["1"]["gen"]["1"]["pg"]
 

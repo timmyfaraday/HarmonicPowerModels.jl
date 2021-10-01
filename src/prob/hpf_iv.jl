@@ -1,11 +1,11 @@
 ""
-function run_hopf_iv(file, model_type::Type, optimizer; kwargs...)
-    return _PMs.run_model(file, model_type, optimizer, build_hopf_iv; ref_extensions=[ref_add_xfmr!],  solution_processors=[ _HPM.sol_data_model!], multinetwork=true, kwargs...)
+function run_hpf_iv(file, model_type::Type, optimizer; kwargs...)
+    return _PMs.run_model(file, model_type, optimizer, build_hpf_iv; ref_extensions=[ref_add_xfmr!],  solution_processors=[ _HPM.sol_data_model!], multinetwork=true, kwargs...)
 end
 
 ""
-function build_hopf_iv(pm::AbstractPowerModel)
-    bounded= true
+function build_hpf_iv(pm::AbstractPowerModel)
+    bounded = false
 
     for (n, network) in _PMs.nws(pm)
         _PMs.variable_bus_voltage(pm, nw=n, bounded=bounded)
@@ -47,7 +47,7 @@ function build_hopf_iv(pm::AbstractPowerModel)
             
             _PMs.constraint_voltage_drop(pm, b, nw=n)
 
-            _PMs.constraint_current_limit(pm, b, nw=n)
+            # _PMs.constraint_current_limit(pm, b, nw=n)
         end
         
         for t in _PMs.ids(pm, :xfmr, nw=n)
@@ -67,50 +67,19 @@ function build_hopf_iv(pm::AbstractPowerModel)
     
     #constraints across harmonics
     fundamental = 1
-    for i in _PMs.ids(pm, :bus, nw=fundamental)
-        constraint_voltage_magnitude_rms(pm, i)
-        constraint_voltage_thd(pm, i, fundamental=fundamental)
-    end
+    # for i in _PMs.ids(pm, :bus, nw=fundamental)
+    #     constraint_voltage_magnitude_rms(pm, i)
+    #     constraint_voltage_thd(pm, i, fundamental=fundamental)
+    # end
 
-    for b in _PMs.ids(pm, :branch, nw=fundamental)
-        constraint_current_limit_rms(pm, b)
-    end
+    # for b in _PMs.ids(pm, :branch, nw=fundamental)
+    #     constraint_current_limit_rms(pm, b)
+    # end
 
     for g in _PMs.ids(pm, :gen, nw=fundamental)
         constraint_active_filter(pm, g, fundamental=fundamental)
     end
 
-    # _PMs.objective_min_fuel_and_flow_cost(pm)
-    objective_distortion_minimization(pm)
-end
-
-function ref_add_xfmr!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any}) ## data not actually needed!
-    _PMs.apply_pm!(_ref_add_xfmr!, ref, data)
-end
-
-function _ref_add_xfmr!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    if !haskey(ref, :xfmr)
-        # error(_LOGGER, "required xfmr data not found")
-        ref[:xfmr] = Dict()
-        ref[:xfmr_arcs_from] = Dict()
-        ref[:xfmr_arcs_to] = Dict()
-        ref[:xfmr_arcs] = Dict()
-        ref[:bus_arcs_xfmr] = Dict((i, []) for (i,bus) in ref[:bus])
-
-    else
-        ref[:xfmr] = Dict(x for x in ref[:xfmr] if  x.second["f_bus"] in keys(ref[:bus]) &&
-                                                    x.second["t_bus"] in keys(ref[:bus])
-            )
-        
-        ref[:xfmr_arcs_from] = [(t,xfmr["f_bus"],xfmr["t_bus"]) for (t,xfmr) in ref[:xfmr]]
-        ref[:xfmr_arcs_to]   = [(t,xfmr["t_bus"],xfmr["f_bus"]) for (t,xfmr) in ref[:xfmr]]
-
-        ref[:xfmr_arcs] = [ref[:xfmr_arcs_from]; ref[:xfmr_arcs_to]]
-
-        bus_arcs_xfmr = Dict((i, []) for (i,bus) in ref[:bus])
-        for (t,i,j) in ref[:xfmr_arcs]
-            push!(bus_arcs_xfmr[i], (t,i,j))
-        end
-        ref[:bus_arcs_xfmr] = bus_arcs_xfmr
-    end
+    _PMs.objective_min_fuel_and_flow_cost(pm)
+    # objective_distortion_minimization(pm)
 end
