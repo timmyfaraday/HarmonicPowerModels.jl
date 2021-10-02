@@ -60,8 +60,8 @@ for (g,gen) in data["gen"]
     gen["c_rating"] = abs(gen["pmax"] + im* gen["qmax"])/vmmin
 end
 
-hdata = _HPM.replicate(data, xfmr_exc=exc_1)
-# hdata = _HPM.replicate(data)
+# hdata = _HPM.replicate(data, xfmr_exc=exc_1)
+hdata = _HPM.replicate(data)
 
 for (n, nw) in hdata["nw"]
     for (t, xfmr) in nw["xfmr"]
@@ -92,8 +92,11 @@ solver = Ipopt.Optimizer
 # _PMs.print_summary(resultpf["solution"]["nw"]["4"])
 # println("Harmonic 5")
 # _PMs.print_summary(resultpf["solution"]["nw"]["3"])
+# vm = resultpf["solution"]["nw"]["3"]["bus"]["1"]
+
 # println("Harmonic 3")
 # _PMs.print_summary(resultpf["solution"]["nw"]["2"])
+# vm = resultpf["solution"]["nw"]["2"]["bus"]["6"]
 # println("Harmonic 1")
 # _PMs.print_summary(resultpf["solution"]["nw"]["1"])
 
@@ -102,7 +105,7 @@ solver = Ipopt.Optimizer
 
 ##
 # solve the hopf
-# result = run_hopf_iv(hdata, _PMs.IVRPowerModel, solver)
+result = run_hopf_iv(hdata, _PMs.IVRPowerModel, solver)
 pm = _PMs.instantiate_model(hdata, _PMs.IVRPowerModel, _HPM.build_hopf_iv; ref_extensions=[_HPM.ref_add_xfmr!]);
 result = optimize_model!(pm, optimizer=solver, solution_processors=[ _HPM.sol_data_model!])
 @assert result["termination_status"] == LOCALLY_SOLVED
@@ -126,4 +129,6 @@ result["objective"]
 result["termination_status"]
 
 
+Dict(n=>(nw["gen"]["2"]["crg"]+ im*nw["gen"]["2"]["cig"] ) for (n,nw) in result["solution"]["nw"])
+result["solution"]["nw"]["1"]["gen"]["1"]["pg"] + im* result["solution"]["nw"]["1"]["gen"]["1"]["qg"]
 # @show result["solution"]["nw"]["1"]["xfmr"]["1"]["pexc"]
