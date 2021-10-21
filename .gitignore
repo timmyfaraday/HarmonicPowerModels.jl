@@ -1,2 +1,5 @@
 /Manifest.toml
 *.dbl
+docs/build/
+docs/site/
+docs/.documenter
