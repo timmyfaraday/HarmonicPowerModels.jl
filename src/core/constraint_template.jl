@@ -8,13 +8,10 @@ function constraint_current_balance(pm::AbstractPowerModel, i::Int; nw::Int=nw_i
     bus_loads     = _PMs.ref(pm, nw, :bus_loads, i)
     bus_shunts    = _PMs.ref(pm, nw, :bus_shunts, i)
 
-    bus_pd = Dict(k => _PMs.ref(pm, nw, :load, k, "pd") for k in bus_loads)
-    bus_qd = Dict(k => _PMs.ref(pm, nw, :load, k, "qd") for k in bus_loads)
-
     bus_gs = Dict(k => _PMs.ref(pm, nw, :shunt, k, "gs") for k in bus_shunts)
     bus_bs = Dict(k => _PMs.ref(pm, nw, :shunt, k, "bs") for k in bus_shunts)
 
-    constraint_current_balance(pm, nw, i, bus_arcs, bus_arcs_dc, bus_arcs_xfmr, bus_gens, bus_pd, bus_qd, bus_gs, bus_bs)
+    constraint_current_balance(pm, nw, i, bus_arcs, bus_arcs_dc, bus_arcs_xfmr, bus_gens, bus_loads, bus_gs, bus_bs)
 end
 
 ""
@@ -84,7 +81,7 @@ function constraint_transformer_winding_config(pm::AbstractPowerModel, t::Int; n
 
     for w in 1:2
         constraint_transformer_winding_config(pm, nw, nh, bus[w], idx[w], r[w], re[w], xe[w], gnd[w])
-    end
+    end #                                               nh, i,      idx,    r,  re,     xe,     gnd)
 end
 
 ""
@@ -108,9 +105,71 @@ function constraint_transformer_winding_current_balance(pm::AbstractPowerModel, 
 end
 
 ""
-function constraint_voltage_magnitude_rms(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-    vmin = ref(pm, nw, :bus, i, "vmin")
-    vmax = ref(pm, nw, :bus, i, "vmax")
+function constraint_voltage_magnitude_rms(pm::AbstractPowerModel, i::Int; fundamental::Int=1)
+    vminrms = ref(pm, fundamental, :bus, i, "vminrms")
+    vmaxrms = ref(pm, fundamental, :bus, i, "vmaxrms")
 
-    constraint_voltage_magnitude_rms(pm, i, vmin, vmax)
+    constraint_voltage_magnitude_rms(pm, i, vminrms, vmaxrms)
+end
+
+
+""
+function constraint_voltage_thd(pm::AbstractPowerModel, i::Int; fundamental::Int=1)
+    thdmax = ref(pm, fundamental, :bus, i, "thdmax")
+    constraint_voltage_thd(pm, i, fundamental, thdmax)
+end
+
+
+""
+function constraint_voltage_harmonics_relative_magnitude(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default, fundamental::Int=1)
+    rm = ref(pm, fundamental, :bus, i, "rm")
+    hmap = pm.ref[:it][:pm][:harmonics]
+    hnumber = hmap["$nw"]
+    if haskey(rm, hnumber)
+        constraint_voltage_harmonics_relative_magnitude(pm, nw, i, rm[hnumber], fundamental)
+    end
+end
+
+
+function constraint_load_power(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+    load = ref(pm, nw, :load, i)
+    busi = load["load_bus"]
+
+    if nw == 1
+        constraint_load_constant_power(pm, nw, i, busi, load["pd"], load["qd"])
+    else
+        constraint_load_constant_current(pm, nw, i, busi, load["multiplier"])
+    end
+end
+
+
+""
+function constraint_vm_auxiliary_variable(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+    constraint_vm_auxiliary_variable(pm, nw, i)
+end
+
+function constraint_ref_bus(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+    constraint_ref_bus(pm, nw, i)
+end
+
+
+function constraint_current_limit_rms(pm::AbstractPowerModel, i::Int; fundamental::Int=1)
+    branch = ref(pm, fundamental, :branch, i)
+    f_bus = branch["f_bus"]
+    t_bus = branch["t_bus"]
+    f_idx = (i, f_bus, t_bus)
+
+
+    if haskey(branch, "c_rating_a")
+        constraint_current_limit_rms(pm, f_idx, branch["c_rating_a"])
+    end
+end
+
+
+function constraint_active_filter(pm::AbstractPowerModel, i::Int; fundamental::Int=1)
+    gen = ref(pm, fundamental, :gen, i)
+
+    if haskey(gen, "isfilter") && gen["isfilter"] == 1
+        constraint_active_filter(pm, i, fundamental)
+    end
 end

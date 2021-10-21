@@ -45,12 +45,13 @@ module HarmonicPowerModels
     include("form/iv.jl")
 
     include("prob/hopf_iv.jl")
+    include("prob/hpf_iv.jl")
 
     # export
     export BASE_DIR
 
     export replicate
 
-    export run_hopf_iv
+    export run_hopf_iv, run_hpf_iv
 
 end
