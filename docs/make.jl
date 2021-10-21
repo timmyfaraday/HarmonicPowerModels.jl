@@ -7,8 +7,8 @@ makedocs(sitename="HarmonicPowerModels Documentation")
 const _IS_GITHUB_ACTIONS = get(ENV, "GITHUB_ACTIONS", "false") == "true"
 
 # Pass --pdf to build the PDF. On GitHub actions, we always build the PDF.
-# const _PDF = findfirst(isequal("--pdf"), ARGS) !== nothing || _IS_GITHUB_ACTIONS
-const _PDF = true
+const _PDF = findfirst(isequal("--pdf"), ARGS) !== nothing || _IS_GITHUB_ACTIONS
+# const _PDF = true
 
 if _PDF
     latex_platform = _IS_GITHUB_ACTIONS ? "docker" : "native"
