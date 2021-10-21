@@ -15,4 +15,4 @@ This code has been developed at BASF Antwerp and CSIRO. The primary developers a
 
 
 ## License
-This code is provided under a MIT license.
+This code is provided under a BSD 3-Clause License.
