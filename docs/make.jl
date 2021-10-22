@@ -1,17 +1,27 @@
 push!(LOAD_PATH,"../src/")
-using Documenter
-
-makedocs(sitename="HarmonicPowerModels Documentation")
+using Documenter, HarmonicPowerModels
 
 # A flag to check if we are running in a GitHub action.
 const _IS_GITHUB_ACTIONS = get(ENV, "GITHUB_ACTIONS", "false") == "true"
 
 # Pass --pdf to build the PDF. On GitHub actions, we always build the PDF.
 const _PDF = findfirst(isequal("--pdf"), ARGS) !== nothing || _IS_GITHUB_ACTIONS
-# const _PDF = true
+
+const _PAGES = [
+    "Home" => "index.md",
+];
+
+@time Documenter.makedocs(
+    modules = [HarmonicPowerModels],
+    format = Documenter.HTML(mathengine = Documenter.MathJax()),
+    sitename = "HarmonicPowerModels",
+    authors = "Tom Van Acker and contributors.",
+    pages = _PAGES,
+    )
 
 if _PDF
-    latex_platform = _IS_GITHUB_ACTIONS ? "docker" : "native"
+    # latex_platform = _IS_GITHUB_ACTIONS ? "docker" : "native"
+    latex_platform = "docker"
     @time Documenter.makedocs(
         sitename = "HarmonicPowerModels",
         authors = "The HarmonicPowerModels core developers and contributors",
