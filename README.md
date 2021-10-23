@@ -1,3 +1,5 @@
+<a href="https://timmyfaraday.github.io/HarmonicPowerModels.jl/"><img src="https://github.com/timmyfaraday/HarmonicPowerModels.jl/workflows/Documentation/badge.svg"></img></a>
+
 # HarmonicPowerModels.jl
 
 HarmonicPowerModels.jl is an extension package of PowerModels.jl for Haromonic (Optimal) Power Flow. 
