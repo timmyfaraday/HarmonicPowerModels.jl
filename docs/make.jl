@@ -15,7 +15,7 @@ const _PAGES = [
     modules = [HarmonicPowerModels],
     format = Documenter.HTML(mathengine = Documenter.MathJax()),
     sitename = "HarmonicPowerModels",
-    authors = "Tom Van Acker and contributors.",
+    authors = "Tom Van Acker, Frederik Geth and contributors.",
     pages = _PAGES,
     )
 
