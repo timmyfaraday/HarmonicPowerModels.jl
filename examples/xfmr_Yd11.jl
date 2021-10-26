@@ -6,19 +6,20 @@ const _PMs = PowerModels
 const _HPM = HarmonicPowerModels
 
 # path to the data
-path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_xfmr_YNyn0_simplified.m")
+path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_xfmr_Yd11_simplified.m") 
+# path = joinpath(_HPM.BASE_DIR,"test/data/matpower/case_xfmr_Yd11_simplified_noload.m") 
 
 # transformer excitation data
 xfmr = Dict("voltage_harmonics" => [1,3],
-            "current_harmonics" => [1,3],
+            "current_harmonics" => [1,3], #this one has to match the data in the matpower file
             "N" => 50,
             "current_type" => :rectangular,
             "excitation_type" => :sigmoid,
-            "inom" => 0.4,
-            "ψmax" => 0.5,
+            "inom" => 0.13,
+            "ψmax" => 1,
             "voltage_type" => :rectangular,
             "dv" => [0.1,0.1],
-            "vmin" => [0.0,0.0],
+            "vmin" => -[1.1,1.1],
             "vmax" => [1.1,1.1],
             "dθ" => [π/5,π/5],
             "θmin" => [0.0,0.0],
@@ -38,8 +39,8 @@ for (g,gen) in data["gen"]
     gen["c_rating"] = abs(gen["pmax"] + im* gen["qmax"])/vmmin
 end
 
-hdata = _HPM.replicate(data)
-# hdata = _HPM.replicate(data, xfmr_exc=xfmr)
+# hdata = _HPM.replicate(data)
+hdata = _HPM.replicate(data, xfmr_exc=xfmr)
 
 # set the solver
 solver = Ipopt.Optimizer
@@ -50,13 +51,11 @@ pm = _PMs.instantiate_model(hdata, _PMs.IVRPowerModel, _HPM.build_hopf_iv; ref_e
 result = optimize_model!(pm, optimizer=solver, solution_processors=[ _HPM.sol_data_model!])
 _HPM.append_indicators!(result, hdata)
 
+##
+# print(pm.model)
 
-for (n,nw) in result["solution"]["nw"]
-    for (i,bus) in nw["bus"]
-            bus["vm"] =  abs(bus["vr"] +im*  bus["vi"])
-            bus["va"] =  angle(bus["vr"] +im*  bus["vi"])*180/pi
-    end
-end
+
+
 println("Harmonic 3")
 _PMs.print_summary(result["solution"]["nw"]["2"])
 println("Harmonic 1")
@@ -64,7 +63,6 @@ _PMs.print_summary(result["solution"]["nw"]["1"])
 result["objective"]
 result["termination_status"]
 
+@show result["solution"]["nw"]["1"]["xfmr"]["1"]["pexc"]
 ##
-# Yy -> third harmonic of the excitation cannot flow -> current is inherently forced to 0
-# this means the third harmonic voltage is 0
-# 
+@show target = 77/1000/100
