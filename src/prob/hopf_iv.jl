@@ -1,3 +1,11 @@
+################################################################################
+#  Copyright 2021, Frederik Geth, Tom Van Acker                                #
+################################################################################
+# HarmonicPowerModels.jl                                                       #
+# An extention package of PowerModels.jl for Harmonic (Optimal) Power Flow     #
+# See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
+################################################################################
+
 ""
 function run_hopf_iv(file, model_type::Type, optimizer; kwargs...)
     return _PMs.run_model(file, model_type, optimizer, build_hopf_iv; ref_extensions=[ref_add_xfmr!],  solution_processors=[ _HPM.sol_data_model!], multinetwork=true, kwargs...)

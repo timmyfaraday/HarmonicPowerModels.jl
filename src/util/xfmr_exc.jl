@@ -7,25 +7,35 @@
 ################################################################################
 
 """
-    magnetic_flux_density_polar(E, θ, ω, t, A)
+    HarmonicPowerModels.magnetic_flux_density_polar(E::Vector{<:Real}, θ::Vector{<:Real}, ω::Vector{<:Real}, t::Vector{<:Real}, A::Real, Vbase::Real)
 
-Function to determine the magnetic flux density B(t).
+Function to determine the time-domain magnetic flux density B(t) for a given
+time-vector `t` and core surface `A`, based on the frequency-domain excitation 
+voltage in polar form, given by `E`, `θ`, `ω` and `Vbase`.
 
-Mathematical derivation:
-e(t) [pu] = E ⋅ sin(ω ⋅ t + θ)
-ψ(t) [Wb] = ∫ -e(t) dt = B(t) ⋅ A
-B(t) [T]  = ψ(t) / A
-          = 1 / A ⋅ ∫ -e(t) d(t) 
-          = E / (A ⋅ ω) ⋅ cos(ω ⋅ t + θ)
+```math 
+\begin{align}
+    B(t) = \sum_{h \in H} \frac{Vbase \cdot |E_h|}{A \cdot ω_h} ⋅ \cos(\omega_h ⋅ t + \theta_h)
+\end{align}
+```
 
-Open questions:
-- does the unit convertion stand given the pu voltage? Think not!
-- is the expression correct for the excitation voltage, i.e., sin and + θ?
 """
-magnetic_flux_density_polar(E, θ, ω, t, A) = 
-    sum(E[n] ./ (ω[n] .* A) .* cos.(ω[n] .* t .+ θ[n]) for n in 1:length(V))
-magnetic_flux_density_rectangular(Ere, Eim, ω, t, A) =
-    magnetic_flux_density_polar(hypot.(Ere, Eim), atan.(Eim, Ere), ω, t, A)
+magnetic_flux_density_polar(E::Vector{<:Real}, θ::Vector{<:Real}, ω::Vector{<:Real}, 
+                            t::Vector{<:Real}, A::Real, Vbase::Real) = 
+    sum(Vbase .* E[h] ./ ω[h] ./ A .* cos.(ω[h] .* t .+ θ[h]) for h in 1:length(E))
+
+"""
+    HarmonicPowerModels.magnetic_flux_density_rectangular(Ere::Vector{<:Real}, Eim::Vector{<:Real}, ω::Vector{<:Real}, t::Vector{<:Real}, A::Real, Vbase::Real)
+
+Function to determine the time-domain magnetic flux density B(t) for a given
+time-vector `t` and core surface `A`, based on the frequency-domain excitation 
+voltage in rectangular form, given by `Ere`, `Eim`, `ω` and `Vbase`. 
+
+This dispatches to `magnetic_flux_density_polar(hypot.(Ere,Eim), atan.(Eim,Eim), ω, t, A, Vbase)`.
+"""
+magnetic_flux_density_rectangular(Ere::Vector{<:Real}, Eim::Vector{<:Real}, ω::Vector{<:Real}, 
+                                  t::Vector{<:Real}, A::Real, Vbase::Real) =
+    magnetic_flux_density_polar(hypot.(Ere, Eim), atan.(Eim, Ere), ω, t, A, Vbase)
 
 ""
 function sample_voltage_rectangular(E_harmonics, dE, E_min, E_max, dθ, θ_min, θ_max)
@@ -136,7 +146,7 @@ function sample_xfmr_excitation(data::Dict{String, <:Any}, xfmr_exc::Dict{Int, D
 
             # determine the excitation current iᵉ(t) [pu] based on the magnetic 
             # field intensity H(t) = BH(B(t)) [A-turns/m] and the mean magnetic path. 
-            i_exc = exc["mean_path"] .* exc["BH-curve"].(B)
+            i_exc = exc["mean_path"] .* exc["BH-curve"].(B) ./ Abase
 
             # decompose the excitation current iᵉ(t) into its frequency components
             _SDC.decompose(t, i_exc, fq)

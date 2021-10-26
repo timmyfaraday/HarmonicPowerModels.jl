@@ -8,7 +8,8 @@ const _IS_GITHUB_ACTIONS = get(ENV, "GITHUB_ACTIONS", "false") == "true"
 const _PDF = findfirst(isequal("--pdf"), ARGS) !== nothing || _IS_GITHUB_ACTIONS
 
 const _PAGES = [
-    "Home" => "index.md",
+    "Home"          => "index.md",
+    "Transformer"   => "xfmr.md"
 ];
 
 @time Documenter.makedocs(
