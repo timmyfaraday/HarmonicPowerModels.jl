@@ -21,8 +21,10 @@ function constraint_transformer_core_excitation(pm::AbstractPowerModel, t::Int; 
     if nw in current_harmonics_ntws
         int_a  = ref(pm, nw, :xfmr, t, "INT_A")
         int_b  = ref(pm, nw, :xfmr, t, "INT_B")
+        grad_a = ref(pm, nw, :xfmr, t, "GRAD_A")
+        grad_b = ref(pm, nw, :xfmr, t, "GRAD_B")
 
-        constraint_transformer_core_excitation(pm, nw, t, int_a, int_b)
+        constraint_transformer_core_excitation(pm, nw, t, int_a, int_b, grad_a, grad_b)
     else 
         constraint_transformer_core_excitation(pm, nw, t)
     end

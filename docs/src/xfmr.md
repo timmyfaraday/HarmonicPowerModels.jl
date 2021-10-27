@@ -40,16 +40,44 @@ The transformer magnetization current~$i^m(t)$ relates to its magnetic field int
 ```
 where~$l$\,[m] denotes the mean magnetic path. The frequency-domain magnetization current~$I^{e}$\,[pu] is determined through a Fourrier transform of the time-domain magnetization current~$i^m(t)$, adjusted for current basis. Depending on the chosen excitation voltage formulation `E_formulation`, the frequency-domain magnetization current is expressed in `:polar` or `:rectangular` coordinates.
 
-<!-- ### Implementation
+### Implementation
 
-This function creates anonymous functions which wrap a spline model of the exitation current. As inputs it takes either the rectangular or polar coordinates of the excitation voltage of transformer x ∈ 𝓧:
-    `E^{re}_{h,x}, E^{im}_{h,x}, ∀ h ∈ 𝓗ᵉ,`
-        or
-    `E_{h,x}, θ_{h,x}, ∀ h ∈ 𝓗ᵉ,`
-and outputs either the rectangular or polar coordinates of the exictation 
-current of tranformer x ∈ 𝓧:
-    `I^{exc,re}_{h,x}, I^{exc,im}_{h,x}, ∀ h ∈ 𝓗ⁱ,`
-        or
-    `I^{exc}_{h,x}, φ^{exc}_{h,x}, ∀ h ∈ 𝓗ⁱ,`
-where 𝓗ᵉ and 𝓗ⁱ denote the set of excitation voltage and current harmonics, 
-respectively. -->
+```@docs
+    HarmonicPowerModels.sample_xfmr_excitation(data::Dict{String, <:Any}, xfmr_exc::Dict{Int, Dict{String, <:Any})
+```
+
+All excitation data are stored in a dictionary `xfmr_exc` with:
+- key = id of the xfmr [`Int`]
+- val = a dictionary consisting of three types of input:
+  - General input, including:
+| key           | type          | description                                                                       |
+|---------------|---------------|-----------------------------------------------------------------------------------|
+| E_formulation | Symbol        | excitation voltage formulation, i.e., :rectangular or :polar                      |
+| I_formulation | Symbol        | magnetization current formulation, i.e., :rectangular or :polar                   |
+| E_harmonics   | Vector{Int}   | set of excitation voltage harmonics                                               |
+| I_harmonics   | Vector{Int}   | set of magnetization current harmonics                                            |
+  - Magnetization model input, including:
+| key           | type          | description                                                                       |
+|---------------|---------------|-----------------------------------------------------------------------------------|
+| BH_curve      | Function      | anonymous function for the inversed BH-curve [T//A-turns/m]                     |
+| mean_path     | Real          | mean magnetic path [m]                                                            |
+| core_surface  | Real          | core surface [m^2]                                                                |
+  - Excitation voltage input, depending on the chosen E_formulation:
+  if E_formulation == :rectangular
+| key           | type          | description                                                                       |
+|---------------|---------------|-----------------------------------------------------------------------------------|
+| dEre          | Vector{Real}  | real excitation voltage step [pu] for all excitation voltage harmonics            |
+| Ere_min       | Vector{Real}  | minimum real excitation voltage [pu] for all excitation voltage harmonics         |
+| Ere_max       | Vector{Real}  | maximum real excitation voltage [pu] for all excitation voltage harmonics         |
+| dEim          | Vector{Real}  | imaginary excitation voltage step [pu] for all excitation voltage harmonics       |
+| Eim_min       | Vector{Real}  | minimum imaginary excitation voltage [pu] for all excitation voltage harmonics    |
+| Eim_max       | Vector{Real}  | maximum imaginary excitation voltage [pu] for all excitation voltage harmonics    |    
+  if E_formulation == :polar
+| key           | type          | description                                                                       |
+|---------------|---------------|-----------------------------------------------------------------------------------|
+| dE            | Vector{Real}  | excitation voltage magnitude step [pu] for all excitation voltage harmonics       |
+| dE_min        | Vector{Real}  | minimum excitation voltage magnitude [pu] for all excitation voltage harmonics    |
+| dE_max        | Vector{Real}  | maximum excitation voltage magnitude [pu] for all excitation voltage harmonics    |
+| dθ            | Vector{Real}  | excitation voltage phase angle step [rad] for all excitation voltage harmonics    |
+| dθ_min        | Vector{Real}  | minimum excitation voltage phase angle [rad] for all excitation voltage harmonics |
+| dθ_max        | Vector{Real}  | maximum excitation voltage phase angle [rad] for all excitation voltage harmonics |

@@ -54,48 +54,22 @@ function sample_voltage_rectangular(E_harmonics, dEre, Ere_min, Ere_max, dEim, E
 end
 
 """
-    HarmonicPowerModels.sample_xfmr_excitation(data::Dict{String, <:Any}, xfmr_exc::Dict{String, <:Any})
+    HarmonicPowerModels.sample_xfmr_excitation(data::Dict{String, <:Any}, xfmr_exc::Dict{Int, Dict{String, <:Any})
 
 This function creates anonymous functions which wrap a spline model of the 
-exitation current. As inputs it takes either the rectangular or polar 
-coordinates of the excitation voltage of transformer x ∈ 𝓧:
-    `E^{re}_{h,x}, E^{im}_{h,x}, ∀ h ∈ 𝓗ᵉ,`
+exitation current, either in `:polar` or `:rectangular` coordinates. 
+As inputs it takes excitation voltage, either in `:polar` or 
+`:rectangular` coordinates, of transformer x ∈ 𝓧:
+    `$E^{re}_{h,x}$, $E^{im}_{h,x}$, ∀ h ∈ 𝓗ᵉ,`
         or
-    `E_{h,x}, θ_{h,x}, ∀ h ∈ 𝓗ᵉ,`
-and outputs either the rectangular or polar coordinates of the exictation 
+    `$E_{h,x}$, $θ_{h,x}$, ∀ h ∈ 𝓗ᵉ,`
+and outputs either the `:polar` or `:rectangular` coordinates of the exictation 
 current of tranformer x ∈ 𝓧:
-    `I^{exc,re}_{h,x}, I^{exc,im}_{h,x}, ∀ h ∈ 𝓗ⁱ,`
+    `$I^{exc,re}_{h,x}$, $I^{exc,im}_{h,x}$, ∀ h ∈ 𝓗ⁱ,`
         or
-    `I^{exc}_{h,x}, φ^{exc}_{h,x}, ∀ h ∈ 𝓗ⁱ,`
+    `$I^{exc}_{h,x}$, $φ^{exc}_{h,x}$, ∀ h ∈ 𝓗ⁱ,`
 where 𝓗ᵉ and 𝓗ⁱ denote the set of excitation voltage and current harmonics, 
 respectively.
-
-All excitation models are stored in a dictionary `xfmr_exc`, where xfmr-id => an 
-excitation model is a dictionary consisting of three types of input:
-- General input, including:
-    - E_formulation         :: Symbol       -- chosen excitation voltage formulation, i.e., :rectangular or :polar
-    - I_formulation         :: Symbol       -- chosen excitation current formulation, i.e., :rectangular or :polar
-    - E_harmonics           :: Vector{Int}  -- set of excitation voltage harmonics
-    - I_harmonics           :: Vector{Int}  -- set of excitation current harmonics
-- Magnetization model input, including:
-    - BH_curve              :: Function     -- anonymous function for the inversed BH-curve [T // A-turns/m]
-    - mean_path             :: Real         -- mean magnetic path [m]
-    - core_surface          :: Real         -- core surface [m²]
-- Excitation voltage input, depending on the chosen E_formulation:
-    if E_formulation == :rectangular
-    - dEre                  :: Vector{Real} -- step of the real excitation voltage [pu] for each excitation voltage harmonic  
-    - Ere_min               :: Vector{Real} -- minimum real excitation voltage [pu] for each excitation voltage harmonic
-    - Ere_max               :: Vector{Real} -- maximum real excitation voltage [pu] for each excitation voltage harmonic
-    - dEim                  :: Vector{Real} -- step of the imaginary excitation voltage [pu] for each excitation voltage harmonic
-    - Eim_min               :: Vector{Real} -- minimum imaginary excitation voltage [pu] for each excitation voltage harmonic 
-    - Eim_max               :: Vector{Real} -- maximum imaginary excitation voltage [pu] for each excitation voltage harmonic 
-    if E_formulation == :polar
-    - dE                    :: Vector{Real} -- step of the excitation voltage magnitude [pu] for each excitation voltage harmonic
-    - dE_min                :: Vector{Real} -- minimum excitation voltage magnitude [pu] for each excitation voltage harmonic
-    - dE_max                :: Vector{Real} -- maximum excitation voltage magnitude [pu] for each excitation voltage harmonic
-    - dθ                    :: Vector{Real} -- step of the excitation voltage phase angle [rad] for each excitation voltage harmonic 
-    - dθ_min                :: Vector{Real} -- minimum excitation voltage phase angle [rad] for each excitation voltage harmonic
-    - dθ_max                :: Vector{Real} -- maximum excitation voltage phase angle [rad] for each excitation voltage harmonic
 """
 function sample_xfmr_excitation(data::Dict{String, <:Any}, xfmr_exc::Dict{Int, Dict{String, <:Any}})
     # interpolation method 

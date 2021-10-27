@@ -72,7 +72,7 @@ function constraint_transformer_core_excitation(pm::AbstractIVRModel, n::Int, t)
 end
 
 ""
-function constraint_transformer_core_excitation(pm::AbstractIVRModel, n::Int, t, int_a, int_b)
+function constraint_transformer_core_excitation(pm::AbstractIVRModel, n::Int, t, int_a, int_b, grad_a, grad_b)
     cert = var(pm, n, :cert, t)
     ceit = var(pm, n, :ceit, t)
 
@@ -84,8 +84,10 @@ function constraint_transformer_core_excitation(pm::AbstractIVRModel, n::Int, t,
     sym_exc_a = Symbol("exc_a_",n,"_",t)
     sym_exc_b = Symbol("exc_b_",n,"_",t)
 
-    JuMP.register(pm.model, sym_exc_a, length(et), int_a; autodiff=true)
-    JuMP.register(pm.model, sym_exc_b, length(et), int_b; autodiff=true)
+    # JuMP.register(pm.model, sym_exc_a, length(et), int_a; autodiff=true)
+    # JuMP.register(pm.model, sym_exc_b, length(et), int_b; autodiff=true)
+    JuMP.register(pm.model, sym_exc_a, length(et), int_a, grad_a)
+    JuMP.register(pm.model, sym_exc_b, length(et), int_b, grad_b)
 
     JuMP.add_NL_constraint(pm.model, :($(cert) == $(sym_exc_a)($(et...))))
     JuMP.add_NL_constraint(pm.model, :($(ceit) == $(sym_exc_b)($(et...))))
