@@ -48,36 +48,14 @@ where~$l$\,[m] denotes the mean magnetic path. The frequency-domain magnetizatio
 
 All excitation data are stored in a dictionary `xfmr_exc` with:
 - key = id of the xfmr [`Int`]
-- val = a dictionary consisting of three types of input:
+- val = a dictionary [`Dict{String,Any}`] consisting of the following input:
   - General input, including:
-| key           | type          | description                                                                       |
-|---------------|---------------|-----------------------------------------------------------------------------------|
-| E_formulation | Symbol        | excitation voltage formulation, i.e., :rectangular or :polar                      |
-| I_formulation | Symbol        | magnetization current formulation, i.e., :rectangular or :polar                   |
-| E_harmonics   | Vector{Int}   | set of excitation voltage harmonics                                               |
-| I_harmonics   | Vector{Int}   | set of magnetization current harmonics                                            |
-  - Magnetization model input, including:
-| key           | type          | description                                                                       |
-|---------------|---------------|-----------------------------------------------------------------------------------|
-| BH_curve      | Function      | anonymous function for the inversed BH-curve [T//A-turns/m]                     |
-| mean_path     | Real          | mean magnetic path [m]                                                            |
-| core_surface  | Real          | core surface [m^2]                                                                |
-  - Excitation voltage input, depending on the chosen E_formulation:
-  if E_formulation == :rectangular
-| key           | type          | description                                                                       |
-|---------------|---------------|-----------------------------------------------------------------------------------|
-| dEre          | Vector{Real}  | real excitation voltage step [pu] for all excitation voltage harmonics            |
-| Ere_min       | Vector{Real}  | minimum real excitation voltage [pu] for all excitation voltage harmonics         |
-| Ere_max       | Vector{Real}  | maximum real excitation voltage [pu] for all excitation voltage harmonics         |
-| dEim          | Vector{Real}  | imaginary excitation voltage step [pu] for all excitation voltage harmonics       |
-| Eim_min       | Vector{Real}  | minimum imaginary excitation voltage [pu] for all excitation voltage harmonics    |
-| Eim_max       | Vector{Real}  | maximum imaginary excitation voltage [pu] for all excitation voltage harmonics    |    
-  if E_formulation == :polar
-| key           | type          | description                                                                       |
-|---------------|---------------|-----------------------------------------------------------------------------------|
-| dE            | Vector{Real}  | excitation voltage magnitude step [pu] for all excitation voltage harmonics       |
-| dE_min        | Vector{Real}  | minimum excitation voltage magnitude [pu] for all excitation voltage harmonics    |
-| dE_max        | Vector{Real}  | maximum excitation voltage magnitude [pu] for all excitation voltage harmonics    |
-| dθ            | Vector{Real}  | excitation voltage phase angle step [rad] for all excitation voltage harmonics    |
-| dθ_min        | Vector{Real}  | minimum excitation voltage phase angle [rad] for all excitation voltage harmonics |
-| dθ_max        | Vector{Real}  | maximum excitation voltage phase angle [rad] for all excitation voltage harmonics |
+| key   | type          | description                                                     |
+|-------|---------------|-----------------------------------------------------------------|
+| "Hᴱ"  | Vector{Int}   | set of relevant excitation voltage harmonics                    |
+| "Fᴱ"  | Symbol        | excitation voltage formulation, i.e., :rectangular or :polar    |
+| "Fᴵ"  | Symbol        | magnetization current formulation, i.e., :rectangular or :polar |
+| "l"   | Real          | mean magnetic path [m]                                          |
+| "A"   | Real          | core surface [m^2]                                              |
+| "N"   | Int           | nominal primary turns [-]                                       |
+| "BH"  | Function      | anonymous function for the inversed BH-curve [T//A-turns/m]     |
