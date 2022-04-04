@@ -1,16 +1,35 @@
 """
+    HarmonicPowerModels.collect_harmonics!(harmonics::Array{Int},
+                                           data::Dict{String, Any},
+                                           xfmr_magn::Dict{String, Any})
+
+Returns all relevant harmonics based on a PowerModels data dictionary `data` and 
+transformer magnetizing dictionary `xfmr_magn`.
+"""
+function collect_harmonics!(harmonics::Array{Int}, data::Dict{String, Any}, xfmr_magn::Dict{String, Any})
+    bus_harmonics = [parse(Int,ni[4:end])   for ni in keys(data["bus"]["1"]) 
+                                            if  ni[1:2] == "nh"]
+    push!(harmonics, bus_harmonics...)
+    
+    if haskey(xfmr_magn, "Hᴱ") push!(harmonics, xfmr_magn["Hᴱ"]...) end
+    if haskey(xfmr_magn, "Hᴵ") push!(harmonics, xfmr_magn["Hᴵ"]...) end  
+
+    unique!(sort!(harmonics))
+end
+
+"""
     HarmonicPowerModels.replicate(data::Dict{String,<:Any};
                                   harmonics::Array{Int}=Int[],
-                                  xfmr_exc::Bool=false)
+                                  xfmr_magn::Dict{String,Any}=Dict{String,Any}())
 
 Creates a multinetwork data-file for all considered harmonics based on the data
 specified for the fundamental harmonic.
 
 The considered harmonics are provided by the user through the named 
-argument harmonics, and collected based on the harmonic bus data.
+argument `harmonics``, and collected based on the harmonic bus data.
 
-Additionally, a Bool `xfmr_exc` may be passed to include the excitation current
-of the transformers.
+Additionally, a dictionary `xfmr_magn` may be passed to include the magnetizing 
+current of the transformers.
 
 NOTES:
 i) branch
@@ -21,19 +40,12 @@ ii) transformer
 -   The transformer configuration defaults to Yy0.
 -   The resistance r of any transformer is scaled using the square of the harmonic.
 """
-function _HPM.replicate(data::Dict{String, Any}; 
+function _HPM.replicate(data::Dict{String,Any}; 
                         harmonics::Array{Int}=Int[],
-                        xfmr_exc::Dict{String, Any}=Dict{String, Any}())
+                        xfmr_magn::Dict{String,Any}=Dict{String,Any}())
     # extend the user-provided harmonics based on the data
-    collect_harmonics!(data, harmonics, xfmr_exc)
+    collect_harmonics!(harmonics, data, xfmr_magn)
 
-    # for (t, xfmr) in data["xfmr"]
-    #     xfmr["voltage_harmonics"] = []
-    #     xfmr["current_harmonics"] = []
-    #     xfmr["voltage_harmonics_ntws"] = []
-    #     xfmr["current_harmonics_ntws"] = []
-    # end
-    @show harmonics
     # create a multinetwork data structure
     Nh = length(harmonics)
     data = _PMs.replicate(data, Nh)
@@ -41,8 +53,8 @@ function _HPM.replicate(data::Dict{String, Any};
     # add the harmonics to the overall data
     data["harmonics"] = Dict("$nw" => harmonics[nw] for nw in 1:Nh)
 
-    # add the xfmr excitation
-    sample_xfmr_excitation(data, xfmr_exc)
+    # add the xfmr magnetizing current
+    sample_magnetizing_current(data, xfmr_magn)
 
     # re-evaluate the data for each harmonic 
     for nw in keys(data["nw"])
@@ -130,19 +142,6 @@ function _HPM.replicate(data::Dict{String, Any};
     end
 
     return data
-end
-
-function collect_harmonics!(data::Dict{String, Any}, harmonics::Array{Int}, xfmr_exc::Dict{String, Any})
-    bus_harmonics = [parse(Int,ni[4:end])   for ni in keys(data["bus"]["1"]) 
-                                            if  ni[1:2] == "nh"]
-    push!(harmonics, bus_harmonics...)
-    if haskey(xfmr_exc, "voltage_harmonics") 
-        push!(harmonics, xfmr_exc["voltage_harmonics"]...)
-    end
-    if haskey(xfmr_exc, "current_harmonics")
-        push!(harmonics, xfmr_exc["current_harmonics"]...)
-    end  
-    unique!(sort!(harmonics))
 end
 
 is_pos_sequence(nh::Int) = nh % 3 == 1

@@ -24,8 +24,8 @@ function build_hopf_iv(pm::AbstractPowerModel)
         _PMs.variable_dcline_current(pm, nw=n)
         variable_transformer_current(pm, nw=n, bounded=false)
 
-        variable_load_current(pm, nw=n, bounded=bounded)
-        variable_gen_current(pm, nw=n, bounded=bounded)
+        variable_load_current(pm, nw=n, bounded=false)
+        variable_gen_current(pm, nw=n, bounded=false)
         
     end 
 

@@ -314,7 +314,7 @@ end
 
 
 ""
-function objective_voltage_distortion_minimization(pm::AbstractIVRModel; bus_id=6, fundamental=1, gen_id=1)
+function objective_voltage_distortion_minimization(pm::AbstractIVRModel; bus_id=1, fundamental=1, gen_id=1)
     harmonics = Set(_PMs.nw_ids(pm))
     nonfundamentalharmonics = setdiff(harmonics, [fundamental])
 

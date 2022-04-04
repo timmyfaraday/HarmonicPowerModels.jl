@@ -2,11 +2,13 @@
 using Ipopt
 using PowerModels
 using HarmonicPowerModels
+using SignalDecomposition
 using Test
 
 # pkg const
-const _PMs = PowerModels
-const _HPM = HarmonicPowerModels
+const HPM = HarmonicPowerModels
+const PMs = PowerModels
+const SDC = SignalDecomposition
 
 # solver
 solver = Ipopt.Optimizer

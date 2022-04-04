@@ -47,6 +47,8 @@ module HarmonicPowerModels
     include("prob/hopf_iv.jl")
     include("prob/hpf_iv.jl")
 
+    include("util/xfmr_magn.jl")
+
     # export
     export BASE_DIR
 

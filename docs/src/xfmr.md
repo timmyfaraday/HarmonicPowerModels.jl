@@ -53,6 +53,7 @@ All excitation data are stored in a dictionary `xfmr_exc` with:
 | key   | type          | description                                                     |
 |-------|---------------|-----------------------------------------------------------------|
 | "Hᴱ"  | Vector{Int}   | set of relevant excitation voltage harmonics                    |
+| "Hᴵ"  | Vector{Int}   | set of relevant magnetizing current harmonics                   |
 | "Fᴱ"  | Symbol        | excitation voltage formulation, i.e., :rectangular or :polar    |
 | "Fᴵ"  | Symbol        | magnetization current formulation, i.e., :rectangular or :polar |
 | "l"   | Real          | mean magnetic path [m]                                          |
