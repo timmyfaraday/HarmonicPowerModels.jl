@@ -41,8 +41,8 @@ function sample_excitation_voltage(nx::Int, data::Dict{String, <:Any}, xfmr_magn
                                      if nh in xfmr_magn["Hᴱ"]]
     end
 
-    S = reduce(vcat,[[range(Ea_min[ni], Ea_max[ni], length=3),
-                      range(Eb_min[ni], Eb_max[ni], length=3)] 
+    S = reduce(vcat,[[range(Ea_min[ni], Ea_max[ni], length=10),
+                      range(Eb_min[ni], Eb_max[ni], length=10)] 
                       for (ni,nh) in enumerate(xfmr_magn["Hᴱ"])])
     R = [1:length(s) for s in S]
     
