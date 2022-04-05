@@ -41,8 +41,8 @@ function sample_excitation_voltage(nx::Int, data::Dict{String, <:Any}, xfmr_magn
                                      if nh in xfmr_magn["Hᴱ"]]
     end
 
-    S = reduce(vcat,[[range(Ea_min[ni], Ea_max[ni], length=10),
-                      range(Eb_min[ni], Eb_max[ni], length=10)] 
+    S = reduce(vcat,[[range(Ea_min[ni], Ea_max[ni], length=3),
+                      range(Eb_min[ni], Eb_max[ni], length=3)] 
                       for (ni,nh) in enumerate(xfmr_magn["Hᴱ"])])
     R = [1:length(s) for s in S]
     
@@ -63,24 +63,29 @@ function magnetizing_current(Ea::Vector{<:Real}, Eb::Vector{<:Real},
     @assert isempty(setdiff(["A", "BH", "l", "N"], keys(xfmr)))
 
     # given a rectangular excitation voltage [pu, pu], translate them to polar coordinates [pu, (rad)]
+    # Ea --> real parts, Eb --> imag parts
     if magn_data["Fᴱ"] == :rectangular
-        Ea = hypot.(Ea, Ea) 
-        Eb = atan.(Eb, Eb)
+        Ea = hypot.(Ea, Eb) 
+        Eb = atan.(Eb, Ea)
     end
 
     # determine the magnetizing current in the time domain [pu]
+    # B(t) = √2 * Vbase / (A ⋅ N) * ∑ |Eₕ| / wₕ ⋅ cos(wₕ ⋅ t + ∠Eₕ)
     # E, θ [pu, (rad)] → B(t) [T] → H(t) [A-t/m] → im(t) [pu]
     ω   = 2 .* pi .* _HPM.freq .* magn_data["Hᴱ"]
-    B   = sum((magn_data["Vbase"] * Ea[ni]) ./ (xfmr["A"] * xfmr["N"] * ω[ni]) .* cos.(ω[ni] .* magn_data["t"] .+ Eb[ni]) for (ni,nh) in enumerate(magn_data["Hᴱ"]))
-    im  = xfmr["l"] ./ (magn_data["Abase"] * xfmr["N"]) .* xfmr["BH"].(B)
+    B   = sum((sqrt(2) * magn_data["Vbase"] * Ea[ni]) ./ (xfmr["A"] * xfmr["N"] * ω[ni]) .* cos.(ω[ni] .* magn_data["t"] .+ Eb[ni]) for (ni,nh) in enumerate(magn_data["Hᴱ"]))
+    Im  = xfmr["l"] ./ (magn_data["Abase"] * xfmr["N"]) .* xfmr["BH"].(B)
 
     # decompose and return the magnetizing current in the frequency domain [pu, (rad)]
-    _SDC.decompose(magn_data["t"], im, magn_data["fq"])
+    _SDC.decompose(magn_data["t"], Im, magn_data["fq"])
 
     # return the magnetizing current in the frequency domain in the required coordinates
     # NOTE -- angle convention is reversed -> introduce minus-sign for the phase angle
-    magn_data["Fᴵ"] == :polar && return magn_data["fq"].A[2:end], -magn_data["fq"].φ[2:end]
-    magn_data["Fᴵ"] == :rectangular && return magn_data["fq"].A[2:end] .* sin.(-magn_data["fq"].φ[2:end]), magn_data["fq"].A[2:end] .* cos.(-magn_data["fq"].φ[2:end])
+    # NOTE -- sqrt(2) convert from amplitude to rms magnitude
+    magn_data["Fᴵ"] == :polar && return magn_data["fq"].A[2:end] ./ sqrt(2), 
+                                        -magn_data["fq"].φ[2:end]
+    magn_data["Fᴵ"] == :rectangular && return   magn_data["fq"].A[2:end] ./ sqrt(2) .* sin.(-magn_data["fq"].φ[2:end]), 
+                                                magn_data["fq"].A[2:end] ./ sqrt(2) .* cos.(-magn_data["fq"].φ[2:end])
 end
 
 """""

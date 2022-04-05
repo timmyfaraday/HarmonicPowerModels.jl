@@ -15,7 +15,7 @@ path = joinpath(HPM.BASE_DIR,"test/data/matpower/xfmr/case_xfmr_YNyn0.m")
 # load data
 data = PMs.parse_file(path)
 
-# BH-curve - Thyssenkrupp - PowerCore H 100-23 50Hz
+# BH-curve
 B⁺ = [0.144, 0.200, 0.260, 0.328, 0.400, 0.504, 0.600, 0.695, 1.528, 1.716, 1.776, 1.816, 1.828, 1.832, 1.845, 1.856, 1.860]
 H⁺ = [3.000, 4.000, 5.000, 6.000, 7.000, 8.000, 9.000, 10.00, 20.00, 30.00, 40.00, 50.00, 60.00, 70.00, 80.00, 90.00, 100.0]
 B = vcat(reverse(-B⁺),0.0,B⁺)
