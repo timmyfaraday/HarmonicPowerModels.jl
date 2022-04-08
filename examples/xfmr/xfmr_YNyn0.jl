@@ -25,12 +25,12 @@ BH_powercore_h100_23 = Dierckx.Spline1D(B, H; k=3, bc="nearest")
 
 # xfmr magnetizing data
 magn = Dict("Hᴱ"    => [1, 5], 
-            "Hᴵ"    => [1, 5, 7, 13, 15, 19],
+            "Hᴵ"    => collect(1:2:19),
             "Fᴱ"    => :rectangular,
             "Fᴵ"    => :rectangular,
             "Emax"  => 1.1,
             "IDH"   => [1.0, 0.06],
-            "pcs"   => [5, 5],
+            "pcs"   => [21, 11],
             "xfmr"  => Dict(1 => Dict(  "l"     => 11.4,
                                         "A"     => 0.5,
                                         "N"     => 500,
@@ -46,10 +46,10 @@ hdata = HPM.replicate(data, xfmr_magn=magn)
 E = [1.0,0.0,0.0,0.0]
 # test one, given a purely real fundamental excitation voltage, the real part of
 # the magnetizing current should be zero given that its shift of 90 degrees
-@test isapprox(data["nw"]["1"]["xfmr"]["1"]["Im_A"].(E...),0.0,atol=1e-5)
+@test isapprox(hdata["nw"]["1"]["xfmr"]["1"]["Im_A"].(E...),0.0,atol=1e-5)
 # test two, given a purely real fundamental excitation voltage, the imaginary 
 # part of the magnetizing current should be nonzero given that its shift of 90 degrees
-@test !isapprox(data["nw"]["1"]["xfmr"]["1"]["Im_B"].(E...),0.0,atol=1e-5)
+@test !isapprox(hdata["nw"]["1"]["xfmr"]["1"]["Im_B"].(E...),0.0,atol=1e-5)
 
 # set the solver
 solver = Ipopt.Optimizer
