@@ -4,6 +4,7 @@ using Ipopt
 using HarmonicPowerModels
 using Plots
 using PowerModels
+using Test
 
 # pkg const
 const PMs = PowerModels
@@ -23,19 +24,32 @@ H = vcat(reverse(-H⁺),0.0,H⁺)
 BH_powercore_h100_23 = Dierckx.Spline1D(B, H; k=3, bc="nearest")
 
 # xfmr magnetizing data
-magn = Dict("Hᴱ"    => [1,3], 
-            "Hᴵ"    => collect(1:2:25),
+magn = Dict("Hᴱ"    => [1, 5], 
+            "Hᴵ"    => [1, 5, 7, 13, 15, 19],
             "Fᴱ"    => :rectangular,
             "Fᴵ"    => :rectangular,
-            "xfmr"  => Dict(1 => Dict(  "l"  => 10.0,
-                                        "A"  => 0.5,
-                                        "N"  => 75,
-                                        "BH" => BH_powercore_h100_23)
+            "Emax"  => 1.1,
+            "IDH"   => [1.0, 0.06],
+            "pcs"   => [5, 5],
+            "xfmr"  => Dict(1 => Dict(  "l"     => 11.4,
+                                        "A"     => 0.5,
+                                        "N"     => 500,
+                                        "BH"    => BH_powercore_h100_23,
+                                        "Vbase" => 150000)
                             )
             )
 
 # harmonic data
 hdata = HPM.replicate(data, xfmr_magn=magn)
+
+# TEST MAGNITIZING CURRENT SAMPLE
+E = [1.0,0.0,0.0,0.0]
+# test one, given a purely real fundamental excitation voltage, the real part of
+# the magnetizing current should be zero given that its shift of 90 degrees
+@test isapprox(data["nw"]["1"]["xfmr"]["1"]["Im_A"].(E...),0.0,atol=1e-5)
+# test two, given a purely real fundamental excitation voltage, the imaginary 
+# part of the magnetizing current should be nonzero given that its shift of 90 degrees
+@test !isapprox(data["nw"]["1"]["xfmr"]["1"]["Im_B"].(E...),0.0,atol=1e-5)
 
 # set the solver
 solver = Ipopt.Optimizer
@@ -43,23 +57,3 @@ solver = Ipopt.Optimizer
 # solve the hopf
 model  = PMs.instantiate_model(hdata, PMs.IVRPowerModel, HPM.build_hopf_iv; ref_extensions=[HPM.ref_add_xfmr!]);
 result = optimize_model!(model, optimizer=solver, solution_processors=[HPM.sol_data_model!])
-
-HPM.append_indicators!(result, hdata)
-
-for (n,nw) in result["solution"]["nw"]
-    for (i,bus) in nw["bus"]
-            bus["vm"] =  abs(bus["vr"] +im*  bus["vi"])
-            bus["va"] =  angle(bus["vr"] +im*  bus["vi"])*180/pi
-    end
-end
-println("Harmonic 3")
-_PMs.print_summary(result["solution"]["nw"]["2"])
-println("Harmonic 1")
-_PMs.print_summary(result["solution"]["nw"]["1"])
-result["objective"]
-result["termination_status"]
-
-##
-# Yy -> third harmonic of the excitation cannot flow -> current is inherently forced to 0
-# this means the third harmonic voltage is 0
-# 
