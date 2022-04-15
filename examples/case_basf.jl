@@ -1,8 +1,9 @@
-using Pkg
-Pkg.activate("./")
+# using Pkg
+# Pkg.activate("./")
 # load pkgs
 using Ipopt, HarmonicPowerModels, PowerModels
 using JuMP #avoids problems with Revise
+using Dierckx
 
 # pkg const
 const _PMs = PowerModels
@@ -60,7 +61,7 @@ magn = Dict("Hᴱ"    => [1, 5],
             "Fᴵ"    => :rectangular,
             "Emax"  => 1.1,
             "IDH"   => [1.0, 0.06],
-            "pcs"   => [21, 11],
+            "pcs"   => [6, 6],
             "xfmr"  => Dict(1 => Dict(  "l"     => 11.4,
                                         "A"     => 0.5,
                                         "N"     => 500,
@@ -80,8 +81,7 @@ magn = Dict("Hᴱ"    => [1, 5],
                                         "A"     => 0.5,
                                         "N"     => 500,
                                         "BH"    => BH_powercore_h100_23,
-                                        "Vbase" => 150000),
-                                        5 => Dict(  "l"     => 11.4,                                                                            
+                                        "Vbase" => 150000)
                             )
             )
 

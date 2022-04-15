@@ -119,7 +119,7 @@ function constraint_transformer_core_voltage_balance(pm::AbstractIVRModel, n::In
 end
 
 ""
-function constraint_transformer_core_current_balance(pm::AbstractIVRModel, n::Int, t, f_idx, t_idx, tr, ti)
+function constraint_transformer_core_current_balance(pm::AbstractIVRModel, n::Int, t, f_idx, t_idx, tr, ti, rsh)
     cert = var(pm, n, :cert, t)
     ceit = var(pm, n, :ceit, t)
 
@@ -129,11 +129,14 @@ function constraint_transformer_core_current_balance(pm::AbstractIVRModel, n::In
     csrt_to = var(pm, n, :csrt, t_idx)
     csit_to = var(pm, n, :csit, t_idx)
 
+    ert = var(pm, n, :ert, t)
+    eit = var(pm, n, :eit, t)
+
     JuMP.@constraint(pm.model, csrt_fr + tr * csrt_to + ti * csit_to 
-                                == cert 
+                                == cert + ert/rsh
                     )
     JuMP.@constraint(pm.model, csit_fr + tr * csit_to - ti * csrt_to
-                                == ceit
+                                == ceit + eit/rsh
                     )
 end
 
@@ -323,7 +326,7 @@ function objective_voltage_distortion_minimization(pm::AbstractIVRModel; bus_id=
 
     pg = var(pm, fundamental, :pg, gen_id)
 
-    JuMP.@NLconstraint(pm.model, pg <= 1.001*0.643386)
+    # JuMP.@NLconstraint(pm.model, pg <= 1.001*0.643386)
 
     #minimize magnitude of nonfundamental harmonics
     JuMP.@objective(pm.model, Min, sum(vr.^2 + vi.^2))

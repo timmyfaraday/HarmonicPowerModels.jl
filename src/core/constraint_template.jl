@@ -63,7 +63,9 @@ function constraint_transformer_core_current_balance(pm::AbstractPowerModel, t::
     tr = ref(pm, nw, :xfmr, t, "tr")
     ti = ref(pm, nw, :xfmr, t, "ti")
 
-    constraint_transformer_core_current_balance(pm, nw, t, f_idx, t_idx, tr, ti)
+    rsh = ref(pm, nw, :xfmr, t, "rsh")
+
+    constraint_transformer_core_current_balance(pm, nw, t, f_idx, t_idx, tr, ti, rsh)
 end
 
 ""
