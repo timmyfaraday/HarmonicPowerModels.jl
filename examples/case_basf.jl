@@ -67,21 +67,21 @@ magn = Dict("Hᴱ"    => [1, 5],
                                         "N"     => 500,
                                         "BH"    => BH_powercore_h100_23,
                                         "Vbase" => 150000),
-                                        2 => Dict(  "l"     => 11.4,
-                                        "A"     => 0.5,
-                                        "N"     => 500,
+                                        2 => Dict(  "l"     => 8.0,
+                                        "A"     => 0.2,
+                                        "N"     => 300,
                                         "BH"    => BH_powercore_h100_23,
-                                        "Vbase" => 150000),
-                                        3 => Dict(  "l"     => 11.4,
-                                        "A"     => 0.5,
-                                        "N"     => 500,
+                                        "Vbase" => 36000),
+                                        3 => Dict(  "l"     => 3.1,
+                                        "A"     => 0.07,
+                                        "N"     => 240,
                                         "BH"    => BH_powercore_h100_23,
-                                        "Vbase" => 150000),
-                                        4 => Dict(  "l"     => 11.4,
-                                        "A"     => 0.5,
-                                        "N"     => 500,
+                                        "Vbase" => 10000),
+                                        4 => Dict(  "l"     => 1.0,
+                                        "A"     => 0.001,
+                                        "N"     => 240,
                                         "BH"    => BH_powercore_h100_23,
-                                        "Vbase" => 150000)
+                                        "Vbase" => 690)
                             )
             )
 
@@ -114,9 +114,16 @@ for (n, nw) in hdata["nw"]
     end
 end
 
+
+# for (n, nw) in hdata["nw"]
+#     nw["xfmr"]["1"]["rsh"] = 1250
+#     nw["xfmr"]["2"]["rsh"] = 6000
+# end
+
 # set the solver
 solver = Ipopt.Optimizer
 
+hdata = _HPM.replicate(data)
 
 #solve power flow
 resultpf = run_hpf_iv(hdata, _PMs.IVRPowerModel, solver)
@@ -139,11 +146,13 @@ resultpf = run_hpf_iv(hdata, _PMs.IVRPowerModel, solver)
 # println("Harmonic 1")
 # _PMs.print_summary(resultpf["solution"]["nw"]["1"])
 
-# pg = resultpf["solution"]["nw"]["1"]["gen"]["1"]
+pg = resultpf["solution"]["nw"]["1"]["gen"]["1"]
 
 
 ##
 # solve the hopf
+
+
 result = run_hopf_iv(hdata, _PMs.IVRPowerModel, solver)
 pm = _PMs.instantiate_model(hdata, _PMs.IVRPowerModel, _HPM.build_hopf_iv; ref_extensions=[_HPM.ref_add_xfmr!]);
 result = optimize_model!(pm, optimizer=solver, solution_processors=[ _HPM.sol_data_model!])
