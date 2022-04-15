@@ -61,7 +61,7 @@ magn = Dict("Hᴱ"    => [1, 5],
             "Fᴵ"    => :rectangular,
             "Emax"  => 1.1,
             "IDH"   => [1.0, 0.06],
-            "pcs"   => [6, 6],
+            "pcs"   => [21, 11],
             "xfmr"  => Dict(1 => Dict(  "l"     => 11.4,
                                         "A"     => 0.5,
                                         "N"     => 500,
@@ -123,7 +123,7 @@ end
 # set the solver
 solver = Ipopt.Optimizer
 
-hdata = _HPM.replicate(data)
+# hdata = _HPM.replicate(data)
 
 #solve power flow
 resultpf = run_hpf_iv(hdata, _PMs.IVRPowerModel, solver)
@@ -147,6 +147,7 @@ resultpf = run_hpf_iv(hdata, _PMs.IVRPowerModel, solver)
 # _PMs.print_summary(resultpf["solution"]["nw"]["1"])
 
 pg = resultpf["solution"]["nw"]["1"]["gen"]["1"]
+pg5 = resultpf["solution"]["nw"]["3"]["gen"]["1"]
 
 
 ##

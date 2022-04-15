@@ -90,7 +90,7 @@ function build_hopf_iv(pm::AbstractPowerModel)
 
     # _PMs.objective_min_fuel_and_flow_cost(pm)
     # objective_current_distortion_minimization(pm)
-    objective_voltage_distortion_minimization(pm)
+    objective_voltage_distortion_minimization(pm, bus_id=6)
 end
 
 function ref_add_xfmr!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any}) ## data not actually needed!
