@@ -293,9 +293,21 @@ end
 function constraint_active_filter(pm::AbstractIVRModel, i, fundamental)
     pgfun = var(pm, fundamental, :pg, i)
     pg =  [var(pm, n, :pg, i) for n in _PMs.nw_ids(pm)]
+    qgfun = var(pm, fundamental, :qg, i)
+    qg =  [var(pm, n, :qg, i) for n in _PMs.nw_ids(pm)]
 
+    # TOM
+    #block 1: use if you want to have an operational active filter
+    # JuMP.@NLconstraint(pm.model, pgfun == 0)
+    # JuMP.@NLconstraint(pm.model, sum(pg[n] for n in _PMs.nw_ids(pm)) == 0)
+
+    #block 2: use if you want to disable the active filter
     JuMP.@NLconstraint(pm.model, pgfun == 0)
-    JuMP.@NLconstraint(pm.model, sum(pg[n] for n in _PMs.nw_ids(pm)) == 0)
+    JuMP.@NLconstraint(pm.model, qgfun == 0)
+    for n in _PMs.nw_ids(pm)
+        JuMP.@NLconstraint(pm.model, pg[n] == 0)
+        JuMP.@NLconstraint(pm.model, qg[n] == 0)
+    end
 end
 
 

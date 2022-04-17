@@ -80,6 +80,8 @@ function build_hpf_iv(pm::AbstractPowerModel)
         constraint_active_filter(pm, g, fundamental=fundamental)
     end
 
-    _PMs.objective_min_fuel_and_flow_cost(pm)
+    # _PMs.objective_min_fuel_and_flow_cost(pm)
     # objective_distortion_minimization(pm)
+    objective_voltage_distortion_minimization(pm, bus_id=6)
+
 end

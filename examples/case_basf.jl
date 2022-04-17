@@ -145,9 +145,57 @@ resultpf = run_hpf_iv(hdata, _PMs.IVRPowerModel, solver)
 # vm = resultpf["solution"]["nw"]["2"]["bus"]["6"]
 # println("Harmonic 1")
 # _PMs.print_summary(resultpf["solution"]["nw"]["1"])
-
+# _HPM.append_indicators!(result, hdata)
 pg = resultpf["solution"]["nw"]["1"]["gen"]["1"]
+pg3 = resultpf["solution"]["nw"]["2"]["gen"]["1"]
 pg5 = resultpf["solution"]["nw"]["3"]["gen"]["1"]
+pg7 = resultpf["solution"]["nw"]["4"]["gen"]["1"]
+pg9 = resultpf["solution"]["nw"]["5"]["gen"]["1"]
+pg11 = resultpf["solution"]["nw"]["6"]["gen"]["1"]
+pg13 = resultpf["solution"]["nw"]["7"]["gen"]["1"]
+
+cr = resultpf["solution"]["nw"]["1"]["gen"]["1"]["crg"]
+ci = resultpf["solution"]["nw"]["1"]["gen"]["1"]["cig"]
+cm = hypot(cr, ci)
+cr5 = resultpf["solution"]["nw"]["3"]["gen"]["1"]["crg"]
+ci5 = resultpf["solution"]["nw"]["3"]["gen"]["1"]["cig"]
+cm5 = hypot(cr5, ci5)
+cthd = cm5/cm
+
+
+tf11 = resultpf["solution"]["nw"]["1"]["xfmr"]["1"]
+tf13 = resultpf["solution"]["nw"]["2"]["xfmr"]["1"]
+tf15 = resultpf["solution"]["nw"]["3"]["xfmr"]["1"]
+tf17 = resultpf["solution"]["nw"]["4"]["xfmr"]["1"]
+tf19 = resultpf["solution"]["nw"]["5"]["xfmr"]["1"]
+tf111 = resultpf["solution"]["nw"]["6"]["xfmr"]["1"]
+tf113 = resultpf["solution"]["nw"]["7"]["xfmr"]["1"]
+
+tf21 = resultpf["solution"]["nw"]["1"]["xfmr"]["2"]
+tf23 = resultpf["solution"]["nw"]["2"]["xfmr"]["2"]
+tf25 = resultpf["solution"]["nw"]["3"]["xfmr"]["2"]
+tf27 = resultpf["solution"]["nw"]["4"]["xfmr"]["2"]
+tf29 = resultpf["solution"]["nw"]["5"]["xfmr"]["2"]
+tf211 = resultpf["solution"]["nw"]["6"]["xfmr"]["2"]
+tf213 = resultpf["solution"]["nw"]["7"]["xfmr"]["2"]
+
+tf31 = resultpf["solution"]["nw"]["1"]["xfmr"]["3"]
+tf33 = resultpf["solution"]["nw"]["2"]["xfmr"]["3"]
+tf35 = resultpf["solution"]["nw"]["3"]["xfmr"]["3"]
+tf37 = resultpf["solution"]["nw"]["4"]["xfmr"]["3"]
+tf39 = resultpf["solution"]["nw"]["5"]["xfmr"]["3"]
+tf311 = resultpf["solution"]["nw"]["6"]["xfmr"]["3"]
+tf313 = resultpf["solution"]["nw"]["7"]["xfmr"]["3"]
+
+tf41 = resultpf["solution"]["nw"]["1"]["xfmr"]["4"]
+tf43 = resultpf["solution"]["nw"]["2"]["xfmr"]["4"]
+tf45 = resultpf["solution"]["nw"]["3"]["xfmr"]["4"]
+tf47 = resultpf["solution"]["nw"]["4"]["xfmr"]["4"]
+tf49 = resultpf["solution"]["nw"]["5"]["xfmr"]["4"]
+tf411 = resultpf["solution"]["nw"]["6"]["xfmr"]["4"]
+tf413 = resultpf["solution"]["nw"]["7"]["xfmr"]["4"]
+
+
 
 
 ##
