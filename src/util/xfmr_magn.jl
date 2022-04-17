@@ -112,7 +112,11 @@ function sample_magnetizing_current(data::Dict{String,<:Any}, xfmr_magn::Dict{St
     fq      = _SDC.Sinusoidal(_HPM.freq .* xfmr_magn["Hᴵ"])
 
     for (nx, xfmr) in xfmr_magn["xfmr"]
-        Abase   = data["nw"]["1"]["baseMVA"] / xfmr["Vbase"]                    # base current [A]
+        Abase   = data["nw"]["1"]["baseMVA"] * 10e6 / xfmr["Vbase"]                    # base current [A]
+
+        println(data["nw"]["1"]["baseMVA"])
+        println(xfmr["Vbase"])
+        println(Abase)
 
         # sample the excitation voltage
         IDH, Emax, pcs = xfmr_magn["IDH"], xfmr_magn["Emax"], xfmr_magn["pcs"]

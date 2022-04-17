@@ -76,16 +76,18 @@ function constraint_transformer_core_excitation(pm::AbstractIVRModel, n::Int, t,
     cert = var(pm, n, :cert, t)
     ceit = var(pm, n, :ceit, t)
 
-    voltage_harmonics_ntws = _PMs.ref(pm, n, :xfmr, t, "voltage_harmonics_ntws")
+    voltage_harmonics_ntws = _PMs.ref(pm, n, :xfmr, t, "NWᴱ")
 
-    et = reduce(vcat,[[var(pm, nw, :ert, t),var(pm, nw, :eit, t)] 
+    println(voltage_harmonics_ntws)
+
+    et = reduce(vcat,[[var(pm, parse(Int,nw), :ert, t),var(pm, parse(Int,nw), :eit, t)] 
                        for nw in voltage_harmonics_ntws])
 
     sym_exc_a = Symbol("exc_a_",n,"_",t)
     sym_exc_b = Symbol("exc_b_",n,"_",t)
 
-    JuMP.register(pm.model, sym_exc_a, length(et), int_a, grad_a)
-    JuMP.register(pm.model, sym_exc_b, length(et), int_b, grad_b)
+    JuMP.register(pm.model, sym_exc_a, length(et), int_a; autodiff=true)
+    JuMP.register(pm.model, sym_exc_b, length(et), int_b; autodiff=true)
 
     JuMP.add_NL_constraint(pm.model, :($(cert) == $(sym_exc_a)($(et...))))
     JuMP.add_NL_constraint(pm.model, :($(ceit) == $(sym_exc_b)($(et...))))

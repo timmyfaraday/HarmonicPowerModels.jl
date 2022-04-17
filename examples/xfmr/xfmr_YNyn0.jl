@@ -30,7 +30,7 @@ magn = Dict("Hᴱ"    => [1, 5],
             "Fᴵ"    => :rectangular,
             "Emax"  => 1.1,
             "IDH"   => [1.0, 0.06],
-            "pcs"   => [21, 11],
+            "pcs"   => [5, 3],
             "xfmr"  => Dict(1 => Dict(  "l"     => 11.4,
                                         "A"     => 0.5,
                                         "N"     => 500,
@@ -50,6 +50,10 @@ E = [1.0,0.0,0.0,0.0]
 # test two, given a purely real fundamental excitation voltage, the imaginary 
 # part of the magnetizing current should be nonzero given that its shift of 90 degrees
 @test !isapprox(hdata["nw"]["1"]["xfmr"]["1"]["Im_B"].(E...),0.0,atol=1e-5)
+
+for (n,nw) in hdata["nw"]
+    nw["xfmr"]["1"]["rsh"] = 9000
+end
 
 # set the solver
 solver = Ipopt.Optimizer
