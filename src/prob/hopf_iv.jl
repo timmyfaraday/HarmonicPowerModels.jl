@@ -1,3 +1,11 @@
+################################################################################
+#  Copyright 2021, Frederik Geth, Tom Van Acker                                #
+################################################################################
+# HarmonicPowerModels.jl                                                       #
+# An extention package of PowerModels.jl for Harmonic (Optimal) Power Flow     #
+# See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
+################################################################################
+
 ""
 function run_hopf_iv(file, model_type::Type, optimizer; kwargs...)
     return _PMs.run_model(file, model_type, optimizer, build_hopf_iv; ref_extensions=[ref_add_xfmr!],  solution_processors=[ _HPM.sol_data_model!], multinetwork=true, kwargs...)
@@ -16,8 +24,8 @@ function build_hopf_iv(pm::AbstractPowerModel)
         _PMs.variable_dcline_current(pm, nw=n)
         variable_transformer_current(pm, nw=n, bounded=false)
 
-        variable_load_current(pm, nw=n, bounded=bounded)
-        variable_gen_current(pm, nw=n, bounded=bounded)
+        variable_load_current(pm, nw=n, bounded=false)
+        variable_gen_current(pm, nw=n, bounded=false)
         
     end 
 
@@ -82,7 +90,7 @@ function build_hopf_iv(pm::AbstractPowerModel)
 
     # _PMs.objective_min_fuel_and_flow_cost(pm)
     # objective_current_distortion_minimization(pm)
-    objective_voltage_distortion_minimization(pm)
+    objective_voltage_distortion_minimization(pm, bus_id=6)
 end
 
 function ref_add_xfmr!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any}) ## data not actually needed!

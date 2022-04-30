@@ -16,13 +16,17 @@ end
 
 ""
 function constraint_transformer_core_excitation(pm::AbstractPowerModel, t::Int; nw::Int=nw_id_default)
-    current_harmonics_ntws = ref(pm, nw, :xfmr, t, "current_harmonics_ntws")
+    current_harmonics_ntws = ref(pm, nw, :xfmr, t, "NWᴵ")
 
-    if nw in current_harmonics_ntws
-        int_a  = ref(pm, nw, :xfmr, t, "INT_A")
-        int_b  = ref(pm, nw, :xfmr, t, "INT_B")
+    println(current_harmonics_ntws)
 
-        constraint_transformer_core_excitation(pm, nw, t, int_a, int_b)
+    if string(nw) in current_harmonics_ntws
+        int_a  = ref(pm, nw, :xfmr, t, "Im_A")
+        int_b  = ref(pm, nw, :xfmr, t, "Im_B")
+        grad_a = ref(pm, nw, :xfmr, t, "dIm_A")
+        grad_b = ref(pm, nw, :xfmr, t, "dIm_B")
+
+        constraint_transformer_core_excitation(pm, nw, t, int_a, int_b, grad_a, grad_b)
     else 
         constraint_transformer_core_excitation(pm, nw, t)
     end
@@ -61,7 +65,9 @@ function constraint_transformer_core_current_balance(pm::AbstractPowerModel, t::
     tr = ref(pm, nw, :xfmr, t, "tr")
     ti = ref(pm, nw, :xfmr, t, "ti")
 
-    constraint_transformer_core_current_balance(pm, nw, t, f_idx, t_idx, tr, ti)
+    rsh = ref(pm, nw, :xfmr, t, "rsh")
+
+    constraint_transformer_core_current_balance(pm, nw, t, f_idx, t_idx, tr, ti, rsh)
 end
 
 ""

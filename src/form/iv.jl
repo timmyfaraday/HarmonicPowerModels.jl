@@ -72,13 +72,15 @@ function constraint_transformer_core_excitation(pm::AbstractIVRModel, n::Int, t)
 end
 
 ""
-function constraint_transformer_core_excitation(pm::AbstractIVRModel, n::Int, t, int_a, int_b)
+function constraint_transformer_core_excitation(pm::AbstractIVRModel, n::Int, t, int_a, int_b, grad_a, grad_b)
     cert = var(pm, n, :cert, t)
     ceit = var(pm, n, :ceit, t)
 
-    voltage_harmonics_ntws = _PMs.ref(pm, n, :xfmr, t, "voltage_harmonics_ntws")
+    voltage_harmonics_ntws = _PMs.ref(pm, n, :xfmr, t, "NWᴱ")
 
-    et = reduce(vcat,[[var(pm, nw, :ert, t),var(pm, nw, :eit, t)] 
+    println(voltage_harmonics_ntws)
+
+    et = reduce(vcat,[[var(pm, parse(Int,nw), :ert, t),var(pm, parse(Int,nw), :eit, t)] 
                        for nw in voltage_harmonics_ntws])
 
     sym_exc_a = Symbol("exc_a_",n,"_",t)
@@ -119,7 +121,7 @@ function constraint_transformer_core_voltage_balance(pm::AbstractIVRModel, n::In
 end
 
 ""
-function constraint_transformer_core_current_balance(pm::AbstractIVRModel, n::Int, t, f_idx, t_idx, tr, ti)
+function constraint_transformer_core_current_balance(pm::AbstractIVRModel, n::Int, t, f_idx, t_idx, tr, ti, rsh)
     cert = var(pm, n, :cert, t)
     ceit = var(pm, n, :ceit, t)
 
@@ -129,11 +131,14 @@ function constraint_transformer_core_current_balance(pm::AbstractIVRModel, n::In
     csrt_to = var(pm, n, :csrt, t_idx)
     csit_to = var(pm, n, :csit, t_idx)
 
+    ert = var(pm, n, :ert, t)
+    eit = var(pm, n, :eit, t)
+
     JuMP.@constraint(pm.model, csrt_fr + tr * csrt_to + ti * csit_to 
-                                == cert 
+                                == cert + ert/rsh
                     )
     JuMP.@constraint(pm.model, csit_fr + tr * csit_to - ti * csrt_to
-                                == ceit
+                                == ceit + eit/rsh
                     )
 end
 
@@ -290,9 +295,21 @@ end
 function constraint_active_filter(pm::AbstractIVRModel, i, fundamental)
     pgfun = var(pm, fundamental, :pg, i)
     pg =  [var(pm, n, :pg, i) for n in _PMs.nw_ids(pm)]
+    qgfun = var(pm, fundamental, :qg, i)
+    qg =  [var(pm, n, :qg, i) for n in _PMs.nw_ids(pm)]
 
+    # TOM
+    #block 1: use if you want to have an operational active filter
     JuMP.@NLconstraint(pm.model, pgfun == 0)
     JuMP.@NLconstraint(pm.model, sum(pg[n] for n in _PMs.nw_ids(pm)) == 0)
+
+    #block 2: use if you want to disable the active filter
+    # JuMP.@NLconstraint(pm.model, pgfun == 0)
+    # JuMP.@NLconstraint(pm.model, qgfun == 0)
+    # for n in _PMs.nw_ids(pm)
+    #     JuMP.@NLconstraint(pm.model, pg[n] == 0)
+    #     JuMP.@NLconstraint(pm.model, qg[n] == 0)
+    # end
 end
 
 
@@ -314,7 +331,7 @@ end
 
 
 ""
-function objective_voltage_distortion_minimization(pm::AbstractIVRModel; bus_id=6, fundamental=1, gen_id=1)
+function objective_voltage_distortion_minimization(pm::AbstractIVRModel; bus_id=1, fundamental=1, gen_id=1)
     harmonics = Set(_PMs.nw_ids(pm))
     nonfundamentalharmonics = setdiff(harmonics, [fundamental])
 
@@ -323,7 +340,7 @@ function objective_voltage_distortion_minimization(pm::AbstractIVRModel; bus_id=
 
     pg = var(pm, fundamental, :pg, gen_id)
 
-    JuMP.@NLconstraint(pm.model, pg <= 1.001*0.643386)
+    # JuMP.@NLconstraint(pm.model, pg <= 1.001*0.643386)
 
     #minimize magnitude of nonfundamental harmonics
     JuMP.@objective(pm.model, Min, sum(vr.^2 + vi.^2))
