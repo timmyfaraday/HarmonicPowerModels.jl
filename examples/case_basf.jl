@@ -100,7 +100,7 @@ for (g,gen) in data["gen"]
 end
 
 # hdata = _HPM.replicate(data, xfmr_exc=exc_1)
-hdata = _HPM.replicate(data, xfmr_magn=magn)
+xdata = _HPM.replicate(data)#, xfmr_magn=magn)
 
 # for (n, nw) in hdata["nw"]
 #     for (t, xfmr) in nw["xfmr"]
@@ -127,7 +127,7 @@ hdata = _HPM.replicate(data, xfmr_magn=magn)
 # end
 
 #### DIT KLOPT VOOR GEEN METER -- IMPEDANTIES MOETEN NOG MAAL H
-for (n, nw) in hdata["nw"]
+for (n, nw) in xdata["nw"]
     nw["xfmr"]["1"]["rsh"] = 1.29
     nw["xfmr"]["2"]["rsh"] = 7.04
     nw["xfmr"]["3"]["rsh"] = 37.04
@@ -140,7 +140,7 @@ solver = Ipopt.Optimizer
 # hdata = _HPM.replicate(data)
 
 #solve power flow
-resultpf = run_hpf_iv(hdata, _PMs.IVRPowerModel, solver)
+resultpf = _HPM.solve_hpf(xdata, _PMs.IVRPowerModel, solver)
 # @assert resultpf["termination_status"] == LOCALLY_SOLVED
 # _HPM.append_indicators!(resultpf, hdata)
 

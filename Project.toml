@@ -17,6 +17,7 @@ SignalDecomposition = "11a47235-7b84-4c7c-b885-fc3e2a9cf955"
 
 [compat]
 julia = "1"
+PowerModels = "0.19.8"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
