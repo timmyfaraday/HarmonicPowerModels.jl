@@ -39,6 +39,9 @@ module HarmonicPowerModels
     const freq = 50.0
     const nw_id_default = 1
 
+    # funct
+    sorted_nw_ids(pm) = sort(collect(_PMs.nw_ids(pm)))
+
     # paths
     const BASE_DIR = dirname(@__DIR__)
 

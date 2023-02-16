@@ -144,80 +144,84 @@ resultpf = _HPM.solve_hpf(xdata, _PMs.IVRPowerModel, solver)
 # @assert resultpf["termination_status"] == LOCALLY_SOLVED
 # _HPM.append_indicators!(resultpf, hdata)
 
-println("Harmonic 13")
-_PMs.print_summary(resultpf["solution"]["nw"]["6"])
-println("Harmonic 9")
-_PMs.print_summary(resultpf["solution"]["nw"]["5"])
-println("Harmonic 7")
-_PMs.print_summary(resultpf["solution"]["nw"]["4"])
-println("Harmonic 5")
-_PMs.print_summary(resultpf["solution"]["nw"]["3"])
-vm = resultpf["solution"]["nw"]["3"]["bus"]["1"]
-println("Harmonic 3")
-_PMs.print_summary(resultpf["solution"]["nw"]["2"])
-vm = resultpf["solution"]["nw"]["2"]["bus"]["6"]
-println("Harmonic 1")
-_PMs.print_summary(resultpf["solution"]["nw"]["1"])
+# println("Harmonic 13")
+# _PMs.print_summary(resultpf["solution"]["nw"]["6"])
+# println("Harmonic 9")
+# _PMs.print_summary(resultpf["solution"]["nw"]["5"])
+# println("Harmonic 7")
+# _PMs.print_summary(resultpf["solution"]["nw"]["4"])
+# println("Harmonic 5")
+# _PMs.print_summary(resultpf["solution"]["nw"]["3"])
+# vm = resultpf["solution"]["nw"]["3"]["bus"]["1"]
+# println("Harmonic 3")
+# _PMs.print_summary(resultpf["solution"]["nw"]["2"])
+# vm = resultpf["solution"]["nw"]["2"]["bus"]["6"]
+# println("Harmonic 1")
+# _PMs.print_summary(resultpf["solution"]["nw"]["1"])
 
 
-_HPM.append_indicators!(result, hdata)
-pg = resultpf["solution"]["nw"]["1"]["gen"]["1"]
-pg3 = resultpf["solution"]["nw"]["2"]["gen"]["1"]
-pg5 = resultpf["solution"]["nw"]["3"]["gen"]["1"]
-pg7 = resultpf["solution"]["nw"]["4"]["gen"]["1"]
-pg9 = resultpf["solution"]["nw"]["5"]["gen"]["1"]
-pg11 = resultpf["solution"]["nw"]["6"]["gen"]["1"]
-pg13 = resultpf["solution"]["nw"]["7"]["gen"]["1"]
+# _HPM.append_indicators!(result, hdata)
+# pg = resultpf["solution"]["nw"]["1"]["gen"]["1"]
+# pg3 = resultpf["solution"]["nw"]["2"]["gen"]["1"]
+# pg5 = resultpf["solution"]["nw"]["3"]["gen"]["1"]
+# pg7 = resultpf["solution"]["nw"]["4"]["gen"]["1"]
+# pg9 = resultpf["solution"]["nw"]["5"]["gen"]["1"]
+# pg11 = resultpf["solution"]["nw"]["6"]["gen"]["1"]
+# pg13 = resultpf["solution"]["nw"]["7"]["gen"]["1"]
 
-cr = resultpf["solution"]["nw"]["1"]["gen"]["1"]["crg"]
-ci = resultpf["solution"]["nw"]["1"]["gen"]["1"]["cig"]
-cm = hypot(cr, ci)
-cr5 = resultpf["solution"]["nw"]["3"]["gen"]["1"]["crg"]
-ci5 = resultpf["solution"]["nw"]["3"]["gen"]["1"]["cig"]
-cm5 = hypot(cr5, ci5)
-cthd = cm5/cm
-
-
-tf11 = resultpf["solution"]["nw"]["1"]["xfmr"]["1"]
-tf13 = resultpf["solution"]["nw"]["2"]["xfmr"]["1"]
-tf15 = resultpf["solution"]["nw"]["3"]["xfmr"]["1"]
-tf17 = resultpf["solution"]["nw"]["4"]["xfmr"]["1"]
-tf19 = resultpf["solution"]["nw"]["5"]["xfmr"]["1"]
-tf111 = resultpf["solution"]["nw"]["6"]["xfmr"]["1"]
-tf113 = resultpf["solution"]["nw"]["7"]["xfmr"]["1"]
-
-tf21 = resultpf["solution"]["nw"]["1"]["xfmr"]["2"]
-tf23 = resultpf["solution"]["nw"]["2"]["xfmr"]["2"]
-tf25 = resultpf["solution"]["nw"]["3"]["xfmr"]["2"]
-tf27 = resultpf["solution"]["nw"]["4"]["xfmr"]["2"]
-tf29 = resultpf["solution"]["nw"]["5"]["xfmr"]["2"]
-tf211 = resultpf["solution"]["nw"]["6"]["xfmr"]["2"]
-tf213 = resultpf["solution"]["nw"]["7"]["xfmr"]["2"]
-
-tf31 = resultpf["solution"]["nw"]["1"]["xfmr"]["3"]
-tf33 = resultpf["solution"]["nw"]["2"]["xfmr"]["3"]
-tf35 = resultpf["solution"]["nw"]["3"]["xfmr"]["3"]
-tf37 = resultpf["solution"]["nw"]["4"]["xfmr"]["3"]
-tf39 = resultpf["solution"]["nw"]["5"]["xfmr"]["3"]
-tf311 = resultpf["solution"]["nw"]["6"]["xfmr"]["3"]
-tf313 = resultpf["solution"]["nw"]["7"]["xfmr"]["3"]
-
-tf41 = resultpf["solution"]["nw"]["1"]["xfmr"]["4"]
-tf43 = resultpf["solution"]["nw"]["2"]["xfmr"]["4"]
-tf45 = resultpf["solution"]["nw"]["3"]["xfmr"]["4"]
-tf47 = resultpf["solution"]["nw"]["4"]["xfmr"]["4"]
-tf49 = resultpf["solution"]["nw"]["5"]["xfmr"]["4"]
-tf411 = resultpf["solution"]["nw"]["6"]["xfmr"]["4"]
-tf413 = resultpf["solution"]["nw"]["7"]["xfmr"]["4"]
+# cr = resultpf["solution"]["nw"]["1"]["gen"]["1"]["crg"]
+# ci = resultpf["solution"]["nw"]["1"]["gen"]["1"]["cig"]
+# cm = hypot(cr, ci)
+# cr5 = resultpf["solution"]["nw"]["3"]["gen"]["1"]["crg"]
+# ci5 = resultpf["solution"]["nw"]["3"]["gen"]["1"]["cig"]
+# cm5 = hypot(cr5, ci5)
+# cthd = cm5/cm
 
 
+# tf11 = resultpf["solution"]["nw"]["1"]["xfmr"]["1"]
+# tf13 = resultpf["solution"]["nw"]["2"]["xfmr"]["1"]
+# tf15 = resultpf["solution"]["nw"]["3"]["xfmr"]["1"]
+# tf17 = resultpf["solution"]["nw"]["4"]["xfmr"]["1"]
+# tf19 = resultpf["solution"]["nw"]["5"]["xfmr"]["1"]
+# tf111 = resultpf["solution"]["nw"]["6"]["xfmr"]["1"]
+# tf113 = resultpf["solution"]["nw"]["7"]["xfmr"]["1"]
 
+# tf21 = resultpf["solution"]["nw"]["1"]["xfmr"]["2"]
+# tf23 = resultpf["solution"]["nw"]["2"]["xfmr"]["2"]
+# tf25 = resultpf["solution"]["nw"]["3"]["xfmr"]["2"]
+# tf27 = resultpf["solution"]["nw"]["4"]["xfmr"]["2"]
+# tf29 = resultpf["solution"]["nw"]["5"]["xfmr"]["2"]
+# tf211 = resultpf["solution"]["nw"]["6"]["xfmr"]["2"]
+# tf213 = resultpf["solution"]["nw"]["7"]["xfmr"]["2"]
+
+# tf31 = resultpf["solution"]["nw"]["1"]["xfmr"]["3"]
+# tf33 = resultpf["solution"]["nw"]["2"]["xfmr"]["3"]
+# tf35 = resultpf["solution"]["nw"]["3"]["xfmr"]["3"]
+# tf37 = resultpf["solution"]["nw"]["4"]["xfmr"]["3"]
+# tf39 = resultpf["solution"]["nw"]["5"]["xfmr"]["3"]
+# tf311 = resultpf["solution"]["nw"]["6"]["xfmr"]["3"]
+# tf313 = resultpf["solution"]["nw"]["7"]["xfmr"]["3"]
+
+# tf41 = resultpf["solution"]["nw"]["1"]["xfmr"]["4"]
+# tf43 = resultpf["solution"]["nw"]["2"]["xfmr"]["4"]
+# tf45 = resultpf["solution"]["nw"]["3"]["xfmr"]["4"]
+# tf47 = resultpf["solution"]["nw"]["4"]["xfmr"]["4"]
+# tf49 = resultpf["solution"]["nw"]["5"]["xfmr"]["4"]
+# tf411 = resultpf["solution"]["nw"]["6"]["xfmr"]["4"]
+# tf413 = resultpf["solution"]["nw"]["7"]["xfmr"]["4"]
+
+
+# add the individual harmonic distortion limits                                 # @F: this should preferably be integrated in the date file
+ihdmax = Dict("1" => 1.10, "3" => 0.05, "5" => 0.06, "7" => 0.05, "9" => 0.015, "13" => 0.03)
+for (nw,ntw) in xdata["nw"], (nb,bus) in ntw["bus"]
+    bus["ihdmax"] = ihdmax[nw]
+end
 
 ##
 # solve the hopf
 
 
-result = run_hopf_iv(hdata, _PMs.IVRPowerModel, solver)
+result = solve_hopf(xdata, _PMs.IVRPowerModel, solver)
 pm = _PMs.instantiate_model(hdata, _PMs.IVRPowerModel, _HPM.build_hopf_iv; ref_extensions=[_HPM.ref_add_xfmr!]);
 result = optimize_model!(pm, optimizer=solver, solution_processors=[ _HPM.sol_data_model!])
 @assert result["termination_status"] == LOCALLY_SOLVED

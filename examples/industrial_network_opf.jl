@@ -17,7 +17,7 @@ using HarmonicPowerModels
 using Dierckx, Ipopt, JuMP, PowerModels
 
 # set the solver
-solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer)#, "print_level"=>0)
+solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "print_level"=>0)
 
 # read-in data
 path = joinpath(HarmonicPowerModels.BASE_DIR,"test/data/matpower/industrial_network_hopf.m")
@@ -35,7 +35,7 @@ BH_powercore_h100_23 = Dierckx.Spline1D(B, H; k=3, bc="nearest")
 
 # xfmr magnetizing data
 magn = Dict("Hᴱ"    => [1, 5], 
-            "Hᴵ"    => collect(1:2:13),
+            "Hᴵ"    => [1, 3, 5, 7, 9, 13],
             "Emax"  => 1.1,
             "IDH"   => [1.0, 0.06],
             "pcs"   => [21, 11],
@@ -67,7 +67,7 @@ magn = Dict("Hᴱ"    => [1, 5],
 # key[2] : active filter - 0 = without active filter / 1 = with active filter
 hdata = Dict()
 hdata[(0,1)] = HarmonicPowerModels.replicate(data)
-# hdata[(1,1)] = HarmonicPowerModels.replicate(data, xfmr_magn=magn)
+hdata[(1,1)] = HarmonicPowerModels.replicate(data, xfmr_magn=magn)
 
 # build the harmonic data without active filter
 for (key,val) in hdata
@@ -84,7 +84,7 @@ for (key,val) in hdata
 end end
 
 # harmonic power flow - with xfmr_magn, without active filter → key = (1,0)
-results_hpf = HarmonicPowerModels.solve_hpf(hdata[(0,0)], form, solver)
+results_hpf = HarmonicPowerModels.solve_hpf(hdata[(1,0)], form, solver)
 println("Results for the harmonic power flow")
 println("Fundamental harmonic:")
 print_summary(results_hpf["solution"]["nw"]["1"])
@@ -115,17 +115,17 @@ print_summary(results_hopf_wo_magn["solution"]["nw"]["9"])
 println("Thirteen harmonic:")
 print_summary(results_hopf_wo_magn["solution"]["nw"]["13"])
 
-# # harmonic optimal power flow - with xfmr_magn, with active filter → key = (1,1)
-# results_hopf_w_magn = HarmonicPowerModels.solve_hopf(hdata[(1,1)], form, solver)
-# println("Fundamental harmonic:")
-# print_summary(results_hopf_w_magn["solution"]["nw"]["1"])
-# println("Third harmonic:")
-# print_summary(results_hopf_w_magn["solution"]["nw"]["3"])
-# println("Fifth harmonic:")
-# print_summary(results_hopf_w_magn["solution"]["nw"]["5"])
-# println("Seventh harmonic:")
-# print_summary(results_hopf_w_magn["solution"]["nw"]["7"])
-# println("Nineth harmonic:")
-# print_summary(results_hopf_w_magn["solution"]["nw"]["9"])
-# println("Thirteen harmonic:")
-# print_summary(results_hopf_w_magn["solution"]["nw"]["13"])
+# harmonic optimal power flow - with xfmr_magn, with active filter → key = (1,1)
+results_hopf_w_magn = HarmonicPowerModels.solve_hopf(hdata[(1,1)], form, solver)
+println("Fundamental harmonic:")
+print_summary(results_hopf_w_magn["solution"]["nw"]["1"])
+println("Third harmonic:")
+print_summary(results_hopf_w_magn["solution"]["nw"]["3"])
+println("Fifth harmonic:")
+print_summary(results_hopf_w_magn["solution"]["nw"]["5"])
+println("Seventh harmonic:")
+print_summary(results_hopf_w_magn["solution"]["nw"]["7"])
+println("Nineth harmonic:")
+print_summary(results_hopf_w_magn["solution"]["nw"]["9"])
+println("Thirteen harmonic:")
+print_summary(results_hopf_w_magn["solution"]["nw"]["13"])
