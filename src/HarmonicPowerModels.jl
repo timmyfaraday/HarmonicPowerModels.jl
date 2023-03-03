@@ -14,6 +14,7 @@ module HarmonicPowerModels
     # import pkgs
     import JuMP
     import PowerModels
+    import PowerModelsDistribution
     import SignalDecomposition
     import InfrastructureModels
     import Interpolations
@@ -26,6 +27,7 @@ module HarmonicPowerModels
 
     # pkg constants 
     const _PMs = PowerModels
+    const _PMD = PowerModelsDistribution
     const _HPM = HarmonicPowerModels
     const _SDC = SignalDecomposition
     const _IMs = InfrastructureModels
@@ -50,7 +52,7 @@ module HarmonicPowerModels
     include("core/data.jl")
     include("core/variable.jl")
 
-    include("form/iv.jl")
+    include("form/ivr.jl")
 
     include("prob/hopf.jl")
     include("prob/hpf.jl")

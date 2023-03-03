@@ -12,6 +12,11 @@ function solve_hpf(file, model_type::Type, optimizer; kwargs...)
 end
 
 ""
+function solve_mc_hpf(file, model_type::Type, optimizer; kwargs...)
+    return _PMD.solve_mc_model(file, model_type, solver, build_mc_hpf; multinetwork=true, kwargs...)
+end
+
+""
 function build_hpf(pm::_PMs.AbstractIVRModel)
     ## variables
     for n in _PMs.nw_ids(pm)
@@ -65,5 +70,58 @@ function build_hpf(pm::_PMs.AbstractIVRModel)
             constraint_transformer_winding_current_balance(pm, t, nw=n)
         end
     end
+end
 
+""
+function build_mc_hpf(pm::_PMD.AbstractExplicitNeutralIVRModel)
+    ## variables
+    for n in _PMs.nw_ids(pm)
+        _PMD.variable_mc_bus_voltage(pm; nw=n)
+
+        _PMD.variable_mc_branch_current(pm; nw=n)
+        _PMD.variable_mc_generator_current(pm; nw=n)
+        _PMD.variable_mc_load_current(pm; nw=m)
+        _PMD.variable_mc_transformer_current(pm; nw=n)
+
+        _PMD.variable_mc_load_power(pm; nw=n)
+        _PMD.variable_mc_generator_power(pm; nw=n)
+        _PMD.variable_mc_transformer_power(pm; nw=n)
+    end
+
+    ## constraints
+
+    # harmonic constraints
+    for n in _PMs.nw_ids(pm)
+        for i in _PMs.ids(pm, n, :ref_buses)
+            constraint_mc_voltage_reference(pm, i, nw=n)
+        end
+
+        for g in _PMs.ids(pm, n, :gen)
+            constraint_mc_generator_power(pm, g, nw=n)
+            constraint_mc_generator_current(pm, g, nw=n)
+        end
+
+        for l in _PMs.ids(pm, n, :load)
+            constraint_mc_load_power(pm, l, nw=n)
+            constraint_mc_load_current(pm, l, nw=n)
+        end
+
+        for x in _PMs.ids(pm, n, :transformer)
+            constraint_mc_transformer_voltage(pm, x, nw=n)
+            constraint_mc_transformer_current(pm, x, nw=n)
+        end
+
+        for b in _PMs.ids(pm, n, :branch)
+            constraint_mc_current_from(pm, b, nw=n)
+            constraint_mc_current_to(pm, b, nw=n)
+            constraint_mc_bus_voltage_drop(pm, b, nw=n)
+        end
+
+        for i in _PMs.ids(pm, n, :bus)
+            _PMD.constraint_mc_current_balance(pm, i, nw=n)
+        end
+    end
+    
+    ## objective
+    objective_power_flow(pm)
 end

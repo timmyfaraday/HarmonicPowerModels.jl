@@ -70,6 +70,21 @@ function constraint_ref_bus(pm::AbstractIVRModel, n::Int, i::Int)
         JuMP.@constraint(pm.model, vi == 0.0)
     end
 end
+""
+function constraint_mc_ref_bus(pm::_PMD.AbstractExplicitNeutralIVRModel, n::Int, i::Int)
+    vr = var(pm, n, :vr, i)
+    vi = var(pm, n, :vi, i)
+
+    if n == 1 
+        # for fundemental frequency: fix reference angle
+        JuMP.@constraint(pm.model, vr == 1.0)
+        JuMP.@constraint(pm.model, vi == 0.0)
+    else 
+        # for non-fundamental frequency: fix harmonic voltage to 0+j0
+        JuMP.@constraint(pm.model, vr == 0.0)
+        JuMP.@constraint(pm.model, vi == 0.0)
+    end
+end
 
 # bus
 ""

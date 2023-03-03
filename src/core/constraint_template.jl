@@ -21,6 +21,10 @@ end
 function constraint_ref_bus(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     constraint_ref_bus(pm, nw, i)
 end
+""
+function constraint_mc_ref_bus(pm::_PMD.AbstractExplicitNeutralPowerModel, i::Int; nw::Int=nw_id_default)
+    constraint_mc_ref_bus(pm, nw, i)
+end
 
 # bus
 ""
