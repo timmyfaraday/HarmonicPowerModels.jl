@@ -32,12 +32,12 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
     ## constraint
     # overall constraints
     for i in _PMs.ids(pm, :bus, nw=1)
-        constraint_voltage_rms_limit(pm, i, nw=1)
-        constraint_voltage_thd_limit(pm, i, nw=1)
+        constraint_bus_voltage_rms_limit(pm, i, nw=1)
+        constraint_bus_voltage_thd_limit(pm, i, nw=1)
     end
 
     for b in _PMs.ids(pm, :branch, nw=1)
-        constraint_current_rms_limit(pm, b, nw=1)
+        constraint_branch_current_rms_limit(pm, b, nw=1)
     end
 
     for g in _PMs.ids(pm, :gen, nw=1)                                           # @F: would it not be cleaner to make a new data entry for filters
@@ -47,13 +47,13 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
     # harmonic constraints
     for n in _PMs.nw_ids(pm)
         for i in _PMs.ids(pm, :ref_buses, nw=n) 
-            constraint_ref_bus(pm, i, nw=n)
+            constraint_voltage_reference(pm, i, nw=n)
         end
 
         for i in _PMs.ids(pm, :bus, nw=n)
             constraint_current_balance(pm, i, nw=n)
-            constraint_voltage_ihd_limit(pm, i, nw=n)
-            constraint_voltage_magnitude_sqr(pm, i, nw=n)
+            constraint_bus_voltage_ihd_limit(pm, i, nw=n)
+            constraint_bus_voltage_magnitude_sqr(pm, i, nw=n)
         end
 
         for b in _PMs.ids(pm, :branch, nw=n)
@@ -85,3 +85,75 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
         end
     end
 end
+
+""
+function build_mc_hopf(pm::_PMD.AbstractExplicitNeutralIVRModel)
+    ## variables
+    for n in _PMs.nw_ids(pm)
+        _PMD.variable_mc_bus_voltage(pm; nw=n)
+        _PMD.variable_mc_bus_voltage_magnitude_sqr(pm; nw=n)
+
+        _PMD.variable_mc_branch_current(pm; nw=n)
+        _PMD.variable_mc_generator_current(pm; nw=n)
+        _PMD.variable_mc_load_current(pm; nw=m)
+        _PMD.variable_mc_transformer_current(pm; nw=n)
+
+        _PMD.variable_mc_load_power(pm; nw=n)
+        _PMD.variable_mc_generator_power(pm; nw=n)
+        _PMD.variable_mc_transformer_power(pm; nw=n)
+    end
+
+    ## objective
+    objective_mc_voltage_distortion_minimization(pm)
+
+    ## constraints
+    for i in _PMs.ids(pm, :bus, nw=1)
+        constraint_mc_bus_voltage_rms_limit(pm, i, nw=1)
+        constraint_mc_bus_voltage_thd_limit(pm, i, nw=1)
+    end
+
+    for b in _PMs.ids(pm, :branch, nw=1)
+        constraint_mc_branch_current_rms_limit(pm, b, nw=1)
+    end
+
+    for g in _PMs.ids(pm, :gen, nw=1)
+        constraint_mc_active_filter(pm, g, nw=1)
+    end
+
+    # harmonic constraints
+    for n in _PMs.nw_ids(pm)
+        for i in _PMs.ids(pm, :ref_buses, nw=n)
+            _PMD.constraint_mc_voltage_reference(pm, i, nw=n)
+        end
+
+        for i in _PMs.ids(pm, :bus, nw=n)
+            constraint_mc_bus_voltage_ihd_limit(pm, i, nw=n)
+            constraint_mc_bus_voltage_magnitude_sqr(pm, i, nw=n)
+        end
+
+        for b in _PMs.ids(pm, n, :branch)
+            _PMD.constraint_mc_current_from(pm, b, nw=n)
+            _PMD.constraint_mc_current_to(pm, b, nw=n)
+
+            _PMD.constraint_mc_bus_voltage_drop(pm, b, nw=n)
+        end
+
+        for g in _PMs.ids(pm, n, :gen)
+            _PMD.constraint_mc_generator_power(pm, g, nw=n)
+            _PMD.constraint_mc_generator_current(pm, g, nw=n)
+        end
+
+        for l in _PMs.ids(pm, n, :load)
+            constraint_mc_load_power(pm, l, nw=n)
+            constraint_mc_load_current(pm, l, nw=n)
+        end
+
+        for t in _PMs.ids(pm, n, :transformer)
+            _PMD.constraint_mc_transformer_voltage(pm, t, nw=n)
+            _PMD.constraint_mc_transformer_current(pm, t, nw=n)
+        end
+
+        for i in _PMs.ids(pm, n, :bus)
+            _PMD.constraint_mc_current_balance(pm, i, nw=n)
+        end
+    end

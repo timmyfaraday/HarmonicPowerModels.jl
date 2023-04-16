@@ -42,7 +42,7 @@ function build_hpf(pm::_PMs.AbstractIVRModel)
     # harmonic constraints
     for n in _PMs.nw_ids(pm)
         for i in _PMs.ids(pm, :ref_buses, nw=n) 
-            constraint_ref_bus(pm, i, nw=n)
+            constraint_voltage_reference(pm, i, nw=n)
         end
 
         for i in _PMs.ids(pm, :bus, nw=n)
@@ -88,17 +88,26 @@ function build_mc_hpf(pm::_PMD.AbstractExplicitNeutralIVRModel)
         _PMD.variable_mc_transformer_power(pm; nw=n)
     end
 
-    ## constraints
+    ## objective
+    objective_mc_power_flow(pm)
 
+    ## constraints
     # harmonic constraints
     for n in _PMs.nw_ids(pm)
         for i in _PMs.ids(pm, n, :ref_buses)
-            constraint_mc_voltage_reference(pm, i, nw=n)
+            _PMD.constraint_mc_voltage_reference(pm, i, nw=n)
+        end
+
+        for b in _PMs.ids(pm, n, :branch)
+            _PMD.constraint_mc_current_from(pm, b, nw=n)
+            _PMD.constraint_mc_current_to(pm, b, nw=n)
+
+            _PMD.constraint_mc_bus_voltage_drop(pm, b, nw=n)
         end
 
         for g in _PMs.ids(pm, n, :gen)
-            constraint_mc_generator_power(pm, g, nw=n)
-            constraint_mc_generator_current(pm, g, nw=n)
+            _PMD.constraint_mc_generator_power(pm, g, nw=n)
+            _PMD.constraint_mc_generator_current(pm, g, nw=n)
         end
 
         for l in _PMs.ids(pm, n, :load)
@@ -107,14 +116,8 @@ function build_mc_hpf(pm::_PMD.AbstractExplicitNeutralIVRModel)
         end
 
         for x in _PMs.ids(pm, n, :transformer)
-            constraint_mc_transformer_voltage(pm, x, nw=n)
-            constraint_mc_transformer_current(pm, x, nw=n)
-        end
-
-        for b in _PMs.ids(pm, n, :branch)
-            constraint_mc_current_from(pm, b, nw=n)
-            constraint_mc_current_to(pm, b, nw=n)
-            constraint_mc_bus_voltage_drop(pm, b, nw=n)
+            _PMD.constraint_mc_transformer_voltage(pm, x, nw=n)
+            _PMD.constraint_mc_transformer_current(pm, x, nw=n)
         end
 
         for i in _PMs.ids(pm, n, :bus)

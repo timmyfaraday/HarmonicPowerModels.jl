@@ -56,7 +56,7 @@ end
 
 # ref bus
 ""
-function constraint_ref_bus(pm::AbstractIVRModel, n::Int, i::Int)
+function constraint_voltage_reference(pm::AbstractIVRModel, n::Int, i::Int)
     vr = var(pm, n, :vr, i)
     vi = var(pm, n, :vi, i)
 
@@ -71,7 +71,7 @@ function constraint_ref_bus(pm::AbstractIVRModel, n::Int, i::Int)
     end
 end
 ""
-function constraint_mc_ref_bus(pm::_PMD.AbstractExplicitNeutralIVRModel, n::Int, i::Int)
+function constraint_mc_voltage_reference(pm::_PMD.AbstractExplicitNeutralIVRModel, n::Int, i::Int)
     vr = var(pm, n, :vr, i)
     vi = var(pm, n, :vi, i)
 
@@ -88,27 +88,27 @@ end
 
 # bus
 ""
-function constraint_voltage_rms_limit(pm::AbstractIVRModel, i, vminrms, vmaxrms)
+function constraint_bus_voltage_rms_limit(pm::AbstractIVRModel, i, vminrms, vmaxrms)
     w = [var(pm, n, :w, i) for n in sorted_nw_ids(pm)]
 
     JuMP.@constraint(pm.model, vminrms^2 <= sum(w)               )
     JuMP.@constraint(pm.model,              sum(w)  <= vmaxrms^2 )
 end
 ""
-function constraint_voltage_thd_limit(pm::AbstractIVRModel, i, thdmax)
+function constraint_bus_voltage_thd_limit(pm::AbstractIVRModel, i, thdmax)
     w = [var(pm, n, :w, i) for n in sorted_nw_ids(pm)]
 
     JuMP.@constraint(pm.model, sum(w[2:end]) <= thdmax^2 * w[1])
 end
 ""
-function constraint_voltage_ihd_limit(pm::AbstractIVRModel, n::Int, i, ihd)
+function constraint_bus_voltage_ihd_limit(pm::AbstractIVRModel, n::Int, i, ihd)
     v  = var(pm, 1, :w, i)
     w  = var(pm, n, :w, i)
 
     JuMP.@constraint(pm.model, w <= ihd * v)
 end
 ""
-function constraint_voltage_magnitude_sqr(pm::AbstractIVRModel, n::Int, i)
+function constraint_bus_voltage_magnitude_sqr(pm::AbstractIVRModel, n::Int, i)
     vr = var(pm, n, :vr, i)
     vi = var(pm, n, :vi, i)
     w  = var(pm, n, :w, i)
@@ -148,7 +148,7 @@ function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, b
 end
 
 # branch
-function constraint_current_rms_limit(pm::AbstractIVRModel, f_idx, t_idx, c_rating)
+function constraint_branch_current_rms_limit(pm::AbstractIVRModel, f_idx, t_idx, c_rating)
     crf =  [var(pm, n, :cr, f_idx) for n in sorted_nw_ids(pm)]
     cif =  [var(pm, n, :ci, f_idx) for n in sorted_nw_ids(pm)]
 

@@ -18,37 +18,33 @@ end
 
 # ref bus
 ""
-function constraint_ref_bus(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-    constraint_ref_bus(pm, nw, i)
-end
-""
-function constraint_mc_ref_bus(pm::_PMD.AbstractExplicitNeutralPowerModel, i::Int; nw::Int=nw_id_default)
-    constraint_mc_ref_bus(pm, nw, i)
+function constraint_voltage_reference(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+    constraint_voltage_reference(pm, nw, i)
 end
 
 # bus
 ""
-function constraint_voltage_rms_limit(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_bus_voltage_rms_limit(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     vminrms = ref(pm, 1, :bus, i, "vminrms")
     vmaxrms = ref(pm, 1, :bus, i, "vmaxrms")
 
-    constraint_voltage_rms_limit(pm, i, vminrms, vmaxrms)
+    constraint_bus_voltage_rms_limit(pm, i, vminrms, vmaxrms)
 end
 ""
-function constraint_voltage_thd_limit(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_bus_voltage_thd_limit(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     thdmax = ref(pm, 1, :bus, i, "thdmax")
    
-    constraint_voltage_thd_limit(pm, i, thdmax)
+    constraint_bus_voltage_thd_limit(pm, i, thdmax)
 end
 ""
-function constraint_voltage_ihd_limit(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+function constraint_bus_voltage_ihd_limit(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
     ihd = ref(pm, nw, :bus, i, "ihdmax")
 
-    constraint_voltage_ihd_limit(pm, nw, i, ihd)
+    constraint_bus_voltage_ihd_limit(pm, nw, i, ihd)
 end
 ""
-function constraint_voltage_magnitude_sqr(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
-    constraint_voltage_magnitude_sqr(pm, nw, i)
+function constraint_bus_voltage_magnitude_sqr(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default)
+    constraint_bus_voltage_magnitude_sqr(pm, nw, i)
 end
 ""
 function constraint_current_balance(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=nw_id_default)
@@ -65,7 +61,7 @@ function constraint_current_balance(pm::_PMs.AbstractPowerModel, i::Int; nw::Int
 end
 
 # branch
-function constraint_current_rms_limit(pm::AbstractPowerModel, b::Int; nw::Int=nw_id_default)
+function constraint_branch_current_rms_limit(pm::AbstractPowerModel, b::Int; nw::Int=nw_id_default)
     branch = ref(pm, nw, :branch, b)
     
     f_bus, t_bus = branch["f_bus"], branch["t_bus"]
@@ -74,7 +70,7 @@ function constraint_current_rms_limit(pm::AbstractPowerModel, b::Int; nw::Int=nw
     if haskey(branch, "c_rating_a")
         c_rating = branch["c_rating_a"]
 
-        constraint_current_rms_limit(pm, f_idx, t_idx, c_rating)
+        constraint_branch_current_rms_limit(pm, f_idx, t_idx, c_rating)
     end
 end
 
