@@ -37,7 +37,7 @@ function objective_power_flow(pm::AbstractIVRModel)
     JuMP.@objective(pm.model, Min, 0.0)
 end
 ""
-function objective_voltage_distortion_minimization(pm::AbstractIVRModel; bus_id=6) # @F: this needs to be generalized, suggestion find the bus where active filter is connected
+function objective_voltage_distortion_minimization(pm::AbstractIVRModel; bus_id=1) # TODO @F: this needs to be generalized, suggestion find the bus where active filter is connected
     vr = [var(pm, n, :vr, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
     vi = [var(pm, n, :vi, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
 

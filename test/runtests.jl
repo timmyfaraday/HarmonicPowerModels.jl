@@ -3,6 +3,7 @@ using Ipopt
 using PowerModels
 using HarmonicPowerModels
 using SignalDecomposition
+using Dierckx
 using Test
 
 # pkg const
