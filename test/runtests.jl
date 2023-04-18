@@ -16,6 +16,6 @@ solver = Ipopt.Optimizer
 @testset "HarmonicPowerModels.jl" begin
     
     include("hpf.jl")
+    include("hopf.jl")
     include("xfmr.jl")
-
 end
