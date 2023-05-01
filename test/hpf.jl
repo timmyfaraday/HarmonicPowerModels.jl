@@ -24,10 +24,26 @@
         # build the harmonic data
         hdata = HPM.replicate(data)
 
+        ihdmax = Dict("1" => 1.10, "3" => 0.05)
+        for (nw,ntw) in hdata["nw"], (nb,bus) in ntw["bus"]
+            bus["ihdmax"] = ihdmax[nw]
+        end 
+
+
         # harmonic power flow
+        results_fund = PowerModels.solve_pf_iv(data, form, solver)
+        # println("Results for the fundamental power flow:")
+        # print_summary(results_fund["solution"]) 
+        
+        
         results_harm = HPM.solve_hpf(hdata, form, solver)
 
         # tests 
+        # println("Results for the harmonic power flow")
+        # println("Fundamental harmonic:")
+        # print_summary(results_harm["solution"]["nw"]["1"])
+        # println("Third harmonic:")
+        # print_summary(results_harm["solution"]["nw"]["3"])
     end
 
 end

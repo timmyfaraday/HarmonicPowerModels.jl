@@ -72,16 +72,21 @@ hdata[(1,1)] = HarmonicPowerModels.replicate(data, xfmr_magn=magn)
 # build the harmonic data without active filter
 for (key,val) in hdata
     hdata[(key[1],0)] = deepcopy(val)
-    for (nw,ntw) in hdata[(key[1],0)]["nw"], (ng,gen) in ntw["gen"] if gen["isfilter"] == 1
-        delete!(ntw["gen"],ng)
-end end end
+    for (nw,ntw) in hdata[(key[1],0)]["nw"], (ng,gen) in ntw["gen"] 
+        if gen["isfilter"] == 1
+            delete!(ntw["gen"],ng)
+        end
+    end 
+end 
+
 
 # add the individual harmonic distortion limits                                 # @F: this should preferably be integrated in the date file
 ihdmax = Dict("1" => 1.10, "3" => 0.05, "5" => 0.06, "7" => 0.05, "9" => 0.015, "13" => 0.03)
 for (key,val) in hdata
     for (nw,ntw) in val["nw"], (nb,bus) in ntw["bus"]
         bus["ihdmax"] = ihdmax[nw]
-end end
+    end 
+end
 
 # harmonic power flow - with xfmr_magn, without active filter → key = (1,0)
 results_hpf = HarmonicPowerModels.solve_hpf(hdata[(1,0)], form, solver)

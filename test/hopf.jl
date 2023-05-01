@@ -23,8 +23,30 @@ Example considering harmonic optimal power flow for a two-bus example.
         # build the harmonic data
         hdata = HPM.replicate(data)
 
+        ihdmax = Dict("1" => 1.10, "3" => 0.05)
+        for (nw,ntw) in hdata["nw"], (nb,bus) in ntw["bus"]
+            bus["ihdmax"] = ihdmax[nw]
+        end 
         # harmonic power flow
         results_harm = HPM.solve_hopf(hdata, form, solver)
+
+    end
+
+    @testset "Industrial Example" begin
+        # read-in data
+        path = joinpath(HarmonicPowerModels.BASE_DIR,"test/data/matpower/industrial_network_hopf.m")
+        data = PMs.parse_file(path)
+
+        # set the formulation
+        form = PMs.IVRPowerModel
+
+        # build the harmonic data
+        hdata = HarmonicPowerModels.replicate(data)
+        ihdmax = Dict("1" => 1.10, "3" => 0.05, "5" => 0.06, "7" => 0.05, "9" => 0.015, "13" => 0.03)
+        for (nw,ntw) in hdata["nw"], (nb,bus) in ntw["bus"]
+            bus["ihdmax"] = ihdmax[nw]
+        end 
+        results_harm = HarmonicPowerModels.solve_hopf(hdata, form, solver)
 
     end
 
