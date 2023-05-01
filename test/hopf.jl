@@ -30,6 +30,9 @@ Example considering harmonic optimal power flow for a two-bus example.
         # harmonic power flow
         results_harm = HPM.solve_hopf(hdata, form, solver)
 
+        @test results_harm["termination_status"] == LOCALLY_SOLVED
+        @test isapprox(results_harm["objective"], 0; atol = 1e0)
+
     end
 
     @testset "Industrial Example" begin
@@ -47,6 +50,9 @@ Example considering harmonic optimal power flow for a two-bus example.
             bus["ihdmax"] = ihdmax[nw]
         end 
         results_harm = HarmonicPowerModels.solve_hopf(hdata, form, solver)
+
+        @test results_harm["termination_status"] == LOCALLY_SOLVED
+        @test isapprox(results_harm["objective"], 0; atol = 1e0)
 
     end
 

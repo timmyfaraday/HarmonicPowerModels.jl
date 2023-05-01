@@ -32,18 +32,20 @@
 
         # harmonic power flow
         results_fund = PowerModels.solve_pf_iv(data, form, solver)
-        # println("Results for the fundamental power flow:")
-        # print_summary(results_fund["solution"]) 
+        @test results_fund["termination_status"] == LOCALLY_SOLVED
+        @test isapprox(results_fund["objective"], 0; atol = 1e0)
+        @test isapprox(results_fund["solution"]["bus"]["2"]["vr"],  0.966287; atol = 1e-3)
+        @test isapprox(results_fund["solution"]["bus"]["2"]["vi"], -0.024; atol = 1e-3)
         
         
         results_harm = HPM.solve_hpf(hdata, form, solver)
 
-        # tests 
-        # println("Results for the harmonic power flow")
-        # println("Fundamental harmonic:")
-        # print_summary(results_harm["solution"]["nw"]["1"])
-        # println("Third harmonic:")
-        # print_summary(results_harm["solution"]["nw"]["3"])
-    end
+        @test results_harm["termination_status"] == LOCALLY_SOLVED
+        @test isapprox(results_harm["objective"], 0; atol = 1e0)
+        @test isapprox(results_harm["solution"]["nw"]["1"]["bus"]["2"]["vr"], 0.966287; atol = 1e-3)
+        @test isapprox(results_harm["solution"]["nw"]["1"]["bus"]["2"]["vi"], -0.024; atol = 1e-3)
+        @test isapprox(results_harm["solution"]["nw"]["3"]["bus"]["2"]["vr"], -0.0160832; atol = 1e-3)
+        @test isapprox(results_harm["solution"]["nw"]["3"]["bus"]["2"]["vi"], -0.01660243; atol = 1e-3)
 
+    end
 end

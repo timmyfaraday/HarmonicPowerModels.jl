@@ -15,7 +15,8 @@ taken from:
 # load pkgs
 using HarmonicPowerModels
 using Dierckx, Ipopt, JuMP, PowerModels
-
+PMs = PowerModels
+HPM = HarmonicPowerModels
 # set the solver
 solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "print_level"=>0)
 
