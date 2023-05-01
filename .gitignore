@@ -3,3 +3,4 @@
 docs/build/
 docs/site/
 docs/.documenter
+.DS_store
