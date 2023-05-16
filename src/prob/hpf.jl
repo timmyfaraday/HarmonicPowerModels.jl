@@ -6,6 +6,7 @@
 # See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
 ################################################################################
 
+# solve functions
 ""
 function solve_hpf(file, model_type::Type, optimizer; kwargs...)
     return _PMs.solve_model(file, model_type, optimizer, build_hpf; ref_extensions=[ref_add_xfmr!], solution_processors=[_HPM.sol_data_model!], multinetwork=true, kwargs...)
@@ -13,9 +14,10 @@ end
 
 ""
 function solve_mc_hpf(file, model_type::Type, optimizer; kwargs...)
-    return _PMD.solve_mc_model(file, model_type, solver, build_mc_hpf; multinetwork=true, kwargs...)
+    return _PMD.solve_mc_model(file, model_type, optimizer, build_mc_hpf; multinetwork=true, kwargs...)
 end
 
+# build functions
 ""
 function build_hpf(pm::_PMs.AbstractIVRModel)
     ## variables
@@ -75,12 +77,12 @@ end
 ""
 function build_mc_hpf(pm::_PMD.AbstractExplicitNeutralIVRModel)
     ## variables
-    for n in _PMs.nw_ids(pm)
+    for n in _PMD.nw_ids(pm)
         _PMD.variable_mc_bus_voltage(pm; nw=n)
 
         _PMD.variable_mc_branch_current(pm; nw=n)
         _PMD.variable_mc_generator_current(pm; nw=n)
-        _PMD.variable_mc_load_current(pm; nw=m)
+        _PMD.variable_mc_load_current(pm; nw=n)
         _PMD.variable_mc_transformer_current(pm; nw=n)
 
         _PMD.variable_mc_load_power(pm; nw=n)
@@ -93,38 +95,35 @@ function build_mc_hpf(pm::_PMD.AbstractExplicitNeutralIVRModel)
 
     ## constraints
     # harmonic constraints
-    for n in _PMs.nw_ids(pm)
-        for i in _PMs.ids(pm, n, :ref_buses)
+    for n in _PMD.nw_ids(pm)
+        for i in _PMD.ids(pm, n, :ref_buses)
             _PMD.constraint_mc_voltage_reference(pm, i, nw=n)
         end
 
-        for b in _PMs.ids(pm, n, :branch)
+        for b in _PMD.ids(pm, n, :branch)
             _PMD.constraint_mc_current_from(pm, b, nw=n)
             _PMD.constraint_mc_current_to(pm, b, nw=n)
 
             _PMD.constraint_mc_bus_voltage_drop(pm, b, nw=n)
         end
 
-        for g in _PMs.ids(pm, n, :gen)
+        for g in _PMD.ids(pm, n, :gen)
             _PMD.constraint_mc_generator_power(pm, g, nw=n)
             _PMD.constraint_mc_generator_current(pm, g, nw=n)
         end
 
-        for l in _PMs.ids(pm, n, :load)
-            constraint_mc_load_power(pm, l, nw=n)
-            constraint_mc_load_current(pm, l, nw=n)
+        for l in _PMD.ids(pm, n, :load)
+            _PMD.constraint_mc_load_power(pm, l, nw=n)
+            _PMD.constraint_mc_load_current(pm, l, nw=n)
         end
 
-        for x in _PMs.ids(pm, n, :transformer)
+        for x in _PMD.ids(pm, n, :transformer)
             _PMD.constraint_mc_transformer_voltage(pm, x, nw=n)
             _PMD.constraint_mc_transformer_current(pm, x, nw=n)
         end
 
-        for i in _PMs.ids(pm, n, :bus)
+        for i in _PMD.ids(pm, n, :bus)
             _PMD.constraint_mc_current_balance(pm, i, nw=n)
         end
     end
-    
-    ## objective
-    objective_power_flow(pm)
 end

@@ -6,11 +6,18 @@
 # See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
 ################################################################################
 
+# solve functions
 ""
 function solve_hopf(file, model_type::Type, optimizer; kwargs...)
     return _PMs.solve_model(file, model_type, optimizer, build_hopf; ref_extensions=[ref_add_xfmr!],  solution_processors=[ _HPM.sol_data_model!], multinetwork=true, kwargs...)
 end
 
+""
+function solve_mc_hopf(file, model_type::Type, optimizer; kwargs...)
+    return _PMD.solve_mc_model(file, model_type, optimizer, build_mc_hopf; multinetwork=true, kwargs...)
+end
+
+# build functions
 ""
 function build_hopf(pm::_PMs.AbstractIVRModel)
     ## variables
@@ -89,7 +96,7 @@ end
 ""
 function build_mc_hopf(pm::_PMD.AbstractExplicitNeutralIVRModel)
     ## variables
-    for n in _PMs.nw_ids(pm)
+    for n in _PMD.nw_ids(pm)
         _PMD.variable_mc_bus_voltage(pm; nw=n)
         _PMD.variable_mc_bus_voltage_magnitude_sqr(pm; nw=n)
 
@@ -107,53 +114,54 @@ function build_mc_hopf(pm::_PMD.AbstractExplicitNeutralIVRModel)
     objective_mc_voltage_distortion_minimization(pm)
 
     ## constraints
-    for i in _PMs.ids(pm, :bus, nw=1)
+    for i in _PMD.ids(pm, :bus, nw=1)
         constraint_mc_bus_voltage_rms_limit(pm, i, nw=1)
         constraint_mc_bus_voltage_thd_limit(pm, i, nw=1)
     end
 
-    for b in _PMs.ids(pm, :branch, nw=1)
+    for b in _PMD.ids(pm, :branch, nw=1)
         constraint_mc_branch_current_rms_limit(pm, b, nw=1)
     end
 
-    for g in _PMs.ids(pm, :gen, nw=1)
+    for g in _PMD.ids(pm, :gen, nw=1)
         constraint_mc_active_filter(pm, g, nw=1)
     end
 
     # harmonic constraints
-    for n in _PMs.nw_ids(pm)
+    for n in _PMD.nw_ids(pm)
         for i in _PMs.ids(pm, :ref_buses, nw=n)
             _PMD.constraint_mc_voltage_reference(pm, i, nw=n)
         end
 
-        for i in _PMs.ids(pm, :bus, nw=n)
+        for i in _PMD.ids(pm, :bus, nw=n)
             constraint_mc_bus_voltage_ihd_limit(pm, i, nw=n)
             constraint_mc_bus_voltage_magnitude_sqr(pm, i, nw=n)
         end
 
-        for b in _PMs.ids(pm, n, :branch)
+        for b in _PMD.ids(pm, n, :branch)
             _PMD.constraint_mc_current_from(pm, b, nw=n)
             _PMD.constraint_mc_current_to(pm, b, nw=n)
 
             _PMD.constraint_mc_bus_voltage_drop(pm, b, nw=n)
         end
 
-        for g in _PMs.ids(pm, n, :gen)
+        for g in _PMD.ids(pm, n, :gen)
             _PMD.constraint_mc_generator_power(pm, g, nw=n)
             _PMD.constraint_mc_generator_current(pm, g, nw=n)
         end
 
-        for l in _PMs.ids(pm, n, :load)
+        for l in _PMD.ids(pm, n, :load)
             constraint_mc_load_power(pm, l, nw=n)
             constraint_mc_load_current(pm, l, nw=n)
         end
 
-        for t in _PMs.ids(pm, n, :transformer)
+        for t in _PMD.ids(pm, n, :transformer)
             _PMD.constraint_mc_transformer_voltage(pm, t, nw=n)
             _PMD.constraint_mc_transformer_current(pm, t, nw=n)
         end
 
-        for i in _PMs.ids(pm, n, :bus)
+        for i in _PMD.ids(pm, n, :bus)
             _PMD.constraint_mc_current_balance(pm, i, nw=n)
         end
     end
+end

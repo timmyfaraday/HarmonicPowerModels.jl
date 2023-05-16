@@ -43,6 +43,7 @@ module HarmonicPowerModels
 
     # funct
     sorted_nw_ids(pm) = sort(collect(_PMs.nw_ids(pm)))
+    sorted_mc_nw_ids(pm) = sort(collect(_PMD.nw_ids(pm)))
 
     # paths
     const BASE_DIR = dirname(@__DIR__)
@@ -66,6 +67,7 @@ module HarmonicPowerModels
 
     export replicate
 
-    export solve_hopf, solve_hpf
+    export solve_hpf, solve_hopf,
+           solve_mc_hpf, solve_mc_hopf
 
 end
