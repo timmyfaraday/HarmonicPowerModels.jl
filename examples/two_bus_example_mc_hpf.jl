@@ -21,13 +21,15 @@ solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer)
 # read-in data
 path = joinpath(HarmonicPowerModels.BASE_DIR,"test/data/opendss/two_bus_example_mc_hpf.dss")
 data = PowerModelsDistribution.parse_file(path, transformations = [remove_all_bounds!, transform_loops!])
+# data["settings"]["sbase_default"] = 1
 data_math = transform_data_model(data, kron_reduce=false, phase_project=false)
+add_start_vrvi!(data_math)
 
 # set the formulation
 form = PowerModelsDistribution.IVRENPowerModel
 
 # fundamental power flow
-results_fund = PowerModelsDistribution.solve_mc_pf(data_math, form, solver)
+results_fund = PowerModelsDistribution.solve_mc_opf(data, form, solver)
 
 # build the harmonic data
 mn_data = make_multinetwork(data)
