@@ -1,3 +1,12 @@
+################################################################################
+#  Copyright 2023, Frederik Geth, Tom Van Acker                                #
+################################################################################
+# HarmonicPowerModels.jl                                                       #
+# An extention package of PowerModels(Distribution).jl for Harmonics           #
+# See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
+################################################################################
+
+# xfmr 
 ""
 function variable_transformer_voltage_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
     vrt = _PMs.var(pm, nw)[:vrt] = JuMP.@variable(pm.model, 

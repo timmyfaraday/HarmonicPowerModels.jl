@@ -1,3 +1,11 @@
+################################################################################
+#  Copyright 2023, Frederik Geth, Tom Van Acker                                #
+################################################################################
+# HarmonicPowerModels.jl                                                       #
+# An extention package of PowerModels(Distribution).jl for Harmonics           #
+# See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
+################################################################################
+
 module HarmonicPowerModels
 
     # using pkgs 
@@ -6,6 +14,7 @@ module HarmonicPowerModels
     # import pkgs
     import JuMP
     import PowerModels
+    import PowerModelsDistribution
     import SignalDecomposition
     import InfrastructureModels
     import Interpolations
@@ -18,6 +27,7 @@ module HarmonicPowerModels
 
     # pkg constants 
     const _PMs = PowerModels
+    const _PMD = PowerModelsDistribution
     const _HPM = HarmonicPowerModels
     const _SDC = SignalDecomposition
     const _IMs = InfrastructureModels
@@ -32,7 +42,8 @@ module HarmonicPowerModels
     const nw_id_default = 1
 
     # funct
-    sorted_nw_ids(pm) = sort(collect(nw_ids(pm)))
+    sorted_nw_ids(pm) = sort(collect(_PMs.nw_ids(pm)))
+    sorted_mc_nw_ids(pm) = sort(collect(_PMD.nw_ids(pm)))
 
     # paths
     const BASE_DIR = dirname(@__DIR__)
@@ -42,18 +53,21 @@ module HarmonicPowerModels
     include("core/data.jl")
     include("core/variable.jl")
 
-    include("form/iv.jl")
+    include("form/ivr.jl")
 
-    include("prob/hopf_iv.jl")
-    include("prob/hpf_iv.jl")
+    include("prob/hopf.jl")
+    include("prob/hpf.jl")
 
+    include("util/sol.jl")
     include("util/xfmr_magn.jl")
+    include("util/xfmr.jl")
 
     # export
     export BASE_DIR
 
     export replicate
 
-    export run_hopf_iv, run_hpf_iv
+    export solve_hpf, solve_hopf,
+           solve_mc_hpf, solve_mc_hopf
 
 end
