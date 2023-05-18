@@ -29,7 +29,7 @@ add_start_vrvi!(data_math)
 form = PowerModelsDistribution.IVRENPowerModel
 
 # fundamental power flow
-results_fund = PowerModelsDistribution.solve_mc_opf(data, form, solver)
+results_fund = PowerModelsDistribution.solve_mc_opf(data_math, form, solver)
 
 # build the harmonic data
 mn_data = make_multinetwork(data)
