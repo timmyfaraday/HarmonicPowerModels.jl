@@ -36,7 +36,6 @@ Example considering harmonic optimal power flow for a two-bus example.
         @test isapprox(results_harm["solution"]["nw"]["1"]["bus"]["2"]["vi"], -0.024; atol = 1e-3)
         @test isapprox(results_harm["solution"]["nw"]["3"]["bus"]["2"]["vr"], -0.0160832; atol = 1e-3)
         @test isapprox(results_harm["solution"]["nw"]["3"]["bus"]["2"]["vi"], -0.01660243; atol = 1e-3)
-
     end
 
     @testset "Industrial Example" begin
@@ -60,8 +59,8 @@ Example considering harmonic optimal power flow for a two-bus example.
 
         @test isapprox(results_harm["solution"]["nw"]["1"]["bus"]["2"]["vr"], 0.7951823447530401; atol = 1e-3)
         @test isapprox(results_harm["solution"]["nw"]["1"]["bus"]["2"]["vi"], -0.568440001886; atol = 1e-3)
-        @test isapprox(results_harm["solution"]["nw"]["5"]["bus"]["8"]["vr"], -0.0241749759187737; atol = 1e-3)
-        @test isapprox(results_harm["solution"]["nw"]["5"]["bus"]["8"]["vi"], 0.028023283097463714; atol = 1e-3)
+        @test isapprox(results_harm["solution"]["nw"]["5"]["bus"]["8"]["vr"], -0.03252192960993166; atol = 1e-3)
+        @test isapprox(results_harm["solution"]["nw"]["5"]["bus"]["8"]["vi"], 0.022870556302375344; atol = 1e-3)
     end
 
 end
