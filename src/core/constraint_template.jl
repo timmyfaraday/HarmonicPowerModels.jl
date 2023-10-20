@@ -76,6 +76,19 @@ end
 
 # load
 ""
+function constraint_load_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=nw_id_default)
+    load = _PMs.ref(pm, nw, :load, l)
+
+    i       = load["load_bus"]
+    pd, qd  = load["pd"], load["qd"]
+
+    if nw == 1
+        constraint_load_constant_power(pm, nw, l, i, pd, qd)
+    else
+        constraint_load_current_fixed_angle(pm, nw, l)
+    end  
+end
+""
 function constraint_load_power(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=nw_id_default)
     load = _PMs.ref(pm, nw, :load, l)
 

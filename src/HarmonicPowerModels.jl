@@ -54,6 +54,7 @@ module HarmonicPowerModels
 
     include("prob/hopf.jl")
     include("prob/hpf.jl")
+    include("prob/hhc.jl")
 
     include("util/sol.jl")
     include("util/xfmr_magn.jl")
@@ -64,6 +65,6 @@ module HarmonicPowerModels
 
     export replicate
 
-    export solve_hopf, solve_hpf
+    export solve_hhc, solve_hopf, solve_hpf
 
 end

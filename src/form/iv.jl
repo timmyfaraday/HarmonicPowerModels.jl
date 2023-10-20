@@ -33,11 +33,17 @@ end
 
 ## objective
 ""
-function objective_power_flow(pm::AbstractIVRModel)
+function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
+    cid = [var(pm, n, :cid, l) for n in _PMs.nw_ids(pm) for l in _PMs.ids(pm, :load, nw=n) if n ≠ 1]
+
+    JuMP.@objective(pm.model, Max, sum(cid))
+end
+""
+function objective_power_flow(pm::_PMs.AbstractIVRModel)
     JuMP.@objective(pm.model, Min, 0.0)
 end
 ""
-function objective_voltage_distortion_minimization(pm::AbstractIVRModel; bus_id=1) # TODO @F: this needs to be generalized, suggestion find the bus where active filter is connected
+function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel; bus_id=1) # TODO @F: this needs to be generalized, suggestion find the bus where active filter is connected
     vr = [var(pm, n, :vr, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
     vi = [var(pm, n, :vi, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
 
@@ -165,6 +171,15 @@ function constraint_load_constant_current(pm::AbstractIVRModel, n::Int, l, mult)
     JuMP.@constraint(pm.model, crd == mult * fund_crd)
     JuMP.@constraint(pm.model, cid == mult * fund_cid)
 end
+""
+function constraint_load_current_fixed_angle(pm::AbstractIVRModel, n::Int, l)
+    crd = var(pm, n, :crd, l)
+    cid = var(pm, n, :cid, l)
+
+    JuMP.@constraint(pm.model, crd == 0.0)
+    JuMP.@constraint(pm.model, 0.0 <= cid)
+    JuMP.@constraint(pm.model, cid <= 5.0)
+end
 
 # xfmr
 ""
@@ -231,11 +246,19 @@ function constraint_transformer_core_current_balance(pm::_PMs.AbstractIVRModel, 
     ert = var(pm, n, :ert, t)
     eit = var(pm, n, :eit, t)
 
-    JuMP.@constraint(pm.model, csrt_fr + tr * csrt_to + ti * csit_to 
-                                == cert + ert/rsh
+    JuMP.@constraint(pm.model,  csrt_fr 
+                                + tr * csrt_to 
+                                + ti * csit_to 
+                                    == 
+                                cert 
+                                + ert / rsh
                     )
-    JuMP.@constraint(pm.model, csit_fr + tr * csit_to - ti * csrt_to
-                                == ceit + eit/rsh
+    JuMP.@constraint(pm.model,  csit_fr 
+                                + tr * csit_to 
+                                - ti * csrt_to
+                                    == 
+                                ceit 
+                                + eit / rsh
                     )
 end
 ""
@@ -291,8 +314,8 @@ function constraint_transformer_winding_current_balance(pm::AbstractIVRModel, n:
     end
 
     # h ∈ 𝓗⁰, cnf ∈ {D}
-    if is_zero_sequence(n) && cnf in ['D']
+    if is_zero_sequence(n) && cnf in ['D'] && r ≠ 0.0
         JuMP.@constraint(pm.model, crt == csrt - g_sh * vrt + b_sh * vit - vrt / r)
-        JuMP.@constraint(pm.model, crt == csit - g_sh * vit - b_sh * vrt - vit / r)
+        JuMP.@constraint(pm.model, cit == csit - g_sh * vit - b_sh * vrt - vit / r)
     end
 end
