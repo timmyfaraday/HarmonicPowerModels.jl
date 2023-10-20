@@ -2,7 +2,7 @@
 
 # HarmonicPowerModels.jl
 
-HarmonicPowerModels.jl is an extension package of PowerModels.jl for Haromonic (Optimal) Power Flow. 
+HarmonicPowerModels.jl is an extension package of PowerModels(Distribution).jl for harmonics. 
 
 ## Core Problem Specification
 - Harmonic Power Flow (hPF)

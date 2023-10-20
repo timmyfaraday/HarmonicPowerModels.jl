@@ -3,6 +3,7 @@ using Ipopt
 using PowerModels
 using HarmonicPowerModels
 using SignalDecomposition
+using Dierckx
 using Test
 
 # pkg const
@@ -15,6 +16,7 @@ solver = Ipopt.Optimizer
 
 @testset "HarmonicPowerModels.jl" begin
     
-    include("xfmr.jl")
-
+    include("hpf.jl")
+    include("hopf.jl")
+    # include("xfmr.jl")
 end

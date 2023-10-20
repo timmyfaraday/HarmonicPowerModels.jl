@@ -1,110 +1,99 @@
-"""
-    HarmonicPowerModels.collect_harmonics!(harmonics::Array{Int},
-                                           data::Dict{String, Any},
-                                           xfmr_magn::Dict{String, Any})
+################################################################################
+#  Copyright 2023, Frederik Geth, Tom Van Acker                                #
+################################################################################
+# HarmonicPowerModels.jl                                                       #
+# An extention package of PowerModels(Distribution).jl for Harmonics           #
+# See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
+################################################################################
 
-Returns all relevant harmonics based on a PowerModels data dictionary `data` and 
-transformer magnetizing dictionary `xfmr_magn`.
+""
+is_pos_sequence(nh::Int) = nh % 3 == 1
+is_neg_sequence(nh::Int) = nh % 3 == 2
+is_zero_sequence(nh::Int) = nh % 3 == 0
+
 """
-function collect_harmonics!(harmonics::Array{Int}, data::Dict{String, Any}, xfmr_magn::Dict{String, Any})
-    bus_harmonics = [parse(Int,ni[4:end])   for ni in keys(data["bus"]["1"]) 
-                                            if  ni[1:2] == "nh"]
-    push!(harmonics, bus_harmonics...)
+    HarmonicPowerModels.extend_H!(H::Array{Int}, data::Dict{String, Any})
+
+Returns all relevant harmonics `H` based on a PowerModels data dictionary `data`
+and transformer magnetizing dictionary `xfmr_magn`.
+"""
+function extend_H!(H::Array{Int}, data::Dict{String, Any}, 
+                   xfmr_magn::Dict{String, Any})
+    Hbus = [parse(Int,ni[4:end]) for ni in keys(data["bus"]["1"]) if ni[1:2] == "nh"]
+    push!(H, Hbus...)
     
-    if haskey(xfmr_magn, "Hᴱ") push!(harmonics, xfmr_magn["Hᴱ"]...) end
-    if haskey(xfmr_magn, "Hᴵ") push!(harmonics, xfmr_magn["Hᴵ"]...) end  
+    if haskey(xfmr_magn, "Hᴱ") push!(H, xfmr_magn["Hᴱ"]...) end
+    if haskey(xfmr_magn, "Hᴵ") push!(H, xfmr_magn["Hᴵ"]...) end  
 
-    unique!(sort!(harmonics))
+    unique!(sort!(H))
 end
 
 """
-    HarmonicPowerModels.replicate(data::Dict{String,<:Any};
-                                  harmonics::Array{Int}=Int[],
-                                  xfmr_magn::Dict{String,Any}=Dict{String,Any}())
-
-Creates a multinetwork data-file for all considered harmonics based on the data
-specified for the fundamental harmonic.
-
-The considered harmonics are provided by the user through the named 
-argument `harmonics``, and collected based on the harmonic bus data.
-
-Additionally, a dictionary `xfmr_magn` may be passed to include the magnetizing 
-current of the transformers.
-
-NOTES:
-i) branch
--   The susceptance b of any branch is assumed to be purely capacitive, i.e., 
-    b = ω * C.
--   The resistance r of any branch is scaled using the square of the harmonic.
-ii) transformer
--   The transformer configuration defaults to Yy0.
--   The resistance r of any transformer is scaled using the square of the harmonic.
+    HarmonicPowerModels.replicate
 """
-function _HPM.replicate(data::Dict{String,Any}; 
-                        harmonics::Array{Int}=Int[],
+function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[], 
                         xfmr_magn::Dict{String,Any}=Dict{String,Any}())
-    # extend the user-provided harmonics based on the data
-    collect_harmonics!(harmonics, data, xfmr_magn)
+    # extend the user-provided harmonics `H` based on data input
+    extend_H!(H, data, xfmr_magn)
 
-    # create a multinetwork data structure
-    Nh = length(harmonics)
-    data = _PMs.replicate(data, Nh)
-    
-    # add the harmonics to the overall data
-    data["harmonics"] = Dict("$nw" => harmonics[nw] for nw in 1:Nh)
+    # create multi-network data structure, only keep the ntws whos id in H
+    hdata = _PMs.replicate(data, last(H))
+    for nh in 1:last(H) if nh ∉ H delete!(hdata["nw"],"$nh") end end
+
+    # rename the case
+    hdata["name"] = data["name"]
 
     # add the xfmr magnetizing current
-    sample_magnetizing_current(data, xfmr_magn)
+    if !isempty(xfmr_magn)
+        sample_magnetizing_current(hdata, xfmr_magn)
+    end
 
     # re-evaluate the data for each harmonic 
-    for nw in keys(data["nw"])
-        nh = data["harmonics"][nw]
-        mh = 2 * pi * nh
+    for (nw,ntw) in hdata["nw"]
+        # translate the ntw-id to an Int for the harmonic number 
+        nh = parse(Int,nw)
 
         # re-evaluate load power
-        for load in values(data["nw"][nw]["load"])
-            nb = load["source_id"][2]
-            bus = data["nw"][nw]["bus"]["$nb"]
-            multiplier = haskey(bus, "nh_$nh") ? bus["nh_$nh"] : 0.0 ;
-            haskey(load, "pd") ? load["pd"] *= multiplier : ~ ;
-            haskey(load, "qd") ? load["qd"] *= multiplier : ~ ;
-            load["multiplier"] = multiplier
+        for load in values(ntw["load"])
+            bus = ntw["bus"]["$(load["source_id"][2])"]
+            
+            mult = haskey(bus, "nh_$nh") ? bus["nh_$nh"] : 0.0 ;
+            
+            haskey(load, "pd") ? load["pd"] *= mult : ~ ;
+            haskey(load, "qd") ? load["qd"] *= mult : ~ ;
+            load["multiplier"] = mult
         end
 
         # re-evaluate gen 
-        for gen in values(data["nw"][nw]["gen"])
+        for gen in values(ntw["gen"])
             if haskey(gen, "isfilter") && gen["isfilter"] == 1
                 # do nothing, is handled by constraints constraint_active_filter
                 gen["pmin"] = -abs(gen["pmax"])
                 gen["qmin"] = -abs(gen["qmax"])
             else #is true generator
-                if nw !="1" #cost of harmonics set to 0 
+                if nw != "1" #cost of harmonics set to 0 
                     gen["cost"] *= 0 
                     #harmonics can be injected/absorbed to match load 
                     gen["pmin"] = -abs(gen["pmax"])
                     gen["qmin"] = -abs(gen["qmax"])
                 end
             end
-
         end
 
         # re-evaluate the bus data 
-        for bus in values(data["nw"][nw]["bus"])
-            #use fundamental as limit for rms
+        for bus in values(ntw["bus"])
+            # use fundamental as limit for rms
             bus["vminrms"] = bus["vmin"]
             bus["vmaxrms"] = bus["vmax"]
             
             # true harmonics don't have minimum voltage
-            if nw !="1" 
-                bus["vmin"] = 0 
+            if nw != "1" 
+                bus["vmin"] = 0.0 
             end
-            rm = Dict(3=> 0.05, 5=>0.06, 7=> 0.05, 9=> 0.015, 11=>0.035)
-            # inject relative magnitude limits for harmonics
-            bus["rm"] = rm
         end
 
         # re-evaluate the branch data 
-        for branch in values(data["nw"][nw]["branch"])
+        for branch in values(ntw["branch"])
             haskey(branch, "br_r") ? branch["br_r"] *= sqrt(nh) : ~ ;
             haskey(branch, "br_x") ? branch["br_x"] *= nh : ~ ;
             haskey(branch, "b_fr") ? branch["b_fr"] *= nh : ~ ;
@@ -112,8 +101,8 @@ function _HPM.replicate(data::Dict{String,Any};
         end
 
         # re-evaluate the transformer data
-        if haskey(data["nw"][nw], "xfmr")
-            for xfmr in values(data["nw"][nw]["xfmr"])
+        if haskey(ntw, "xfmr") 
+            for xfmr in values(ntw["xfmr"])
                 haskey(xfmr, "xsc") ? xfmr["xsc"] *= nh : ~ ;
                 haskey(xfmr, "r1")  ? xfmr["r1"] *= sqrt(nh) : ~ ;
                 haskey(xfmr, "r2")  ? xfmr["r2"] *= sqrt(nh) : ~ ;
@@ -141,9 +130,5 @@ function _HPM.replicate(data::Dict{String,Any};
         end
     end
 
-    return data
+    return hdata
 end
-
-is_pos_sequence(nh::Int) = nh % 3 == 1
-is_neg_sequence(nh::Int) = nh % 3 == 2
-is_zero_sequence(nh::Int) = nh % 3 == 0
