@@ -126,8 +126,14 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
             end
 
             # add the ihd limits based on standard, if available
-            if haskey(bus, "standard") if bus["standard"] in keys(ihd_limits)
-                bus["ihdmax"] = ihd_limits[bus["standard"]][nh]
+            if haskey(bus, "standard") 
+                std = bus["standard"]
+                if std in keys(ihd_limits)
+                    if nh <= length(ihd_limits[std])
+                        bus["ihdmax"] = ihd_limits[std][nh]
+                    else
+                        println("harmonic $nh not included in $std")            # change to warn 
+                    end
             end end 
         end
 
