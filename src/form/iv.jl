@@ -30,17 +30,30 @@ function variable_transformer_current(pm::AbstractIVRModel; nw::Int=nw_id_defaul
     expression_transformer_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     expression_transformer_excitation_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
+# load 
+""
+function variable_load_current(pm::AbstractIVRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, kwargs...)
+    variable_load_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_load_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+
+    variable_load_current_magnitude(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+
+    expression_load_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+end
 
 ## objective
 ""
-function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
-    hhc = sum([sum([var(pm, n, :hci, l) for l in _PMs.ids(pm, :load, nw = n)]) for n in _PMs.nw_ids(pm) if n ≠ 1])
-    
-    JuMP.@NLobjective(pm.model, Max, hhc)
-end
-""
 function objective_power_flow(pm::_PMs.AbstractIVRModel)
     JuMP.@objective(pm.model, Min, 0.0)
+end
+""
+function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
+    cmd = [var(pm, n, :cmd, l)  for n in _PMs.nw_ids(pm) 
+                                for l in _PMs.ids(pm, :load, nw=n) 
+                                if n ≠ 1]
+    # hhc = sum([sum([var(pm, n, :hci, l) for l in _PMs.ids(pm, :load, nw = n)]) for n in _PMs.nw_ids(pm) if n ≠ 1])
+    
+    JuMP.@objective(pm.model, Max, sum(cmd))
 end
 ""
 function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel; bus_id=1) # TODO @F: this needs to be generalized, suggestion find the bus where active filter is connected
@@ -175,24 +188,37 @@ end
 function constraint_load_current_fixed_angle(pm::AbstractIVRModel, n::Int, l)
     crd = var(pm, n, :crd, l)
     cid = var(pm, n, :cid, l)
+    cmd = var(pm, n, :cmd, l)
 
-    JuMP.@constraint(pm.model, 0.0 <= cid)
-    JuMP.@constraint(pm.model, cid <= 5.0)
-    JuMP.@constraint(pm.model, cid == crd)
     JuMP.@constraint(pm.model, 0.0 <= crd)
-    JuMP.@constraint(pm.model, crd <= 5.0)
-end
+    JuMP.@constraint(pm.model, 0.0 <= cid)
 
+    JuMP.@constraint(pm.model, crd <= 1.0)                                      # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds                          
+    JuMP.@constraint(pm.model, cid <= 1.0)                                      # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
+
+    JuMP.@constraint(pm.model, cid == crd)
+
+    JuMP.@constraint(pm.model, cmd^2 <= crd^2 + cid^2)
+end
+""
 function constraint_load_current_variable_angle(pm::AbstractIVRModel, n::Int, l, angmin, angmax)
     crd = var(pm, n, :crd, l)
     cid = var(pm, n, :cid, l)
-    hci = var(pm, n, :hci, l)
+    cmd = var(pm, n, :cmd, l)
 
-    JuMP.@constraint(pm.model, cid * tan(angmin) <= crd)
-    JuMP.@constraint(pm.model, crd <= cid * tan(angmax))
-    JuMP.@constraint(pm.model, 0.0 <= crd)
-    JuMP.@constraint(pm.model, crd <= 5.0) # To Do: derive bounds for crd_max!
-    JuMP.@NLconstraint(pm.model, hci^2 <= crd^2 + cid^2)
+    JuMP.@constraint(pm.model, -1.0 <= crd)                                     # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
+    JuMP.@constraint(pm.model, -1.0 <= cid)                                     # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
+
+    JuMP.@constraint(pm.model, crd <= 1.0)                                      # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
+    JuMP.@constraint(pm.model, cid <= 1.0)                                      # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
+
+    JuMP.@constraint(pm.model, cmd * min(sin(angmin), sin(angmax)) <= cid)
+    JuMP.@constraint(pm.model, cid <= cmd * max(sin(angmin), sin(angmax)))
+
+    JuMP.@constraint(pm.model, cmd * min(cos(angmin), cos(angmax)) <= crd)
+    JuMP.@constraint(pm.model, crd <= cmd * max(cos(angmin), cos(angmax)))
+
+    JuMP.@constraint(pm.model, cmd^2 <= crd^2 + cid^2)
 end
 
 # xfmr

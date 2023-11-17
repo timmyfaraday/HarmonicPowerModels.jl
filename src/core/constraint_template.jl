@@ -82,10 +82,14 @@ function constraint_load_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=nw
     i       = load["load_bus"]
     pd, qd  = load["pd"], load["qd"]
 
+    angmin = load["reference_harmonic_angle"] - load["harmonic_angle_range"] / 2
+    angmax = load["reference_harmonic_angle"] + load["harmonic_angle_range"] / 2
+
     if nw == 1
         constraint_load_constant_power(pm, nw, l, i, pd, qd)
     else
-        constraint_load_current_variable_angle(pm, nw, l)
+        # constraint_load_current_fixed_angle(pm, nw, l)
+        constraint_load_current_variable_angle(pm, nw, l, angmin, angmax)
     end  
 end
 ""
@@ -185,13 +189,4 @@ function constraint_transformer_winding_current_balance(pm::AbstractPowerModel, 
     for w in 1:2
         constraint_transformer_winding_current_balance(pm, nw, w_idx[w], r[w], b_sh[w], g_sh[w], cnf[w])
     end
-end
-""
-function constraint_load_current_variable_angle(pm::AbstractPowerModel, nw::Int, l::Int)
-    load = _PMs.ref(pm, nw, :load, l)
-
-    angmin = load["reference_harmonic_angle"] - load["harmonic_angle_range"] / 2
-    angmax = load["reference_harmonic_angle"] + load["harmonic_angle_range"] / 2
-
-    constraint_load_current_variable_angle(pm, nw, l, angmin, angmax)
 end

@@ -89,14 +89,15 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
 
         # re-evaluate load power
         for load in values(ntw["load"])
-            bus = ntw["bus"]["$(load["source_id"][2])"]
-            
-            mult = haskey(bus, "nh_$nh") ? bus["nh_$nh"] : 0.0 ;
-            
-            haskey(load, "pd") ? load["pd"] *= mult : ~ ;
-            haskey(load, "qd") ? load["qd"] *= mult : ~ ;
-            load["multiplier"] = mult
-        end
+            if nh ≠ 1
+                bus = ntw["bus"]["$(load["source_id"][2])"]
+                
+                mult = haskey(bus, "nh_$nh") ? bus["nh_$nh"] : 0.0 ;
+                
+                haskey(load, "pd") ? load["pd"] *= mult : ~ ;
+                haskey(load, "qd") ? load["qd"] *= mult : ~ ;
+                load["multiplier"] = mult
+        end end
 
         # re-evaluate gen 
         for gen in values(ntw["gen"])

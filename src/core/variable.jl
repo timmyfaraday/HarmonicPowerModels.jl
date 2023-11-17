@@ -238,9 +238,9 @@ function expression_transformer_excitation_power(pm::AbstractPowerModel; nw::Int
     report && _PMs.sol_component_value(pm, nw, :xfmr, :qexc, _PMs.ids(pm, nw, :xfmr), q)
 end
 
-
+# load 
 ""
-function variable_load_current(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_load_current_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
     crd = _PMs.var(pm, nw)[:crd] = JuMP.@variable(pm.model,
             [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_crd",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "crd_start", 0.0)
@@ -248,46 +248,120 @@ function variable_load_current(pm::AbstractPowerModel; nw::Int=nw_id_default, bo
 
     report && _PMs.sol_component_value(pm, nw, :load, :crd, _PMs.ids(pm, nw, :load), crd)
 
+    if bounded
+        for (d, load) in ref(pm, nw, :load)
+            c_rating = load["c_rating"]
+            JuMP.set_lower_bound(crd[d], -c_rating)
+            JuMP.set_upper_bound(crd[d],  c_rating)
+        end
+    end
+end
+""
+function variable_load_current_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
     cid = _PMs.var(pm, nw)[:cid] = JuMP.@variable(pm.model,
             [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_cid",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "cid_start", 0.0)
     )
-
-    hci = _PMs.var(pm, nw)[:hci] = JuMP.@variable(pm.model,
-    [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_hci",
-    start = 0.0
-)
 
     report && _PMs.sol_component_value(pm, nw, :load, :cid, _PMs.ids(pm, nw, :load), cid)
 
     if bounded
         for (d, load) in ref(pm, nw, :load)
             c_rating = load["c_rating"]
-            JuMP.set_lower_bound(crd[d], -c_rating)
-            JuMP.set_upper_bound(crd[d],  c_rating)
-
             JuMP.set_lower_bound(cid[d], -c_rating)
             JuMP.set_upper_bound(cid[d],  c_rating)
         end
     end
+end
+""
+function variable_load_current_magnitude(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+    cmd = _PMs.var(pm, nw)[:cmd] = JuMP.@variable(pm.model,
+            [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_cmd",
+            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "cmd_start", 0.0)
+    )
 
-    # store active and reactive power expressions for use in objective + post processing
+    report && _PMs.sol_component_value(pm, nw, :load, :cmd, _PMs.ids(pm, nw, :load), cmd)
+
+    if bounded
+        for (d, load) in ref(pm, nw, :load)
+            c_rating = load["c_rating"]
+            JuMP.set_lower_bound(cmd[d], 0.0)
+            JuMP.set_upper_bound(cmd[d], c_rating)
+        end
+    end
+end
+""
+function expression_load_power(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
     pd = Dict()
     qd = Dict()
+
     for (i,load) in ref(pm, nw, :load)
         busid = load["load_bus"]
+
         vr = var(pm, nw, :vr, busid)
         vi = var(pm, nw, :vi, busid)
+
         crd = var(pm, nw, :crd, i)
         cid = var(pm, nw, :cid, i)
+        
         pd[i] = JuMP.@NLexpression(pm.model, vr*crd  + vi*cid)
         qd[i] = JuMP.@NLexpression(pm.model, vi*crd  - vr*cid)
     end
     var(pm, nw)[:pd] = pd
     var(pm, nw)[:qd] = qd
+
     report && _PMs.sol_component_value(pm, nw, :load, :pd, ids(pm, nw, :load), pd)
     report && _PMs.sol_component_value(pm, nw, :load, :qd, ids(pm, nw, :load), qd)
 end
+# ""
+# function variable_load_current(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+#     crd = _PMs.var(pm, nw)[:crd] = JuMP.@variable(pm.model,
+#             [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_crd",
+#             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "crd_start", 0.0)
+#     )
+#     report && _PMs.sol_component_value(pm, nw, :load, :crd, _PMs.ids(pm, nw, :load), crd)
+
+#     cid = _PMs.var(pm, nw)[:cid] = JuMP.@variable(pm.model,
+#             [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_cid",
+#             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "cid_start", 0.0)
+#     )
+#     report && _PMs.sol_component_value(pm, nw, :load, :cid, _PMs.ids(pm, nw, :load), cid)
+
+#     cmd = _PMs.var(pm, nw)[:cmd] = JuMP.@variable(pm.model,
+#             [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_cmd",
+#             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "cmd_start", 0.0)
+#     )
+
+    
+
+#     if bounded
+#         for (d, load) in ref(pm, nw, :load)
+#             c_rating = load["c_rating"]
+#             JuMP.set_lower_bound(crd[d], -c_rating)
+#             JuMP.set_upper_bound(crd[d],  c_rating)
+
+#             JuMP.set_lower_bound(cid[d], -c_rating)
+#             JuMP.set_upper_bound(cid[d],  c_rating)
+#         end
+#     end
+
+#     # store active and reactive power expressions for use in objective + post processing
+#     pd = Dict()
+#     qd = Dict()
+#     for (i,load) in ref(pm, nw, :load)
+#         busid = load["load_bus"]
+#         vr = var(pm, nw, :vr, busid)
+#         vi = var(pm, nw, :vi, busid)
+#         crd = var(pm, nw, :crd, i)
+#         cid = var(pm, nw, :cid, i)
+#         pd[i] = JuMP.@NLexpression(pm.model, vr*crd  + vi*cid)
+#         qd[i] = JuMP.@NLexpression(pm.model, vi*crd  - vr*cid)
+#     end
+#     var(pm, nw)[:pd] = pd
+#     var(pm, nw)[:qd] = qd
+#     report && _PMs.sol_component_value(pm, nw, :load, :pd, ids(pm, nw, :load), pd)
+#     report && _PMs.sol_component_value(pm, nw, :load, :qd, ids(pm, nw, :load), qd)
+# end
 
 ""
 function variable_gen_current(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
