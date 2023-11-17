@@ -253,8 +253,8 @@ function variable_load_current(pm::AbstractPowerModel; nw::Int=nw_id_default, bo
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "cid_start", 0.0)
     )
 
-    thcd = _PMs.var(pm, nw)[:thcd] = JuMP.@variable(pm.model,
-    [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_thcd",
+    hci = _PMs.var(pm, nw)[:hci] = JuMP.@variable(pm.model,
+    [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_hci",
     start = 0.0
 )
 

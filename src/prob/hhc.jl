@@ -80,7 +80,7 @@ function build_hhc(pm::_PMs.AbstractIVRModel)
             _PMs.constraint_gen_reactive_bounds(pm, g, nw=n)
         end
         for l in _PMs.ids(pm, :load, nw=n)
-            constraint_load_current(pm, l, nw=n)
+            constraint_load_current(pm, l, nw = n)
         end
     end
 end
