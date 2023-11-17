@@ -26,20 +26,6 @@ data = PMs.parse_file(path)
 # build harmonic data
 hdata = HPM.replicate(data, H=[1, 3, 5, 7, 9, 13])
 
-# harmonic hosting capacity
-obj = []
-for i in 1:0.1:2
-        for (h, hl) in ihdmax
-         hl = hl * i 
-        end
-        for (nw,ntw) in hdata["nw"], (nb,bus) in ntw["bus"]
-                bus["ihdmax"] = ihdmax[nw]
-        end 
-        results_hhc = HPM.solve_hhc(hdata, form, solver)
-        append!(obj, results_hhc["objective"])
-end
-
-
 # print the results
 println("Fundamental harmonic:")
 print_summary(results_hhc["solution"]["nw"]["1"])
