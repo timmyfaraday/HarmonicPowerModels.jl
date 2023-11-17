@@ -188,8 +188,8 @@ function constraint_load_current_variable_angle(pm::AbstractIVRModel, n::Int, l,
     cid = var(pm, n, :cid, l)
     hci = var(pm, n, :hci, l)
 
-    JuMP.@constraint(pm.model, cid * cos(angmin) >= crd)
-    JuMP.@constraint(pm.model, crd >= cid * cos(angmax))
+    JuMP.@constraint(pm.model, cid * tan(angmin) <= crd)
+    JuMP.@constraint(pm.model, crd <= cid * tan(angmax))
     JuMP.@constraint(pm.model, 0.0 <= crd)
     JuMP.@constraint(pm.model, crd <= 5.0) # To Do: derive bounds for crd_max!
     JuMP.@NLconstraint(pm.model, hci^2 <= crd^2 + cid^2)
