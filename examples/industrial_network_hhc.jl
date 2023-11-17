@@ -26,12 +26,6 @@ data = PMs.parse_file(path)
 # build harmonic data
 hdata = HPM.replicate(data, H=[1, 3, 5, 7, 9, 13])
 
-# add the individual harmonic distortion limits                                 
-ihdmax = Dict("1" => 1.10, "3" => 0.05, "5" => 0.06, "7" => 0.05, "9" => 0.015, "13" => 0.03)
-for (nw,ntw) in hdata["nw"], (nb,bus) in ntw["bus"]
-        bus["ihdmax"] = ihdmax[nw]
-end 
-
 # harmonic hosting capacity
 results_hhc = HPM.solve_hhc(hdata, form, solver)
 

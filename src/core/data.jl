@@ -11,6 +11,33 @@ is_pos_sequence(nh::Int) = nh % 3 == 1
 is_neg_sequence(nh::Int) = nh % 3 == 2
 is_zero_sequence(nh::Int) = nh % 3 == 0
 
+""
+const ihd_limits = Dict(
+    "IEC61000-2-4:2002, Cl. 2" =>  [1.00000, 0.02000, 0.05000, 0.01000, 0.06000, 
+                                    0.00500, 0.05000, 0.00500, 0.01500, 0.00500, 
+                                    0.03500, 0.00458, 0.03000, 0.00429, 0.00400, 
+                                    0.00406, 0.02000, 0.00389, 0.01761, 0.00375, 
+                                    0.00200, 0.00364, 0.01408, 0.00354, 0.01275, 
+                                    0.00346, 0.00200, 0.00339, 0.01061, 0.00333, 
+                                    0.00975, 0.00328, 0.00200, 0.00324, 0.00833, 
+                                    0.00319, 0.00773, 0.00316, 0.00200, 0.00313, 
+                                    0.00671, 0.00310, 0.00627, 0.00307, 0.00200, 
+                                    0.00304, 0.00551, 0.00302, 0.00518, 0.00300],
+    "IEC61000-3-6:2008" =>         [1.00000, 0.01400, 0.02000, 0.00800, 0.02000,
+                                    0.00400, 0.02000, 0.00400, 0.01000, 0.00350,
+                                    0.01500, 0.00318, 0.01500, 0.00296, 0.00300,
+                                    0.00279, 0.01200, 0.00266, 0.01074, 0.00255,
+                                    0.00200, 0.00246, 0.00887, 0.00239, 0.00816,
+                                    0.00233, 0.00200, 0.00228, 0.00703, 0.00223,
+                                    0.00658, 0.00219, 0.00200, 0.00216, 0.00583,
+                                    0.00213, 0.00551, 0.00210, 0.00200, 0.00208,
+                                    0.00498, 0.00205, 0.00474, 0.00203, 0.00200,
+                                    0.00201, 0.00434, 0.00200, 0.00416, 0.00198])
+
+const thd_limits = Dict(
+    "IEC61000-2-4:2002, Cl. 2" =>   0.00800,
+    "IEC61000-3-6:2008" =>          0.00800) 
+
 """
     HarmonicPowerModels.extend_H!(H::Array{Int}, data::Dict{String, Any})
 
@@ -35,6 +62,13 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
                         xfmr_magn::Dict{String,Any}=Dict{String,Any}())
     # extend the user-provided harmonics `H` based on data input
     extend_H!(H, data, xfmr_magn)
+
+    # add the thd limits based on standard, if available
+    for bus in values(data["bus"])
+        if haskey(bus, "standard") if bus["standard"] in keys(thd_limits)
+            bus["thdmax"] = thd_limits[bus["standard"]]
+        end end 
+    end
 
     # create multi-network data structure, only keep the ntws whos id in H
     hdata = _PMs.replicate(data, last(H))
@@ -90,6 +124,11 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
             if nw != "1" 
                 bus["vmin"] = 0.0 
             end
+
+            # add the ihd limits based on standard, if available
+            if haskey(bus, "standard") if bus["standard"] in keys(ihd_limits)
+                bus["ihdmax"] = ihd_limits[bus["standard"]][nh]
+            end end 
         end
 
         # re-evaluate the branch data 
