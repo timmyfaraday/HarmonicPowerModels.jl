@@ -35,8 +35,11 @@ end
 ""
 function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
     cid = [var(pm, n, :cid, l) for n in _PMs.nw_ids(pm) for l in _PMs.ids(pm, :load, nw=n) if n ≠ 1]
+    crd = [var(pm, n, :crd, l) for n in _PMs.nw_ids(pm) for l in _PMs.ids(pm, :load, nw=n) if n ≠ 1]
 
-    JuMP.@objective(pm.model, Max, sum(cid))
+    thcd =sum([sum([var(pm, n, :thcd, l) for l in _PMs.ids(pm, :load, nw = n)]) for n in _PMs.nw_ids(pm) if n ≠ 1])
+
+    JuMP.@NLobjective(pm.model, Max, thcd)
 end
 ""
 function objective_power_flow(pm::_PMs.AbstractIVRModel)
@@ -175,10 +178,14 @@ end
 function constraint_load_current_fixed_angle(pm::AbstractIVRModel, n::Int, l)
     crd = var(pm, n, :crd, l)
     cid = var(pm, n, :cid, l)
+    thcd = var(pm, n, :thcd, l)
 
-    JuMP.@constraint(pm.model, crd == 0.0)
     JuMP.@constraint(pm.model, 0.0 <= cid)
     JuMP.@constraint(pm.model, cid <= 5.0)
+    JuMP.@constraint(pm.model, cid == crd)
+    JuMP.@constraint(pm.model, 0.0 <= crd)
+    JuMP.@constraint(pm.model, crd <= 5.0)
+    JuMP.@NLconstraint(pm.model, thcd == crd^2 + cid^2)
 end
 
 # xfmr

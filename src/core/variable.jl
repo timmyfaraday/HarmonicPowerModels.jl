@@ -253,6 +253,11 @@ function variable_load_current(pm::AbstractPowerModel; nw::Int=nw_id_default, bo
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "cid_start", 0.0)
     )
 
+    thcd = _PMs.var(pm, nw)[:thcd] = JuMP.@variable(pm.model,
+    [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_thcd",
+    start = 0.0
+)
+
     report && _PMs.sol_component_value(pm, nw, :load, :cid, _PMs.ids(pm, nw, :load), cid)
 
     if bounded
