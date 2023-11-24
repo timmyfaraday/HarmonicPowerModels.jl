@@ -29,7 +29,7 @@ hdata = HPM.replicate(data, H=[1, 3, 5, 7, 9, 13])
 # Define ref_angle and angle range 
 for H=[1, 3, 5, 7, 9, 13]
     for (l, load) in hdata["nw"]["$H"]["load"]
-        load["reference_harmonic_angle"] = pi / 4 # read
+        load["reference_harmonic_angle"] = pi / 4 # rad
         load["harmonic_angle_range"] = pi / 10 # rad, symmetric around reference
     end
 end
