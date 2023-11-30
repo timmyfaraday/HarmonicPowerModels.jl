@@ -35,8 +35,8 @@ const ihd_limits = Dict(
                                     0.00201, 0.00434, 0.00200, 0.00416, 0.00198])
 
 const thd_limits = Dict(
-    "IEC61000-2-4:2002, Cl. 2" =>   0.00800,
-    "IEC61000-3-6:2008" =>          0.00800) 
+    "IEC61000-2-4:2002, Cl. 2" =>   0.08000,
+    "IEC61000-3-6:2008" =>          0.08000) 
 
 """
     HarmonicPowerModels.extend_H!(H::Array{Int}, data::Dict{String, Any})

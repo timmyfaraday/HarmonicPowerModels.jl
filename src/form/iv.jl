@@ -105,11 +105,11 @@ function constraint_voltage_thd_limit(pm::AbstractIVRModel, i, thdmax)
     JuMP.@constraint(pm.model, sum(w[2:end]) <= thdmax^2 * w[1])
 end
 ""
-function constraint_voltage_ihd_limit(pm::AbstractIVRModel, n::Int, i, ihd)
+function constraint_voltage_ihd_limit(pm::AbstractIVRModel, n::Int, i, ihdmax)
     v  = var(pm, 1, :w, i)
     w  = var(pm, n, :w, i)
 
-    JuMP.@constraint(pm.model, w <= ihd * v)
+    JuMP.@constraint(pm.model, w <= ihdmax^2 * v)
 end
 ""
 function constraint_voltage_magnitude_sqr(pm::AbstractIVRModel, n::Int, i)
