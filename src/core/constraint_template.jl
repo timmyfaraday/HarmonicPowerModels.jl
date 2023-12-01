@@ -90,6 +90,7 @@ function constraint_load_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=nw
     else
         # constraint_load_current_fixed_angle(pm, nw, l)
         constraint_load_current_variable_angle(pm, nw, l, angmin, angmax)
+        # constraint_load_current_variable_angle_relative(pm, nw, l)
     end  
 end
 ""
@@ -189,4 +190,13 @@ function constraint_transformer_winding_current_balance(pm::AbstractPowerModel, 
     for w in 1:2
         constraint_transformer_winding_current_balance(pm, nw, w_idx[w], r[w], b_sh[w], g_sh[w], cnf[w])
     end
+end
+
+function constraint_load_current_variable_angle_relative(pm::AbstractPowerModel, nw::Int, l::Int)
+    load = _PMs.ref(pm, nw, :load, l)
+    bus_idx = load["load_bus"]
+    c1 = cos(load["reference_harmonic_angle"])
+    c2 = sin(load["reference_harmonic_angle"])
+
+    constraint_load_current_variable_angle_relative(pm, nw, l, bus_idx, c1, c2)
 end

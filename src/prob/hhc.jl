@@ -25,7 +25,7 @@ function build_hhc(pm::_PMs.AbstractIVRModel)
         variable_transformer_current(pm, nw=n, bounded=false)
 
         # node current variables
-        variable_load_current(pm, nw=n, bounded=false)
+        variable_load_current(pm, nw=n, bounded=true)
         variable_gen_current(pm, nw=n, bounded=false)
     end
 

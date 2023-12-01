@@ -206,11 +206,11 @@ function constraint_load_current_variable_angle(pm::AbstractIVRModel, n::Int, l,
     cid = var(pm, n, :cid, l)
     cmd = var(pm, n, :cmd, l)
 
-    JuMP.@constraint(pm.model, -1.0 <= crd)                                     # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
-    JuMP.@constraint(pm.model, -1.0 <= cid)                                     # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
+    # JuMP.@constraint(pm.model, -1.0 <= crd)                                     # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
+    # JuMP.@constraint(pm.model, -1.0 <= cid)                                     # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
 
-    JuMP.@constraint(pm.model, crd <= 1.0)                                      # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
-    JuMP.@constraint(pm.model, cid <= 1.0)                                      # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
+    # JuMP.@constraint(pm.model, crd <= 1.0)                                      # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
+    # JuMP.@constraint(pm.model, cid <= 1.0)                                      # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
 
     JuMP.@constraint(pm.model, cmd * min(sin(angmin), sin(angmax)) <= cid)
     JuMP.@constraint(pm.model, cid <= cmd * max(sin(angmin), sin(angmax)))
@@ -219,6 +219,17 @@ function constraint_load_current_variable_angle(pm::AbstractIVRModel, n::Int, l,
     JuMP.@constraint(pm.model, crd <= cmd * max(cos(angmin), cos(angmax)))
 
     JuMP.@constraint(pm.model, cmd^2 <= crd^2 + cid^2)
+end
+""
+function constraint_load_current_variable_angle_relative(pm::AbstractIVRModel, n::Int, l, bus_idx, c1, c2)
+    crd = var(pm, n, :crd, l)
+    cid = var(pm, n, :cid, l)
+    cmd = var(pm, n, :cmd, l)
+    vr = var(pm, n, :vr, bus_idx)
+    vi = var(pm, n, :vi, bus_idx)
+
+    JuMP.@NLconstraint(pm.model, (vr^2 + vi^2) * crd^2 == cmd^2 * (vr * c1 - vi * c2)^2)
+    JuMP.@NLconstraint(pm.model, (vr^2 + vi^2) * cid^2 == cmd^2 * (vi * c1 + vr * c2)^2)
 end
 
 # xfmr

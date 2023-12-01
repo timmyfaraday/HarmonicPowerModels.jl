@@ -37,6 +37,7 @@ for p in ang_pos
         # Define ref_angle and angle range 
         for H=[1, 3, 5, 7, 9, 13]
             for (l, load) in hdata["nw"]["$H"]["load"]
+                load["c_rating"] = 1.0
                 load["reference_harmonic_angle"] = p # rad
                 error = (pi/10) * (1 + idx_1 / 10)
                 load["harmonic_angle_range"] = error # rad, symmetric around reference
@@ -46,22 +47,8 @@ for p in ang_pos
         results_hhc = HPM.solve_hhc(hdata, form, solver)
         objective[idx_1, idx] = results_hhc["objective"]
     end
-    global idx = idx +1
+    global idx = idx + 1
 end
-
-# print the results
-println("Fundamental harmonic:")
-print_summary(results_hhc["solution"]["nw"]["1"])
-println("Third harmonic:")
-print_summary(results_hhc["solution"]["nw"]["3"])
-println("Fifth harmonic:")
-print_summary(results_hhc["solution"]["nw"]["5"])
-println("Seventh harmonic:")
-print_summary(results_hhc["solution"]["nw"]["7"])
-println("Nineth harmonic:")
-print_summary(results_hhc["solution"]["nw"]["9"])
-println("Thirteen harmonic:")
-print_summary(results_hhc["solution"]["nw"]["13"])
 
 a = zeros(length(objective),1)
 a = objective[:,1]
