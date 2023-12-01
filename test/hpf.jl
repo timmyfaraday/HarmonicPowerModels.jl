@@ -24,12 +24,6 @@
         # build the harmonic data
         hdata = HPM.replicate(data)
 
-        ihdmax = Dict("1" => 1.10, "3" => 0.05)
-        for (nw,ntw) in hdata["nw"], (nb,bus) in ntw["bus"]
-            bus["ihdmax"] = ihdmax[nw]
-        end 
-
-
         # harmonic power flow
         results_fund = PowerModels.solve_pf_iv(data, form, solver)
         @test results_fund["termination_status"] == LOCALLY_SOLVED

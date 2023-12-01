@@ -1,5 +1,6 @@
 # load pkgs
 using Ipopt
+using JuMP
 using PowerModels
 using HarmonicPowerModels
 using SignalDecomposition
@@ -15,7 +16,10 @@ const SDC = SignalDecomposition
 ⪅(a,b) = (a <= b) || isapprox(a, b, atol=1e-6)
 
 # solver
-solver = Ipopt.Optimizer
+solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
+
+# silence the warnings of PowerModels
+PMs.silence()
 
 @testset "HarmonicPowerModels.jl" begin
     

@@ -32,8 +32,14 @@
 
         # solve HC problem
         results_hhc = HPM.solve_hhc(hdata, form, solver)
+
+        @testset "General Tests" begin
+            # Solved to optimality
+            @test results_hhc["termination_status"] == LOCALLY_SOLVED
+        end
+
         @testset "Root Mean Square" begin 
-        # Uminᵢ ≤ RMSᵢ = √(∑ₕ(|Uᵢₕ|²)) ≤ Umaxᵢ, ∀ i ∈ I
+            # Uminᵢ ≤ RMSᵢ = √(∑ₕ(|Uᵢₕ|²)) ≤ Umaxᵢ, ∀ i ∈ I
             for (nb, bus) ∈ data["bus"]
                 vmin    = bus["vmin"]
                 vmax    = bus["vmax"]
@@ -47,7 +53,7 @@
         end
         
         @testset "Total Harmonic Distortion" begin
-        # THDᵢ = √(∑ₕ(|Uᵢₕ|²) / |Uᵢ₁|²) ≤ THDmaxᵢ, ∀ i ∈ I
+            # THDᵢ = √(∑ₕ(|Uᵢₕ|²) / |Uᵢ₁|²) ≤ THDmaxᵢ, ∀ i ∈ I
             for (nb,bus) ∈ data["bus"]
                 thdmax  = bus["thdmax"]
 
@@ -60,7 +66,7 @@
         end
         
         @testset "Individual Harmonic Distortion" begin
-        # IHDᵢₕ = √(|Uᵢₕ|² / |Uᵢ₁|²) ≤ IHDmaxᵢₕ, ∀ i ∈ I, h ∈ H
+            # IHDᵢₕ = √(|Uᵢₕ|² / |Uᵢ₁|²) ≤ IHDmaxᵢₕ, ∀ i ∈ I, h ∈ H
             for nh ∈ H, (nb,bus) in hdata["nw"]["$nh"]["bus"] if nh ≠ 1
                 ihdmax  = bus["ihdmax"]
 
