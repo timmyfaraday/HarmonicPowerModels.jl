@@ -77,20 +77,33 @@
             end end
         end
 
-        # @testset "Transformer Phase Shifts" begin
-            
-        #     for nh ∈ H, (nx,xfmr) in data["xfmr"]
-        #         vg  = parse(Int, xfmr["vg"][3:end])
+        @testset "Transformer Phase Shifts" begin
+            # The phase shift for the harmonic voltage over a transformer, i.e.,
+            # between the excitation Eₓₕ and internal voltage of the second 
+            # winding V₂ₕ in a balanced (optimal) power flow should relate as 
+            # follows:
+            # - 'positive sequence' harmonics, i.e., h = 1 + 3n = 1, 4, 7...
+            #       θⱽ - θᵉ ≈ vg * π/6
+            # - 'negative sequence' harmonics, i.e., h = 2 + 3n = 2, 5, 8...
+            #       θⱽ - θᵉ ≈ -vg * π/6
+            # - 'zero sequence' harmonics, i.e., h = 3 + 3n = 3, 6, 9...
+            #       θⱽ ≈ θᵉ
+            for nh ∈ H, (nx,xfmr) in data["xfmr"]
+                vg  = parse(Int, xfmr["vg"][3:end])
                 
+                sol_xfmr = results_hhc["solution"]["nw"]["$nh"]["xfmr"][nx]
 
+                θe = angle(sol_xfmr["ert"] + im * sol_xfmr["eit"])
+                θv = angle(sol_xfmr["vrt_to"] + im * sol_xfmr["vit_to"])
 
-        #         sol_xfmr = results_hhc["solution"]["nw"]["$nh"]["xfmr"][nx]
-
-        #         θe = rad2deg(angle(sol_xfmr["ert"] + im * sol_xfmr["eit"]))
-        #         θv = rad2deg(angle(sol_xfmr["vrt_to"] + im * sol_xfmr["vit_to"]))
-
-        #         @test θv - θa ⪅
-        #     end
-        # end
+                if HPM.is_pos_sequence(nh)
+                    @test rem(θv - θe - vg * π/6, 2π) ≈ 0.0
+                elseif HPM.is_neg_sequence(nh)
+                    @test rem(θv - θe + vg * π/6, 2π) ≈ 0.0
+                elseif HPM.is_zero_sequence(nh)
+                    @test rem(θv - θe, 2π) ≈ 0.0
+                end
+            end
+        end
     end
 end
