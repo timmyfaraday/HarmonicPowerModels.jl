@@ -28,6 +28,9 @@ data = PMs.parse_file(path)
 # build harmonic data
 hdata = HPM.replicate(data, H=[1, 3, 5, 7, 9, 13])
 
+# vector group shift
+vector_shift = Dict(1 => 0, 2 => 11/6 * pi, 3 => 11/6 * pi, 4 => 11/6 * pi, 5 => 11/6 * pi, 6 => 5/3 * pi, 7 => 5/3 * pi, 8 => 5/3 * pi)
+
 
 ang_pos = [0 pi/4 pi/2 3*pi/4 pi 5*pi/4 6*pi/4 7*pi/4]
 objective = zeros(10,8)
@@ -37,8 +40,10 @@ for p in ang_pos
         # Define ref_angle and angle range 
         for H=[1, 3, 5, 7, 9, 13]
             for (l, load) in hdata["nw"]["$H"]["load"]
-                load["reference_harmonic_angle"] = p # rad
-                error = (pi/10) * (1 + idx_1 / 10)
+                load["c_rating"] = 1.0
+                bus_id = load["load_bus"]
+                load["reference_harmonic_angle"] = p + vector_shift[bus_id]# rad
+                error = (pi/20) * (1 + idx_1 / 10)
                 load["harmonic_angle_range"] = error # rad, symmetric around reference
             end
         end
@@ -46,22 +51,8 @@ for p in ang_pos
         results_hhc = HPM.solve_hhc(hdata, form, solver)
         objective[idx_1, idx] = results_hhc["objective"]
     end
-    global idx = idx +1
+    global idx = idx + 1
 end
-
-# print the results
-println("Fundamental harmonic:")
-print_summary(results_hhc["solution"]["nw"]["1"])
-println("Third harmonic:")
-print_summary(results_hhc["solution"]["nw"]["3"])
-println("Fifth harmonic:")
-print_summary(results_hhc["solution"]["nw"]["5"])
-println("Seventh harmonic:")
-print_summary(results_hhc["solution"]["nw"]["7"])
-println("Nineth harmonic:")
-print_summary(results_hhc["solution"]["nw"]["9"])
-println("Thirteen harmonic:")
-print_summary(results_hhc["solution"]["nw"]["13"])
 
 a = zeros(length(objective),1)
 a = objective[:,1]
