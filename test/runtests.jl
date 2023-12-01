@@ -11,12 +11,16 @@ const HPM = HarmonicPowerModels
 const PMs = PowerModels
 const SDC = SignalDecomposition
 
+# test functions
+⪅(a,b) = (a <= b) || isapprox(a, b, atol=1e-6)
+
 # solver
 solver = Ipopt.Optimizer
 
 @testset "HarmonicPowerModels.jl" begin
     
+    include("hhc.jl")
     include("hpf.jl")
     include("hopf.jl")
-    # include("xfmr.jl")
+
 end
