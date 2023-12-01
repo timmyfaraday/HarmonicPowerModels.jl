@@ -22,6 +22,6 @@ function plot_harmonic_voltages(result, h, path)
         _EE.phasor(hv, label = label, labeltsep = abs(hv)/100, headwidth = 2, headlength = 5)
     end
     plot_path = joinpath(path, join(["voltage_phasors_h_", "$h",".pdf"]))
-    _EE.save3fig(plot_path)
+    _EE.savefig(plot_path)
     _EE.close("all")
 end
