@@ -18,6 +18,8 @@ module HarmonicPowerModels
     import InfrastructureModels
     import Interpolations
     import Memento
+    import Plots
+    import ElectricalEngineering
 
     # import types
     import PowerModels: AbstractPowerModel, AbstractIVRModel
@@ -30,6 +32,7 @@ module HarmonicPowerModels
     const _SDC = SignalDecomposition
     const _IMs = InfrastructureModels
     const _INT = Interpolations
+    const _EE = ElectricalEngineering
 
     function __init__()
         global _LOGGER = Memento.getlogger(PowerModels)
@@ -59,6 +62,8 @@ module HarmonicPowerModels
     include("util/sol.jl")
     include("util/xfmr_magn.jl")
     include("util/xfmr.jl")
+    include("util/io.jl")
+
 
     # export
     export BASE_DIR
