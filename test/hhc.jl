@@ -25,6 +25,7 @@
         # Define ref_angle and angle range 
         for nh in H
             for (l, load) in hdata["nw"]["$nh"]["load"]
+                load["c_rating"] = 1.0
                 load["reference_harmonic_angle"] = 0 # pi / 4 # rad
                 load["harmonic_angle_range"] = 0 # pi / 10 # rad, symmetric around reference
             end
@@ -97,11 +98,11 @@
                 θv = angle(sol_xfmr["vrt_to"] + im * sol_xfmr["vit_to"])
 
                 if HPM.is_pos_sequence(nh)
-                    @test rem(θv - θe - vg * π/6, 2π) ≈ 0.0
+                    @test isapprox(rem(θv - θe - vg * π/6, 2π), 0.0, atol=1e-6)
                 elseif HPM.is_neg_sequence(nh)
-                    @test rem(θv - θe + vg * π/6, 2π) ≈ 0.0
+                    @test isapprox(rem(θv - θe + vg * π/6, 2π), 0.0, atol=1e-6)
                 elseif HPM.is_zero_sequence(nh)
-                    @test rem(θv - θe, 2π) ≈ 0.0
+                    @test isapprox(rem(θv - θe, 2π), 0.0, atol=1e-6)
                 end
             end
         end
