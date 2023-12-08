@@ -40,10 +40,10 @@ module HarmonicPowerModels
 
     # const 
     const freq = 50.0
-    const nw_id_default = 1
 
     # funct
     sorted_nw_ids(pm) = sort(collect(_PMs.nw_ids(pm)))
+    nw_id_default(pm) = first(sorted_nw_ids(pm))
 
     # paths
     const BASE_DIR = dirname(@__DIR__)
@@ -52,6 +52,7 @@ module HarmonicPowerModels
     include("core/constraint_template.jl")
     include("core/data.jl")
     include("core/variable.jl")
+    include("core/types.jl")
 
     include("form/iv.jl")
 
@@ -67,6 +68,8 @@ module HarmonicPowerModels
 
     # export
     export BASE_DIR
+
+    export NLP_DHHC, QC_DHHC, SOC_DHHC
 
     export replicate
 

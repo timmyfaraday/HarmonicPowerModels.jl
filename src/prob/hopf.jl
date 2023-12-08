@@ -31,17 +31,17 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
 
     ## constraint
     # overall constraints
-    for i in _PMs.ids(pm, :bus, nw=1)
-        constraint_voltage_rms_limit(pm, i, nw=1)
-        constraint_voltage_thd_limit(pm, i, nw=1)
+    for i in _PMs.ids(pm, :bus, nw=nw_id_default(pm))
+        constraint_voltage_rms_limit(pm, i, nw=nw_id_default(pm))
+        constraint_voltage_thd_limit(pm, i, nw=nw_id_default(pm))
     end
 
-    for b in _PMs.ids(pm, :branch, nw=1)
-        constraint_current_rms_limit(pm, b, nw=1)
+    for b in _PMs.ids(pm, :branch, nw=nw_id_default(pm))
+        constraint_current_rms_limit(pm, b, nw=nw_id_default(pm))
     end
 
-    for g in _PMs.ids(pm, :gen, nw=1)                                           # @F: would it not be cleaner to make a new data entry for filters
-        constraint_active_filter(pm, g, nw=1)
+    for g in _PMs.ids(pm, :gen, nw=nw_id_default(pm))                                           # @F: would it not be cleaner to make a new data entry for filters
+        constraint_active_filter(pm, g, nw=nw_id_default(pm))
     end
 
     # harmonic constraints

@@ -8,7 +8,7 @@
 
 # xfmr 
 ""
-function variable_transformer_voltage_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_transformer_voltage_real(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     vrt = _PMs.var(pm, nw)[:vrt] = JuMP.@variable(pm.model, 
         [(t,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_vrt",
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "vrt_start", 1.0)
@@ -20,7 +20,7 @@ function variable_transformer_voltage_real(pm::AbstractPowerModel; nw::Int=nw_id
 end
 
 ""
-function variable_transformer_voltage_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_transformer_voltage_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     vit = _PMs.var(pm, nw)[:vit] = JuMP.@variable(pm.model,
         [(t,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_vit",
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "vit_start", 0.0)
@@ -32,7 +32,7 @@ function variable_transformer_voltage_imaginary(pm::AbstractPowerModel; nw::Int=
 end
 
 ""
-function variable_transformer_voltage_excitation_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, epsilon::Float64=1E-6)
+function variable_transformer_voltage_excitation_real(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, epsilon::Float64=1E-6)
     ert = _PMs.var(pm, nw)[:ert] = JuMP.@variable(pm.model,
             [t in _PMs.ids(pm, nw, :xfmr)], base_name="$(nw)_ert",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "ert_start", 0.0)
@@ -49,7 +49,7 @@ function variable_transformer_voltage_excitation_real(pm::AbstractPowerModel; nw
 end
 
 ""
-function variable_transformer_voltage_excitation_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, epsilon::Float64=1E-6)
+function variable_transformer_voltage_excitation_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, epsilon::Float64=1E-6)
     eit = _PMs.var(pm, nw)[:eit] = JuMP.@variable(pm.model,
             [t in _PMs.ids(pm, nw, :xfmr)], base_name="$(nw)_eit",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "eit_start", 0.0)
@@ -66,7 +66,7 @@ function variable_transformer_voltage_excitation_imaginary(pm::AbstractPowerMode
 end
 
 ""
-function variable_transformer_current_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_transformer_current_real(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     crt = _PMs.var(pm, nw)[:crt] = JuMP.@variable(pm.model,
             [(t,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_crt",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "crt_start", 0.0)
@@ -78,7 +78,7 @@ function variable_transformer_current_real(pm::AbstractPowerModel; nw::Int=nw_id
 end
 
 ""
-function variable_transformer_current_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_transformer_current_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     cit = _PMs.var(pm, nw)[:cit] = JuMP.@variable(pm.model,
             [(t,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_cit",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "cit_start", 0.0)
@@ -90,7 +90,7 @@ function variable_transformer_current_imaginary(pm::AbstractPowerModel; nw::Int=
 end
 
 ""
-function expression_transformer_power(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function expression_transformer_power(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     pt = Dict()
     qt = Dict()
 
@@ -129,7 +129,7 @@ function expression_transformer_power(pm::AbstractPowerModel; nw::Int=nw_id_defa
 end
 
 ""
-function variable_transformer_current_series_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_transformer_current_series_real(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     csrt = _PMs.var(pm, nw)[:csrt] = JuMP.@variable(pm.model,
             [(t,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_csrt",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "csrt_start", 0.0)
@@ -141,7 +141,7 @@ function variable_transformer_current_series_real(pm::AbstractPowerModel; nw::In
 end
 
 ""
-function variable_transformer_current_series_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_transformer_current_series_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     csit = _PMs.var(pm, nw)[:csit] = JuMP.@variable(pm.model,
             [(t,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_csit",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "csit_start", 0.0)
@@ -153,7 +153,7 @@ function variable_transformer_current_series_imaginary(pm::AbstractPowerModel; n
 end
 
 ""
-function expression_transformer_series_power(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function expression_transformer_series_power(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     pt = Dict()
     qt = Dict()
 
@@ -193,7 +193,7 @@ function expression_transformer_series_power(pm::AbstractPowerModel; nw::Int=nw_
 end
 
 ""
-function variable_transformer_current_excitation_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_transformer_current_excitation_real(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     cert = _PMs.var(pm, nw)[:cert] = JuMP.@variable(pm.model,
             [t in _PMs.ids(pm, nw, :xfmr)], base_name="$(nw)_cert",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "cert_start", 0.0)
@@ -205,7 +205,7 @@ function variable_transformer_current_excitation_real(pm::AbstractPowerModel; nw
 end
 
 ""
-function variable_transformer_current_excitation_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_transformer_current_excitation_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     ceit = _PMs.var(pm, nw)[:ceit] = JuMP.@variable(pm.model,
             [t in _PMs.ids(pm, nw, :xfmr)], base_name="$(nw)_ceit",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "ceit_start", 0.0)
@@ -216,7 +216,7 @@ function variable_transformer_current_excitation_imaginary(pm::AbstractPowerMode
     report && _PMs.sol_component_value(pm, nw, :xfmr, :ceit, _PMs.ids(pm, nw, :xfmr), ceit)
 end
 
-function expression_transformer_excitation_power(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function expression_transformer_excitation_power(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     p = Dict()
     q = Dict()
 
@@ -240,7 +240,7 @@ end
 
 # load 
 ""
-function variable_load_current_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_load_current_real(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     crd = _PMs.var(pm, nw)[:crd] = JuMP.@variable(pm.model,
             [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_crd",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "crd_start", 0.0)
@@ -257,7 +257,7 @@ function variable_load_current_real(pm::AbstractPowerModel; nw::Int=nw_id_defaul
     end
 end
 ""
-function variable_load_current_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_load_current_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     cid = _PMs.var(pm, nw)[:cid] = JuMP.@variable(pm.model,
             [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_cid",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "cid_start", 0.0)
@@ -274,7 +274,7 @@ function variable_load_current_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_d
     end
 end
 ""
-function variable_load_current_magnitude(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_load_current_magnitude(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     cmd = _PMs.var(pm, nw)[:cmd] = JuMP.@variable(pm.model,
             [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_cmd",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "cmd_start", 0.0)
@@ -291,7 +291,7 @@ function variable_load_current_magnitude(pm::AbstractPowerModel; nw::Int=nw_id_d
     end
 end
 ""
-function expression_load_power(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function expression_load_power(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     pd = Dict()
     qd = Dict()
 
@@ -314,7 +314,7 @@ function expression_load_power(pm::AbstractPowerModel; nw::Int=nw_id_default, bo
     report && _PMs.sol_component_value(pm, nw, :load, :qd, ids(pm, nw, :load), qd)
 end
 # ""
-# function variable_load_current(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+# function variable_load_current(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
 #     crd = _PMs.var(pm, nw)[:crd] = JuMP.@variable(pm.model,
 #             [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_crd",
 #             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "crd_start", 0.0)
@@ -364,7 +364,7 @@ end
 # end
 
 ""
-function variable_gen_current(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_gen_current(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     crg = _PMs.var(pm, nw)[:crg] = JuMP.@variable(pm.model,
             [g in _PMs.ids(pm, nw, :gen)], base_name="$(nw)_crg",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :gen, g), "crg_start", 0.0)

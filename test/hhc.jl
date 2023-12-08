@@ -14,22 +14,13 @@
         data = PMs.parse_file(path)
 
         # set the formulation
-        form = PMs.IVRPowerModel
+        form = NLP_DHHC
 
         # define the set of considered harmonics
         H=[1, 3, 5, 7, 9, 13]
 
         # build harmonic data
         hdata = HPM.replicate(data, H=H)
-        
-        # Define ref_angle and angle range 
-        for nh in H
-            for (l, load) in hdata["nw"]["$nh"]["load"]
-                load["c_rating"] = 1.0
-                load["reference_harmonic_angle"] = 0 # pi / 4 # rad
-                load["harmonic_angle_range"] = 0 # pi / 10 # rad, symmetric around reference
-            end
-        end
 
         # solve HC problem
         results_hhc = HPM.solve_hhc(hdata, form, solver)

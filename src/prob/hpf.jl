@@ -30,8 +30,8 @@ function build_hpf(pm::_PMs.AbstractIVRModel)
 
     ## constraint
     # overall constraints
-    for g in _PMs.ids(pm, :gen, nw=1)
-        constraint_active_filter(pm, g, nw=1)
+    for g in _PMs.ids(pm, :gen, nw=nw_id_default(pm))
+        constraint_active_filter(pm, g, nw=nw_id_default(pm))
     end
 
     # harmonic constraints

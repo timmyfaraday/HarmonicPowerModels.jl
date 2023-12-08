@@ -100,6 +100,22 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
             haskey(load, "pd") ? load["pd"] *= mult : ~ ;
             haskey(load, "qd") ? load["qd"] *= mult : ~ ;
             load["multiplier"] = mult
+
+            load["c_rating"] = 1.0 # TODO
+
+            if haskey(bus, "ref_angle")
+                if is_pos_sequence(nh)
+                    load["reference_harmonic_angle"] = bus["ref_angle"]
+                elseif is_neg_sequence(nh)
+                    load["reference_harmonic_angle"] = -bus["ref_angle"]
+                elseif is_zero_sequence(nh)
+                    load["reference_harmonic_angle"] = 0.0
+                end
+            end
+
+            if haskey(bus, "angle_range")
+                load["harmonic_angle_range"] = bus["angle_range"]
+            end
         end
 
         # re-evaluate gen 

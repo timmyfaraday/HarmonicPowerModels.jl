@@ -9,7 +9,7 @@
 ## variables
 # xfmr
 ""
-function variable_transformer_voltage(pm::AbstractIVRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_transformer_voltage(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_transformer_voltage_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_transformer_voltage_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     
@@ -17,7 +17,7 @@ function variable_transformer_voltage(pm::AbstractIVRModel; nw::Int=nw_id_defaul
     variable_transformer_voltage_excitation_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 ""
-function variable_transformer_current(pm::AbstractIVRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_transformer_current(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_transformer_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_transformer_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 
@@ -32,7 +32,7 @@ function variable_transformer_current(pm::AbstractIVRModel; nw::Int=nw_id_defaul
 end
 # load 
 ""
-function variable_load_current(pm::AbstractIVRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_load_current(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_load_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_load_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 
@@ -51,7 +51,6 @@ function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
     cmd = [var(pm, n, :cmd, l)  for n in _PMs.nw_ids(pm) 
                                 for l in _PMs.ids(pm, :load, nw=n) 
                                 if n ≠ 1]
-    # hhc = sum([sum([var(pm, n, :hci, l) for l in _PMs.ids(pm, :load, nw = n)]) for n in _PMs.nw_ids(pm) if n ≠ 1])
     
     JuMP.@objective(pm.model, Max, sum(cmd))
 end
@@ -99,10 +98,36 @@ function constraint_voltage_rms_limit(pm::AbstractIVRModel, i, vminrms, vmaxrms)
     JuMP.@constraint(pm.model,              sum(w)  <= vmaxrms^2 )
 end
 ""
+function constraint_voltage_rms_limit(pm::QC_DHHC, i, vmaxrms)
+    w = [var(pm, n, :w, i) for n in sorted_nw_ids(pm)]
+
+    JuMP.@constraint(pm.model, sum(w) <= vmaxrms^2 - 1.0^2 )                    # TODO: change 1.0 to input vmagfund
+end
+""
+function constraint_voltage_rms_limit(pm::SOC_DHHC, i, vmaxrms)
+    vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
+    vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
+
+    JuMP.@constraint(pm.model, [vmaxrms^2 - 1.0^2; vcat(vr, vi)] in SecondOrderCone())
+end
+""
 function constraint_voltage_thd_limit(pm::AbstractIVRModel, i, thdmax)
     w = [var(pm, n, :w, i) for n in sorted_nw_ids(pm)]
 
     JuMP.@constraint(pm.model, sum(w[2:end]) <= thdmax^2 * w[1])
+end
+""
+function constraint_voltage_thd_limit(pm::QC_DHHC, i, thdmax)
+    w = [var(pm, n, :w, i) for n in sorted_nw_ids(pm)]
+
+    JuMP.@constraint(pm.model, sum(w) <= thdmax^2 * 1.0^2)                      # TODO: change 1.0 to input vmagfund
+end
+""
+function constraint_voltage_thd_limit(pm::SOC_DHHC, i, thdmax)
+    vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
+    vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
+
+    JuMP.@constraint(pm.model, [thdmax^2 * 1.0^2; vcat(vr, vi)] in SecondOrderCone())
 end
 ""
 function constraint_voltage_ihd_limit(pm::AbstractIVRModel, n::Int, i, ihdmax)
@@ -110,6 +135,19 @@ function constraint_voltage_ihd_limit(pm::AbstractIVRModel, n::Int, i, ihdmax)
     w  = var(pm, n, :w, i)
 
     JuMP.@constraint(pm.model, w <= ihdmax^2 * v)
+end
+""
+function constraint_voltage_ihd_limit(pm::QC_DHHC, n::Int, i, ihdmax)
+    w  = var(pm, n, :w, i)
+
+    JuMP.@constraint(pm.model, w <= ihdmax^2 * 1.0^2)                           # TODO: change 1.0 to input vmagfund
+end
+""
+function constraint_voltage_ihd_limit(pm::SOC_DHHC, n::Int, i, ihdmax)
+    vr = var(pm, n, :vr, i)
+    vi = var(pm, n, :vi, i)
+
+    JuMP.@constraint(pm.model, [ihdmax^2 * 1.0^2; vcat(vr, vi)] in SecondOrderCone())
 end
 ""
 function constraint_voltage_magnitude_sqr(pm::AbstractIVRModel, n::Int, i)
@@ -205,12 +243,6 @@ function constraint_load_current_variable_angle(pm::AbstractIVRModel, n::Int, l,
     crd = var(pm, n, :crd, l)
     cid = var(pm, n, :cid, l)
     cmd = var(pm, n, :cmd, l)
-
-    # JuMP.@constraint(pm.model, -1.0 <= crd)                                     # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
-    # JuMP.@constraint(pm.model, -1.0 <= cid)                                     # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
-
-    # JuMP.@constraint(pm.model, crd <= 1.0)                                      # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
-    # JuMP.@constraint(pm.model, cid <= 1.0)                                      # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
 
     JuMP.@constraint(pm.model, cmd * min(sin(angmin), sin(angmax)) <= cid)
     JuMP.@constraint(pm.model, cid <= cmd * max(sin(angmin), sin(angmax)))
