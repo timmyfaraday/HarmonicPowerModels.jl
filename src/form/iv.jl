@@ -26,9 +26,9 @@ function variable_transformer_current(pm::AbstractIVRModel; nw::Int=nw_id_defaul
 
     variable_transformer_current_excitation_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_transformer_current_excitation_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-
-    expression_transformer_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    expression_transformer_excitation_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    #review
+    # expression_transformer_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    # expression_transformer_excitation_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 # load 
 ""
@@ -37,8 +37,8 @@ function variable_load_current(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), 
     variable_load_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 
     variable_load_current_magnitude(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-
-    expression_load_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    #review
+    # expression_load_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 
 ## objective
@@ -108,7 +108,7 @@ function constraint_voltage_rms_limit(pm::SOC_DHHC, i, vmaxrms)
     vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
     vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, [vmaxrms^2 - 1.0^2; vcat(vr, vi)] in SecondOrderCone())
+    JuMP.@constraint(pm.model, [vmaxrms^2 - 1.0^2; vcat(vr, vi)] in JuMP.SecondOrderCone())
 end
 ""
 function constraint_voltage_thd_limit(pm::AbstractIVRModel, i, thdmax)
@@ -127,7 +127,8 @@ function constraint_voltage_thd_limit(pm::SOC_DHHC, i, thdmax)
     vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
     vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, [thdmax^2 * 1.0^2; vcat(vr, vi)] in SecondOrderCone())
+    # JuMP.@constraint(pm.model, [thdmax^2 * 1.0^2; vcat(vr, vi)] in JuMP.SecondOrderCone())
+    JuMP.@constraint(pm.model, [thdmax * 1.0; vcat(vr, vi)] in JuMP.SecondOrderCone())
 end
 ""
 function constraint_voltage_ihd_limit(pm::AbstractIVRModel, n::Int, i, ihdmax)
@@ -147,7 +148,8 @@ function constraint_voltage_ihd_limit(pm::SOC_DHHC, n::Int, i, ihdmax)
     vr = var(pm, n, :vr, i)
     vi = var(pm, n, :vi, i)
 
-    JuMP.@constraint(pm.model, [ihdmax^2 * 1.0^2; vcat(vr, vi)] in SecondOrderCone())
+    # JuMP.@constraint(pm.model, [ihdmax^2 * 1.0^2; vcat(vr, vi)] in JuMP.SecondOrderCone())
+    JuMP.@constraint(pm.model, [ihdmax * 1.0; vcat(vr, vi)] in JuMP.SecondOrderCone())
 end
 ""
 function constraint_voltage_magnitude_sqr(pm::AbstractIVRModel, n::Int, i)
@@ -251,6 +253,20 @@ function constraint_load_current_variable_angle(pm::AbstractIVRModel, n::Int, l,
     JuMP.@constraint(pm.model, crd <= cmd * max(cos(angmin), cos(angmax)))
 
     JuMP.@constraint(pm.model, cmd^2 <= crd^2 + cid^2)
+end
+""
+function constraint_load_current_variable_angle(pm::SOC_DHHC, n::Int, l, angmin, angmax)
+    crd = var(pm, n, :crd, l)
+    cid = var(pm, n, :cid, l)
+    cmd = var(pm, n, :cmd, l)
+
+    JuMP.@constraint(pm.model, cmd * min(sin(angmin), sin(angmax)) <= cid)
+    JuMP.@constraint(pm.model, cid <= cmd * max(sin(angmin), sin(angmax)))
+
+    JuMP.@constraint(pm.model, cmd * min(cos(angmin), cos(angmax)) <= crd)
+    JuMP.@constraint(pm.model, crd <= cmd * max(cos(angmin), cos(angmax)))
+
+    JuMP.@constraint(pm.model, [1/sqrt(2) * cmd; 1/sqrt(2) * cmd; vcat(crd, cid)] in JuMP.RotatedSecondOrderCone())
 end
 ""
 function constraint_load_current_variable_angle_relative(pm::AbstractIVRModel, n::Int, l, bus_idx, c1, c2)

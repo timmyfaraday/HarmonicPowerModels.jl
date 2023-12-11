@@ -88,6 +88,7 @@ end
 ""
 function build_hhc(pm::QC_DHHC)
     ## variables 
+    print("QC", "\n")
     for n in _PMs.nw_ids(pm)
         # voltage variables 
         _PMs.variable_bus_voltage(pm, nw=n, bounded=false)
@@ -159,9 +160,10 @@ end
 ""
 function build_hhc(pm::SOC_DHHC)
     ## variables 
+    print("SOC", "\n")
     for n in _PMs.nw_ids(pm)
         # voltage variables 
-        _PMs.variable_bus_voltage(pm, nw=n, bounded=false)
+         _PMs.variable_bus_voltage(pm, nw=n, bounded=false)
         variable_transformer_voltage(pm, nw=n, bounded=false)
 
         # edge current variables
@@ -173,10 +175,10 @@ function build_hhc(pm::SOC_DHHC)
         variable_gen_current(pm, nw=n, bounded=false)
     end
 
-    ## objective 
+    # objective 
     objective_maximum_hosting_capacity(pm)
 
-    ## constraints 
+    # constraints 
     # overall constraints
     for i in _PMs.ids(pm, :bus, nw=nw_id_default(pm))
         constraint_voltage_rms_limit(pm, i, nw=nw_id_default(pm))

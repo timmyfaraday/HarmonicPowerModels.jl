@@ -294,19 +294,20 @@ end
 function expression_load_power(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
     pd = Dict()
     qd = Dict()
+    #review
 
-    for (i,load) in ref(pm, nw, :load)
-        busid = load["load_bus"]
+    # for (i,load) in ref(pm, nw, :load)
+    #     busid = load["load_bus"]
 
-        vr = var(pm, nw, :vr, busid)
-        vi = var(pm, nw, :vi, busid)
+    #     vr = var(pm, nw, :vr, busid)
+    #     vi = var(pm, nw, :vi, busid)
 
-        crd = var(pm, nw, :crd, i)
-        cid = var(pm, nw, :cid, i)
+    #     crd = var(pm, nw, :crd, i)
+    #     cid = var(pm, nw, :cid, i)
         
-        pd[i] = JuMP.@NLexpression(pm.model, vr*crd  + vi*cid)
-        qd[i] = JuMP.@NLexpression(pm.model, vi*crd  - vr*cid)
-    end
+    #     pd[i] = JuMP.@NLexpression(pm.model, vr*crd  + vi*cid)
+    #     qd[i] = JuMP.@NLexpression(pm.model, vi*crd  - vr*cid)
+    # end
     var(pm, nw)[:pd] = pd
     var(pm, nw)[:qd] = qd
 
@@ -390,21 +391,22 @@ function variable_gen_current(pm::AbstractPowerModel; nw::Int=nw_id_default(pm),
     end
 
     # store active and reactive power expressions for use in objective + post processing
-    pg = Dict()
-    qg = Dict()
-    for (i,gen) in ref(pm, nw, :gen)
-        busid = gen["gen_bus"]
-        vr = var(pm, nw, :vr, busid)
-        vi = var(pm, nw, :vi, busid)
-        crg = var(pm, nw, :crg, i)
-        cig = var(pm, nw, :cig, i)
-        pg[i] = JuMP.@NLexpression(pm.model, vr*crg  + vi*cig)
-        qg[i] = JuMP.@NLexpression(pm.model, vi*crg  - vr*cig)
-    end
-    var(pm, nw)[:pg] = pg
-    var(pm, nw)[:qg] = qg
-    report && _PMs.sol_component_value(pm, nw, :gen, :pg, ids(pm, nw, :gen), pg)
-    report && _PMs.sol_component_value(pm, nw, :gen, :qg, ids(pm, nw, :gen), qg)
+    # pg = Dict()
+    # qg = Dict()
+    #review
+    # for (i,gen) in ref(pm, nw, :gen)
+    #     busid = gen["gen_bus"]
+    #     vr = var(pm, nw, :vr, busid)
+    #     vi = var(pm, nw, :vi, busid)
+    #     crg = var(pm, nw, :crg, i)
+    #     cig = var(pm, nw, :cig, i)
+    #     pg[i] = JuMP.@NLexpression(pm.model, vr*crg  + vi*cig)
+    #     qg[i] = JuMP.@NLexpression(pm.model, vi*crg  - vr*cig)
+    # end
+    # var(pm, nw)[:pg] = pg
+    # var(pm, nw)[:qg] = qg
+    # report && _PMs.sol_component_value(pm, nw, :gen, :pg, ids(pm, nw, :gen), pg)
+    # report && _PMs.sol_component_value(pm, nw, :gen, :qg, ids(pm, nw, :gen), qg)
 end
 
 

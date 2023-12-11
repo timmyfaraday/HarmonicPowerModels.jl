@@ -10,6 +10,7 @@
 using HarmonicPowerModels, JuMP, Plots, PowerModels, Revise
 # using Gurobi
 using Ipopt 
+using Gurobi
 
 # pkgs cte
 const PMs = PowerModels
@@ -17,7 +18,7 @@ const HPM = HarmonicPowerModels
 
 # set the solver
 solver_ipopt    = JuMP.optimizer_with_attributes(Ipopt.Optimizer)
-# solver_gurobi   = JuMP.optimizer_with_attributes(Gurobi.Optimizer)
+solver_gurobi   = JuMP.optimizer_with_attributes(Gurobi.Optimizer)
 
 # read-in data 
 path = joinpath(HPM.BASE_DIR,"test/data/matpower/industrial_network_hhc.m")
@@ -35,8 +36,8 @@ hdata_qc = HPM.replicate(data, H=setdiff(H,1))
 results_hhc_qc = HPM.solve_hhc(hdata_qc, QC_DHHC, solver_ipopt)
 
 # # solve HHC problem -- SOC 
-# hdata_soc = HPM.replicate(data, H=setdiff(H,1))
-# results_hhc_soc = HPM.solve_hhc(hdata_soc, SOC_DHHC, solver_gurobi)
+hdata_soc = HPM.replicate(data, H=setdiff(H,1))
+results_hhc_soc = HPM.solve_hhc(hdata_soc, SOC_DHHC, solver_gurobi)
 
 # print the results
 println("Fundamental harmonic:")
