@@ -122,7 +122,7 @@ function constraint_voltage_rms_limit(pm::SOC_DHHC, i, vmaxrms)
     vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
     vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, [vmaxrms^2 - 1.0^2; vcat(vr, vi)] in JuMP.SecondOrderCone())
+    JuMP.@constraint(pm.model, [sqrt(vmaxrms^2 - 1.0^2); vcat(vr, vi)] in JuMP.SecondOrderCone()) # TODO: change 1.0 to input vmagfund
 end
 ""
 function constraint_voltage_thd_limit(pm::AbstractIVRModel, i, thdmax)
@@ -141,8 +141,7 @@ function constraint_voltage_thd_limit(pm::SOC_DHHC, i, thdmax)
     vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
     vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
 
-    # JuMP.@constraint(pm.model, [thdmax^2 * 1.0^2; vcat(vr, vi)] in JuMP.SecondOrderCone())
-    JuMP.@constraint(pm.model, [thdmax * 1.0; vcat(vr, vi)] in JuMP.SecondOrderCone())
+    JuMP.@constraint(pm.model, [thdmax * 1.0; vcat(vr, vi)] in JuMP.SecondOrderCone()) # TODO: change 1.0 to input vmagfund
 end
 ""
 function constraint_voltage_ihd_limit(pm::AbstractIVRModel, n::Int, i, ihdmax)
@@ -162,8 +161,7 @@ function constraint_voltage_ihd_limit(pm::SOC_DHHC, n::Int, i, ihdmax)
     vr = var(pm, n, :vr, i)
     vi = var(pm, n, :vi, i)
 
-    # JuMP.@constraint(pm.model, [ihdmax^2 * 1.0^2; vcat(vr, vi)] in JuMP.SecondOrderCone())
-    JuMP.@constraint(pm.model, [ihdmax * 1.0; vcat(vr, vi)] in JuMP.SecondOrderCone())
+    JuMP.@constraint(pm.model, [ihdmax * 1.0; vcat(vr, vi)] in JuMP.SecondOrderCone()) # TODO: change 1.0 to input vmagfund
 end
 ""
 function constraint_voltage_magnitude_sqr(pm::AbstractIVRModel, n::Int, i)
