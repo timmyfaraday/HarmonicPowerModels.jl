@@ -26,9 +26,21 @@ function variable_transformer_current(pm::AbstractIVRModel; nw::Int=nw_id_defaul
 
     variable_transformer_current_excitation_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_transformer_current_excitation_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    #review
-    # expression_transformer_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    # expression_transformer_excitation_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    
+    if !isa(pm, SOC_DHHC)
+        expression_transformer_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+        expression_transformer_excitation_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    end
+end
+# load 
+""
+function variable_gen_current(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+    variable_gen_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_gen_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+
+    if !isa(pm, SOC_DHHC)
+        expression_gen_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    end
 end
 # load 
 ""
@@ -37,8 +49,10 @@ function variable_load_current(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), 
     variable_load_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 
     variable_load_current_magnitude(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    #review
-    # expression_load_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    
+    if !isa(pm, SOC_DHHC)
+        expression_load_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    end
 end
 
 ## objective

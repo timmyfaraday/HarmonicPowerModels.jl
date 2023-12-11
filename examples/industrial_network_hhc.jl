@@ -10,7 +10,6 @@
 using HarmonicPowerModels, JuMP, Plots, PowerModels, Revise
 # using Gurobi
 using Ipopt 
-using Gurobi
 
 # pkgs cte
 const PMs = PowerModels
@@ -18,7 +17,7 @@ const HPM = HarmonicPowerModels
 
 # set the solver
 solver_ipopt    = JuMP.optimizer_with_attributes(Ipopt.Optimizer)
-solver_gurobi   = JuMP.optimizer_with_attributes(Gurobi.Optimizer)
+# solver_gurobi   = JuMP.optimizer_with_attributes(Gurobi.Optimizer)
 
 # read-in data 
 path = joinpath(HPM.BASE_DIR,"test/data/matpower/industrial_network_hhc.m")

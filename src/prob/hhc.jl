@@ -110,7 +110,6 @@ function build_hhc(pm::QC_DHHC)
     ## constraints 
     # overall constraints
     for i in _PMs.ids(pm, :bus, nw=nw_id_default(pm))
-        println(nw_id_default(pm))
         constraint_voltage_rms_limit(pm, i, nw=nw_id_default(pm))
         constraint_voltage_thd_limit(pm, i, nw=nw_id_default(pm))
     end
