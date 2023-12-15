@@ -20,7 +20,7 @@ solver_ipopt    = JuMP.optimizer_with_attributes(Ipopt.Optimizer)
 # solver_gurobi   = JuMP.optimizer_with_attributes(Gurobi.Optimizer)
 
 # read-in data 
-path = joinpath(HPM.BASE_DIR,"test/data/matpower/industrial_network_hhc.m")
+path = joinpath(HPM.BASE_DIR,"test/data/matpower/two_branch_example_hhc.m")
 data = PMs.parse_file(path)
 
 # define the set of considered harmonics
@@ -37,17 +37,3 @@ results_hhc_qc = HPM.solve_hhc(hdata_qc, QC_DHHC, solver_ipopt)
 # # solve HHC problem -- SOC 
 hdata_soc = HPM.replicate(data, H=setdiff(H,1))
 results_hhc_soc = HPM.solve_hhc(hdata_soc, SOC_DHHC, solver_gurobi)
-
-# print the results
-println("Fundamental harmonic:")
-print_summary(results_hhc["solution"]["nw"]["1"])
-println("Third harmonic:")
-print_summary(results_hhc["solution"]["nw"]["3"])
-println("Fifth harmonic:")
-print_summary(results_hhc["solution"]["nw"]["5"])
-println("Seventh harmonic:")
-print_summary(results_hhc["solution"]["nw"]["7"])
-println("Nineth harmonic:")
-print_summary(results_hhc["solution"]["nw"]["9"])
-println("Thirteen harmonic:")
-print_summary(results_hhc["solution"]["nw"]["13"])
