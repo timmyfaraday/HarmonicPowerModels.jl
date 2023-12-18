@@ -278,6 +278,7 @@ function constraint_load_current_variable_angle(pm::SOC_DHHC, n::Int, l, angmin,
     JuMP.@constraint(pm.model, cmd * min(cos(angmin), cos(angmax)) <= crd)
     JuMP.@constraint(pm.model, crd <= cmd * max(cos(angmin), cos(angmax)))
 
+    # NB: This changes the direction of the inequality.
     JuMP.@constraint(pm.model, [1/sqrt(2) * cmd; 1/sqrt(2) * cmd; vcat(crd, cid)] in JuMP.RotatedSecondOrderCone())
 end
 ""
