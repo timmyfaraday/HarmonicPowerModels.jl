@@ -77,15 +77,12 @@ end
 # branch
 function constraint_current_rms_limit(pm::AbstractPowerModel, b::Int; nw::Int=nw_id_default(pm))
     branch = ref(pm, nw, :branch, b)
-    
     f_bus, t_bus = branch["f_bus"], branch["t_bus"]
     f_idx, t_idx = (b, f_bus, t_bus), (b, t_bus, f_bus)
 
-    if haskey(branch, "c_rating_a")
-        c_rating = branch["c_rating_a"]
+    c_rating = branch["c_rating_a"]
 
-        constraint_current_rms_limit(pm, f_idx, t_idx, c_rating)
-    end
+    constraint_current_rms_limit(pm, f_idx, t_idx, c_rating)
 end
 
 # load
@@ -120,6 +117,15 @@ function constraint_load_power(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=nw_i
     else
         constraint_load_constant_current(pm, nw, l, mult)
     end
+end
+""
+function constraint_load_current_variable_angle_relative(pm::AbstractPowerModel, nw::Int, l::Int)
+    load = _PMs.ref(pm, nw, :load, l)
+    bus_idx = load["load_bus"]
+    c1 = cos(load["reference_harmonic_angle"])
+    c2 = sin(load["reference_harmonic_angle"])
+
+    constraint_load_current_variable_angle_relative(pm, nw, l, bus_idx, c1, c2)
 end
 
 # xfmr
@@ -205,12 +211,15 @@ function constraint_transformer_winding_current_balance(pm::AbstractPowerModel, 
         constraint_transformer_winding_current_balance(pm, nw, w_idx[w], r[w], b_sh[w], g_sh[w], cnf[w])
     end
 end
+""
+function constraint_transformer_winding_current_rms_limit(pm::AbstractPowerModel, t::Int; nw::Int=nw_id_default(pm))
+    f_bus = ref(pm, nw, :xfmr, t, "f_bus")
+    t_bus = ref(pm, nw, :xfmr, t, "t_bus")
+    w_idx = [(t,f_bus,t_bus), (t,t_bus,f_bus)]
 
-function constraint_load_current_variable_angle_relative(pm::AbstractPowerModel, nw::Int, l::Int)
-    load = _PMs.ref(pm, nw, :load, l)
-    bus_idx = load["load_bus"]
-    c1 = cos(load["reference_harmonic_angle"])
-    c2 = sin(load["reference_harmonic_angle"])
+    c_rating = branch["c_rating_a"]
 
-    constraint_load_current_variable_angle_relative(pm, nw, l, bus_idx, c1, c2)
+    for w in 1:2
+        constraint_transformer_winding_current_limit(pm, nw, w_idx[w], c_rating)
+    end
 end

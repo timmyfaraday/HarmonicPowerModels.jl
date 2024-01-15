@@ -66,7 +66,7 @@ function build_hhc(pm::NLP_DHHC)
             
             _PMs.constraint_voltage_drop(pm, b, nw=n)
 
-            _PMs.constraint_current_limit(pm, b, nw=n)
+            constraint_current_rms_limit(pm, b, nw=n)
         end
         for t in _PMs.ids(pm, :xfmr, nw=n)
             constraint_transformer_core_excitation(pm, t, nw=n)
@@ -76,6 +76,8 @@ function build_hhc(pm::NLP_DHHC)
             
             constraint_transformer_winding_config(pm, t, nw=n)
             constraint_transformer_winding_current_balance(pm, t, nw=n)
+
+            constraint_transformer_winding_current_rms_limit(pm, t, nw=n)
         end
 
         # unit

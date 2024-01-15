@@ -424,3 +424,10 @@ function constraint_transformer_winding_current_balance(pm::AbstractIVRModel, n:
         JuMP.@constraint(pm.model, cit == csit - g_sh * vit - b_sh * vrt - vit / r)
     end
 end
+""
+function constraint_transformer_winding_current_rms_limit(pm::AbstractIVRModel, idx, c_rating)
+    crt =  [var(pm, n, :crt, idx) for n in sorted_nw_ids(pm)]
+    cit =  [var(pm, n, :cit, idx) for n in sorted_nw_ids(pm)]
+
+    JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2)
+end
