@@ -115,8 +115,8 @@ function constraint_voltage_rms_limit(pm::dHHC_NLP, i, vminrms, vmaxrms)
     vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
     vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, vminrms^2 <= sum(vr^2 + vi^2)               )
-    JuMP.@constraint(pm.model,              sum(vr^2 + vi^2)  <= vmaxrms^2 )
+    JuMP.@constraint(pm.model, vminrms^2 <= sum(vr.^2 + vi.^2)               )
+    JuMP.@constraint(pm.model,              sum(vr.^2 + vi.^2)  <= vmaxrms^2 )
 end
 ""
 function constraint_voltage_rms_limit(pm::SOC_DHHC, i, vmaxrms)
@@ -136,7 +136,7 @@ function constraint_voltage_thd_limit(pm::dHHC_NLP, i, thdmax)
     vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
     vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, sum(vr[2:end]^2 + vi[2:end]^2) <= thdmax^2 * (vr[1]^2 + vi[1]^2))
+    JuMP.@constraint(pm.model, sum(vr[2:end].^2 + vi[2:end].^2) <= thdmax^2 * (vr[1]^2 + vi[1]^2))
 end
 ""
 function constraint_voltage_thd_limit(pm::SOC_DHHC, i, thdmax)
@@ -214,8 +214,8 @@ function constraint_current_rms_limit(pm::AbstractIVRModel, f_idx, t_idx, c_rati
     crt =  [var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm)]
     cit =  [var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, sum(crf^2 + cif^2) <= c_rating^2)
-    JuMP.@constraint(pm.model, sum(crt^2 + cit^2) <= c_rating^2)
+    JuMP.@constraint(pm.model, sum(crf.^2 + cif.^2) <= c_rating^2)
+    JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2)
 end
 
 # load
@@ -298,9 +298,9 @@ end
 
 # xfmr
 ""
-function constraint_transformer_core_excitation(pm::AbstractIVRModel, n::Int, t, int_a, int_b)
-    cert = var(pm, n, :cert, t)
-    ceit = var(pm, n, :ceit, t)
+function constraint_transformer_core_magnetization(pm::AbstractIVRModel, n::Int, t, int_a, int_b)
+    cmrt = var(pm, n, :cmrt, t)
+    cmit = var(pm, n, :cmit, t)
 
     et = reduce(vcat,[[var(pm, nw, :ert, t),var(pm, nw, :eit, t)] 
                                 for nw in _PMs.ref(pm, n, :xfmr, t, "Hᴱ")])
@@ -311,16 +311,16 @@ function constraint_transformer_core_excitation(pm::AbstractIVRModel, n::Int, t,
     JuMP.register(pm.model, sym_exc_a, length(et), int_a; autodiff=true)
     JuMP.register(pm.model, sym_exc_b, length(et), int_b; autodiff=true)
 
-    JuMP.add_nonlinear_constraint(pm.model, :($(cert) == $(sym_exc_a)($(et...))))
-    JuMP.add_nonlinear_constraint(pm.model, :($(ceit) == $(sym_exc_b)($(et...))))
+    JuMP.add_nonlinear_constraint(pm.model, :($(cmrt) == $(sym_exc_a)($(et...))))
+    JuMP.add_nonlinear_constraint(pm.model, :($(cmit) == $(sym_exc_b)($(et...))))
 end
 ""
-function constraint_transformer_core_excitation(pm::AbstractIVRModel, n::Int, t)
-    cert = var(pm, n, :cert, t)
-    ceit = var(pm, n, :ceit, t)
+function constraint_transformer_core_magnetization(pm::AbstractIVRModel, n::Int, t)
+    cmrt = var(pm, n, :cmrt, t)
+    cmit = var(pm, n, :cmit, t)
 
-    JuMP.@constraint(pm.model, cert == 0.0)
-    JuMP.@constraint(pm.model, ceit == 0.0)
+    JuMP.@constraint(pm.model, cmrt == 0.0)
+    JuMP.@constraint(pm.model, cmit == 0.0)
 end
 ""
 function constraint_transformer_core_voltage_drop(pm::_PMs.AbstractIVRModel, n::Int, t, f_idx, xsc)
@@ -349,8 +349,8 @@ function constraint_transformer_core_voltage_balance(pm::_PMs.AbstractIVRModel, 
 end
 ""
 function constraint_transformer_core_current_balance(pm::_PMs.AbstractIVRModel, n::Int, t, f_idx, t_idx, tr, ti, rsh)
-    cert = var(pm, n, :cert, t)
-    ceit = var(pm, n, :ceit, t)
+    cmrt = var(pm, n, :cmrt, t)
+    cmit = var(pm, n, :cmit, t)
 
     csrt_fr = var(pm, n, :csrt, f_idx)
     csit_fr = var(pm, n, :csit, f_idx)
@@ -365,14 +365,14 @@ function constraint_transformer_core_current_balance(pm::_PMs.AbstractIVRModel, 
                                 + tr * csrt_to 
                                 + ti * csit_to 
                                     == 
-                                cert 
+                                cmrt 
                                 + ert / rsh
                     )
     JuMP.@constraint(pm.model,  csit_fr 
                                 + tr * csit_to 
                                 - ti * csrt_to
                                     == 
-                                ceit 
+                                cmit 
                                 + eit / rsh
                     )
 end

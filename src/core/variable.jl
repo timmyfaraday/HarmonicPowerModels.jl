@@ -9,82 +9,82 @@
 # bus
 ""
 function variable_bus_voltage_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-    vr = var(pm, nw)[:vr] = JuMP.@variable(pm.model,
-        [i in ids(pm, nw, :bus)], base_name="$(nw)_vr",
-        start = comp_start_value(ref(pm, nw, :bus, i), "vr_start", 1.0)
+    vr = _PMs.var(pm, nw)[:vr] = JuMP.@variable(pm.model,
+        [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_vr",
+        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, i), "vr_start", 1.0)
     )
 
     if bounded
-        for (i, bus) in ref(pm, nw, :bus)
+        for (i, bus) in _PMs.ref(pm, nw, :bus)
             JuMP.set_lower_bound(vr[i], -bus["vmax"])
             JuMP.set_upper_bound(vr[i],  bus["vmax"])
         end
     end
 
-    report && sol_component_value(pm, nw, :bus, :vr, ids(pm, nw, :bus), vr)
+    report && _PMs.sol_component_value(pm, nw, :bus, :vr, _PMs.ids(pm, nw, :bus), vr)
 end
 
 ""
 function variable_bus_voltage_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-    vi = var(pm, nw)[:vi] = JuMP.@variable(pm.model,
-        [i in ids(pm, nw, :bus)], base_name="$(nw)_vi",
-        start = comp_start_value(ref(pm, nw, :bus, i), "vi_start")
+    vi = _PMs.var(pm, nw)[:vi] = JuMP.@variable(pm.model,
+        [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_vi",
+        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, i), "vi_start")
     )
 
     if bounded
-        for (i, bus) in ref(pm, nw, :bus)
+        for (i, bus) in _PMs.ref(pm, nw, :bus)
             JuMP.set_lower_bound(vi[i], -bus["vmax"])
             JuMP.set_upper_bound(vi[i],  bus["vmax"])
         end
     end
 
-    report && sol_component_value(pm, nw, :bus, :vi, ids(pm, nw, :bus), vi)
+    report && _PMs.sol_component_value(pm, nw, :bus, :vi, _PMs.ids(pm, nw, :bus), vi)
 end
 
 # branch
 ""
 function variable_branch_current_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-    cr = var(pm, nw)[:cr] = JuMP.@variable(pm.model,
-        [(l,i,j) in ref(pm, nw, :arcs)], base_name="$(nw)_cr",
-        start = comp_start_value(ref(pm, nw, :branch, l), "cr_start")
+    cr = _PMs.var(pm, nw)[:cr] = JuMP.@variable(pm.model,
+        [(l,i,j) in _PMs.ref(pm, nw, :arcs)], base_name="$(nw)_cr",
+        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "cr_start")
     )
 
     ## bounds are needed
 
-    report && sol_component_value_edge(pm, nw, :branch, :cr_fr, :cr_to, ref(pm, nw, :arcs_from), ref(pm, nw, :arcs_to), cr)
+    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :branch, :cr_fr, :cr_to, _PMs.ref(pm, nw, :arcs_from), _PMs.ref(pm, nw, :arcs_to), cr)
 end
 ""
 function variable_branch_current_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-    ci = var(pm, nw)[:ci] = JuMP.@variable(pm.model,
-        [(l,i,j) in ref(pm, nw, :arcs)], base_name="$(nw)_ci",
-        start = comp_start_value(ref(pm, nw, :branch, l), "ci_start")
+    ci = _PMs.var(pm, nw)[:ci] = JuMP.@variable(pm.model,
+        [(l,i,j) in _PMs.ref(pm, nw, :arcs)], base_name="$(nw)_ci",
+        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "ci_start")
     )
 
     ## bounds are needed
 
-    report && sol_component_value_edge(pm, nw, :branch, :ci_fr, :ci_to, ref(pm, nw, :arcs_from), ref(pm, nw, :arcs_to), ci)
+    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :branch, :ci_fr, :ci_to, _PMs.ref(pm, nw, :arcs_from), _PMs.ref(pm, nw, :arcs_to), ci)
 end
 ""
 function variable_branch_series_current_real(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-    csr = var(pm, nw)[:csr] = JuMP.@variable(pm.model,
-        [l in ids(pm, nw, :branch)], base_name="$(nw)_csr",
-        start = comp_start_value(ref(pm, nw, :branch, l), "csr_start", 0.0)
+    csr = _PMs.var(pm, nw)[:csr] = JuMP.@variable(pm.model,
+        [l in _PMs.ids(pm, nw, :branch)], base_name="$(nw)_csr",
+        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "csr_start", 0.0)
     )
 
     ## bounds are needed
 
-    report && sol_component_value(pm, nw, :branch, :csr_fr, ids(pm, nw, :branch), csr)
+    report && _PMs.sol_component_value(pm, nw, :branch, :csr_fr, _PMs.ids(pm, nw, :branch), csr)
 end
 ""
 function variable_branch_series_current_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
-    csi = var(pm, nw)[:csi] = JuMP.@variable(pm.model,
-        [l in ids(pm, nw, :branch)], base_name="$(nw)_csi",
-        start = comp_start_value(ref(pm, nw, :branch, l), "csi_start", 0.0)
+    csi = _PMs.var(pm, nw)[:csi] = JuMP.@variable(pm.model,
+        [l in _PMs.ids(pm, nw, :branch)], base_name="$(nw)_csi",
+        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "csi_start", 0.0)
     )
 
     ## bounds are needed
 
-    report && sol_component_value(pm, nw, :branch, :csi_fr, ids(pm, nw, :branch), csi)
+    report && _PMs.sol_component_value(pm, nw, :branch, :csi_fr, _PMs.ids(pm, nw, :branch), csi)
 end
 
 # xfmr 
@@ -200,7 +200,7 @@ function variable_transformer_current_magnetizing_real(pm::AbstractPowerModel; n
 end
 ""
 function variable_transformer_current_magnetizing_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true)
-    cmit = _PMs.var(pm, nw)[:ceit] = JuMP.@variable(pm.model,
+    cmit = _PMs.var(pm, nw)[:cmit] = JuMP.@variable(pm.model,
             [t in _PMs.ids(pm, nw, :xfmr)], base_name="$(nw)_cmit",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "cmit_start", 0.0)
     )

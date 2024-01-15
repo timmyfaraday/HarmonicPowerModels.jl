@@ -74,7 +74,7 @@ function constraint_current_rms_limit(pm::AbstractPowerModel, b::Int; nw::Int=nw
     f_bus, t_bus = branch["f_bus"], branch["t_bus"]
     f_idx, t_idx = (b, f_bus, t_bus), (b, t_bus, f_bus)
 
-    c_rating = branch["c_rating_a"]
+    c_rating = branch["c_rating"]
 
     constraint_current_rms_limit(pm, f_idx, t_idx, c_rating)
 end
@@ -124,7 +124,7 @@ end
 
 # xfmr
 ""
-function constraint_transformer_core_excitation(pm::_PMs.AbstractPowerModel, t::Int; nw::Int=nw_id_default(pm))
+function constraint_transformer_core_magnetization(pm::_PMs.AbstractPowerModel, t::Int; nw::Int=nw_id_default(pm))
     xfmr = _PMs.ref(pm, nw, :xfmr, t)
     Hᴵ = haskey(xfmr, "Hᴵ") ? xfmr["Hᴵ"] : Int[] ;
 
@@ -132,9 +132,9 @@ function constraint_transformer_core_excitation(pm::_PMs.AbstractPowerModel, t::
         int_a = _PMs.ref(pm, nw, :xfmr, t, "Im_A")
         int_b = _PMs.ref(pm, nw, :xfmr, t, "Im_B")
 
-        constraint_transformer_core_excitation(pm, nw, t, int_a, int_b)
+        constraint_transformer_core_magnetization(pm, nw, t, int_a, int_b)
     else 
-        constraint_transformer_core_excitation(pm, nw, t)
+        constraint_transformer_core_magnetization(pm, nw, t)
     end
 end
 ""
@@ -207,13 +207,15 @@ function constraint_transformer_winding_current_balance(pm::AbstractPowerModel, 
 end
 ""
 function constraint_transformer_winding_current_rms_limit(pm::AbstractPowerModel, t::Int; nw::Int=nw_id_default(pm))
+    xfmr = ref(pm, nw, :xfmr, t)
+
     f_bus = ref(pm, nw, :xfmr, t, "f_bus")
     t_bus = ref(pm, nw, :xfmr, t, "t_bus")
     w_idx = [(t,f_bus,t_bus), (t,t_bus,f_bus)]
 
-    c_rating = branch["c_rating_a"]
+    c_rating = xfmr["c_rating"]
 
     for w in 1:2
-        constraint_transformer_winding_current_limit(pm, nw, w_idx[w], c_rating)
+        constraint_transformer_winding_current_rms_limit(pm, w_idx[w], c_rating)
     end
 end

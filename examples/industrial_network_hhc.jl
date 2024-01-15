@@ -28,7 +28,7 @@ H = [1, 3, 5, 7, 9, 13]
 
 # solve HHC problem -- NLP
 hdata_nlp = HPM.replicate(data, H=H)
-results_hhc_nlp = HPM.solve_hhc(hdata_nlp, NLP_DHHC, solver_ipopt)
+results_hhc_nlp = HPM.solve_hhc(hdata_nlp, dHHC_NLP, solver_ipopt)
 
 # # solve HHC problem -- SOC 
 hdata_soc = HPM.replicate(data, H=setdiff(H,1))

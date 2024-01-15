@@ -90,7 +90,7 @@ data  = _PMs.parse_file(path)
 
 vmmin = 0.8
 for (b,branch) in data["branch"]
-    branch["c_rating"] = branch["rate_a"]/vmmin
+    branch["c_rating"] = branch["rateA"]/vmmin
 end
 for (d,load) in data["load"]
     load["c_rating"] = abs(load["pd"] + im* load["qd"])/vmmin
