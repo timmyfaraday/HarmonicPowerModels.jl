@@ -69,7 +69,7 @@ module HarmonicPowerModels
     # export
     export BASE_DIR
 
-    export NLP_DHHC, QC_DHHC, SOC_DHHC
+    export dHHC_NLP, SOC_DHHC
 
     export replicate
 

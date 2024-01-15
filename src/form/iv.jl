@@ -7,6 +7,23 @@
 ################################################################################
 
 ## variables
+# bus
+""
+function variable_bus_voltage(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+    variable_bus_voltage_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_bus_voltage_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+end
+
+# branch 
+""
+function variable_branch_current(pm::AbstractIVRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, kwargs...)
+    variable_branch_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_branch_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+
+    variable_branch_series_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_branch_series_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+end
+
 # xfmr
 ""
 function variable_transformer_voltage(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, kwargs...)
@@ -24,24 +41,17 @@ function variable_transformer_current(pm::AbstractIVRModel; nw::Int=nw_id_defaul
     variable_transformer_current_series_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_transformer_current_series_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 
-    variable_transformer_current_excitation_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_transformer_current_excitation_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    
-    if !isa(pm, SOC_DHHC)
-        expression_transformer_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-        expression_transformer_excitation_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    end
+    variable_transformer_current_magnetizing_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_transformer_current_magnetizing_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
+
 # load 
 ""
 function variable_gen_current(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_gen_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_gen_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-
-    if !isa(pm, SOC_DHHC)
-        expression_gen_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    end
 end
+
 # load 
 ""
 function variable_load_current(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, kwargs...)
@@ -49,10 +59,6 @@ function variable_load_current(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), 
     variable_load_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 
     variable_load_current_magnitude(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    
-    if !isa(pm, SOC_DHHC)
-        expression_load_power(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    end
 end
 
 ## objective
@@ -105,10 +111,12 @@ function constraint_voltage_rms_limit(pm::AbstractIVRModel, i, vminrms, vmaxrms)
     JuMP.@constraint(pm.model,              sum(w)  <= vmaxrms^2 )
 end
 ""
-function constraint_voltage_rms_limit(pm::QC_DHHC, i, vmaxrms)
-    w = [var(pm, n, :w, i) for n in sorted_nw_ids(pm)]
+function constraint_voltage_rms_limit(pm::dHHC_NLP, i, vminrms, vmaxrms)
+    vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
+    vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, sum(w) <= vmaxrms^2 - 1.0^2 )                    # TODO: change 1.0 to input vmagfund
+    JuMP.@constraint(pm.model, vminrms^2 <= sum(vr^2 + vi^2)               )
+    JuMP.@constraint(pm.model,              sum(vr^2 + vi^2)  <= vmaxrms^2 )
 end
 ""
 function constraint_voltage_rms_limit(pm::SOC_DHHC, i, vmaxrms)
@@ -124,10 +132,11 @@ function constraint_voltage_thd_limit(pm::AbstractIVRModel, i, thdmax)
     JuMP.@constraint(pm.model, sum(w[2:end]) <= thdmax^2 * w[1])
 end
 ""
-function constraint_voltage_thd_limit(pm::QC_DHHC, i, thdmax)
-    w = [var(pm, n, :w, i) for n in sorted_nw_ids(pm)]
+function constraint_voltage_thd_limit(pm::dHHC_NLP, i, thdmax)
+    vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
+    vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, sum(w) <= thdmax^2 * 1.0^2)                      # TODO: change 1.0 to input vmagfund
+    JuMP.@constraint(pm.model, sum(vr[2:end]^2 + vi[2:end]^2) <= thdmax^2 * (vr[1]^2 + vi[1]^2))
 end
 ""
 function constraint_voltage_thd_limit(pm::SOC_DHHC, i, thdmax)
@@ -144,10 +153,11 @@ function constraint_voltage_ihd_limit(pm::AbstractIVRModel, n::Int, i, ihdmax)
     JuMP.@constraint(pm.model, w <= ihdmax^2 * v)
 end
 ""
-function constraint_voltage_ihd_limit(pm::QC_DHHC, n::Int, i, ihdmax)
-    w  = var(pm, n, :w, i)
+function constraint_voltage_ihd_limit(pm::dHHC_NLP, n::Int, i, ihdmax)
+    vr = [var(pm, 1, :vr, i), var(pm, n, :vr, i)] 
+    vi = [var(pm, 1, :vi, i), var(pm, n, :vr, i)]
 
-    JuMP.@constraint(pm.model, w <= ihdmax^2 * 1.0^2)                           # TODO: change 1.0 to input vmagfund
+    JuMP.@constraint(pm.model, vr[2]^2 + vi[2]^2 <= ihdmax^2 * (vr[1]^2 + vi[1]^2))
 end
 ""
 function constraint_voltage_ihd_limit(pm::SOC_DHHC, n::Int, i, ihdmax)

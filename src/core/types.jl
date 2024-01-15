@@ -9,12 +9,7 @@
 """
 Deterministic Harmonic Hosting Capacity (NLP)
 """
-mutable struct NLP_DHHC <: _PMs.AbstractIVRModel _PMs.@pm_fields end
-
-"""
-Deterministic Harmonic Hosting Capacity (QC)
-"""
-mutable struct QC_DHHC <: _PMs.AbstractIVRModel _PMs.@pm_fields end
+mutable struct dHHC_NLP <: _PMs.AbstractIVRModel _PMs.@pm_fields end
 
 """
 Deterministic Harmonic Hosting Capacity (SOC)
