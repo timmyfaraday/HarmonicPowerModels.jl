@@ -19,7 +19,9 @@ end
 # ref bus
 ""
 function constraint_ref_bus(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=nw_id_default(pm))
-    constraint_ref_bus(pm, nw, i)
+    vref = ref(pm, nw, :bus, i, "ihdmax")
+
+    constraint_ref_bus(pm, nw, i, vref)
 end
 
 # bus

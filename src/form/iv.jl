@@ -88,19 +88,12 @@ end
 
 # ref bus
 ""
-function constraint_ref_bus(pm::AbstractIVRModel, n::Int, i::Int)
+function constraint_ref_bus(pm::AbstractIVRModel, n::Int, i::Int, vref)
     vr = var(pm, n, :vr, i)
     vi = var(pm, n, :vi, i)
 
-    if n == 1 
-        # for fundemental frequency: fix reference angle
-        JuMP.@constraint(pm.model, vr == 1.0)
-        JuMP.@constraint(pm.model, vi == 0.0)
-    else 
-        # for non-fundamental frequency: fix harmonic voltage to 0+j0
-        JuMP.@constraint(pm.model, vr == 0.0)
-        JuMP.@constraint(pm.model, vi == 0.0)
-    end
+    JuMP.@constraint(pm.model, vr == vref)
+    JuMP.@constraint(pm.model, vi == 0.0)
 end
 
 # bus
