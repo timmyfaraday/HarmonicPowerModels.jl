@@ -14,4 +14,4 @@ mutable struct dHHC_NLP <: _PMs.AbstractIVRModel _PMs.@pm_fields end
 """
 Deterministic Harmonic Hosting Capacity (SOC)
 """
-mutable struct SOC_DHHC <: _PMs.AbstractIVRModel _PMs.@pm_fields end
+mutable struct dHHC_SOC <: _PMs.AbstractIVRModel _PMs.@pm_fields end

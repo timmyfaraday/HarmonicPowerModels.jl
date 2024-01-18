@@ -90,7 +90,7 @@ function build_hhc(pm::dHHC_NLP)
 end
 
 ""
-function build_hhc(pm::SOC_DHHC)
+function build_hhc(pm::dHHC_SOC)
     ## variables 
     print("SOC", "\n")
     for n in _PMs.nw_ids(pm)

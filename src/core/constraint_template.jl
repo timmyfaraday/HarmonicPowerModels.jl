@@ -33,7 +33,7 @@ function constraint_voltage_rms_limit(pm::AbstractIVRModel, i::Int; nw::Int=nw_i
     constraint_voltage_rms_limit(pm, i, vminrms, vmaxrms)
 end
 ""
-function constraint_voltage_rms_limit(pm::SOC_DHHC, i::Int; nw::Int=nw_id_default(pm))
+function constraint_voltage_rms_limit(pm::dHHC_SOC, i::Int; nw::Int=nw_id_default(pm))
     vmaxrms = ref(pm, nw, :bus, i, "vmaxrms")
 
     constraint_voltage_rms_limit(pm, i, vmaxrms)

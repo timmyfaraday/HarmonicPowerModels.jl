@@ -64,22 +64,24 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
     extend_H!(H, data, xfmr_magn)
 
     # set the current rating of all branches and xfmrs
-    for branch in values(data["branch"])
-        f_bus = data["bus"][string(branch["f_bus"])]
-        t_bus = data["bus"][string(branch["t_bus"])]
-        
-        vmmin = min(f_bus["vmin"], t_bus["vmin"])
-        
-        branch["c_rating"] = branch["rate_a"] / vmmin                           # @Hakan: klopt dit
-    end
-    for xfmr in values(data["xfmr"])
-        f_bus = data["bus"][string(xfmr["f_bus"])]
-        t_bus = data["bus"][string(xfmr["t_bus"])]
-        
-        vmmin = min(f_bus["vmin"], t_bus["vmin"])
-        
-        xfmr["c_rating"] = xfmr["rateA"] / data["baseMVA"] / vmmin              # @Hakan: klopt dit
-    end
+    if haskey(data,"branch") 
+            for branch in values(data["branch"])
+            f_bus = data["bus"][string(branch["f_bus"])]
+            t_bus = data["bus"][string(branch["t_bus"])]
+            
+            vmmin = min(f_bus["vmin"], t_bus["vmin"])
+            
+            branch["c_rating"] = branch["rate_a"] / vmmin                           # @Hakan: klopt dit
+    end end
+    if haskey(data,"xfmr") 
+        for xfmr in values(data["xfmr"])
+            f_bus = data["bus"][string(xfmr["f_bus"])]
+            t_bus = data["bus"][string(xfmr["t_bus"])]
+            
+            vmmin = min(f_bus["vmin"], t_bus["vmin"])
+            
+            xfmr["c_rating"] = xfmr["rateA"] / data["baseMVA"] / vmmin              # @Hakan: klopt dit
+    end end
 
     # add the thd limits based on standard, if available
     for bus in values(data["bus"])

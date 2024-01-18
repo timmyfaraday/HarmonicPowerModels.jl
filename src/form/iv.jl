@@ -119,7 +119,7 @@ function constraint_voltage_rms_limit(pm::dHHC_NLP, i, vminrms, vmaxrms)
     JuMP.@constraint(pm.model,              sum(vr.^2 + vi.^2)  <= vmaxrms^2 )
 end
 ""
-function constraint_voltage_rms_limit(pm::SOC_DHHC, i, vmaxrms)
+function constraint_voltage_rms_limit(pm::dHHC_SOC, i, vmaxrms)
     vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
     vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
 
@@ -139,7 +139,7 @@ function constraint_voltage_thd_limit(pm::dHHC_NLP, i, thdmax)
     JuMP.@constraint(pm.model, sum(vr[2:end].^2 + vi[2:end].^2) <= thdmax^2 * (vr[1]^2 + vi[1]^2))
 end
 ""
-function constraint_voltage_thd_limit(pm::SOC_DHHC, i, thdmax)
+function constraint_voltage_thd_limit(pm::dHHC_SOC, i, thdmax)
     vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
     vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
 
@@ -160,7 +160,7 @@ function constraint_voltage_ihd_limit(pm::dHHC_NLP, n::Int, i, ihdmax)
     JuMP.@constraint(pm.model, vr[2]^2 + vi[2]^2 <= ihdmax^2 * (vr[1]^2 + vi[1]^2))
 end
 ""
-function constraint_voltage_ihd_limit(pm::SOC_DHHC, n::Int, i, ihdmax)
+function constraint_voltage_ihd_limit(pm::dHHC_SOC, n::Int, i, ihdmax)
     vr = var(pm, n, :vr, i)
     vi = var(pm, n, :vi, i)
 
@@ -270,7 +270,7 @@ function constraint_load_current_variable_angle(pm::AbstractIVRModel, n::Int, l,
     JuMP.@constraint(pm.model, cmd^2 <= crd^2 + cid^2)
 end
 ""
-function constraint_load_current_variable_angle(pm::SOC_DHHC, n::Int, l, angmin, angmax)
+function constraint_load_current_variable_angle(pm::dHHC_SOC, n::Int, l, angmin, angmax)
     crd = var(pm, n, :crd, l)
     cid = var(pm, n, :cid, l)
     cmd = var(pm, n, :cmd, l)

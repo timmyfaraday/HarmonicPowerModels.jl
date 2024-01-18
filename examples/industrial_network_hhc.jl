@@ -32,4 +32,4 @@ results_hhc_nlp = HPM.solve_hhc(hdata_nlp, dHHC_NLP, solver_ipopt)
 
 # # solve HHC problem -- SOC 
 hdata_soc = HPM.replicate(data, H=setdiff(H,1))
-results_hhc_soc = HPM.solve_hhc(hdata_soc, SOC_DHHC, solver_gurobi)
+results_hhc_soc = HPM.solve_hhc(hdata_soc, dHHC_SOC, solver_gurobi)
