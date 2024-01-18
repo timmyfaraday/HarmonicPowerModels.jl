@@ -48,7 +48,9 @@ end
 function constraint_voltage_ihd_limit(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default(pm))
     ihdmax = ref(pm, nw, :bus, i, "ihdmax")
 
-    constraint_voltage_ihd_limit(pm, nw, i, ihdmax)
+    if nw ≠ 1
+        constraint_voltage_ihd_limit(pm, nw, i, ihdmax)
+    end
 end
 ""
 function constraint_voltage_magnitude_sqr(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default(pm))

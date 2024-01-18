@@ -22,7 +22,7 @@ mpc.bus = [
 %% bus harmonic data 
 %column_names%  ref_angle   angle_range standard 
 mpc.bus_harmonics = [
-                0.0         0.172787595 'IEC61000-3-6:2008';        % 0
+                0.0         0.172787595 'Clean Bus';                % 0
                 0.0         0.172787595 'IEC61000-3-6:2008';        % 1
                 5.759586531 0.172787595 'IEC61000-2-4:2002, Cl. 2'; % 2
                 5.759586531 0.172787595 'IEC61000-2-4:2002, Cl. 2'; % 3

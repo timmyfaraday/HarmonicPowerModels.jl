@@ -72,7 +72,7 @@ function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
                                 for l in _PMs.ids(pm, :load, nw=n) 
                                 if n ≠ 1]
     
-    JuMP.@objective(pm.model, Max, sum(cmd))
+    JuMP.@objective(pm.model, Max, sum(cmd; init=0.0))
 end
 ""
 function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel; bus_id=1) # TODO @F: this needs to be generalized, suggestion find the bus where active filter is connected
@@ -157,7 +157,7 @@ function constraint_voltage_ihd_limit(pm::dHHC_NLP, n::Int, i, ihdmax)
     vr = [var(pm, 1, :vr, i), var(pm, n, :vr, i)] 
     vi = [var(pm, 1, :vi, i), var(pm, n, :vr, i)]
 
-    JuMP.@constraint(pm.model, vr[2]^2 + vi[2]^2 <= ihdmax^2 * (vr[1]^2 + vi[1]^2))
+    JuMP.@constraint(pm.model, (vr[2]^2 + vi[2]^2) <= ihdmax^2 * (vr[1]^2 + vi[1]^2))
 end
 ""
 function constraint_voltage_ihd_limit(pm::dHHC_SOC, n::Int, i, ihdmax)
