@@ -67,8 +67,8 @@ function build_hhc(pm::dHHC_NLP)
         for b in _PMs.ids(pm, :branch, nw=n)
             _PMs.constraint_current_from(pm, b, nw=n)
             _PMs.constraint_current_to(pm, b, nw=n)
-            
             _PMs.constraint_voltage_drop(pm, b, nw=n)
+            _PMs.constraint_current_limit(pm, b, nw=n)
         end
 
         ### xfmr
@@ -117,8 +117,18 @@ function build_hhc(pm::dHHC_SOC)
         constraint_voltage_thd_limit(pm, i, nw=nw_id_default(pm))
     end
 
+    ### branch
     for b in _PMs.ids(pm, :branch, nw=nw_id_default(pm))
         constraint_current_rms_limit(pm, b, nw=nw_id_default(pm))
+    end
+    ### xfmr 
+    for t in _PMs.ids(pm, :xfmr, nw=nw_id_default(pm))
+        constraint_transformer_winding_current_rms_limit(pm, t, nw=nw_id_default(pm))
+    end
+    ### generator
+    for g in _PMs.ids(pm, :gen, nw=nw_id_default(pm))
+        _PMs.constraint_gen_active_bounds(pm, g, nw=nw_id_default(pm))
+        _PMs.constraint_gen_reactive_bounds(pm, g, nw=nw_id_default(pm))
     end
 
     # harmonic constraints
@@ -136,9 +146,7 @@ function build_hhc(pm::dHHC_SOC)
         for b in _PMs.ids(pm, :branch, nw=n)
             _PMs.constraint_current_from(pm, b, nw=n)
             _PMs.constraint_current_to(pm, b, nw=n)
-            
             _PMs.constraint_voltage_drop(pm, b, nw=n)
-
             _PMs.constraint_current_limit(pm, b, nw=n)
         end
         for t in _PMs.ids(pm, :xfmr, nw=n)

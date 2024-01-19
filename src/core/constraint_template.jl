@@ -19,7 +19,7 @@ end
 # ref bus
 ""
 function constraint_ref_bus(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=nw_id_default(pm))
-    vref = ref(pm, nw, :bus, i, "ihdmax")
+    vref = _PMs.ref(pm, nw, :bus, i, "ihdmax")
 
     constraint_ref_bus(pm, nw, i, vref)
 end
@@ -27,26 +27,26 @@ end
 # bus
 ""
 function constraint_voltage_rms_limit(pm::AbstractIVRModel, i::Int; nw::Int=nw_id_default(pm))
-    vminrms = ref(pm, nw, :bus, i, "vminrms")
-    vmaxrms = ref(pm, nw, :bus, i, "vmaxrms")
+    vminrms = _PMs.ref(pm, nw, :bus, i, "vminrms")
+    vmaxrms = _PMs.ref(pm, nw, :bus, i, "vmaxrms")
 
     constraint_voltage_rms_limit(pm, i, vminrms, vmaxrms)
 end
 ""
 function constraint_voltage_rms_limit(pm::dHHC_SOC, i::Int; nw::Int=nw_id_default(pm))
-    vmaxrms = ref(pm, nw, :bus, i, "vmaxrms")
+    vmaxrms = _PMs.ref(pm, nw, :bus, i, "vmaxrms")
 
     constraint_voltage_rms_limit(pm, i, vmaxrms)
 end
 ""
 function constraint_voltage_thd_limit(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default(pm))
-    thdmax = ref(pm, nw, :bus, i, "thdmax")
+    thdmax = _PMs.ref(pm, nw, :bus, i, "thdmax")
    
     constraint_voltage_thd_limit(pm, i, thdmax)
 end
 ""
 function constraint_voltage_ihd_limit(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default(pm))
-    ihdmax = ref(pm, nw, :bus, i, "ihdmax")
+    ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
 
     if nw ≠ 1
         constraint_voltage_ihd_limit(pm, nw, i, ihdmax)

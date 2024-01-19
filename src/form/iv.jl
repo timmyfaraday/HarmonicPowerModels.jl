@@ -155,7 +155,7 @@ end
 ""
 function constraint_voltage_ihd_limit(pm::dHHC_NLP, n::Int, i, ihdmax)
     vr = [var(pm, 1, :vr, i), var(pm, n, :vr, i)] 
-    vi = [var(pm, 1, :vi, i), var(pm, n, :vr, i)]
+    vi = [var(pm, 1, :vi, i), var(pm, n, :vi, i)]
 
     JuMP.@constraint(pm.model, (vr[2]^2 + vi[2]^2) <= ihdmax^2 * (vr[1]^2 + vi[1]^2))
 end

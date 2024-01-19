@@ -6,6 +6,7 @@ using HarmonicPowerModels
 using SignalDecomposition
 using Dierckx
 using Test
+using Gurobi
 
 # pkg const
 const HPM = HarmonicPowerModels
@@ -17,6 +18,7 @@ const SDC = SignalDecomposition
 
 # solver
 solver = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
+solver_soc   = JuMP.optimizer_with_attributes(Gurobi.Optimizer)
 
 # silence the warnings of PowerModels
 PMs.silence()

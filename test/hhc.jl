@@ -105,25 +105,30 @@
         data = PMs.parse_file(path)
 
         # set the formulation
-        nlp = dHHC_NLP
         soc = dHHC_SOC
 
         # define the set of considered harmonics
         H=[1, 3, 5, 7, 9, 13]
 
         # build harmonic data
-        hdata = HPM.replicate(data, H=H)
-
-        for h in H
-            for (l, load) in hdata["nw"]["$h"]["load"]
-                load["c_rating"] = 1.0
-                bus_id = load["load_bus"]
-                load["reference_harmonic_angle"] = 0.0
-                error = 0.0
-                load["harmonic_angle_range"] = error # rad, symmetric around reference
+        hdata = HPM.replicate(data, H=setdiff(H,1))
+        for (n, nw) in hdata_soc["nw"]
+            for (b, bus) in nw["bus"]
+                bus["angle_range"] = 0.0
             end
         end
-        results_hhc_nlp = HPM.solve_hhc(hdata, nlp, solver)
-        results_hhc_soc = HPM.solve_hhc(hdata, soc, solver)
+        results_hhc_soc = HPM.solve_hhc(hdata, soc, solver_soc)
+
+        @testset "Individual Harmonic Distortion" begin
+            # IHDᵢₕ = √(|Uᵢₕ|² / |Uᵢ₁|²) ≤ IHDmaxᵢₕ, ∀ i ∈ I, h ∈ H
+            for nh ∈ setdiff(H,1), (nb,bus) in hdata["nw"]["$nh"]["bus"]
+                ihdmax  = bus["ihdmax"]
+
+                vm_harm = results_hhc_soc["solution"]["nw"]["$nh"]["bus"][nb]["vm"]
+
+                @test vm_harm ⪅ ihdmax
+            end
+        end
+        
     end
 end
