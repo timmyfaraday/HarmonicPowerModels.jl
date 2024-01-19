@@ -125,11 +125,8 @@ function build_hhc(pm::dHHC_SOC)
     for t in _PMs.ids(pm, :xfmr, nw=nw_id_default(pm))
         constraint_transformer_winding_current_rms_limit(pm, t, nw=nw_id_default(pm))
     end
-    ### generator
-    for g in _PMs.ids(pm, :gen, nw=nw_id_default(pm))
-        _PMs.constraint_gen_active_bounds(pm, g, nw=nw_id_default(pm))
-        _PMs.constraint_gen_reactive_bounds(pm, g, nw=nw_id_default(pm))
-    end
+    ### generator bounds
+    # are not needed as SOC model does not have fundamental component
 
     # harmonic constraints
     for n in _PMs.nw_ids(pm)
