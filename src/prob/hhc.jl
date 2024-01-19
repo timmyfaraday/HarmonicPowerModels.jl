@@ -20,7 +20,7 @@ function build_hhc(pm::dHHC_NLP)
         variable_transformer_voltage(pm, nw=n, bounded=false)
 
         ## edge current variables
-        variable_branch_current(pm, nw=n, bounded=false)
+        variable_branch_current(pm, nw=n, bounded=true)
         variable_transformer_current(pm, nw=n, bounded=false)
 
         ## node current variables
@@ -95,11 +95,11 @@ function build_hhc(pm::dHHC_SOC)
     print("SOC", "\n")
     for n in _PMs.nw_ids(pm)
         # voltage variables 
-         _PMs.variable_bus_voltage(pm, nw=n, bounded=false)
+        variable_bus_voltage(pm, nw=n, bounded=false)
         variable_transformer_voltage(pm, nw=n, bounded=false)
 
         # edge current variables
-        _PMs.variable_branch_current(pm, nw=n, bounded=false)
+        variable_branch_current(pm, nw=n, bounded=true)
         variable_transformer_current(pm, nw=n, bounded=false)
 
         # node current variables

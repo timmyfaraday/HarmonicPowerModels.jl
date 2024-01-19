@@ -28,23 +28,11 @@ H = [1, 3, 5, 7, 9, 13]
 
 # solve HHC problem -- NLP
 hdata_nlp = HPM.replicate(data, H=H)
-# for (n, nw) in hdata_nlp["nw"]
-#     for (b, bus) in nw["bus"]
-#         bus["angle_range"] = 0.0
-#         bus["ref_angle"] = 0.0
-#     end
-# end
 results_hhc_nlp = HPM.solve_hhc(hdata_nlp, dHHC_NLP, solver_ipopt)
 
 # # solve HHC problem -- SOC 
 hdata_soc = HPM.replicate(data, H=setdiff(H,1))
 hdata = HPM.replicate(data, H=setdiff(H,1))
-# for (n, nw) in hdata_soc["nw"]
-#     for (b, bus) in nw["bus"]
-#         bus["angle_range"] = 0.0
-#         bus["ref_angle"] = 0.0
-#     end
-# end
 results_hhc_soc = HPM.solve_hhc(hdata_soc, dHHC_SOC, solver_gurobi)
 
 for (n, nw) in results_hhc_soc["solution"]["nw"]

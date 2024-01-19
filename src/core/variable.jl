@@ -49,7 +49,13 @@ function variable_branch_current_real(pm::AbstractPowerModel; nw::Int=nw_id_defa
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "cr_start")
     )
 
-    ## bounds are needed
+    if bounded
+        for (l,i,j) in _PMs.ref(pm, nw, :arcs)
+            branch = _PMs.ref(pm, nw, :branch, l)
+            JuMP.set_lower_bound(cr[(l,i,j)], -branch["c_rating"])
+            JuMP.set_upper_bound(cr[(l,i,j)],  branch["c_rating"])
+        end
+    end
 
     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :branch, :cr_fr, :cr_to, _PMs.ref(pm, nw, :arcs_from), _PMs.ref(pm, nw, :arcs_to), cr)
 end
@@ -60,7 +66,13 @@ function variable_branch_current_imaginary(pm::AbstractPowerModel; nw::Int=nw_id
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "ci_start")
     )
 
-    ## bounds are needed
+    if bounded
+        for (l,i,j) in _PMs.ref(pm, nw, :arcs)
+            branch = _PMs.ref(pm, nw, :branch, l)
+            JuMP.set_lower_bound(ci[(l,i,j)], -branch["c_rating"])
+            JuMP.set_upper_bound(ci[(l,i,j)],  branch["c_rating"])
+        end
+    end
 
     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :branch, :ci_fr, :ci_to, _PMs.ref(pm, nw, :arcs_from), _PMs.ref(pm, nw, :arcs_to), ci)
 end
@@ -71,7 +83,12 @@ function variable_branch_series_current_real(pm::AbstractPowerModel; nw::Int=nw_
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "csr_start", 0.0)
     )
 
-    ## bounds are needed
+    if bounded
+        for (b, branch) in _PMs.ref(pm, nw, :branch)
+            JuMP.set_lower_bound(csr[b], -branch["c_rating"])
+            JuMP.set_upper_bound(csr[b],  branch["c_rating"])
+        end
+    end
 
     report && _PMs.sol_component_value(pm, nw, :branch, :csr_fr, _PMs.ids(pm, nw, :branch), csr)
 end
@@ -82,7 +99,12 @@ function variable_branch_series_current_imaginary(pm::AbstractPowerModel; nw::In
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "csi_start", 0.0)
     )
 
-    ## bounds are needed
+    if bounded
+        for (b, branch) in _PMs.ref(pm, nw, :branch)
+            JuMP.set_lower_bound(csi[b], -branch["c_rating"])
+            JuMP.set_upper_bound(csi[b],  branch["c_rating"])
+        end
+    end
 
     report && _PMs.sol_component_value(pm, nw, :branch, :csi_fr, _PMs.ids(pm, nw, :branch), csi)
 end
@@ -150,7 +172,13 @@ function variable_transformer_current_real(pm::AbstractPowerModel; nw::Int=nw_id
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "crt_start", 0.0)
     )
 
-    ## bounds are needed
+    if bounded
+        for (t,i,j) in _PMs.ref(pm, nw, :xfmr)
+            xfmr = _PMs.ref(pm, nw, :xfmr, t)
+            JuMP.set_lower_bound(crt[(t,i,j)], -xfmr["c_rating"])
+            JuMP.set_upper_bound(crt[(t,i,j)],  xfmr["c_rating"])
+        end
+    end
 
     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :crt_fr, :crt_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), crt)
 end
@@ -161,7 +189,13 @@ function variable_transformer_current_imaginary(pm::AbstractPowerModel; nw::Int=
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "cit_start", 0.0)
     )
 
-    ## bounds are needed
+    if bounded
+        for (t,i,j) in _PMs.ref(pm, nw, :xfmr)
+            xfmr = _PMs.ref(pm, nw, :xfmr, t)
+            JuMP.set_lower_bound(cit[(t,i,j)], -xfmr["c_rating"])
+            JuMP.set_upper_bound(cit[(t,i,j)],  xfmr["c_rating"])
+        end
+    end
 
     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :cit_fr, :cit_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), cit)
 end
@@ -172,7 +206,13 @@ function variable_transformer_current_series_real(pm::AbstractPowerModel; nw::In
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "csrt_start", 0.0)
     )
 
-    ## bounds are needed
+    if bounded
+        for (t,i,j) in _PMs.ref(pm, nw, :xfmr)
+            xfmr = _PMs.ref(pm, nw, :xfmr, t)
+            JuMP.set_lower_bound(csrt[(t,i,j)], -xfmr["c_rating"])
+            JuMP.set_upper_bound(csrt[(t,i,j)],  xfmr["c_rating"])
+        end
+    end
 
     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :csrt_fr, :csrt_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), csrt)
 end
@@ -183,7 +223,13 @@ function variable_transformer_current_series_imaginary(pm::AbstractPowerModel; n
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "csit_start", 0.0)
     )
 
-    ## bounds are needed
+    if bounded
+        for (t,i,j) in _PMs.ref(pm, nw, :xfmr)
+            xfmr = _PMs.ref(pm, nw, :xfmr, t)
+            JuMP.set_lower_bound(csit[(t,i,j)], -xfmr["c_rating"])
+            JuMP.set_upper_bound(csit[(t,i,j)],  xfmr["c_rating"])
+        end
+    end
 
     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :csit_fr, :csit_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), csit)
 end
