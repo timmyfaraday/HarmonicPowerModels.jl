@@ -57,7 +57,6 @@ end
 function variable_load_current(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_load_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_load_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-
     variable_load_current_magnitude(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 
@@ -72,7 +71,8 @@ function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
                                 for l in _PMs.ids(pm, :load, nw=n) 
                                 if n ≠ 1]
     
-    JuMP.@objective(pm.model, Max, sum(cmd; init=0.0))
+    #JuMP.@objective(pm.model, Max, sum(cmd; init=0.0))
+    JuMP.@objective(pm.model, Max, sum(cmd))
 end
 ""
 function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel; bus_id=1) # TODO @F: this needs to be generalized, suggestion find the bus where active filter is connected

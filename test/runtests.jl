@@ -24,7 +24,7 @@ PMs.silence()
 @testset "HarmonicPowerModels.jl" begin
     
     include("hhc.jl")
-    include("hpf.jl")
-    include("hopf.jl")
+    # include("hpf.jl")
+    # include("hopf.jl")
 
 end

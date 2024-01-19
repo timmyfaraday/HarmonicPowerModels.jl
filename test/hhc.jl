@@ -14,7 +14,7 @@
         data = PMs.parse_file(path)
 
         # set the formulation
-        form = NLP_DHHC
+        form = dHHC_NLP
 
         # define the set of considered harmonics
         H=[1, 3, 5, 7, 9, 13]
@@ -97,5 +97,33 @@
                 end
             end
         end
+    end
+
+    @testset "Industrial Network NLP vs SOC begin" begin
+        # read-in data 
+        path = joinpath(HPM.BASE_DIR,"test/data/matpower/industrial_network_hhc.m")
+        data = PMs.parse_file(path)
+
+        # set the formulation
+        nlp = dHHC_NLP
+        soc = dHHC_SOC
+
+        # define the set of considered harmonics
+        H=[1, 3, 5, 7, 9, 13]
+
+        # build harmonic data
+        hdata = HPM.replicate(data, H=H)
+
+        for h in H
+            for (l, load) in hdata["nw"]["$h"]["load"]
+                load["c_rating"] = 1.0
+                bus_id = load["load_bus"]
+                load["reference_harmonic_angle"] = 0.0
+                error = 0.0
+                load["harmonic_angle_range"] = error # rad, symmetric around reference
+            end
+        end
+        results_hhc_nlp = HPM.solve_hhc(hdata, nlp, solver)
+        results_hhc_soc = HPM.solve_hhc(hdata, soc, solver)
     end
 end

@@ -20,7 +20,7 @@ const EE = ElectricalEngineering
 solver = Ipopt.Optimizer
 
 # set the formulation
-form = PowerModels.IVRPowerModel
+form = dHHC_NLP
 
 # read-in data 
 path = joinpath(HPM.BASE_DIR,"test/data/matpower/industrial_network_hhc.m")
