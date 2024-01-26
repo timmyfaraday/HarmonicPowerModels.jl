@@ -49,6 +49,7 @@ module HarmonicPowerModels
     const BASE_DIR = dirname(@__DIR__)
 
     # include
+    include("core/base.jl")
     include("core/types.jl")
     include("core/constraint_template.jl")
     include("core/data.jl")

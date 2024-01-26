@@ -10,16 +10,21 @@
 ""
 function constraint_active_filter(pm::_PMs.AbstractPowerModel, g::Int; nw::Int=nw_id_default(pm))
     gen = _PMs.ref(pm, nw, :gen, g)
+    bus = gen["gen_bus"]
 
     if haskey(gen, "isfilter") && gen["isfilter"] == 1
-        constraint_active_filter(pm, nw, g)
+        constraint_active_filter(pm, nw, g, bus)
     end
 end
 
 # ref bus
 ""
 function constraint_ref_bus(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=nw_id_default(pm))
-    vref = _PMs.ref(pm, nw, :bus, i, "ihdmax")
+    if hasref(pm, _PMs.pm_it_sym, nw, :bus, i, "ihdmax")
+        vref = ref(pm, nw, :bus, i, "ihdmax")
+    else
+        vref = nw == 1 ? 1.0 : 0.0 ;
+    end
 
     constraint_ref_bus(pm, nw, i, vref)
 end
@@ -51,10 +56,6 @@ function constraint_voltage_ihd_limit(pm::AbstractPowerModel, i::Int; nw::Int=nw
     if nw ≠ 1
         constraint_voltage_ihd_limit(pm, nw, i, ihdmax)
     end
-end
-""
-function constraint_voltage_magnitude_sqr(pm::AbstractPowerModel, i::Int; nw::Int=nw_id_default(pm))
-    constraint_voltage_magnitude_sqr(pm, nw, i)
 end
 ""
 function constraint_current_balance(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=nw_id_default(pm))
@@ -95,9 +96,7 @@ function constraint_load_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=nw
     if nw == 1
         constraint_load_constant_power(pm, nw, l, i, pd, qd)
     else
-        # constraint_load_current_fixed_angle(pm, nw, l)
-        constraint_load_current_variable_angle(pm, nw, l, angmin, angmax)
-        # constraint_load_current_variable_angle_relative(pm, nw, l)
+        constraint_load_current_angle(pm, nw, l, angmin, angmax)
     end  
 end
 ""
@@ -113,15 +112,6 @@ function constraint_load_power(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=nw_i
     else
         constraint_load_constant_current(pm, nw, l, mult)
     end
-end
-""
-function constraint_load_current_variable_angle_relative(pm::AbstractPowerModel, nw::Int, l::Int)
-    load = _PMs.ref(pm, nw, :load, l)
-    bus_idx = load["load_bus"]
-    c1 = cos(load["reference_harmonic_angle"])
-    c2 = sin(load["reference_harmonic_angle"])
-
-    constraint_load_current_variable_angle_relative(pm, nw, l, bus_idx, c1, c2)
 end
 
 # xfmr

@@ -45,7 +45,7 @@ function variable_transformer_current(pm::AbstractIVRModel; nw::Int=nw_id_defaul
     variable_transformer_current_magnetizing_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 
-# load 
+# generator
 ""
 function variable_gen_current(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_gen_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
@@ -71,11 +71,10 @@ function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
                                 for l in _PMs.ids(pm, :load, nw=n) 
                                 if n ≠ 1]
     
-    #JuMP.@objective(pm.model, Max, sum(cmd; init=0.0))
     JuMP.@objective(pm.model, Max, sum(cmd))
 end
 ""
-function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel; bus_id=1) # TODO @F: this needs to be generalized, suggestion find the bus where active filter is connected
+function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel; bus_id=1) 
     vr = [var(pm, n, :vr, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
     vi = [var(pm, n, :vi, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
 
@@ -85,11 +84,14 @@ end
 ## constraints
 # active filter
 ""
-function constraint_active_filter(pm::AbstractIVRModel, n::Int, g)
-    pg = [var(pm, nw, :pg, g) for nw in sorted_nw_ids(pm)]
+function constraint_active_filter(pm::AbstractIVRModel, n::Int, g, i)
+    vr = [var(pm, nw, :vr, i) for nw in sorted_nw_ids(pm)]
+    vi = [var(pm, nw, :vi, i) for nw in sorted_nw_ids(pm)]
+    cr = [var(pm, nw, :crg, g) for nw in sorted_nw_ids(pm)]
+    ci = [var(pm, nw, :cig, g) for nw in sorted_nw_ids(pm)]
 
-    JuMP.@NLconstraint(pm.model, pg[1] == 0)
-    JuMP.@NLconstraint(pm.model, sum(pg[n] for n in 1:length(pg)) == 0)         # NB: This ugly sum construction is needed to allow sum of expressions pg
+    JuMP.@NLconstraint(pm.model, vr[1]*cr[1] + vi[1]*ci[1] == 0)
+    JuMP.@NLconstraint(pm.model, sum(vr[n]*cr[n] + vi[n]*ci[n] for n in 2:lastindex(vr)) == 0)
 end
 
 # ref bus
@@ -105,13 +107,6 @@ end
 # bus
 ""
 function constraint_voltage_rms_limit(pm::AbstractIVRModel, i, vminrms, vmaxrms)
-    w = [var(pm, n, :w, i) for n in sorted_nw_ids(pm)]
-
-    JuMP.@constraint(pm.model, vminrms^2 <= sum(w)               )
-    JuMP.@constraint(pm.model,              sum(w)  <= vmaxrms^2 )
-end
-""
-function constraint_voltage_rms_limit(pm::dHHC_NLP, i, vminrms, vmaxrms)
     vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
     vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
 
@@ -127,12 +122,6 @@ function constraint_voltage_rms_limit(pm::dHHC_SOC, i, vmaxrms)
 end
 ""
 function constraint_voltage_thd_limit(pm::AbstractIVRModel, i, thdmax)
-    w = [var(pm, n, :w, i) for n in sorted_nw_ids(pm)]
-
-    JuMP.@constraint(pm.model, sum(w[2:end]) <= thdmax^2 * w[1])
-end
-""
-function constraint_voltage_thd_limit(pm::dHHC_NLP, i, thdmax)
     vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
     vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
 
@@ -147,13 +136,6 @@ function constraint_voltage_thd_limit(pm::dHHC_SOC, i, thdmax)
 end
 ""
 function constraint_voltage_ihd_limit(pm::AbstractIVRModel, n::Int, i, ihdmax)
-    v  = var(pm, 1, :w, i)
-    w  = var(pm, n, :w, i)
-
-    JuMP.@constraint(pm.model, w <= ihdmax^2 * v)
-end
-""
-function constraint_voltage_ihd_limit(pm::dHHC_NLP, n::Int, i, ihdmax)
     vr = [var(pm, 1, :vr, i), var(pm, n, :vr, i)] 
     vi = [var(pm, 1, :vi, i), var(pm, n, :vi, i)]
 
@@ -165,14 +147,6 @@ function constraint_voltage_ihd_limit(pm::dHHC_SOC, n::Int, i, ihdmax)
     vi = var(pm, n, :vi, i)
 
     JuMP.@constraint(pm.model, [ihdmax * 1.0; vcat(vr, vi)] in JuMP.SecondOrderCone()) # TODO: change 1.0 to input vmagfund
-end
-""
-function constraint_voltage_magnitude_sqr(pm::AbstractIVRModel, n::Int, i)
-    vr = var(pm, n, :vr, i)
-    vi = var(pm, n, :vi, i)
-    w  = var(pm, n, :w, i)
-    
-    JuMP.@constraint(pm.model, w == vr^2  + vi^2)                               # @F: Changed this to an equality, as the inequality only works when minimizing the distortion
 end
 ""
 function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, bus_arcs_xfmr, bus_gens, bus_loads, bus_gs, bus_bs)
@@ -240,23 +214,7 @@ function constraint_load_constant_current(pm::AbstractIVRModel, n::Int, l, mult)
     JuMP.@constraint(pm.model, cid == mult * fund_cid)
 end
 ""
-function constraint_load_current_fixed_angle(pm::AbstractIVRModel, n::Int, l)
-    crd = var(pm, n, :crd, l)
-    cid = var(pm, n, :cid, l)
-    cmd = var(pm, n, :cmd, l)
-
-    JuMP.@constraint(pm.model, 0.0 <= crd)
-    JuMP.@constraint(pm.model, 0.0 <= cid)
-
-    JuMP.@constraint(pm.model, crd <= 1.0)                                      # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds                          
-    JuMP.@constraint(pm.model, cid <= 1.0)                                      # @H: this needs to be deprecated, c_rating in the variable definition should set better bounds
-
-    JuMP.@constraint(pm.model, cid == crd)
-
-    JuMP.@constraint(pm.model, cmd^2 <= crd^2 + cid^2)
-end
-""
-function constraint_load_current_variable_angle(pm::AbstractIVRModel, n::Int, l, angmin, angmax)
+function constraint_load_current_angle(pm::AbstractIVRModel, n::Int, l, angmin, angmax)
     crd = var(pm, n, :crd, l)
     cid = var(pm, n, :cid, l)
     cmd = var(pm, n, :cmd, l)
@@ -270,7 +228,7 @@ function constraint_load_current_variable_angle(pm::AbstractIVRModel, n::Int, l,
     JuMP.@constraint(pm.model, cmd^2 <= crd^2 + cid^2)
 end
 ""
-function constraint_load_current_variable_angle(pm::dHHC_SOC, n::Int, l, angmin, angmax)
+function constraint_load_current_angle(pm::dHHC_SOC, n::Int, l, angmin, angmax)
     crd = var(pm, n, :crd, l)
     cid = var(pm, n, :cid, l)
     cmd = var(pm, n, :cmd, l)
@@ -283,17 +241,6 @@ function constraint_load_current_variable_angle(pm::dHHC_SOC, n::Int, l, angmin,
 
     # NB: This changes the direction of the inequality.
     JuMP.@constraint(pm.model, [1/sqrt(2) * cmd; 1/sqrt(2) * cmd; vcat(crd, cid)] in JuMP.RotatedSecondOrderCone())
-end
-""
-function constraint_load_current_variable_angle_relative(pm::AbstractIVRModel, n::Int, l, bus_idx, c1, c2)
-    crd = var(pm, n, :crd, l)
-    cid = var(pm, n, :cid, l)
-    cmd = var(pm, n, :cmd, l)
-    vr = var(pm, n, :vr, bus_idx)
-    vi = var(pm, n, :vi, bus_idx)
-
-    JuMP.@NLconstraint(pm.model, (vr^2 + vi^2) * crd^2 == cmd^2 * (vr * c1 - vi * c2)^2)
-    JuMP.@NLconstraint(pm.model, (vr^2 + vi^2) * cid^2 == cmd^2 * (vi * c1 + vr * c2)^2)
 end
 
 # xfmr

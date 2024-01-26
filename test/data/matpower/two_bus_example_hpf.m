@@ -13,10 +13,10 @@ mpc.bus = [
 ];
 
 %% bus harmonic data 
-%column_names%  nh_1    nh_3    thdmax
+%column_names%  nh_1    nh_3    standard
 mpc.bus_harmonics = [
-                1.000   0.000   0.5
-                1.000   0.200   0.5
+                1.000   0.000   'IEC61000-2-4:2002, Cl. 2'
+                1.000   0.200   'IEC61000-2-4:2002, Cl. 2'
 ]
 
 %% generator data

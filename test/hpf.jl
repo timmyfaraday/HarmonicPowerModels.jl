@@ -21,25 +21,27 @@
         # set the formulation
         form = PMs.IVRPowerModel
 
+        # define the set of considered harmonics
+        H=[1, 3]
+
         # build the harmonic data
-        hdata = HPM.replicate(data)
+        hdata = HPM.replicate(data, H=H)
 
-        # harmonic power flow
-        results_fund = PowerModels.solve_pf_iv(data, form, solver)
-        @test results_fund["termination_status"] == LOCALLY_SOLVED
-        @test isapprox(results_fund["objective"], 0; atol = 1e0)
-        @test isapprox(results_fund["solution"]["bus"]["2"]["vr"],  0.966287; atol = 1e-3)
-        @test isapprox(results_fund["solution"]["bus"]["2"]["vi"], -0.024; atol = 1e-3)
+        # power flow
+        results_pf = PowerModels.solve_pf_iv(data, form, solver_nlp)
+        @test results_pf["termination_status"] == LOCALLY_SOLVED
+        @test isapprox(results_pf["objective"], 0; atol = 1e0)
+        @test isapprox(results_pf["solution"]["bus"]["2"]["vr"],  0.96628746; atol = 1e-3)
+        @test isapprox(results_pf["solution"]["bus"]["2"]["vi"], -0.02400000; atol = 1e-3)
         
-        
-        results_harm = HPM.solve_hpf(hdata, form, solver)
+        results_hpf = HPM.solve_hpf(hdata, form, solver_nlp)
 
-        @test results_harm["termination_status"] == LOCALLY_SOLVED
-        @test isapprox(results_harm["objective"], 0; atol = 1e0)
-        @test isapprox(results_harm["solution"]["nw"]["1"]["bus"]["2"]["vr"], 0.966287; atol = 1e-3)
-        @test isapprox(results_harm["solution"]["nw"]["1"]["bus"]["2"]["vi"], -0.024; atol = 1e-3)
-        @test isapprox(results_harm["solution"]["nw"]["3"]["bus"]["2"]["vr"], -0.0160832; atol = 1e-3)
-        @test isapprox(results_harm["solution"]["nw"]["3"]["bus"]["2"]["vi"], -0.01660243; atol = 1e-3)
+        @test results_hpf["termination_status"] == LOCALLY_SOLVED
+        @test isapprox(results_hpf["objective"], 0; atol = 1e0)
+        @test isapprox(results_hpf["solution"]["nw"]["1"]["bus"]["2"]["vr"],  0.96628746; atol = 1e-3)
+        @test isapprox(results_hpf["solution"]["nw"]["1"]["bus"]["2"]["vi"], -0.02400000; atol = 1e-3)
+        @test isapprox(results_hpf["solution"]["nw"]["3"]["bus"]["2"]["vr"],  0.03391677; atol = 1e-3)
+        @test isapprox(results_hpf["solution"]["nw"]["3"]["bus"]["2"]["vi"], -0.01660243; atol = 1e-3)
 
     end
 end

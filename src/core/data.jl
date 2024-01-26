@@ -63,11 +63,11 @@ end
 function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[], 
                         xfmr_magn::Dict{String,Any}=Dict{String,Any}())
     # extend the user-provided harmonics `H` based on data input
-    extend_H!(H, data, xfmr_magn)
+    # extend_H!(H, data, xfmr_magn)
 
     # set the current rating of all branches and xfmrs
     if haskey(data,"branch") 
-            for branch in values(data["branch"])
+        for branch in values(data["branch"])
             f_bus = data["bus"][string(branch["f_bus"])]
             t_bus = data["bus"][string(branch["t_bus"])]
             
