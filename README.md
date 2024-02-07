@@ -1,5 +1,5 @@
-<a href="https://github.com/timmyfaraday/MultiStateSystems.jl/actions?query=workflow%3ACI"><img src="https://github.com/timmyfaraday/MultiStateSystems.jl/workflows/CI/badge.svg"></img></a>
-<a href="https://codecov.io/gh/timmyfaraday/MultiStateSystems.jl"><img src="https://img.shields.io/codecov/c/github/timmyfaraday/MultiStateSystems.jl?logo=Codecov"></img></a>
+<a href="https://github.com/timmyfaraday/HarmonicPowerModels.jl/actions?query=workflow%3ACI"><img src="https://github.com/timmyfaraday/HarmonicPowerModels.jl/workflows/CI/badge.svg"></img></a>
+<a href="https://codecov.io/gh/timmyfaraday/HarmonicPowerModels.jl"><img src="https://img.shields.io/codecov/c/github/timmyfaraday/HarmonicPowerModels.jl?logo=Codecov"></img></a>
 <a href="https://timmyfaraday.github.io/HarmonicPowerModels.jl/"><img src="https://github.com/timmyfaraday/HarmonicPowerModels.jl/workflows/Documentation/badge.svg"></img></a>
 
 # HarmonicPowerModels.jl
