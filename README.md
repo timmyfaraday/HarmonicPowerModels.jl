@@ -26,8 +26,7 @@ For now, HarmonicPowerModels is unregistered. Nevertheless, you can install it t
 
 At least one solver is required for running PowerModels.  The open-source solver 
 Ipopt is recommended, as it is fast, scaleable and can be used to solve a wide 
-variety of the problems and network formulations provided in HarmonicPowerModels.  
-The Ipopt solver can be installed via the package manager with
+variety of the problems and network formulations provided in HarmonicPowerModels. The Ipopt solver can be installed via the package manager with
 
 ```julia
 ] add Ipopt
@@ -40,7 +39,7 @@ Test that the package works by running
 ```
 
 ## Acknowledgements
-This code has been developed at BASF Antwerp and CSIRO. The primary developers are:
+This code has been developed at BASF Antwerp, KU Leuven, and CSIRO. The primary developers are:
   - Tom Van Acker ([@timmyfaraday](https://github.com/timmyfaraday)), 
   - Hakan Ergun ([@hakanergun](https://github.com/hakanergun)), and
   - Frederik Geth ([@frederikgeth](https://github.com/frederikgeth)).
