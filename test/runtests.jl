@@ -1,17 +1,16 @@
 # load pkgs
-using SCS
-using JuMP
 using Test
-using Ipopt
-using Dierckx
+
+using JuMP
 using PowerModels
-using SignalDecomposition
 using HarmonicPowerModels
+
+using SCS
+using Ipopt
 
 # pkg const
 const PMs = PowerModels
 const HPM = HarmonicPowerModels
-const SDC = SignalDecomposition
 
 # test functions
 ⪅(a,b) = (a <= b) || isapprox(a, b, atol=1e-6)

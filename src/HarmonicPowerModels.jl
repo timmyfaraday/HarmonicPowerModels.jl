@@ -14,29 +14,24 @@ module HarmonicPowerModels
     # import pkgs
     import JuMP
     import PowerModels
-    import SignalDecomposition
     import InfrastructureModels
-    import Interpolations
-    import Memento
-    import Plots
-    import ElectricalEngineering
 
+    import SignalDecomposition
+    import Interpolations
+    
     # import types
     import PowerModels: AbstractPowerModel, AbstractIVRModel
     import PowerModels: ids, ref, var, con, sol, nw_ids, nws
     import InfrastructureModels: replicate, sol_component_value_edge
 
     # pkg constants 
-    const _PMs = PowerModels
     const _HPM = HarmonicPowerModels
-    const _SDC = SignalDecomposition
-    const _IMs = InfrastructureModels
-    const _INT = Interpolations
-    const _EE = ElectricalEngineering
 
-    function __init__()
-        global _LOGGER = Memento.getlogger(PowerModels)
-    end
+    const _PMs = PowerModels
+    const _IMs = InfrastructureModels
+    
+    const _SDC = SignalDecomposition
+    const _INT = Interpolations
 
     # const 
     const freq = 50.0
@@ -64,8 +59,6 @@ module HarmonicPowerModels
     include("util/sol.jl")
     include("util/xfmr_magn.jl")
     include("util/xfmr.jl")
-    include("util/io.jl")
-
 
     # export
     export BASE_DIR

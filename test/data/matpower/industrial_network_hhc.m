@@ -55,7 +55,7 @@ mpc.branch = [
     6       7       0.000045    0.0000298   0.000973    2.5     100     100     1       0       1       -60     60;
 ];
 
-%% transformer data
+%% xfmr data
 %column_names%  f_bus   t_bus   xsc     rsh     r1      r2      vg      gnd1    gnd2    re1     xe1     re2         xe2         rateA
 mpc.xfmr = [
                 1       2       0.13    12.90   0.00211 0.00211 'Yd11'  0       0       0.0     0.0     0.0         0.0         125.0; 
