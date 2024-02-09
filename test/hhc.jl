@@ -83,7 +83,7 @@
         H=[1, 3, 5, 7, 9, 13]
 
         # build harmonic data
-        hdata = HPM.replicate(data, H=setdiff(H,1))
+        hdata = HPM.replicate(data, H=H)
         for (n, nw) in hdata["nw"]
             for (b, bus) in nw["bus"]
                 bus["angle_range"] = 0.0
@@ -94,7 +94,7 @@
         results_hhc_soc = HPM.solve_hhc(hdata, form, solver_soc)
 
         @testset "Individual Harmonic Distortion" begin
-            # IHDᵢₕ = √(|Uᵢₕ|² / |Uᵢ₁|²) ≤ IHDmaxᵢₕ, ∀ i ∈ I, h ∈ H
+            # IHDᵢₕ = √(|Uᵢₕ|² / |Uᵢ₁|²) ≤ IHDmaxᵢₕ, ∀ i ∈ I, h ∈ H / 1
             for nh ∈ setdiff(H,1), (nb,bus) in hdata["nw"]["$nh"]["bus"]
                 ihdmax  = bus["ihdmax"]
 

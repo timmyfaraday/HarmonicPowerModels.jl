@@ -9,7 +9,7 @@
 ## variables
 # bus
 ""
-function variable_bus_voltage(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_bus_voltage(pm::AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_bus_voltage_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_bus_voltage_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
@@ -26,7 +26,7 @@ end
 
 # xfmr
 ""
-function variable_transformer_voltage(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_transformer_voltage(pm::AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_transformer_voltage_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_transformer_voltage_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     
@@ -34,7 +34,7 @@ function variable_transformer_voltage(pm::AbstractIVRModel; nw::Int=nw_id_defaul
     variable_transformer_voltage_excitation_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 ""
-function variable_transformer_current(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_transformer_current(pm::AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_transformer_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_transformer_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 
@@ -47,14 +47,14 @@ end
 
 # generator
 ""
-function variable_gen_current(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_gen_current(pm::AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_gen_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_gen_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 
 # load 
 ""
-function variable_load_current(pm::AbstractIVRModel; nw::Int=nw_id_default(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_load_current(pm::AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_load_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_load_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_load_current_magnitude(pm, nw=nw, bounded=bounded, report=report; kwargs...)
@@ -66,19 +66,19 @@ function objective_power_flow(pm::_PMs.AbstractIVRModel)
     JuMP.@objective(pm.model, Min, 0.0)
 end
 ""
-function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
-    cmd = [var(pm, n, :cmd, l)  for n in _PMs.nw_ids(pm) 
-                                for l in _PMs.ids(pm, :load, nw=n) 
-                                if n ≠ 1]
-    
-    JuMP.@objective(pm.model, Max, sum(cmd))
-end
-""
 function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel; bus_id=1) 
     vr = [var(pm, n, :vr, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
     vi = [var(pm, n, :vi, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
 
     JuMP.@objective(pm.model, Min, sum(vr.^2 + vi.^2))
+end
+""
+function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
+    cmd = [var(pm, n, :cmd, l)  for n in _PMs.nw_ids(pm) 
+                                for l in _PMs.ids(pm, :load, nw=n) 
+                                if n ≠ fundamental(pm)]
+    
+    JuMP.@objective(pm.model, Max, sum(cmd))
 end
 
 ## constraints
@@ -90,8 +90,8 @@ function constraint_active_filter(pm::AbstractIVRModel, n::Int, g, i)
     cr = [var(pm, nw, :crg, g) for nw in sorted_nw_ids(pm)]
     ci = [var(pm, nw, :cig, g) for nw in sorted_nw_ids(pm)]
 
-    JuMP.@NLconstraint(pm.model, vr[1]*cr[1] + vi[1]*ci[1] == 0)
-    JuMP.@NLconstraint(pm.model, sum(vr[n]*cr[n] + vi[n]*ci[n] for n in 2:lastindex(vr)) == 0)
+    JuMP.@constraint(pm.model, vr[1]*cr[1] + vi[1]*ci[1] == 0)
+    JuMP.@constraint(pm.model, sum(vr[n]*cr[n] + vi[n]*ci[n] for n in 2:lastindex(vr)) == 0)
 end
 
 # ref bus
@@ -115,8 +115,8 @@ function constraint_voltage_rms_limit(pm::AbstractIVRModel, i, vminrms, vmaxrms)
 end
 ""
 function constraint_voltage_rms_limit(pm::dHHC_SOC, i, vmaxrms)
-    vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
-    vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
+    vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+    vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
     JuMP.@constraint(pm.model, [sqrt(vmaxrms^2 - 1.0^2); vcat(vr, vi)] in JuMP.SecondOrderCone()) # TODO: change 1.0 to input vmagfund
 end
@@ -129,8 +129,8 @@ function constraint_voltage_thd_limit(pm::AbstractIVRModel, i, thdmax)
 end
 ""
 function constraint_voltage_thd_limit(pm::dHHC_SOC, i, thdmax)
-    vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
-    vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
+    vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+    vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
     JuMP.@constraint(pm.model, [thdmax * 1.0; vcat(vr, vi)] in JuMP.SecondOrderCone()) # TODO: change 1.0 to input vmagfund
 end
@@ -181,6 +181,7 @@ function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, b
 end
 
 # branch
+""
 function constraint_current_rms_limit(pm::AbstractIVRModel, f_idx, t_idx, c_rating)
     crf =  [var(pm, n, :cr, f_idx) for n in sorted_nw_ids(pm)]
     cif =  [var(pm, n, :ci, f_idx) for n in sorted_nw_ids(pm)]
@@ -190,6 +191,17 @@ function constraint_current_rms_limit(pm::AbstractIVRModel, f_idx, t_idx, c_rati
 
     JuMP.@constraint(pm.model, sum(crf.^2 + cif.^2) <= c_rating^2)
     JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2)
+end
+""
+function constraint_current_rms_limit(pm::dHHC_SOC, f_idx, t_idx, c_rating)
+    crf =  [var(pm, n, :cr, f_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+    cif =  [var(pm, n, :ci, f_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+
+    crt =  [var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+    cit =  [var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+
+    JuMP.@constraint(pm.model, sum(crf.^2 + cif.^2) <= c_rating^2 - 0.0^2) # TODO: change 0.0 to input imagfund
+    JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2 - 0.0^2) # TODO: change 0.0 to input imagfund
 end
 
 # load
@@ -387,4 +399,11 @@ function constraint_transformer_winding_current_rms_limit(pm::AbstractIVRModel, 
     cit =  [var(pm, n, :cit, idx) for n in sorted_nw_ids(pm)]
 
     JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2)
+end
+""
+function constraint_transformer_winding_current_rms_limit(pm::dHHC_SOC, idx, c_rating)
+    crt =  [var(pm, n, :crt, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+    cit =  [var(pm, n, :cit, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+
+    JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2 - 0.0^2) # TODO: change 0.0 to input imagfund
 end

@@ -33,7 +33,7 @@ hdata_nlp = HPM.replicate(data, H=H)
 results_hhc_nlp = HPM.solve_hhc(hdata_nlp, dHHC_NLP, solver_nlp)
 
 # solve HHC problem -- SOC 
-hdata_soc = HPM.replicate(data, H=setdiff(H,1))
+hdata_soc = HPM.replicate(data, H=H)
 results_hhc_soc = HPM.solve_hhc(hdata_soc, dHHC_SOC, solver_soc)
 
 for (n, nw) in results_hhc_soc["solution"]["nw"]

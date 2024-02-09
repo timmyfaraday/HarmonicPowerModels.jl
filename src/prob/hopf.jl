@@ -34,19 +34,19 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
     # constraint
     ## overall or fundamental constraints
     ### node
-    for i in _PMs.ids(pm, :bus, nw=nw_id_default(pm))
-        constraint_voltage_rms_limit(pm, i, nw=nw_id_default(pm))
-        constraint_voltage_thd_limit(pm, i, nw=nw_id_default(pm))
+    for i in _PMs.ids(pm, :bus, nw=fundamental(pm))
+        constraint_voltage_rms_limit(pm, i, nw=fundamental(pm))
+        constraint_voltage_thd_limit(pm, i, nw=fundamental(pm))
     end
     ### branch 
-    for b in _PMs.ids(pm, :branch, nw=nw_id_default(pm))
-        constraint_current_rms_limit(pm, b, nw=nw_id_default(pm))
+    for b in _PMs.ids(pm, :branch, nw=fundamental(pm))
+        constraint_current_rms_limit(pm, b, nw=fundamental(pm))
     end
     ### generator
-    for g in _PMs.ids(pm, :gen, nw=nw_id_default(pm))
-        constraint_active_filter(pm, g, nw=nw_id_default(pm))
-        _PMs.constraint_gen_active_bounds(pm, g, nw=nw_id_default(pm))
-        _PMs.constraint_gen_reactive_bounds(pm, g, nw=nw_id_default(pm))
+    for g in _PMs.ids(pm, :gen, nw=fundamental(pm))
+        constraint_active_filter(pm, g, nw=fundamental(pm))
+        _PMs.constraint_gen_active_bounds(pm, g, nw=fundamental(pm))
+        _PMs.constraint_gen_reactive_bounds(pm, g, nw=fundamental(pm))
     end
 
     ## harmonic constraints

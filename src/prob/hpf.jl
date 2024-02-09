@@ -34,8 +34,8 @@ function build_hpf(pm::_PMs.AbstractIVRModel)
     # constraint
     ## overall or fundamental constraints
     ### generator
-    for g in _PMs.ids(pm, :gen, nw=nw_id_default(pm))
-        constraint_active_filter(pm, g, nw=nw_id_default(pm))
+    for g in _PMs.ids(pm, :gen, nw=fundamental(pm))
+        constraint_active_filter(pm, g, nw=fundamental(pm))
     end
 
     ## harmonic constraints

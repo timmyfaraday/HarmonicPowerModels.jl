@@ -1,5 +1,5 @@
 ################################################################################
-#  Copyright 2023, Tom Van Acker                                               #
+# Copyright, 2023, Tom Van Acker                                               #
 ################################################################################
 # HarmonicPowerModels.jl                                                       #
 # An extention package of PowerModels(Distribution).jl for Harmonics           #
