@@ -7,21 +7,17 @@
 ################################################################################
 
 # using pkgs
-using HarmonicPowerModels, JuMP, Plots, PowerModels, Revise
-using SCS
-using Ipopt 
-using Gurobi
+using HarmonicPowerModels, PowerModels, Revise
 using Hypatia
+using Ipopt 
 
 # pkgs cte
 const PMs = PowerModels
 const HPM = HarmonicPowerModels
 
 # set the solver
-solver_soc = JuMP.optimizer_with_attributes(SCS.Optimizer)
-solver_soc = JuMP.optimizer_with_attributes(Gurobi.Optimizer)
-solver_soc = JuMP.optimizer_with_attributes(Hypatia.Optimizer)
-solver_nlp = JuMP.optimizer_with_attributes(Ipopt.Optimizer)
+solver_soc = Hypatia.Optimizer
+solver_nlp = Ipopt.Optimizer
 
 # read-in data 
 path = joinpath(HPM.BASE_DIR,"test/data/matpower/industrial_network_hhc.m")
@@ -36,7 +32,7 @@ results_hhc_nlp = HPM.solve_hhc(hdata_nlp, dHHC_NLP, solver_nlp)
 
 # solve HHC problem -- SOC 
 hdata_soc = HPM.replicate(data, H=H)
-results_hhc_soc = HPM.solve_hhc_soc(hdata_soc, dHHC_SOC, solver_soc, solver_nlp)
+results_hhc_soc = HPM.solve_hhc(hdata_soc, dHHC_SOC, solver_soc, solver_nlp)
 
 for (n, nw) in results_hhc_soc["solution"]["nw"]
     print("Harmonic Order ,",n, ":","\n")
