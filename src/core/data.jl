@@ -154,6 +154,8 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
                     gen["qmin"] = -abs(gen["qmax"])
                 end
             end
+            gen_bus = gen["gen_bus"]
+            gen["c_rating"] = sqrt(max(abs(gen["pmin"]), abs(gen["pmax"]))^2 + max(abs(gen["qmin"]), abs(gen["qmax"]))^2) / (sqrt(3) * ntw["bus"]["$gen_bus"]["vmin"])
         end
 
         # re-evaluate the bus data 
