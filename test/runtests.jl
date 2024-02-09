@@ -5,7 +5,7 @@ using JuMP
 using PowerModels
 using HarmonicPowerModels
 
-using SCS
+using Hypatia
 using Ipopt
 
 # pkg const
@@ -17,7 +17,7 @@ const HPM = HarmonicPowerModels
 
 # solvers
 solver_nlp = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
-solver_soc = JuMP.optimizer_with_attributes(SCS.Optimizer, "verbose" => 0)
+solver_soc = JuMP.optimizer_with_attributes(Hypatia.Optimizer, "verbose" => 0)
 
 # silence the warnings of PowerModels
 PMs.silence()

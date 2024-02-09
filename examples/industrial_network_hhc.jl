@@ -11,14 +11,16 @@ using HarmonicPowerModels, JuMP, Plots, PowerModels, Revise
 using SCS
 using Ipopt 
 using Gurobi
+using Hypatia
 
 # pkgs cte
 const PMs = PowerModels
 const HPM = HarmonicPowerModels
 
 # set the solver
-# solver_soc = JuMP.optimizer_with_attributes(SCS.Optimizer)
+solver_soc = JuMP.optimizer_with_attributes(SCS.Optimizer)
 solver_soc = JuMP.optimizer_with_attributes(Gurobi.Optimizer)
+solver_soc = JuMP.optimizer_with_attributes(Hypatia.Optimizer)
 solver_nlp = JuMP.optimizer_with_attributes(Ipopt.Optimizer)
 
 # read-in data 
@@ -45,6 +47,3 @@ for (n, nw) in results_hhc_soc["solution"]["nw"]
         end
     end 
 end
-
-# pf_data = HPM.create_pf_data_model(hdata_soc)
-# pf_result = HPM.solve_hpf(pf_data, PowerModels.IVRPowerModel, solver_nlp)
