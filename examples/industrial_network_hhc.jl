@@ -38,8 +38,10 @@ results_hhc_soc = HPM.solve_hhc(hdata_soc, dHHC_SOC, solver_soc)
 
 for (n, nw) in results_hhc_soc["solution"]["nw"]
     print("Harmonic Order ,",n, ":","\n")
-    for (b, bus) in results_hhc_nlp["solution"]["nw"][n]["bus"]
-        vmsoc = results_hhc_soc["solution"]["nw"][n]["bus"][b]["vm"]
-        print("Bus ", b,": vm nlp = ", bus["vm"], ", vm soc = ",vmsoc, "\n")
-    end
+    if n ≠ "1"
+        for (b, bus) in results_hhc_nlp["solution"]["nw"][n]["bus"]
+            vmsoc = results_hhc_soc["solution"]["nw"][n]["bus"][b]["vm"]
+            print("Bus ", b,": vm nlp = ", bus["vm"], ", vm soc = ",vmsoc, "\n")
+        end
+    end 
 end
