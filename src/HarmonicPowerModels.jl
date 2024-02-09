@@ -21,7 +21,7 @@ module HarmonicPowerModels
     
     # import types
     import PowerModels: AbstractPowerModel, AbstractIVRModel
-    import PowerModels: ids, ref, var, con, sol, nw_ids, nws
+    import PowerModels: ids, ref, var, con, sol
     import InfrastructureModels: replicate, sol_component_value_edge
 
     # pkg constants 
@@ -37,8 +37,8 @@ module HarmonicPowerModels
     const freq = 50.0
 
     # funct
+    fundamental(pm) = first(sorted_nw_ids(pm))
     sorted_nw_ids(pm) = sort(collect(_PMs.nw_ids(pm)))
-    nw_id_default(pm) = first(sorted_nw_ids(pm))
 
     # paths
     const BASE_DIR = dirname(@__DIR__)
@@ -67,6 +67,6 @@ module HarmonicPowerModels
 
     export replicate
 
-    export solve_hhc, solve_hopf, solve_hpf
+    export solve_hpf, solve_hopf, solve_hhc 
 
 end

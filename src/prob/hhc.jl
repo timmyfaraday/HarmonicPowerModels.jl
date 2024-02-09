@@ -34,22 +34,22 @@ function build_hhc(pm::dHHC_NLP)
     # constraints 
     ## overall or fundamental constraints
     ### node 
-    for i in _PMs.ids(pm, :bus, nw=nw_id_default(pm))
-        constraint_voltage_rms_limit(pm, i, nw=nw_id_default(pm))
-        constraint_voltage_thd_limit(pm, i, nw=nw_id_default(pm))
+    for i in _PMs.ids(pm, :bus, nw=fundamental(pm))
+        constraint_voltage_rms_limit(pm, i, nw=fundamental(pm))
+        constraint_voltage_thd_limit(pm, i, nw=fundamental(pm))
     end
     ### branch
-    for b in _PMs.ids(pm, :branch, nw=nw_id_default(pm))
-        constraint_current_rms_limit(pm, b, nw=nw_id_default(pm))
+    for b in _PMs.ids(pm, :branch, nw=fundamental(pm))
+        constraint_current_rms_limit(pm, b, nw=fundamental(pm))
     end
     ### xfmr 
-    for t in _PMs.ids(pm, :xfmr, nw=nw_id_default(pm))
-        constraint_transformer_winding_current_rms_limit(pm, t, nw=nw_id_default(pm))
+    for t in _PMs.ids(pm, :xfmr, nw=fundamental(pm))
+        constraint_transformer_winding_current_rms_limit(pm, t, nw=fundamental(pm))
     end
     ### generator
-    for g in _PMs.ids(pm, :gen, nw=nw_id_default(pm))
-        _PMs.constraint_gen_active_bounds(pm, g, nw=nw_id_default(pm))
-        _PMs.constraint_gen_reactive_bounds(pm, g, nw=nw_id_default(pm))
+    for g in _PMs.ids(pm, :gen, nw=fundamental(pm))
+        _PMs.constraint_gen_active_bounds(pm, g, nw=fundamental(pm))
+        _PMs.constraint_gen_reactive_bounds(pm, g, nw=fundamental(pm))
     end
 
     ## harmonic constraints
@@ -94,7 +94,7 @@ end
 ""
 function build_hhc(pm::dHHC_SOC)
     # variables 
-    for n in _PMs.nw_ids(pm)
+    for n in _PMs.nw_ids(pm) if n ≠ fundamental(pm)
         ## voltage variables 
         variable_bus_voltage(pm, nw=n, bounded=false)
         variable_transformer_voltage(pm, nw=n, bounded=false)
@@ -106,7 +106,7 @@ function build_hhc(pm::dHHC_SOC)
         ## node current variables
         variable_load_current(pm, nw=n, bounded=true)
         variable_gen_current(pm, nw=n, bounded=false)
-    end
+    end end
 
     # objective 
     objective_maximum_hosting_capacity(pm)
@@ -114,21 +114,21 @@ function build_hhc(pm::dHHC_SOC)
     # constraints 
     ## overall or fundamental constraints
     ### node
-    for i in _PMs.ids(pm, :bus, nw=nw_id_default(pm))
-        constraint_voltage_rms_limit(pm, i, nw=nw_id_default(pm))
-        constraint_voltage_thd_limit(pm, i, nw=nw_id_default(pm))
+    for i in _PMs.ids(pm, :bus, nw=fundamental(pm))
+        constraint_voltage_rms_limit(pm, i, nw=fundamental(pm))
+        constraint_voltage_thd_limit(pm, i, nw=fundamental(pm))
     end
     ### branch
-    for b in _PMs.ids(pm, :branch, nw=nw_id_default(pm))
-        constraint_current_rms_limit(pm, b, nw=nw_id_default(pm))
+    for b in _PMs.ids(pm, :branch, nw=fundamental(pm))
+        constraint_current_rms_limit(pm, b, nw=fundamental(pm))
     end
     ### xfmr 
-    for t in _PMs.ids(pm, :xfmr, nw=nw_id_default(pm))
-        constraint_transformer_winding_current_rms_limit(pm, t, nw=nw_id_default(pm))
+    for t in _PMs.ids(pm, :xfmr, nw=fundamental(pm))
+        constraint_transformer_winding_current_rms_limit(pm, t, nw=fundamental(pm))
     end
 
     ## harmonic constraints
-    for n in _PMs.nw_ids(pm)
+    for n in _PMs.nw_ids(pm) if n ≠ fundamental(pm)
         ### reference node
         for i in _PMs.ids(pm, :ref_buses, nw=n)
             constraint_ref_bus(pm, i, nw=n)
@@ -163,5 +163,5 @@ function build_hhc(pm::dHHC_SOC)
         for l in _PMs.ids(pm, :load, nw=n)
             constraint_load_current(pm, l, nw = n)
         end
-    end
+    end end
 end
