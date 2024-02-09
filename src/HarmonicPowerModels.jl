@@ -37,7 +37,7 @@ module HarmonicPowerModels
     const freq = 50.0
 
     # funct
-    fundamental(pm) = first(sorted_nw_ids(pm))
+    fundamental(pm) = 1
     sorted_nw_ids(pm) = sort(collect(_PMs.nw_ids(pm)))
 
     # paths
