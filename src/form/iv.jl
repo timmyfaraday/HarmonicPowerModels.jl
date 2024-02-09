@@ -114,11 +114,11 @@ function constraint_voltage_rms_limit(pm::AbstractIVRModel, i, vminrms, vmaxrms)
     JuMP.@constraint(pm.model,              sum(vr.^2 + vi.^2)  <= vmaxrms^2 )
 end
 ""
-function constraint_voltage_rms_limit(pm::dHHC_SOC, i, vmaxrms)
+function constraint_voltage_rms_limit(pm::dHHC_SOC, i, vmaxrms, vmfund)
     vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    JuMP.@constraint(pm.model, [sqrt(vmaxrms^2 - 1.0^2); vcat(vr, vi)] in JuMP.SecondOrderCone()) # TODO: change 1.0 to input vmagfund
+    JuMP.@constraint(pm.model, [sqrt(vmaxrms^2 - vmfund^2); vcat(vr, vi)] in JuMP.SecondOrderCone())
 end
 ""
 function constraint_voltage_thd_limit(pm::AbstractIVRModel, i, thdmax)
@@ -128,11 +128,11 @@ function constraint_voltage_thd_limit(pm::AbstractIVRModel, i, thdmax)
     JuMP.@constraint(pm.model, sum(vr[2:end].^2 + vi[2:end].^2) <= thdmax^2 * (vr[1]^2 + vi[1]^2))
 end
 ""
-function constraint_voltage_thd_limit(pm::dHHC_SOC, i, thdmax)
+function constraint_voltage_thd_limit(pm::dHHC_SOC, i, thdmax, vmfund)
     vr = [var(pm, n, :vr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     vi = [var(pm, n, :vi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    JuMP.@constraint(pm.model, [thdmax * 1.0; vcat(vr, vi)] in JuMP.SecondOrderCone()) # TODO: change 1.0 to input vmagfund
+    JuMP.@constraint(pm.model, [thdmax * vmfund; vcat(vr, vi)] in JuMP.SecondOrderCone())
 end
 ""
 function constraint_voltage_ihd_limit(pm::AbstractIVRModel, n::Int, i, ihdmax)
@@ -142,11 +142,11 @@ function constraint_voltage_ihd_limit(pm::AbstractIVRModel, n::Int, i, ihdmax)
     JuMP.@constraint(pm.model, (vr[2]^2 + vi[2]^2) <= ihdmax^2 * (vr[1]^2 + vi[1]^2))
 end
 ""
-function constraint_voltage_ihd_limit(pm::dHHC_SOC, n::Int, i, ihdmax)
+function constraint_voltage_ihd_limit(pm::dHHC_SOC, n::Int, i, ihdmax, vmfund)
     vr = var(pm, n, :vr, i)
     vi = var(pm, n, :vi, i)
 
-    JuMP.@constraint(pm.model, [ihdmax * 1.0; vcat(vr, vi)] in JuMP.SecondOrderCone()) # TODO: change 1.0 to input vmagfund
+    JuMP.@constraint(pm.model, [ihdmax * vmfund; vcat(vr, vi)] in JuMP.SecondOrderCone())
 end
 ""
 function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, bus_arcs_xfmr, bus_gens, bus_loads, bus_gs, bus_bs)
@@ -193,15 +193,15 @@ function constraint_current_rms_limit(pm::AbstractIVRModel, f_idx, t_idx, c_rati
     JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2)
 end
 ""
-function constraint_current_rms_limit(pm::dHHC_SOC, f_idx, t_idx, c_rating)
+function constraint_current_rms_limit(pm::dHHC_SOC, f_idx, t_idx, c_rating, cm_fund_fr, cm_fund_to)
     crf =  [var(pm, n, :cr, f_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     cif =  [var(pm, n, :ci, f_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
     crt =  [var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     cit =  [var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    JuMP.@constraint(pm.model, sum(crf.^2 + cif.^2) <= c_rating^2 - 0.0^2) # TODO: change 0.0 to input imagfund
-    JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2 - 0.0^2) # TODO: change 0.0 to input imagfund
+    JuMP.@constraint(pm.model, sum(crf.^2 + cif.^2) <= c_rating^2 - cm_fund_fr^2)
+    JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2 - cm_fund_to^2)
 end
 
 # load
@@ -401,9 +401,9 @@ function constraint_transformer_winding_current_rms_limit(pm::AbstractIVRModel, 
     JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2)
 end
 ""
-function constraint_transformer_winding_current_rms_limit(pm::dHHC_SOC, idx, c_rating)
+function constraint_transformer_winding_current_rms_limit(pm::dHHC_SOC, idx, c_rating, cm_fund)
     crt =  [var(pm, n, :crt, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     cit =  [var(pm, n, :cit, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2 - 0.0^2) # TODO: change 0.0 to input imagfund
+    JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2 - cm_fund^2) 
 end

@@ -39,9 +39,10 @@ function constraint_voltage_rms_limit(pm::AbstractIVRModel, i::Int; nw::Int=fund
 end
 ""
 function constraint_voltage_rms_limit(pm::dHHC_SOC, i::Int; nw::Int=fundamental(pm))
-    vmaxrms     = _PMs.ref(pm, nw, :bus, i, "vmaxrms")
+    vmaxrms = _PMs.ref(pm, nw, :bus, i, "vmaxrms")
+    vmfund  = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
 
-    constraint_voltage_rms_limit(pm, i, vmaxrms)
+    constraint_voltage_rms_limit(pm, i, vmaxrms, vmfund)
 end
 ""
 function constraint_voltage_thd_limit(pm::AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
@@ -50,11 +51,27 @@ function constraint_voltage_thd_limit(pm::AbstractPowerModel, i::Int; nw::Int=fu
     constraint_voltage_thd_limit(pm, i, thdmax)
 end
 ""
+function constraint_voltage_thd_limit(pm::dHHC_SOC, i::Int; nw::Int=fundamental(pm))
+    thdmax = _PMs.ref(pm, nw, :bus, i, "thdmax")
+    vmfund  = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
+   
+    constraint_voltage_thd_limit(pm, i, thdmax, vmfund)
+end
+""
 function constraint_voltage_ihd_limit(pm::AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
     ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
 
     if nw ≠ 1
         constraint_voltage_ihd_limit(pm, nw, i, ihdmax)
+    end
+end
+""
+function constraint_voltage_ihd_limit(pm::dHHC_SOC, i::Int; nw::Int=fundamental(pm))
+    ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
+    vmfund  = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
+
+    if nw ≠ 1
+        constraint_voltage_ihd_limit(pm, nw, i, ihdmax, vmfund)
     end
 end
 ""
@@ -72,6 +89,7 @@ function constraint_current_balance(pm::_PMs.AbstractPowerModel, i::Int; nw::Int
 end
 
 # branch
+""
 function constraint_current_rms_limit(pm::AbstractPowerModel, b::Int; nw::Int=fundamental(pm))
     branch = ref(pm, nw, :branch, b)
     f_bus, t_bus = branch["f_bus"], branch["t_bus"]
@@ -80,6 +98,18 @@ function constraint_current_rms_limit(pm::AbstractPowerModel, b::Int; nw::Int=fu
     c_rating = branch["c_rating"]
 
     constraint_current_rms_limit(pm, f_idx, t_idx, c_rating)
+end
+""
+function constraint_current_rms_limit(pm::dHHC_SOC, b::Int; nw::Int=fundamental(pm))
+    branch = ref(pm, nw, :branch, b)
+    f_bus, t_bus = branch["f_bus"], branch["t_bus"]
+    f_idx, t_idx = (b, f_bus, t_bus), (b, t_bus, f_bus)
+
+    c_rating = branch["c_rating"]
+    cm_fund_fr = branch["cm_fr"]
+    cm_fund_to = branch["cm_to"]
+
+    constraint_current_rms_limit(pm, f_idx, t_idx, c_rating, cm_fund_fr, cm_fund_to)
 end
 
 # load
@@ -209,5 +239,21 @@ function constraint_transformer_winding_current_rms_limit(pm::AbstractPowerModel
 
     for w in 1:2
         constraint_transformer_winding_current_rms_limit(pm, w_idx[w], c_rating)
+    end
+end
+""
+function constraint_transformer_winding_current_rms_limit(pm::AbstractPowerModel, t::Int; nw::Int=fundamental(pm))
+    xfmr = ref(pm, nw, :xfmr, t)
+
+    f_bus = ref(pm, nw, :xfmr, t, "f_bus")
+    t_bus = ref(pm, nw, :xfmr, t, "t_bus")
+    w_idx = [(t,f_bus,t_bus), (t,t_bus,f_bus)]
+
+    c_rating = xfmr["c_rating"]
+
+    cm_fund = [xfmr["cm_fr"], xfrm["cm_to"]]
+
+    for w in 1:2
+        constraint_transformer_winding_current_rms_limit(pm, w_idx[w], c_rating, cm_fund[w])
     end
 end
