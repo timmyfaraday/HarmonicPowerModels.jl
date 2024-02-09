@@ -98,16 +98,16 @@ function build_hhc(pm::dHHC_SOC)
     # variables 
     for n in _PMs.nw_ids(pm) if n ≠ fundamental(pm)
         ## voltage variables 
-        variable_bus_voltage(pm, nw=n, bounded=false)
-        variable_transformer_voltage(pm, nw=n, bounded=false)
+        variable_bus_voltage(pm, nw=n, bounded = true)
+        variable_transformer_voltage(pm, nw=n, bounded = true)
 
         ## edge current variables
-        variable_branch_current(pm, nw=n, bounded=true)
-        variable_transformer_current(pm, nw=n, bounded=false)
+        variable_branch_current(pm, nw=n, bounded = true)
+        variable_transformer_current(pm, nw=n, bounded = true)
 
         ## node current variables
-        variable_load_current(pm, nw=n, bounded=true)
-        variable_gen_current(pm, nw=n, bounded=false)
+        variable_load_current(pm, nw=n, bounded = true)
+        variable_gen_current(pm, nw=n, bounded = true)
     end end
 
     # objective 
