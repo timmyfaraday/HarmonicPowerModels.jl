@@ -10,13 +10,15 @@
 using HarmonicPowerModels, JuMP, Plots, PowerModels, Revise
 using SCS
 using Ipopt 
+using Gurobi
 
 # pkgs cte
 const PMs = PowerModels
 const HPM = HarmonicPowerModels
 
 # set the solver
-solver_soc = JuMP.optimizer_with_attributes(SCS.Optimizer)
+# solver_soc = JuMP.optimizer_with_attributes(SCS.Optimizer)
+solver_soc = JuMP.optimizer_with_attributes(Gurobi.Optimizer)
 solver_nlp = JuMP.optimizer_with_attributes(Ipopt.Optimizer)
 
 # read-in data 

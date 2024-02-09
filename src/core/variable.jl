@@ -117,7 +117,15 @@ function variable_transformer_voltage_real(pm::AbstractPowerModel; nw::Int=nw_id
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "vrt_start", 1.0)
     )
 
-    ## bounds are needed
+    if bounded
+        for (t, i, j) in ref(pm, nw, :xfmr_arcs)
+            vrt_min = - max(_PM.s.ref(pm, nw, :bus, i)["vmax"], _PM.s.ref(pm, nw, :bus, j)["vmax"]) * max(_PM.s.ref(pm, nw, :bus, i)["ihdmax"], _PM.s.ref(pm, nw, :bus, j)["ihdmax"])
+            vrt_max =   max(_PM.s.ref(pm, nw, :bus, i)["vmax"], _PM.s.ref(pm, nw, :bus, j)["vmax"]) * max(_PM.s.ref(pm, nw, :bus, i)["ihdmax"], _PM.s.ref(pm, nw, :bus, j)["ihdmax"])
+
+            JuMP.set_lower_bound(vrt[t, i, j], vrt_min)
+            JuMP.set_upper_bound(vrt[t, i, j], vrt_max)
+        end
+    end
 
     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :vrt_fr, :vrt_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), vrt)
 end
@@ -128,7 +136,15 @@ function variable_transformer_voltage_imaginary(pm::AbstractPowerModel; nw::Int=
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "vit_start", 0.0)
     )
 
-    ## bounds are needed
+    if bounded
+        for (t, i, j) in ref(pm, nw, :xfmr_arcs)
+            vit_min = - max(_PM.s.ref(pm, nw, :bus, i)["vmax"], _PM.s.ref(pm, nw, :bus, j)["vmax"]) * max(_PM.s.ref(pm, nw, :bus, i)["ihdmax"], _PM.s.ref(pm, nw, :bus, j)["ihdmax"])
+            vit_max =   max(_PM.s.ref(pm, nw, :bus, i)["vmax"], _PM.s.ref(pm, nw, :bus, j)["vmax"]) * max(_PM.s.ref(pm, nw, :bus, i)["ihdmax"], _PM.s.ref(pm, nw, :bus, j)["ihdmax"])
+
+            JuMP.set_lower_bound(vrt[t, i, j], vit_min)
+            JuMP.set_upper_bound(vrt[t, i, j], vit_max)
+        end
+    end
 
     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :vit_fr, :vit_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), vit)
 end

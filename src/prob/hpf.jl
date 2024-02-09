@@ -7,8 +7,8 @@
 ################################################################################
 
 ""
-function solve_hpf(file, model_type::Type, optimizer; kwargs...)
-    return _PMs.solve_model(file, model_type, optimizer, build_hpf; ref_extensions=[ref_add_xfmr!], solution_processors=[_HPM.sol_data_model!], multinetwork=true, kwargs...)
+function solve_hpf(data, model_type::Type, optimizer; kwargs...)
+    return _PMs.solve_model(data, model_type, optimizer, build_hpf; ref_extensions=[ref_add_xfmr!], solution_processors=[_HPM.sol_data_model!], multinetwork=true, kwargs...)
 end
 
 ""
