@@ -119,8 +119,8 @@ function variable_transformer_voltage_real(pm::AbstractPowerModel; nw::Int=funda
 
     if bounded
         for (t, i, j) in ref(pm, nw, :xfmr_arcs)
-            vrt_min = - max(_PM.s.ref(pm, nw, :bus, i)["vmax"], _PM.s.ref(pm, nw, :bus, j)["vmax"]) * max(_PM.s.ref(pm, nw, :bus, i)["ihdmax"], _PM.s.ref(pm, nw, :bus, j)["ihdmax"])
-            vrt_max =   max(_PM.s.ref(pm, nw, :bus, i)["vmax"], _PM.s.ref(pm, nw, :bus, j)["vmax"]) * max(_PM.s.ref(pm, nw, :bus, i)["ihdmax"], _PM.s.ref(pm, nw, :bus, j)["ihdmax"])
+            vrt_min = - _PMs.ref(pm, nw, :bus, i)["vmax"] * _PMs.ref(pm, nw, :bus, i)["ihdmax"]
+            vrt_max =   _PMs.ref(pm, nw, :bus, i)["vmax"] * _PMs.ref(pm, nw, :bus, i)["ihdmax"]
 
             JuMP.set_lower_bound(vrt[t, i, j], vrt_min)
             JuMP.set_upper_bound(vrt[t, i, j], vrt_max)
@@ -138,8 +138,8 @@ function variable_transformer_voltage_imaginary(pm::AbstractPowerModel; nw::Int=
 
     if bounded
         for (t, i, j) in ref(pm, nw, :xfmr_arcs)
-            vit_min = - max(_PM.s.ref(pm, nw, :bus, i)["vmax"], _PM.s.ref(pm, nw, :bus, j)["vmax"]) * max(_PM.s.ref(pm, nw, :bus, i)["ihdmax"], _PM.s.ref(pm, nw, :bus, j)["ihdmax"])
-            vit_max =   max(_PM.s.ref(pm, nw, :bus, i)["vmax"], _PM.s.ref(pm, nw, :bus, j)["vmax"]) * max(_PM.s.ref(pm, nw, :bus, i)["ihdmax"], _PM.s.ref(pm, nw, :bus, j)["ihdmax"])
+            vit_min = - _PMs.ref(pm, nw, :bus, i)["vmax"] * _PMs.ref(pm, nw, :bus, i)["ihdmax"]
+            vit_max =   _PMs.ref(pm, nw, :bus, i)["vmax"] * _PMs.ref(pm, nw, :bus, i)["ihdmax"]
 
             JuMP.set_lower_bound(vrt[t, i, j], vit_min)
             JuMP.set_upper_bound(vrt[t, i, j], vit_max)
