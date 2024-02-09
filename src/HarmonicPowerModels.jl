@@ -59,6 +59,7 @@ module HarmonicPowerModels
     include("util/sol.jl")
     include("util/xfmr_magn.jl")
     include("util/xfmr.jl")
+    include("util/pf.jl")
 
     # export
     export BASE_DIR

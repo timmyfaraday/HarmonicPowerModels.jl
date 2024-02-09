@@ -34,7 +34,7 @@ results_hhc_nlp = HPM.solve_hhc(hdata_nlp, dHHC_NLP, solver_nlp)
 
 # solve HHC problem -- SOC 
 hdata_soc = HPM.replicate(data, H=H)
-results_hhc_soc = HPM.solve_hhc(hdata_soc, dHHC_SOC, solver_soc)
+results_hhc_soc = HPM.solve_hhc_soc(hdata_soc, dHHC_SOC, solver_soc, solver_nlp)
 
 for (n, nw) in results_hhc_soc["solution"]["nw"]
     print("Harmonic Order ,",n, ":","\n")
@@ -45,3 +45,6 @@ for (n, nw) in results_hhc_soc["solution"]["nw"]
         end
     end 
 end
+
+pf_data = HPM.create_pf_data_model(hdata_soc)
+pf_result = HPM.solve_hpf(pf_data, PowerModels.IVRPowerModel, solver_nlp)

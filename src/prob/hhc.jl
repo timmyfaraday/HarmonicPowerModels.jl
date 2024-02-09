@@ -8,8 +8,13 @@
 
 ""
 function solve_hhc(data, model_type::Type, optimizer; kwargs...)
-
-
+    return _PMs.solve_model(data, model_type, optimizer, build_hhc; ref_extensions=[ref_add_xfmr!],  solution_processors=[ _HPM.sol_data_model!], multinetwork=true, kwargs...)
+end
+""
+function solve_hhc_soc(data, model_type, optimizer, pf_optimizer; kwargs...)
+    pf_data = create_pf_data_model(data)
+    pf_result = solve_hpf(pf_data, _PMs.IVRPowerModel, pf_optimizer)
+    write_pf_results!(data, pf_result)
     return _PMs.solve_model(data, model_type, optimizer, build_hhc; ref_extensions=[ref_add_xfmr!],  solution_processors=[ _HPM.sol_data_model!], multinetwork=true, kwargs...)
 end
 
