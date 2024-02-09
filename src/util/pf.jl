@@ -22,7 +22,7 @@ function write_pf_results!(data, pf_result)
     end
 
     for (t, xfmr) in data["nw"]["1"]["xfmr"]
-        xfmr["cm_fr"] = sqrt(pf_result["solution"]["nw"]["1"]["xfmr"][t]["crt_fr"]^2 + pf_result["solution"]["nw"]["1"]["xfmr"][t]["cit_fr"]^2)
-        xfmr["cm_to"] = sqrt(pf_result["solution"]["nw"]["1"]["xfmr"][t]["crt_to"]^2 + pf_result["solution"]["nw"]["1"]["xfmr"][t]["cit_to"]^2)
+        xfmr["ctm_fr"] = sqrt(pf_result["solution"]["nw"]["1"]["xfmr"][t]["crt_fr"]^2 + pf_result["solution"]["nw"]["1"]["xfmr"][t]["cit_fr"]^2)
+        xfmr["ctm_to"] = sqrt(pf_result["solution"]["nw"]["1"]["xfmr"][t]["crt_to"]^2 + pf_result["solution"]["nw"]["1"]["xfmr"][t]["cit_to"]^2)
     end
 end

@@ -242,7 +242,7 @@ function constraint_transformer_winding_current_rms_limit(pm::AbstractPowerModel
     end
 end
 ""
-function constraint_transformer_winding_current_rms_limit(pm::AbstractPowerModel, t::Int; nw::Int=fundamental(pm))
+function constraint_transformer_winding_current_rms_limit(pm::dHHC_SOC, t::Int; nw::Int=fundamental(pm))
     xfmr = ref(pm, nw, :xfmr, t)
 
     f_bus = ref(pm, nw, :xfmr, t, "f_bus")
@@ -251,7 +251,7 @@ function constraint_transformer_winding_current_rms_limit(pm::AbstractPowerModel
 
     c_rating = xfmr["c_rating"]
 
-    cm_fund = [xfmr["cm_fr"], xfrm["cm_to"]]
+    cm_fund = [xfmr["ctm_fr"], xfmr["ctm_to"]]
 
     for w in 1:2
         constraint_transformer_winding_current_rms_limit(pm, w_idx[w], c_rating, cm_fund[w])

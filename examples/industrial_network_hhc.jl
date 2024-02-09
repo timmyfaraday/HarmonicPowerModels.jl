@@ -46,5 +46,5 @@ for (n, nw) in results_hhc_soc["solution"]["nw"]
     end 
 end
 
-pf_data = HPM.create_pf_data_model(hdata_soc)
-pf_result = HPM.solve_hpf(pf_data, PowerModels.IVRPowerModel, solver_nlp)
+# pf_data = HPM.create_pf_data_model(hdata_soc)
+# pf_result = HPM.solve_hpf(pf_data, PowerModels.IVRPowerModel, solver_nlp)
