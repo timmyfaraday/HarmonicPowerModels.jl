@@ -122,8 +122,8 @@ function variable_transformer_voltage_real(pm::AbstractPowerModel; nw::Int=funda
             vrt_min = - _PMs.ref(pm, nw, :bus, i)["vmax"] * _PMs.ref(pm, nw, :bus, i)["ihdmax"]
             vrt_max =   _PMs.ref(pm, nw, :bus, i)["vmax"] * _PMs.ref(pm, nw, :bus, i)["ihdmax"]
 
-            JuMP.set_lower_bound(vrt[t, i, j], vrt_min)
-            JuMP.set_upper_bound(vrt[t, i, j], vrt_max)
+            JuMP.set_lower_bound(vrt[(t, i, j)], vrt_min)
+            JuMP.set_upper_bound(vrt[(t, i, j)], vrt_max)
         end
     end
 
@@ -141,8 +141,8 @@ function variable_transformer_voltage_imaginary(pm::AbstractPowerModel; nw::Int=
             vit_min = - _PMs.ref(pm, nw, :bus, i)["vmax"] * _PMs.ref(pm, nw, :bus, i)["ihdmax"]
             vit_max =   _PMs.ref(pm, nw, :bus, i)["vmax"] * _PMs.ref(pm, nw, :bus, i)["ihdmax"]
 
-            JuMP.set_lower_bound(vrt[t, i, j], vit_min)
-            JuMP.set_upper_bound(vrt[t, i, j], vit_max)
+            JuMP.set_lower_bound(vit[(t, i, j)], vit_min)
+            JuMP.set_upper_bound(vit[(t, i, j)], vit_max)
         end
     end
 
@@ -157,8 +157,13 @@ function variable_transformer_voltage_excitation_real(pm::AbstractPowerModel; nw
 
     if bounded
         for (t, xfmr) in ref(pm, nw, :xfmr)
-            JuMP.set_lower_bound(ert[t], xfmr["ert_min"] + epsilon)
-            JuMP.set_upper_bound(ert[t], xfmr["ert_max"] - epsilon)
+            if haskey(xfmr, "ert_min")
+                JuMP.set_lower_bound(ert[t], xfmr["ert_min"] + epsilon)
+                JuMP.set_upper_bound(ert[t], xfmr["ert_max"] - epsilon)
+            else
+                JuMP.set_lower_bound(ert[t], -_PMs.ref(pm, nw, :bus, xfmr["f_bus"])["vmax"])
+                JuMP.set_upper_bound(ert[t],  _PMs.ref(pm, nw, :bus, xfmr["f_bus"])["vmax"])
+            end
         end
     end
 
@@ -173,8 +178,13 @@ function variable_transformer_voltage_excitation_imaginary(pm::AbstractPowerMode
 
     if bounded
         for (t, xfmr) in ref(pm, nw, :xfmr)
-            JuMP.set_lower_bound(eit[t], xfmr["eit_min"] + epsilon)
-            JuMP.set_upper_bound(eit[t], xfmr["eit_max"] - epsilon)
+            if haskey(xfmr, "ert_min")
+                JuMP.set_lower_bound(eit[t], xfmr["eit_min"] + epsilon)
+                JuMP.set_upper_bound(eit[t], xfmr["eit_max"] - epsilon)
+             else
+                JuMP.set_lower_bound(eit[t], -_PMs.ref(pm, nw, :bus, xfmr["f_bus"])["vmax"])
+                JuMP.set_upper_bound(eit[t],  _PMs.ref(pm, nw, :bus, xfmr["f_bus"])["vmax"])
+            end
         end
     end
 
@@ -189,7 +199,7 @@ function variable_transformer_current_real(pm::AbstractPowerModel; nw::Int=funda
     )
 
     if bounded
-        for (t,i,j) in _PMs.ref(pm, nw, :xfmr)
+        for (t,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)
             xfmr = _PMs.ref(pm, nw, :xfmr, t)
             JuMP.set_lower_bound(crt[(t,i,j)], -xfmr["c_rating"])
             JuMP.set_upper_bound(crt[(t,i,j)],  xfmr["c_rating"])
@@ -206,7 +216,7 @@ function variable_transformer_current_imaginary(pm::AbstractPowerModel; nw::Int=
     )
 
     if bounded
-        for (t,i,j) in _PMs.ref(pm, nw, :xfmr)
+        for (t,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)
             xfmr = _PMs.ref(pm, nw, :xfmr, t)
             JuMP.set_lower_bound(cit[(t,i,j)], -xfmr["c_rating"])
             JuMP.set_upper_bound(cit[(t,i,j)],  xfmr["c_rating"])
@@ -223,7 +233,7 @@ function variable_transformer_current_series_real(pm::AbstractPowerModel; nw::In
     )
 
     if bounded
-        for (t,i,j) in _PMs.ref(pm, nw, :xfmr)
+        for (t,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)
             xfmr = _PMs.ref(pm, nw, :xfmr, t)
             JuMP.set_lower_bound(csrt[(t,i,j)], -xfmr["c_rating"])
             JuMP.set_upper_bound(csrt[(t,i,j)],  xfmr["c_rating"])
@@ -240,7 +250,7 @@ function variable_transformer_current_series_imaginary(pm::AbstractPowerModel; n
     )
 
     if bounded
-        for (t,i,j) in _PMs.ref(pm, nw, :xfmr)
+        for (t,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)
             xfmr = _PMs.ref(pm, nw, :xfmr, t)
             JuMP.set_lower_bound(csit[(t,i,j)], -xfmr["c_rating"])
             JuMP.set_upper_bound(csit[(t,i,j)],  xfmr["c_rating"])
