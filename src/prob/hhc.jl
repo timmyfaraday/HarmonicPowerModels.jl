@@ -53,6 +53,8 @@ function build_hhc(pm::dHHC_NLP)
 
     # constraints 
     ## overall or fundamental constraints
+    ### fairness principle
+    constraint_fairness_principle(pm, nw=fundamental(pm))
     ### node 
     for i in _PMs.ids(pm, :bus, nw=fundamental(pm))
         constraint_voltage_rms_limit(pm, i, nw=fundamental(pm))
@@ -97,6 +99,11 @@ function build_hhc(pm::dHHC_NLP)
             _PMs.constraint_voltage_drop(pm, b, nw=n)
         end
 
+        ### harmonic load
+        for l in _PMs.ids(pm, :load, nw=n)
+            constraint_load_current(pm, l, nw = n)
+        end
+
         ### xfmr
         for t in _PMs.ids(pm, :xfmr, nw=n)
             constraint_transformer_core_magnetization(pm, t, nw=n)
@@ -106,11 +113,6 @@ function build_hhc(pm::dHHC_NLP)
             
             constraint_transformer_winding_config(pm, t, nw=n)
             constraint_transformer_winding_current_balance(pm, t, nw=n)
-        end
-
-        ### harmonic unit
-        for l in _PMs.ids(pm, :load, nw=n)
-            constraint_load_current(pm, l, nw = n)
         end
     end
 end

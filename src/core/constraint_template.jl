@@ -108,6 +108,16 @@ function constraint_current_rms_limit(pm::dHHC_SOC, b::Int; nw::Int=fundamental(
     constraint_current_rms_limit(pm, f_idx, t_idx, c_rating, cm_fund_fr, cm_fund_to)
 end
 
+# fairness principle
+""
+function constraint_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm))
+    principle = pm.data["principle"]
+
+    load_ids = sort(collect(_PMs.ids(pm, :load, nw=fundamental(pm))))
+
+    constraint_fairness_principle(pm, principle, load_ids)
+end
+
 # filter
 ""
 function constraint_active_filter(pm::_PMs.AbstractPowerModel, f::Int; nw::Int=fundamental(pm))

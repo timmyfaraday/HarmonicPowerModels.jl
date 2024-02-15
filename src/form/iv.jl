@@ -67,7 +67,9 @@ end
 function variable_load_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_load_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_load_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_load_current_magnitude(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    if nw ≠ fundamental(pm)
+        variable_load_current_magnitude(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    end
 end
 
 ## objective
@@ -205,6 +207,20 @@ function constraint_current_rms_limit(pm::dHHC_SOC, f_idx, t_idx, c_rating, cm_f
 
     JuMP.@constraint(pm.model, sum(crf.^2 + cif.^2) <= c_rating^2 - cm_fund_fr^2)
     JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2 - cm_fund_to^2)
+end
+
+# fairness principle
+""
+function constraint_fairness_principle(pm::_PMs.AbstractIVRModel, principle, load_ids)
+    cmd = [[_PMs.var(pm, n, :cmd, l) for n in _PMs.nw_ids(pm) 
+                                     if n ≠ fundamental(pm)] 
+                                     for l in load_ids]
+    
+    if principle == "equality"
+        for l in load_ids[2:end]
+            JuMP.@constraint(pm.model, cmd[first(load_ids)] .== cmd[l])
+        end
+    end
 end
 
 # filter

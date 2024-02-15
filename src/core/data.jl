@@ -101,6 +101,7 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
 
     # rename the case
     hdata["name"] = data["name"]
+    haskey(data, "principle") ? hdata["principle"] = data["principle"] : ~ ;
 
     # add the xfmr magnetizing current
     if !isempty(xfmr_magn)

@@ -319,6 +319,42 @@ function variable_transformer_current_magnetizing_imaginary(pm::_PMs.AbstractPow
     report && _PMs.sol_component_value(pm, nw, :xfmr, :cmit, _PMs.ids(pm, nw, :xfmr), cmit)
 end
 
+# generator 
+""
+function variable_gen_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+    crg = _PMs.var(pm, nw)[:crg] = JuMP.@variable(pm.model,
+            [g in _PMs.ids(pm, nw, :gen)], base_name="$(nw)_crg",
+            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :gen, g), "crg_start", 0.0)
+    )
+
+    if bounded
+        for (g, gen) in _PMs.ref(pm, nw, :gen)
+            c_rating = gen["c_rating"]
+            JuMP.set_lower_bound(crg[g], -c_rating)
+            JuMP.set_upper_bound(crg[g],  c_rating)
+        end
+    end
+
+    report && _PMs.sol_component_value(pm, nw, :gen, :crg, _PMs.ids(pm, nw, :gen), crg)
+end
+""
+function variable_gen_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+    cig = _PMs.var(pm, nw)[:cig] = JuMP.@variable(pm.model,
+            [g in _PMs.ids(pm, nw, :gen)], base_name="$(nw)_cig",
+            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :gen, g), "cig_start", 0.0)
+    )
+
+    if bounded
+        for (g, gen) in _PMs.ref(pm, nw, :gen)
+            c_rating = gen["c_rating"]
+            JuMP.set_lower_bound(cig[g], -c_rating)
+            JuMP.set_upper_bound(cig[g],  c_rating)
+        end
+    end
+
+    report && _PMs.sol_component_value(pm, nw, :gen, :cig, _PMs.ids(pm, nw, :gen), cig)
+end
+
 # load 
 ""
 function variable_load_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
@@ -370,40 +406,4 @@ function variable_load_current_magnitude(pm::_PMs.AbstractPowerModel; nw::Int=fu
     end
 
     report && _PMs.sol_component_value(pm, nw, :load, :cmd, _PMs.ids(pm, nw, :load), cmd)
-end
-
-# generator 
-""
-function variable_gen_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    crg = _PMs.var(pm, nw)[:crg] = JuMP.@variable(pm.model,
-            [g in _PMs.ids(pm, nw, :gen)], base_name="$(nw)_crg",
-            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :gen, g), "crg_start", 0.0)
-    )
-
-    if bounded
-        for (g, gen) in _PMs.ref(pm, nw, :gen)
-            c_rating = gen["c_rating"]
-            JuMP.set_lower_bound(crg[g], -c_rating)
-            JuMP.set_upper_bound(crg[g],  c_rating)
-        end
-    end
-
-    report && _PMs.sol_component_value(pm, nw, :gen, :crg, _PMs.ids(pm, nw, :gen), crg)
-end
-""
-function variable_gen_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    cig = _PMs.var(pm, nw)[:cig] = JuMP.@variable(pm.model,
-            [g in _PMs.ids(pm, nw, :gen)], base_name="$(nw)_cig",
-            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :gen, g), "cig_start", 0.0)
-    )
-
-    if bounded
-        for (g, gen) in _PMs.ref(pm, nw, :gen)
-            c_rating = gen["c_rating"]
-            JuMP.set_lower_bound(cig[g], -c_rating)
-            JuMP.set_upper_bound(cig[g],  c_rating)
-        end
-    end
-
-    report && _PMs.sol_component_value(pm, nw, :gen, :cig, _PMs.ids(pm, nw, :gen), cig)
 end

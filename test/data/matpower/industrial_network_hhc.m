@@ -4,6 +4,7 @@
 function mpc = industrial_network
 mpc.version = '2';
 mpc.baseMVA =  100.00;
+mpc.principle = 'equality'
 
 %% bus data
 %	bus_id	type    Pd      Qd	    Gs	    Bs	    area	Vm	    Va	    baseKV  zone	Vmax	Vmin
