@@ -4,7 +4,6 @@ authors = ["Frederik Geth", "Tom Van Acker"]
 version = "0.1.0"
 
 [deps]
-Hypatia = "b99e6be6-89ff-11e8-14f8-45c827f4f8f2"
 InfrastructureModels = "2030c09a-7f63-5d83-885d-db604e0e9cc0"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"

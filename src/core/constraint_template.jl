@@ -1,21 +1,13 @@
 ################################################################################
-#  Copyright 2023, Frederik Geth, Tom Van Acker                                #
-################################################################################
 # HarmonicPowerModels.jl                                                       #
-# An extention package of PowerModels(Distribution).jl for Harmonics           #
+# Extension package of PowerModels.jl for Steady-State Power System            #
+# Optimization with Power Harmonics.                                           #
 # See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
 ################################################################################
-
-# active filter
-""
-function constraint_active_filter(pm::_PMs.AbstractPowerModel, g::Int; nw::Int=fundamental(pm))
-    gen = _PMs.ref(pm, nw, :gen, g)
-    bus = gen["gen_bus"]
-
-    if haskey(gen, "isfilter") && gen["isfilter"] == 1
-        constraint_active_filter(pm, nw, g, bus)
-    end
-end
+# Authors: Tom Van Acker, Frederik Geth                                        #
+################################################################################
+# Changelog:                                                                   #
+################################################################################
 
 # ref bus
 ""
@@ -78,6 +70,8 @@ end
 function constraint_current_balance(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
     bus_arcs      = _PMs.ref(pm, nw, :bus_arcs, i)
     bus_arcs_xfmr = _PMs.ref(pm, nw, :bus_arcs_xfmr, i)
+
+    bus_filters   = _PMs.ref(pm, nw, :bus_filters, i)
     bus_gens      = _PMs.ref(pm, nw, :bus_gens, i)
     bus_loads     = _PMs.ref(pm, nw, :bus_loads, i)
     bus_shunts    = _PMs.ref(pm, nw, :bus_shunts, i)
@@ -85,7 +79,9 @@ function constraint_current_balance(pm::_PMs.AbstractPowerModel, i::Int; nw::Int
     bus_gs = Dict(k => _PMs.ref(pm, nw, :shunt, k, "gs") for k in bus_shunts)
     bus_bs = Dict(k => _PMs.ref(pm, nw, :shunt, k, "bs") for k in bus_shunts)
 
-    constraint_current_balance(pm, nw, i, bus_arcs, bus_arcs_xfmr, bus_gens, bus_loads, bus_gs, bus_bs)
+    constraint_current_balance(pm, nw, i,   bus_arcs, bus_arcs_xfmr, 
+                                            bus_filters, bus_gens, bus_loads, 
+                                            bus_gs, bus_bs)
 end
 
 # branch
@@ -110,6 +106,17 @@ function constraint_current_rms_limit(pm::dHHC_SOC, b::Int; nw::Int=fundamental(
     cm_fund_to = branch["cm_to"]
 
     constraint_current_rms_limit(pm, f_idx, t_idx, c_rating, cm_fund_fr, cm_fund_to)
+end
+
+# filter
+""
+function constraint_active_filter(pm::_PMs.AbstractPowerModel, f::Int; nw::Int=fundamental(pm))
+    filter = _PMs.ref(pm, nw, :filter, f)
+    bus = filter["bus"]
+
+    if filter["a/p"] == "a"
+        constraint_active_filter(pm, nw, f, bus)
+    end
 end
 
 # load

@@ -41,10 +41,6 @@ mpc.gen = [
 mpc.gencost = [
 	2	    0.0	    0.0	    3	    0.0     1.0     0.0;
 ];
-%column_names%  isfilter
-mpc.gen_extra = [
-	0;
-];
 
 %% branch data
 %   f_bus	t_bus	r	        x	        b	        rateA	rateB	rateC	ratio	angle	status	angmin	angmax

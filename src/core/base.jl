@@ -1,9 +1,12 @@
 ################################################################################
-#  Copyright 2023, Tom Van Acker                                               #
-################################################################################
 # HarmonicPowerModels.jl                                                       #
-# An extention package of PowerModels(Distribution).jl for power harmonics     #
+# Extension package of PowerModels.jl for Steady-State Power System            #
+# Optimization with Power Harmonics.                                           #
 # See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
+################################################################################
+# Authors: Tom Van Acker                                                       #
+################################################################################
+# Changelog:                                                                   #
 ################################################################################
 
 ""

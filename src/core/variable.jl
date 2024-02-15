@@ -1,9 +1,12 @@
 ################################################################################
-#  Copyright 2023, Frederik Geth, Tom Van Acker                                #
-################################################################################
 # HarmonicPowerModels.jl                                                       #
-# An extention package of PowerModels(Distribution).jl for Harmonics           #
+# Extension package of PowerModels.jl for Steady-State Power System            #
+# Optimization with Power Harmonics.                                           #
 # See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
+################################################################################
+# Authors: Tom Van Acker, Frederik Geth, Hakan Ergun                           #
+################################################################################
+# Changelog:                                                                   #
 ################################################################################
 
 # bus
@@ -96,7 +99,7 @@ end
 function variable_branch_series_current_imaginary(pm::AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
     csi = _PMs.var(pm, nw)[:csi] = JuMP.@variable(pm.model,
         [l in _PMs.ids(pm, nw, :branch)], base_name="$(nw)_csi",
-        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "csi_start", 0.0)
+        start=_PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "csi_start", 0.0)
     )
 
     if bounded
@@ -109,12 +112,46 @@ function variable_branch_series_current_imaginary(pm::AbstractPowerModel; nw::In
     report && _PMs.sol_component_value(pm, nw, :branch, :csi_fr, _PMs.ids(pm, nw, :branch), csi)
 end
 
+# filter
+""
+function variable_filter_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+    crf = _PMs.var(pm, nw)[:crf] = JuMP.@variable(pm.model,
+            [f in _PMs.ids(pm, nw, :filter)], base_name="$(nw)_crf",
+            start=_PMs.comp_start_value(_PMs.ref(pm, nw, :filter, f), "crf_start", 0.0)
+    )
+    
+    if bounded
+        for (f, filter) in _PMs.ref(pm, nw, :filter)
+            JuMP.set_lower_bound(crf[f], -filter["c_rating"])
+            JuMP.set_upper_bound(crf[f],  filter["c_rating"])
+        end
+    end
+
+    report && _PMs.sol_component_value(pm, nw, :filter, :crf, _PMs.ids(pm, nw, :filter), crf)
+end
+""
+function variable_filter_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+    cif = _PMs.var(pm, nw)[:cif] = JuMP.@variable(pm.model,
+            [f in _PMs.ids(pm, nw, :filter)], base_name="$(nw)_cif",
+            start=_PMs.comp_start_value(_PMs.ref(pm, nw, :filter, f), "cif_start", 0.0)
+    )
+    
+    if bounded
+        for (f, filter) in _PMs.ref(pm, nw, :filter)
+            JuMP.set_lower_bound(cif[f], -filter["c_rating"])
+            JuMP.set_upper_bound(cif[f],  filter["c_rating"])
+        end
+    end
+
+    report && _PMs.sol_component_value(pm, nw, :filter, :cif, _PMs.ids(pm, nw, :filter), cif)
+end
+
 # xfmr 
 ""
 function variable_transformer_voltage_real(pm::AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     vrt = _PMs.var(pm, nw)[:vrt] = JuMP.@variable(pm.model, 
-        [(t,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_vrt",
-        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "vrt_start", 1.0)
+            [(t,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_vrt",
+            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, t), "vrt_start", 1.0)
     )
 
     if bounded

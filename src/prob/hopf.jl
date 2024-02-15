@@ -1,14 +1,21 @@
 ################################################################################
-#  Copyright 2023, Frederik Geth, Tom Van Acker                                #
-################################################################################
 # HarmonicPowerModels.jl                                                       #
-# An extention package of PowerModels(Distribution).jl for Harmonics           #
+# Extension package of PowerModels.jl for Steady-State Power System            #
+# Optimization with Power Harmonics.                                           #
 # See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
+################################################################################
+# Authors: Tom Van Acker, Frederik Geth                                        #
+################################################################################
+# Changelog:                                                                   #
 ################################################################################
 
 ""
 function solve_hopf(data, model_type::Type, optimizer; kwargs...)
-    return _PMs.solve_model(data, model_type, optimizer, build_hopf; ref_extensions=[ref_add_xfmr!],  solution_processors=[ _HPM.sol_data_model!], multinetwork=true, kwargs...)
+    return _PMs.solve_model(data, model_type, optimizer, build_hopf; 
+                                ref_extensions=[ref_add_filter!,
+                                                ref_add_xfmr!], 
+                                solution_processors=[_HPM.sol_data_model!], 
+                                multinetwork=true, kwargs...)
 end
 
 ""
@@ -24,6 +31,7 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
         variable_transformer_current(pm, nw=n, bounded=false)
 
         ## unit current variables
+        variable_filter_current(pm, nw=n, bounded=false)
         variable_gen_current(pm, nw=n, bounded=false) 
         variable_load_current(pm, nw=n, bounded=false)
     end 
@@ -42,9 +50,12 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
     for b in _PMs.ids(pm, :branch, nw=fundamental(pm))
         constraint_current_rms_limit(pm, b, nw=fundamental(pm))
     end
+    ### filter
+    for f in _PMs.ids(pm, :filter, nw=fundamental(pm))
+        constraint_active_filter(pm, f, nw=fundamental(pm))
+    end
     ### generator
     for g in _PMs.ids(pm, :gen, nw=fundamental(pm))
-        constraint_active_filter(pm, g, nw=fundamental(pm))
         _PMs.constraint_gen_active_bounds(pm, g, nw=fundamental(pm))
         _PMs.constraint_gen_reactive_bounds(pm, g, nw=fundamental(pm))
     end

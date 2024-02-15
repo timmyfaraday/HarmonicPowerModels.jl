@@ -4,7 +4,7 @@
 # HarmonicPowerModels.jl
 
 HarmonicPowerModels.jl is an extension package of PowerModels.jl for Steady-State 
-Power Network Optimization with Power Harmonics. 
+Power System Optimization with Power Harmonics. 
 
 ## Core Problem Specification
 - Balanced Harmonic Power Flow (hpf)

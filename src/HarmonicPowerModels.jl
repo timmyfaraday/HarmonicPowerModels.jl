@@ -1,9 +1,12 @@
 ################################################################################
-#  Copyright 2023, Frederik Geth, Tom Van Acker                                #
-################################################################################
 # HarmonicPowerModels.jl                                                       #
-# An extention package of PowerModels(Distribution).jl for Harmonics           #
+# Extension package of PowerModels.jl for Steady-State Power System            #
+# Optimization with Power Harmonics.                                           #
 # See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
+################################################################################
+# Authors: Tom Van Acker, Frederik Geth, Hakan Ergun                           #
+################################################################################
+# Changelog:                                                                   #
 ################################################################################
 
 module HarmonicPowerModels
@@ -56,10 +59,10 @@ module HarmonicPowerModels
     include("prob/hpf.jl")
     include("prob/hhc.jl")
 
+    include("util/pf.jl")
+    include("util/ref.jl")
     include("util/sol.jl")
     include("util/xfmr_magn.jl")
-    include("util/xfmr.jl")
-    include("util/pf.jl")
 
     # export
     export BASE_DIR

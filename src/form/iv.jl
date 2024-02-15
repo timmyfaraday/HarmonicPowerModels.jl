@@ -1,9 +1,12 @@
 ################################################################################
-#  Copyright 2023, Frederik Geth, Tom Van Acker                                #
-################################################################################
 # HarmonicPowerModels.jl                                                       #
-# An extention package of PowerModels(Distribution).jl for Harmonics           #
+# Extension package of PowerModels.jl for Steady-State Power System            #
+# Optimization with Power Harmonics.                                           #
 # See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
+################################################################################
+# Authors: Tom Van Acker, Frederik Geth, Hakan Ergun                           #
+################################################################################
+# Changelog:                                                                   #
 ################################################################################
 
 ## variables
@@ -22,6 +25,13 @@ function variable_branch_current(pm::AbstractIVRModel; nw::Int=nw_id_default, bo
 
     variable_branch_series_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_branch_series_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+end
+
+# filter
+""
+function variable_filter_current(pm::_PMs.AbstractIVRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, kwargs...)
+    variable_filter_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_filter_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 
 # xfmr
@@ -82,18 +92,6 @@ function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
 end
 
 ## constraints
-# active filter
-""
-function constraint_active_filter(pm::AbstractIVRModel, n::Int, g, i)
-    vr = [var(pm, nw, :vr, i) for nw in sorted_nw_ids(pm)]
-    vi = [var(pm, nw, :vi, i) for nw in sorted_nw_ids(pm)]
-    cr = [var(pm, nw, :crg, g) for nw in sorted_nw_ids(pm)]
-    ci = [var(pm, nw, :cig, g) for nw in sorted_nw_ids(pm)]
-
-    JuMP.@constraint(pm.model, vr[1]*cr[1] + vi[1]*ci[1] == 0)
-    JuMP.@constraint(pm.model, sum(vr[n]*cr[n] + vi[n]*ci[n] for n in 2:lastindex(vr)) == 0)
-end
-
 # ref bus
 ""
 function constraint_ref_bus(pm::AbstractIVRModel, n::Int, i::Int, vref)
@@ -149,7 +147,7 @@ function constraint_voltage_ihd_limit(pm::dHHC_SOC, n::Int, i, ihdmax, vmfund)
     JuMP.@constraint(pm.model, [ihdmax * vmfund; vcat(vr, vi)] in JuMP.SecondOrderCone())
 end
 ""
-function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, bus_arcs_xfmr, bus_gens, bus_loads, bus_gs, bus_bs)
+function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, bus_arcs_xfmr, bus_filters, bus_gens, bus_loads, bus_gs, bus_bs)
     vr = var(pm, n, :vr, i)
     vi = var(pm, n, :vi, i)
 
@@ -158,6 +156,8 @@ function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, b
     crt = var(pm, n, :crt)
     cit = var(pm, n, :cit)
 
+    crf = var(pm, n, :crf)
+    cif = var(pm, n, :cif)
     crg = var(pm, n, :crg)
     cig = var(pm, n, :cig)
     crd = var(pm, n, :crd)
@@ -166,18 +166,21 @@ function constraint_current_balance(pm::AbstractIVRModel, n::Int, i, bus_arcs, b
     JuMP.@constraint(pm.model,  sum(cr[a] for a in bus_arcs)
                                 + sum(crt[t] for t in bus_arcs_xfmr)
                                 ==
-                                sum(crg[g] for g in bus_gens)
+                                sum(crf[f] for f in bus_filters)
+                                + sum(crg[g] for g in bus_gens)
                                 - sum(crd[d] for d in bus_loads)
-                                - sum(gs for gs in values(bus_gs))*vr + sum(bs for bs in values(bus_bs))*vi
+                                - sum(gs for gs in values(bus_gs))*vr 
+                                + sum(bs for bs in values(bus_bs))*vi
                                 )
     JuMP.@constraint(pm.model,  sum(ci[a] for a in bus_arcs)
                                 + sum(cit[t] for t in bus_arcs_xfmr)
                                 ==
-                                sum(cig[g] for g in bus_gens)
+                                sum(cif[f] for f in bus_filters)
+                                + sum(cig[g] for g in bus_gens)
                                 - sum(cid[d] for d in bus_loads)
-                                - sum(gs for gs in values(bus_gs))*vi - sum(bs for bs in values(bus_bs))*vr
+                                - sum(gs for gs in values(bus_gs))*vi 
+                                - sum(bs for bs in values(bus_bs))*vr
                                 )
-
 end
 
 # branch
@@ -202,6 +205,27 @@ function constraint_current_rms_limit(pm::dHHC_SOC, f_idx, t_idx, c_rating, cm_f
 
     JuMP.@constraint(pm.model, sum(crf.^2 + cif.^2) <= c_rating^2 - cm_fund_fr^2)
     JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2 - cm_fund_to^2)
+end
+
+# filter
+""
+function constraint_active_filter(pm::AbstractIVRModel, n::Int, f, i)
+    vr = [var(pm, nw, :vr, i) for nw in sorted_nw_ids(pm)]
+    vi = [var(pm, nw, :vi, i) for nw in sorted_nw_ids(pm)]
+    
+    crf = [var(pm, nw, :crf, f) for nw in sorted_nw_ids(pm)]
+    cif = [var(pm, nw, :cif, f) for nw in sorted_nw_ids(pm)]
+
+    JuMP.@constraint(pm.model,  vr[fundamental(pm)]*crf[fundamental(pm)] 
+                                + vi[fundamental(pm)]*cif[fundamental(pm)] 
+                                    == 
+                                0.0
+                    )
+    JuMP.@constraint(pm.model,  sum(vr[n]*crf[n] + vi[n]*cif[n] 
+                                        for n in 2:lastindex(vr)) 
+                                    == 
+                                0.0
+                    )
 end
 
 # load

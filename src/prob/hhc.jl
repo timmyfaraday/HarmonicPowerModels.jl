@@ -8,7 +8,11 @@
 
 ""
 function solve_hhc(data, model_type::Type, optimizer; kwargs...)
-    return _PMs.solve_model(data, model_type, optimizer, build_hhc; ref_extensions=[ref_add_xfmr!],  solution_processors=[ _HPM.sol_data_model!], multinetwork=true, kwargs...)
+    return _PMs.solve_model(data, model_type, optimizer, build_hhc; 
+                                ref_extensions=[ref_add_filter!,
+                                                ref_add_xfmr!], 
+                                solution_processors=[ _HPM.sol_data_model!], 
+                                multinetwork=true, kwargs...)
 end
 ""
 function solve_hhc(data, model_type::Type, optimizer, pf_optimizer; kwargs...)
@@ -16,8 +20,12 @@ function solve_hhc(data, model_type::Type, optimizer, pf_optimizer; kwargs...)
     pf_data = create_pf_data_model(data)
     pf_result = solve_hpf(pf_data, _PMs.IVRPowerModel, pf_optimizer)
     write_pf_results!(data, pf_result)
-    
-    return _PMs.solve_model(data, model_type, optimizer, build_hhc; ref_extensions=[ref_add_xfmr!],  solution_processors=[ _HPM.sol_data_model!], multinetwork=true, kwargs...)
+
+    return _PMs.solve_model(data, model_type, optimizer, build_hhc; 
+                                ref_extensions=[ref_add_filter!,
+                                                ref_add_xfmr!], 
+                                solution_processors=[ _HPM.sol_data_model!], 
+                                multinetwork=true, kwargs...)
 end
 
 ""
@@ -33,6 +41,7 @@ function build_hhc(pm::dHHC_NLP)
         variable_transformer_current(pm, nw=n, bounded=false)
 
         ## unit current variables
+        variable_filter_current(pm, nw=n, bounded=false)
         variable_gen_current(pm, nw=n, bounded=false)
         variable_load_current(pm, nw=n)
     end
@@ -51,14 +60,18 @@ function build_hhc(pm::dHHC_NLP)
     for b in _PMs.ids(pm, :branch, nw=fundamental(pm))
         constraint_current_rms_limit(pm, b, nw=fundamental(pm))
     end
-    ### xfmr 
-    for t in _PMs.ids(pm, :xfmr, nw=fundamental(pm))
-        constraint_transformer_winding_current_rms_limit(pm, t, nw=fundamental(pm))
+    ### filter
+    for f in _PMs.ids(pm, :filter, nw=fundamental(pm))
+        constraint_active_filter(pm, f, nw=fundamental(pm))
     end
     ### generator
     for g in _PMs.ids(pm, :gen, nw=fundamental(pm))
         _PMs.constraint_gen_active_bounds(pm, g, nw=fundamental(pm))
         _PMs.constraint_gen_reactive_bounds(pm, g, nw=fundamental(pm))
+    end
+    ### xfmr 
+    for t in _PMs.ids(pm, :xfmr, nw=fundamental(pm))
+        constraint_transformer_winding_current_rms_limit(pm, t, nw=fundamental(pm))
     end
 
     ## harmonic constraints
@@ -113,6 +126,7 @@ function build_hhc(pm::dHHC_SOC)
         variable_transformer_current(pm, nw=n, bounded = true)
 
         ## node current variables
+        variable_filter_current(pm, nw=n, bounded=false)
         variable_load_current(pm, nw=n, bounded = true)
         variable_gen_current(pm, nw=n, bounded = true)
     end end

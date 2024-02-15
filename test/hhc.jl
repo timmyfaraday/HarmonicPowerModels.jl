@@ -92,7 +92,7 @@
         end
 
         # solve HHC problem
-        results_hhc_soc = HPM.solve_hhc_soc(hdata, form, solver_soc, solver_nlp)
+        results_hhc_soc = HPM.solve_hhc(hdata, form, solver_soc, solver_nlp)
 
         @testset "Feasibility" begin
             @test results_hhc_soc["termination_status"] == ALMOST_OPTIMAL
