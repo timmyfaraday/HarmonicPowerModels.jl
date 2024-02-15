@@ -140,6 +140,8 @@ function build_hhc(pm::dHHC_SOC)
 
     # constraints 
     ## overall or fundamental constraints
+    ### fairness principle
+    constraint_fairness_principle(pm, nw=fundamental(pm))
     ### node
     for i in _PMs.ids(pm, :bus, nw=fundamental(pm))
         constraint_voltage_rms_limit(pm, i, nw=fundamental(pm))

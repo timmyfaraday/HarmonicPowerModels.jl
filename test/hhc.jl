@@ -32,7 +32,11 @@
         @testset "Feasibility" begin
             # Solved to optimality
             @test results_hhc["termination_status"] == LOCALLY_SOLVED
-            @test isapprox(results_hhc["objective"], 0.160237; atol = 1e-4)
+            if !haskey(hdata, "principle")
+                @test isapprox(results_hhc["objective"], 0.160236; atol = 1e-4)
+            elseif hdata["principle"] == "equality"
+                @test isapprox(results_hhc["objective"], 0.0241439; atol = 1e-4)
+            end
         end
 
         @testset "Root Mean Square" begin 
@@ -99,7 +103,11 @@
 
         @testset "Feasibility" begin
             @test results_hhc_soc["termination_status"] == ALMOST_OPTIMAL
-            @test isapprox(results_hhc_soc["objective"], 0.160236; atol = 1e-4)
+            if !haskey(hdata, "principle")
+                @test isapprox(results_hhc_soc["objective"], 0.160236; atol = 1e-4)
+            elseif hdata["principle"] == "equality"
+                @test isapprox(results_hhc_soc["objective"], 0.0241439; atol = 1e-4)
+            end
         end
 
         @testset "Root Mean Square" begin 
