@@ -10,7 +10,7 @@
 ################################################################################
 
 ""
-function sol_data_model!(pm::AbstractIVRModel, solution::Dict)
+function sol_data_model!(pm::_PMs.AbstractIVRModel, solution::Dict)
     _PMs.apply_pm!(_sol_data_model_ivr!, solution)
 end
 

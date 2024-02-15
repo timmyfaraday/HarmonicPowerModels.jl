@@ -22,10 +22,8 @@ module HarmonicPowerModels
     import SignalDecomposition
     import Interpolations
     
-    # import types
-    import PowerModels: AbstractPowerModel, AbstractIVRModel
-    import PowerModels: ids, ref, var, con, sol
-    import InfrastructureModels: replicate, sol_component_value_edge
+    # import function to overwrite
+    import InfrastructureModels: replicate
 
     # pkg constants 
     const _HPM = HarmonicPowerModels
