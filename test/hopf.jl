@@ -1,10 +1,14 @@
 ################################################################################
-#  Copyright 2023, Frederik Geth, Tom Van Acker                                #
-################################################################################
 # HarmonicPowerModels.jl                                                       #
-# An extention package of PowerModels(Distribution).jl for Harmonics           #
+# Extension package of PowerModels.jl for Steady-State Power System            #
+# Optimization with Power Harmonics.                                           #
 # See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
 ################################################################################
+# Authors: Tom Van Acker, Frederik Geth                                        #
+################################################################################
+# Changelog:                                                                   #
+################################################################################
+
 """
 Example considering harmonic optimal power flow for a two-bus example.
     This example extends the PF example. 

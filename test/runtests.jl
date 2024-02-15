@@ -1,3 +1,14 @@
+################################################################################
+# HarmonicPowerModels.jl                                                       #
+# Extension package of PowerModels.jl for Steady-State Power System            #
+# Optimization with Power Harmonics.                                           #
+# See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
+################################################################################
+# Authors: Tom Van Acker, Frederik Geth, Hakan Ergun                           #
+################################################################################
+# Changelog:                                                                   #
+################################################################################
+
 # load pkgs
 using Test
 

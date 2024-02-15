@@ -1,3 +1,14 @@
+################################################################################
+# HarmonicPowerModels.jl                                                       #
+# Extension package of PowerModels.jl for Steady-State Power System            #
+# Optimization with Power Harmonics.                                           #
+# See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
+################################################################################
+# Authors: Hakan Ergun                                                         #
+################################################################################
+# Changelog:                                                                   #
+################################################################################
+
 function create_pf_data_model(data)
     pf_data = deepcopy(data)
 
