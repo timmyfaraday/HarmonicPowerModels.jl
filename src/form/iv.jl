@@ -84,9 +84,9 @@ function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel; bu
 end
 ""
 function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
-    cmd = [_PMs.var(pm, n, :cmd, l)  for n in _PMs.nw_ids(pm) 
-                                for l in _PMs.ids(pm, :load, nw=n) 
-                                if n ≠ fundamental(pm)]
+    cmd = [_PMs.var(pm, n, :cmd, l) for n in _PMs.nw_ids(pm) 
+                                    for l in _PMs.ids(pm, :load, nw=n) 
+                                    if n ≠ fundamental(pm)]
     
     JuMP.@objective(pm.model, Max, sum(cmd))
 end
