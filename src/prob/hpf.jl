@@ -10,8 +10,8 @@
 ################################################################################
 
 ""
-function solve_hpf(data, model_type::Type, optimizer; kwargs...)
-    return _PMs.solve_model(data, model_type, optimizer, build_hpf; 
+function solve_hpf(hdata, model_type::Type, optimizer; kwargs...)
+    return _PMs.solve_model(hdata, model_type, optimizer, build_hpf; 
                                 ref_extensions=[ref_add_filter!,
                                                 ref_add_xfmr!], 
                                 solution_processors=[_HPM.sol_data_model!], 

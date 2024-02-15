@@ -57,7 +57,7 @@ module HarmonicPowerModels
     include("prob/hpf.jl")
     include("prob/hhc.jl")
 
-    include("util/pf.jl")
+    include("util/init.jl")
     include("util/ref.jl")
     include("util/sol.jl")
     include("util/xfmr_magn.jl")

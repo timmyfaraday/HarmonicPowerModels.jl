@@ -10,21 +10,20 @@
 ################################################################################
 
 ""
-function solve_hhc(data, model_type::Type, optimizer; kwargs...)
-    return _PMs.solve_model(data, model_type, optimizer, build_hhc; 
+function solve_hhc(hdata, model_type::Type, optimizer; kwargs...)
+    return _PMs.solve_model(hdata, model_type, optimizer, build_hhc; 
                                 ref_extensions=[ref_add_filter!,
                                                 ref_add_xfmr!], 
                                 solution_processors=[ _HPM.sol_data_model!], 
                                 multinetwork=true, kwargs...)
 end
 ""
-function solve_hhc(data, model_type::Type, optimizer, pf_optimizer; kwargs...)
-    # solve fundamental harmonic power flow
-    pf_data = create_pf_data_model(data)
-    pf_result = solve_hpf(pf_data, _PMs.IVRPowerModel, pf_optimizer)
-    write_pf_results!(data, pf_result)
+function solve_hhc(hdata, model_type::Type, hhc_optimizer, hpf_optimizer; kwargs...)
+    # solve fundamental harmonic power flow problem and update hdata
+    update_hdata_with_fundamental_hpf_results!(hdata, model_type, hpf_optimizer)
 
-    return _PMs.solve_model(data, model_type, optimizer, build_hhc; 
+    # solve second order cone harmonic hosting capacity problem
+    return _PMs.solve_model(hdata, model_type, hhc_optimizer, build_hhc; 
                                 ref_extensions=[ref_add_filter!,
                                                 ref_add_xfmr!], 
                                 solution_processors=[ _HPM.sol_data_model!], 
