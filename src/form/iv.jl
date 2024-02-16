@@ -96,7 +96,7 @@ end
 ## constraints
 # ref bus
 ""
-function constraint_ref_bus(pm::_PMs.AbstractIVRModel, n::Int, i::Int, vref)
+function constraint_voltage_ref_bus(pm::_PMs.AbstractIVRModel, n::Int, i::Int, vref)
     vr = _PMs.var(pm, n, :vr, i)
     vi = _PMs.var(pm, n, :vi, i)
 
@@ -225,7 +225,7 @@ end
 
 # filter
 ""
-function constraint_active_filter(pm::_PMs.AbstractIVRModel, n::Int, f, i)
+function constraint_active_filter_current(pm::_PMs.AbstractIVRModel, n::Int, f, i)
     vr = [_PMs.var(pm, nw, :vr, i) for nw in sorted_nw_ids(pm)]
     vi = [_PMs.var(pm, nw, :vi, i) for nw in sorted_nw_ids(pm)]
     

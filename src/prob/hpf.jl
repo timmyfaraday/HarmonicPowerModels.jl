@@ -50,7 +50,7 @@ function build_hpf(pm::_PMs.AbstractIVRModel)
     for n in _PMs.nw_ids(pm)
         ### reference node
         for i in _PMs.ids(pm, :ref_buses, nw=n) 
-            constraint_ref_bus(pm, i, nw=n)
+            constraint_voltage_ref_bus(pm, i, nw=n)
         end
 
         ### node

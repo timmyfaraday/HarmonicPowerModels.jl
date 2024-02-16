@@ -54,7 +54,7 @@ function build_hhc(pm::dHHC_NLP)
     # constraints 
     ## overall or fundamental constraints
     ### fairness principle
-    constraint_fairness_principle(pm, nw=fundamental(pm))
+    constraint_fairness_principle(pm)
     ### node 
     for i in _PMs.ids(pm, :bus, nw=fundamental(pm))
         constraint_voltage_rms_limit(pm, i, nw=fundamental(pm))
@@ -82,7 +82,7 @@ function build_hhc(pm::dHHC_NLP)
     for n in _PMs.nw_ids(pm)
         ### reference node
         for i in _PMs.ids(pm, :ref_buses, nw=n)
-            constraint_ref_bus(pm, i, nw=n)
+            constraint_voltage_ref_bus(pm, i, nw=n)
         end
 
         ### node
@@ -141,7 +141,7 @@ function build_hhc(pm::dHHC_SOC)
     # constraints 
     ## overall or fundamental constraints
     ### fairness principle
-    constraint_fairness_principle(pm, nw=fundamental(pm))
+    constraint_fairness_principle(pm)
     ### node
     for i in _PMs.ids(pm, :bus, nw=fundamental(pm))
         constraint_voltage_rms_limit(pm, i, nw=fundamental(pm))
@@ -160,7 +160,7 @@ function build_hhc(pm::dHHC_SOC)
     for n in _PMs.nw_ids(pm) if n ≠ fundamental(pm)
         ### reference node
         for i in _PMs.ids(pm, :ref_buses, nw=n)
-            constraint_ref_bus(pm, i, nw=n)
+            constraint_voltage_ref_bus(pm, i, nw=n)
         end
 
         ### node

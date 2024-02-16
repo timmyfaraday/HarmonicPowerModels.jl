@@ -35,7 +35,7 @@
             if !haskey(hdata, "principle")
                 @test isapprox(results_hhc["objective"], 0.160236; atol = 1e-4)
             elseif hdata["principle"] == "equality"
-                @test isapprox(results_hhc["objective"], 0.0241439; atol = 1e-4)
+                @test isapprox(results_hhc["objective"], 0.019055; atol = 1e-4)
             end
         end
 
@@ -106,7 +106,7 @@
             if !haskey(hdata, "principle")
                 @test isapprox(results_hhc_soc["objective"], 0.160236; atol = 1e-4)
             elseif hdata["principle"] == "equality"
-                @test isapprox(results_hhc_soc["objective"], 0.0241439; atol = 1e-4)
+                @test isapprox(results_hhc_soc["objective"], 0.019055; atol = 1e-4)
             end
         end
 

@@ -11,19 +11,22 @@
 
 # ref bus
 ""
-function constraint_ref_bus(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
-    if hasref(pm, _PMs.pm_it_sym, nw, :bus, i, "ihdmax")
-        vref = _PMs.ref(pm, nw, :bus, i, "ihdmax")
+function constraint_voltage_ref_bus(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
+    if nw == 1
+        vref = 1.0
     else
-        vref = nw == 1 ? 1.0 : 0.0 ;
-    end
+        if hasref(pm, _PMs.pm_it_sym, nw, :bus, i, "ihdmax")
+            vref = _PMs.ref(pm, nw, :bus, i, "ihdmax")
+        else
+            vref = 0.0 
+    end end
 
-    constraint_ref_bus(pm, nw, i, vref)
+    constraint_voltage_ref_bus(pm, nw, i, vref)
 end
 
 # bus
 ""
-function constraint_voltage_rms_limit(pm::_PMs.AbstractIVRModel, i::Int; nw::Int=fundamental(pm))
+function constraint_voltage_rms_limit(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
     vminrms = _PMs.ref(pm, nw, :bus, i, "vminrms")
     vmaxrms = _PMs.ref(pm, nw, :bus, i, "vmaxrms")
 
@@ -45,7 +48,7 @@ end
 ""
 function constraint_voltage_thd_limit(pm::dHHC_SOC, i::Int; nw::Int=fundamental(pm))
     thdmax = _PMs.ref(pm, nw, :bus, i, "thdmax")
-    vmfund  = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
+    vmfund = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
    
     constraint_voltage_thd_limit(pm, i, thdmax, vmfund)
 end
@@ -53,16 +56,16 @@ end
 function constraint_voltage_ihd_limit(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
     ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
 
-    if nw ≠ 1
+    if nw ≠ fundamental(pm)
         constraint_voltage_ihd_limit(pm, nw, i, ihdmax)
     end
 end
 ""
 function constraint_voltage_ihd_limit(pm::dHHC_SOC, i::Int; nw::Int=fundamental(pm))
     ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
-    vmfund  = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
+    vmfund = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
 
-    if nw ≠ 1
+    if nw ≠ fundamental(pm)
         constraint_voltage_ihd_limit(pm, nw, i, ihdmax, vmfund)
     end
 end
@@ -76,8 +79,8 @@ function constraint_current_balance(pm::_PMs.AbstractPowerModel, i::Int; nw::Int
     bus_loads     = _PMs.ref(pm, nw, :bus_loads, i)
     bus_shunts    = _PMs.ref(pm, nw, :bus_shunts, i)
 
-    bus_gs = Dict(k => _PMs.ref(pm, nw, :shunt, k, "gs") for k in bus_shunts)
-    bus_bs = Dict(k => _PMs.ref(pm, nw, :shunt, k, "bs") for k in bus_shunts)
+    bus_gs  = Dict(k => _PMs.ref(pm, nw, :shunt, k, "gs") for k in bus_shunts)
+    bus_bs  = Dict(k => _PMs.ref(pm, nw, :shunt, k, "bs") for k in bus_shunts)
 
     constraint_current_balance(pm, nw, i,   bus_arcs, bus_arcs_xfmr, 
                                             bus_filters, bus_gens, bus_loads, 
@@ -110,22 +113,22 @@ end
 
 # fairness principle
 ""
-function constraint_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm))
-    principle = pm.data["principle"]
+function constraint_fairness_principle(pm::_PMs.AbstractPowerModel)
+    principle   = pm.data["principle"]
 
-    load_ids = sort(collect(_PMs.ids(pm, :load, nw=fundamental(pm))))
+    load_ids    = sort(collect(_PMs.ids(pm, :load, nw=fundamental(pm))))
 
     constraint_fairness_principle(pm, principle, load_ids)
 end
 
 # filter
 ""
-function constraint_active_filter(pm::_PMs.AbstractPowerModel, f::Int; nw::Int=fundamental(pm))
-    filter = _PMs.ref(pm, nw, :filter, f)
-    bus = filter["bus"]
+function constraint_active_filter_current(pm::_PMs.AbstractPowerModel, f::Int; nw::Int=fundamental(pm))
+    filter  = _PMs.ref(pm, nw, :filter, f)
+    bus     = filter["bus"]
 
     if filter["a/p"] == "a"
-        constraint_active_filter(pm, nw, f, bus)
+        constraint_active_filter_current(pm, nw, f, bus)
     end
 end
 
@@ -134,8 +137,8 @@ end
 function constraint_load_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fundamental(pm))
     load = _PMs.ref(pm, nw, :load, l)
 
-    i       = load["load_bus"]
-    pd, qd  = load["pd"], load["qd"]
+    i      = load["load_bus"]
+    pd, qd = load["pd"], load["qd"]
 
     angmin = load["reference_harmonic_angle"] - load["harmonic_angle_range"] / 2
     angmax = load["reference_harmonic_angle"] + load["harmonic_angle_range"] / 2

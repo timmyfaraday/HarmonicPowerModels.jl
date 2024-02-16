@@ -52,7 +52,7 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
     end
     ### filter
     for f in _PMs.ids(pm, :filter, nw=fundamental(pm))
-        constraint_active_filter(pm, f, nw=fundamental(pm))
+        constraint_active_filter_current(pm, f, nw=fundamental(pm))
     end
     ### generator
     for g in _PMs.ids(pm, :gen, nw=fundamental(pm))
@@ -64,7 +64,7 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
     for n in _PMs.nw_ids(pm)
         ### reference node
         for i in _PMs.ids(pm, :ref_buses, nw=n) 
-            constraint_ref_bus(pm, i, nw=n)
+            constraint_voltage_ref_bus(pm, i, nw=n)
         end
 
         ### node
