@@ -205,10 +205,10 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
                 haskey(xfmr, "re1") ? xfmr["re1"] *= sqrt(nh) : ~ ;
                 haskey(xfmr, "re2") ? xfmr["re2"] *= sqrt(nh) : ~ ;
 
-                xfmr["cnf1"] = haskey(xfmr, "vg") ? uppercase(xfmr["vg"][1]) : "Y" ;
-                xfmr["cnf2"] = haskey(xfmr, "vg") ? uppercase(xfmr["vg"][2]) : "Y" ;
+                xfmr["cnf1"] = haskey(xfmr, "vg") ? uppercase(xfmr["vg"][1]) : 'Y' ;
+                xfmr["cnf2"] = haskey(xfmr, "vg") ? uppercase(xfmr["vg"][2]) : 'Y' ;
 
-                shift = haskey(xfmr, "vg") ? parse(Int, xfmr["vg"][3]) : 0 ;
+                shift = haskey(xfmr, "vg") ? parse(Int, xfmr["vg"][3:end]) : 0 ;
                 if is_pos_sequence(nh)
                     xfmr["tr"] = cosd(-30.0 * shift)
                     xfmr["ti"] = sind(-30.0 * shift)

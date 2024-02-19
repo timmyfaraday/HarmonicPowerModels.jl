@@ -24,6 +24,7 @@ const PMs = PowerModels
 const HPM = HarmonicPowerModels
 
 # test functions
+≈(a,b) = isapprox(a, b, atol=1e-6)
 ⪅(a,b) = (a <= b) || isapprox(a, b, atol=1e-6)
 
 # solvers

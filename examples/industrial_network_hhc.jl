@@ -105,7 +105,7 @@ for h in H
         v_fr = (vr_fr + (vi_fr)im)
         v_to = (vr_to + (vi_to)im)
 
-        er = (vr_to * xfmr["tr"] + vi_to * xfmr["ti"]) / (xfmr["tr"]^2 + xfmr["ti"]^2) 
+        er = (vr_to * xfmr["tr"] + vi_to * xfmr["ti"]) / (xfmr["tr"]^2 + xfmr["ti"]^2) # @HAKAN: this is not correct, should be the internal xfmr voltage
         ei = (vi_to * xfmr["tr"] - vr_to * xfmr["ti"]) / (xfmr["tr"]^2 + xfmr["ti"]^2) 
         e = (er + (ei)im) 
 
