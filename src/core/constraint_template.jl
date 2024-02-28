@@ -190,7 +190,7 @@ function constraint_transformer_core_voltage_drop(pm::_PMs.AbstractPowerModel, t
     constraint_transformer_core_voltage_drop(pm, nw, t, f_idx, xsc)
 end
 "" 
-function constraint_transformer_core_voltage_balance(pm::_PMs.AbstractPowerModel, t::Int; nw::Int=fundamental(pm))
+function constraint_transformer_core_voltage_phase_shift(pm::_PMs.AbstractPowerModel, t::Int; nw::Int=fundamental(pm))
     f_bus = _PMs.ref(pm, nw, :xfmr, t, "f_bus")
     t_bus = _PMs.ref(pm, nw, :xfmr, t, "t_bus")
     t_idx = (t,t_bus,f_bus)
@@ -198,7 +198,10 @@ function constraint_transformer_core_voltage_balance(pm::_PMs.AbstractPowerModel
     tr = _PMs.ref(pm, nw, :xfmr, t, "tr")
     ti = _PMs.ref(pm, nw, :xfmr, t, "ti")
 
-    constraint_transformer_core_voltage_balance(pm, nw, t, t_idx, tr, ti)
+    gnd1 = _PMs.ref(pm, nw, :xfmr, t, "gnd1")
+    gnd2 = _PMs.ref(pm, nw, :xfmr, t, "gnd2")
+    
+    constraint_transformer_core_voltage_phase_shift(pm, nw, t, t_idx, tr, ti, gnd1, gnd2)
 end
 ""
 function constraint_transformer_core_current_balance(pm::_PMs.AbstractPowerModel, t::Int; nw::Int=fundamental(pm))

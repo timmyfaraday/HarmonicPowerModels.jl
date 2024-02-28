@@ -59,6 +59,10 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
         _PMs.constraint_gen_active_bounds(pm, g, nw=fundamental(pm))
         _PMs.constraint_gen_reactive_bounds(pm, g, nw=fundamental(pm))
     end
+    ### xfmr 
+    for t in _PMs.ids(pm, :xfmr, nw=fundamental(pm))
+        constraint_transformer_winding_current_rms_limit(pm, t, nw=fundamental(pm))
+    end
 
     ## harmonic constraints
     for n in _PMs.nw_ids(pm)
@@ -85,7 +89,7 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
         for t in _PMs.ids(pm, :xfmr, nw=n)
             constraint_transformer_core_magnetization(pm, t, nw=n)
             constraint_transformer_core_voltage_drop(pm, t, nw=n)
-            constraint_transformer_core_voltage_balance(pm, t, nw=n)
+            constraint_transformer_core_voltage_phase_shift(pm, t, nw=n)
             constraint_transformer_core_current_balance(pm, t, nw=n)
             
             constraint_transformer_winding_config(pm, t, nw=n)

@@ -23,7 +23,7 @@ function update_hdata_with_fundamental_hpf_results!(hdata, model_type::Type, opt
 
     # update hdata with the results of the hpf problem
     for (i, bus) in hdata["nw"]["1"]["bus"]
-        bus["vm"] = hpf_results["solution"]["nw"]["1"]["bus"][i]["vm"]
+        bus["vm"] = floor(hpf_results["solution"]["nw"]["1"]["bus"][i]["vm"], digits=10)
         bus["va"] = hpf_results["solution"]["nw"]["1"]["bus"][i]["va"]
     end
     for (b, branch) in hdata["nw"]["1"]["branch"]

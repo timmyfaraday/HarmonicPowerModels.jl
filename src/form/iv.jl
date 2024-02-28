@@ -335,18 +335,45 @@ function constraint_transformer_core_voltage_drop(pm::_PMs.AbstractIVRModel, n::
     JuMP.@constraint(pm.model, vrt == ert - xsc * csit)
     JuMP.@constraint(pm.model, vit == eit + xsc * csrt)
 end
-""
-function constraint_transformer_core_voltage_balance(pm::_PMs.AbstractIVRModel, n::Int, t, t_idx, tr, ti)
+"""
+first principles: uᵢ = tₓᵢⱼ * uⱼ
+eₓₕ = tₓᵢⱼₕ * vₓⱼᵢₕ
+eʳₓₕ + j eⁱₓₕ = (tʳₓᵢⱼₕ + j tⁱₓᵢⱼₕ) * (vʳₓⱼᵢₕ + j vⁱₓⱼᵢₕ)
+eʳₓₕ + j eⁱₓₕ = tʳₓᵢⱼₕ vʳₓⱼᵢₕ + j tʳₓᵢⱼₕ vⁱₓⱼᵢₕ + j tⁱₓᵢⱼₕ vʳₓⱼᵢₕ + j² tⁱₓᵢⱼₕ vⁱₓⱼᵢₕ
+eʳₓₕ + j eⁱₓₕ = tʳₓᵢⱼₕ vʳₓⱼᵢₕ + j tʳₓᵢⱼₕ vⁱₓⱼᵢₕ + j tⁱₓᵢⱼₕ vʳₓⱼᵢₕ - tⁱₓᵢⱼₕ vⁱₓⱼᵢₕ
+
+Re: eʳₓₕ = tʳₓᵢⱼₕ vʳₓⱼᵢₕ - tⁱₓᵢⱼₕ vⁱₓⱼᵢₕ
+Im: eⁱₓₕ = tʳₓᵢⱼₕ vⁱₓⱼᵢₕ + tⁱₓᵢⱼₕ vʳₓⱼᵢₕ
+"""
+function constraint_transformer_core_voltage_phase_shift(pm::_PMs.AbstractIVRModel, n::Int, t, t_idx, tr, ti, gnd1, gnd2)
     ert = _PMs.var(pm, n, :ert, t)
     eit = _PMs.var(pm, n, :eit, t)
 
     vrt = _PMs.var(pm, n, :vrt, t_idx)
     vit = _PMs.var(pm, n, :vit, t_idx)
 
-    JuMP.@constraint(pm.model, vrt == tr * ert - ti * eit)
-    JuMP.@constraint(pm.model, vit == tr * eit + ti * ert)
+    JuMP.@constraint(pm.model, ert == tr * vrt - ti * vit)
+    JuMP.@constraint(pm.model, eit == tr * vit + ti * vrt)
+
+    # if both winding cnf ∈ {D,Y,Z}, forall h ∈ 𝓗⁰: fix the excitation voltage 
+    # to zero 
+    if is_zero_sequence(n) && gnd1 != 1 && gnd2 != 1
+        println("cstr: h=$n, xfmr=$t")
+
+        JuMP.@constraint(pm.model, ert == 0.0)
+        JuMP.@constraint(pm.model, eit == 0.0)
+    end
 end
-""
+"""
+first principles: conj(tₓᵢⱼ) * iₓᵢⱼ + iₓⱼᵢ = 0
+conj(tₓᵢⱼₕ) * (iˢₓᵢⱼₕ - iᵐₓₕ - eₓₕ / rˢʰₓₕ) + iₓⱼᵢₕ = 0
+(tʳₓᵢⱼₕ - j tⁱₓᵢⱼₕ) * (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ + j (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ)) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
+tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + j tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) - j tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) - j² tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
+tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + j tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) - j tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
+
+Re: tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) + iˢ⁻ʳₓⱼᵢₕ = 0
+Im: tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) - tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + iˢ⁻ⁱₓⱼᵢₕ = 0
+"""
 function constraint_transformer_core_current_balance(pm::_PMs.AbstractIVRModel, n::Int, t, f_idx, t_idx, tr, ti, rsh)
     cmrt = _PMs.var(pm, n, :cmrt, t)
     cmit = _PMs.var(pm, n, :cmit, t)
@@ -360,19 +387,17 @@ function constraint_transformer_core_current_balance(pm::_PMs.AbstractIVRModel, 
     ert = _PMs.var(pm, n, :ert, t)
     eit = _PMs.var(pm, n, :eit, t)
 
-    JuMP.@constraint(pm.model,  csrt_fr 
-                                + tr * csrt_to 
-                                + ti * csit_to 
+    JuMP.@constraint(pm.model,  tr * (csrt_fr - cmrt - ert / rsh)
+                                + ti * (csit_fr - cmit - eit / rsh)
+                                + csrt_to 
                                     == 
-                                cmrt 
-                                + ert / rsh
+                                0.0
                     )
-    JuMP.@constraint(pm.model,  csit_fr 
-                                + tr * csit_to 
-                                - ti * csrt_to
+    JuMP.@constraint(pm.model,  tr * (csit_fr - cmit - eit / rsh)
+                                - ti * (csrt_fr - cmrt - ert / rsh)
+                                + csit_to
                                     == 
-                                cmit 
-                                + eit / rsh
+                                0.0
                     )
 end
 ""

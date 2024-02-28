@@ -70,7 +70,7 @@ function build_hpf(pm::_PMs.AbstractIVRModel)
         for t in _PMs.ids(pm, :xfmr, nw=n)
             constraint_transformer_core_magnetization(pm, t, nw=n)
             constraint_transformer_core_voltage_drop(pm, t, nw=n)
-            constraint_transformer_core_voltage_balance(pm, t, nw=n)
+            constraint_transformer_core_voltage_phase_shift(pm, t, nw=n)
             constraint_transformer_core_current_balance(pm, t, nw=n)
             
             constraint_transformer_winding_config(pm, t, nw=n)
