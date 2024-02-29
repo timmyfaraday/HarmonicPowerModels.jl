@@ -17,6 +17,7 @@ using PowerModels
 using HarmonicPowerModels
 
 using Clarabel
+using Dierckx
 using Ipopt
 
 # pkg const

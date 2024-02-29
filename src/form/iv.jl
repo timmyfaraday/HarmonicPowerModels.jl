@@ -79,7 +79,9 @@ function objective_power_flow(pm::_PMs.AbstractIVRModel)
     JuMP.@objective(pm.model, Min, 0.0)
 end
 ""
-function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel; bus_id=1) 
+function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel) 
+    bus_id = pm.data["bus_id"]
+
     vr = [_PMs.var(pm, n, :vr, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
     vi = [_PMs.var(pm, n, :vi, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
 

@@ -85,6 +85,11 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
             
             _PMs.constraint_voltage_drop(pm, b, nw=n)
         end
+
+        ### harmonic load
+        for l in _PMs.ids(pm, :load, nw=n)
+            constraint_load_power(pm, l, nw=n)
+        end   
     
         ### xfmr
         for x in _PMs.ids(pm, :xfmr, nw=n)
@@ -95,11 +100,6 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
             
             constraint_xfmr_winding_config(pm, x, nw=n)
             constraint_xfmr_winding_current_balance(pm, x, nw=n)
-        end
-
-        ### harmonic unit
-        for l in _PMs.ids(pm, :load, nw=n)
-            constraint_load_power(pm, l, nw=n)
-        end        
+        end     
     end
 end

@@ -42,8 +42,10 @@ const thd_limits = Dict(
 """
     HarmonicPowerModels.replicate
 """
-function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[], 
-                        xfmr_magn::Dict{String,Any}=Dict{String,Any}())
+function _HPM.replicate(data::Dict{String, Any}; 
+                            bus_id::Int=1,
+                            H::Array{Int}=Int[], 
+                            xfmr_magn::Dict{String,Any}=Dict{String,Any}())
     ### Add entries to the fundamental data ####################################
     # set the branch current rating
     if haskey(data,"branch") 
@@ -76,6 +78,9 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
     ### create multi-network data structure, only keep ntws in H ###############
     hdata = _PMs.replicate(data, last(H))
     for nh in 1:last(H) if nh ∉ H delete!(hdata["nw"],"$nh") end end
+
+    # add bus_id
+    hdata["bus_id"] = bus_id
 
     # rename the case
     hdata["name"] = data["name"]

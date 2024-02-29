@@ -67,7 +67,7 @@ function build_hhc(pm::dHHC_NLP)
     end
     ### filter
     for f in ids(pm, :filter)
-        constraint_active_filter(pm, f)
+        constraint_active_filter_current(pm, f)
     end
     ### generator
     for g in ids(pm, :gen)

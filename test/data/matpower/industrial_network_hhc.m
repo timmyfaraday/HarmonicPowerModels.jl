@@ -34,15 +34,6 @@ mpc.bus_harmonics = [
                 2.617993878 0.0         'IEC61000-2-4:2002, Cl. 2'; % 8
 ]
 
-%% generator data
-%   bus     Pg      Qg      Qmax    Qmin    Vg      mBase   status  Pmax    Pmin
-mpc.gen = [
-    0       0.0     0.0     100.00  -100.00 1.05    100.0   1       100.00  0;
-];
-mpc.gencost = [
-	2	    0.0	    0.0	    3	    0.0     1.0     0.0;
-];
-
 %% branch data
 %   f_bus	t_bus	r	        x	        b	        rateA	rateB	rateC	ratio	angle	status	angmin	angmax
 mpc.branch = [ 
@@ -50,6 +41,15 @@ mpc.branch = [
     2       3       0.00060     0.00053     0.02513     125     1000    1000    1       0       1       -60     60; 
     4       5       0.00013     0.000085    0.002780    31.5    100     100     1       0       1       -60     60;
     6       7       0.000045    0.0000298   0.000973    2.5     100     100     1       0       1       -60     60;
+];
+
+%% generator data
+%   bus     Pg      Qg      Qmax    Qmin    Vg      mBase   status  Pmax    Pmin
+mpc.gen = [
+    0       0.0     0.0     100.00  -100.00 1.05    100.0   1       100.00  0;
+];
+mpc.gencost = [
+	2	    0.0	    0.0	    3	    0.0     1.0     0.0;
 ];
 
 %% xfmr data
