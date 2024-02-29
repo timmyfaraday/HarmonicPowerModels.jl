@@ -7,6 +7,7 @@
 # Authors: Hakan Ergun                                                         #
 ################################################################################
 # Changelog:                                                                   #
+# v0.2.0 - reviewed TVA                                                        #
 ################################################################################
 
 function update_hdata_with_fundamental_hpf_results!(hdata, model_type::Type, optimizer)
@@ -33,9 +34,9 @@ function update_hdata_with_fundamental_hpf_results!(hdata, model_type::Type, opt
                                 + hpf_results["solution"]["nw"]["1"]["branch"][b]["ci_to"]^2)
     end
     for (x, xfmr) in hdata["nw"]["1"]["xfmr"]
-        xfmr["ctm_fr"] = sqrt(  hpf_results["solution"]["nw"]["1"]["xfmr"][x]["crt_fr"]^2 
-                                + hpf_results["solution"]["nw"]["1"]["xfmr"][x]["cit_fr"]^2)
-        xfmr["ctm_to"] = sqrt(  hpf_results["solution"]["nw"]["1"]["xfmr"][x]["crt_to"]^2 
-                                + hpf_results["solution"]["nw"]["1"]["xfmr"][x]["cit_to"]^2)
+        xfmr["ctm_fr"] = sqrt(  hpf_results["solution"]["nw"]["1"]["xfmr"][x]["crx_fr"]^2 
+                                + hpf_results["solution"]["nw"]["1"]["xfmr"][x]["cix_fr"]^2)
+        xfmr["ctm_to"] = sqrt(  hpf_results["solution"]["nw"]["1"]["xfmr"][x]["crx_to"]^2 
+                                + hpf_results["solution"]["nw"]["1"]["xfmr"][x]["cix_to"]^2)
     end
 end

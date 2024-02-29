@@ -51,8 +51,8 @@
                 
                 sol_xfmr = results["solution"]["nw"]["$nh"]["xfmr"][nx]
 
-                θe = angle(sol_xfmr["ert"] + im * sol_xfmr["eit"])
-                θv = angle(sol_xfmr["vrt_to"] + im * sol_xfmr["vit_to"])
+                θe = angle(sol_xfmr["erx"] + im * sol_xfmr["eix"])
+                θv = angle(sol_xfmr["vrx_to"] + im * sol_xfmr["vix_to"])
 
                 if HPM.is_pos_sequence(nh)
                     @test isapprox(rem(θv - θe - vg * π/6, 2π), 0.0, atol=1e-5)

@@ -1,0 +1,1 @@
+The decison is made to keep the shunt, however, know that this is interpreted as a pure capacitive or indicive shunt, i.e., no k-ratio. If such behavior is needed than you should use a passive filter.

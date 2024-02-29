@@ -7,6 +7,7 @@
 # Authors: Tom Van Acker, Frederik Geth                                        #
 ################################################################################
 # Changelog:                                                                   #
+# v0.2.0 - reviewed TVA                                                        #
 ################################################################################
 
 ""
@@ -24,11 +25,11 @@ function build_hpf(pm::_PMs.AbstractIVRModel)
     for n in _PMs.nw_ids(pm)
         ## voltage variables
         variable_bus_voltage(pm, nw=n, bounded=false)
-        variable_transformer_voltage(pm, nw=n, bounded=false)
+        variable_xfmr_voltage(pm, nw=n, bounded=false)
         
         ## edge current variables
         variable_branch_current(pm, nw=n, bounded=false)
-        variable_transformer_current(pm, nw=n, bounded=false)
+        variable_xfmr_current(pm, nw=n, bounded=false)
 
         ## unit current variables
         variable_filter_current(pm, nw=n, bounded=false)
@@ -42,7 +43,7 @@ function build_hpf(pm::_PMs.AbstractIVRModel)
     # constraint
     ## overall or fundamental constraints
     ### filter
-    for f in _PMs.ids(pm, :filter, nw=fundamental(pm))
+    for f in ids(pm, :filter)
         constraint_active_filter(pm, f, nw=fundamental(pm))
     end
 
@@ -67,14 +68,14 @@ function build_hpf(pm::_PMs.AbstractIVRModel)
         end
 
         ### xfmr 
-        for t in _PMs.ids(pm, :xfmr, nw=n)
-            constraint_transformer_core_magnetization(pm, t, nw=n)
-            constraint_transformer_core_voltage_drop(pm, t, nw=n)
-            constraint_transformer_core_voltage_phase_shift(pm, t, nw=n)
-            constraint_transformer_core_current_balance(pm, t, nw=n)
+        for x in _PMs.ids(pm, :xfmr, nw=n)
+            constraint_xfmr_core_magnetization(pm, x, nw=n)
+            constraint_xfmr_core_voltage_drop(pm, x, nw=n)
+            constraint_xfmr_core_voltage_phase_shift(pm, x, nw=n)
+            constraint_xfmr_core_current_balance(pm, x, nw=n)
             
-            constraint_transformer_winding_config(pm, t, nw=n)
-            constraint_transformer_winding_current_balance(pm, t, nw=n)
+            constraint_xfmr_winding_config(pm, x, nw=n)
+            constraint_xfmr_winding_current_balance(pm, x, nw=n)
         end
 
         ### harmonic unit

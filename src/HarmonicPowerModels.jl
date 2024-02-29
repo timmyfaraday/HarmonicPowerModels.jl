@@ -7,6 +7,7 @@
 # Authors: Tom Van Acker, Frederik Geth, Hakan Ergun                           #
 ################################################################################
 # Changelog:                                                                   #
+# v0.2.0 - reviewed TVA                                                        #
 ################################################################################
 
 module HarmonicPowerModels
@@ -64,11 +65,9 @@ module HarmonicPowerModels
 
     # export
     export BASE_DIR
-
     export dHHC_NLP, dHHC_SOC
 
     export replicate
-
     export solve_hpf, solve_hopf, solve_hhc 
 
 end

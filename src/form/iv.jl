@@ -7,6 +7,7 @@
 # Authors: Tom Van Acker, Frederik Geth, Hakan Ergun                           #
 ################################################################################
 # Changelog:                                                                   #
+# v0.2.0 - reviewed TVA                                                        #
 ################################################################################
 
 ## variables
@@ -36,23 +37,23 @@ end
 
 # xfmr
 ""
-function variable_transformer_voltage(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
-    variable_transformer_voltage_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_transformer_voltage_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+function variable_xfmr_voltage(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+    variable_xfmr_voltage_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_xfmr_voltage_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     
-    variable_transformer_voltage_excitation_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_transformer_voltage_excitation_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_xfmr_voltage_excitation_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_xfmr_voltage_excitation_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 ""
-function variable_transformer_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
-    variable_transformer_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_transformer_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+function variable_xfmr_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+    variable_xfmr_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_xfmr_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 
-    variable_transformer_current_series_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_transformer_current_series_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_xfmr_current_series_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_xfmr_current_series_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 
-    variable_transformer_current_magnetizing_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_transformer_current_magnetizing_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_xfmr_current_magnetizing_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_xfmr_current_magnetizing_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 
 # generator
@@ -155,8 +156,8 @@ function constraint_current_balance(pm::_PMs.AbstractIVRModel, n::Int, i, bus_ar
 
     cr = _PMs.var(pm, n, :cr)
     ci = _PMs.var(pm, n, :ci)
-    crt = _PMs.var(pm, n, :crt)
-    cit = _PMs.var(pm, n, :cit)
+    crx = _PMs.var(pm, n, :crx)
+    cix = _PMs.var(pm, n, :cix)
 
     crf = _PMs.var(pm, n, :crf)
     cif = _PMs.var(pm, n, :cif)
@@ -166,7 +167,7 @@ function constraint_current_balance(pm::_PMs.AbstractIVRModel, n::Int, i, bus_ar
     cid = _PMs.var(pm, n, :cid)
 
     JuMP.@constraint(pm.model,  sum(cr[a] for a in bus_arcs)
-                                + sum(crt[t] for t in bus_arcs_xfmr)
+                                + sum(crx[t] for t in bus_arcs_xfmr)
                                 ==
                                 sum(crf[f] for f in bus_filters)
                                 + sum(crg[g] for g in bus_gens)
@@ -175,7 +176,7 @@ function constraint_current_balance(pm::_PMs.AbstractIVRModel, n::Int, i, bus_ar
                                 + sum(bs for bs in values(bus_bs))*vi
                                 )
     JuMP.@constraint(pm.model,  sum(ci[a] for a in bus_arcs)
-                                + sum(cit[t] for t in bus_arcs_xfmr)
+                                + sum(cix[t] for t in bus_arcs_xfmr)
                                 ==
                                 sum(cif[f] for f in bus_filters)
                                 + sum(cig[g] for g in bus_gens)
@@ -191,22 +192,22 @@ function constraint_current_rms_limit(pm::_PMs.AbstractIVRModel, f_idx, t_idx, c
     crf =  [_PMs.var(pm, n, :cr, f_idx) for n in sorted_nw_ids(pm)]
     cif =  [_PMs.var(pm, n, :ci, f_idx) for n in sorted_nw_ids(pm)]
 
-    crt =  [_PMs.var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm)]
-    cit =  [_PMs.var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm)]
+    crx =  [_PMs.var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm)]
+    cix =  [_PMs.var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm)]
 
     JuMP.@constraint(pm.model, sum(crf.^2 + cif.^2) <= c_rating^2)
-    JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2)
+    JuMP.@constraint(pm.model, sum(crx.^2 + cix.^2) <= c_rating^2)
 end
 ""
 function constraint_current_rms_limit(pm::dHHC_SOC, f_idx, t_idx, c_rating, cm_fund_fr, cm_fund_to)
     crf =  [_PMs.var(pm, n, :cr, f_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     cif =  [_PMs.var(pm, n, :ci, f_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    crt =  [_PMs.var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
-    cit =  [_PMs.var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+    crx =  [_PMs.var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+    cix =  [_PMs.var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    JuMP.@constraint(pm.model, sum(crf.^2 + cif.^2) <= c_rating^2 - cm_fund_fr^2)
-    JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2 - cm_fund_to^2)
+    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund_fr^2); vcat(crf, cif)] in JuMP.SecondOrderCone())
+    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund_to^2); vcat(crx, cix)] in JuMP.SecondOrderCone())
 end
 
 # fairness principle
@@ -219,13 +220,12 @@ function constraint_fairness_principle(pm::_PMs.AbstractIVRModel, principle, loa
     if principle == "equality"
         for l in load_ids[2:end]
             JuMP.@constraint(pm.model, cmd[first(load_ids)] .== cmd[l])
-        end
-    end
+    end end
 end
 
 # filter
 ""
-function constraint_active_filter_current(pm::_PMs.AbstractIVRModel, n::Int, f, i)
+function constraint_active_filter_current(pm::_PMs.AbstractIVRModel, f, i)
     vr = [_PMs.var(pm, nw, :vr, i) for nw in sorted_nw_ids(pm)]
     vi = [_PMs.var(pm, nw, :vi, i) for nw in sorted_nw_ids(pm)]
     
@@ -245,7 +245,7 @@ function constraint_active_filter_current(pm::_PMs.AbstractIVRModel, n::Int, f, 
 end
 
 # load
-""
+"" # needs work towards v0.2.1
 function constraint_load_constant_power(pm::_PMs.AbstractIVRModel, n::Int, l, i, pd, qd)
     vr = _PMs.var(pm, n, :vr, i)
     vi = _PMs.var(pm, n, :vi, i)
@@ -255,17 +255,7 @@ function constraint_load_constant_power(pm::_PMs.AbstractIVRModel, n::Int, l, i,
     JuMP.@constraint(pm.model, pd == vr*crd  + vi*cid)
     JuMP.@constraint(pm.model, qd == vi*crd  - vr*cid)
 end
-""
-function constraint_load_constant_current(pm::_PMs.AbstractIVRModel, n::Int, l, mult)
-    crd = _PMs.var(pm, n, :crd, l)
-    cid = _PMs.var(pm, n, :cid, l)
-    fund_crd = _PMs.var(pm, 1, :crd, l)
-    fund_cid = _PMs.var(pm, 1, :cid, l)
-
-    JuMP.@constraint(pm.model, crd == mult * fund_crd)
-    JuMP.@constraint(pm.model, cid == mult * fund_cid)
-end
-""
+"" # needs work towards v0.2.1
 function constraint_load_current_angle(pm::_PMs.AbstractIVRModel, n::Int, l, angmin, angmax)
     crd = _PMs.var(pm, n, :crd, l)
     cid = _PMs.var(pm, n, :cid, l)
@@ -279,7 +269,7 @@ function constraint_load_current_angle(pm::_PMs.AbstractIVRModel, n::Int, l, ang
 
     JuMP.@constraint(pm.model, cmd^2 <= crd^2 + cid^2)
 end
-""
+"" # needs work towards v0.2.1
 function constraint_load_current_angle(pm::dHHC_SOC, n::Int, l, angmin, angmax)
     crd = _PMs.var(pm, n, :crd, l)
     cid = _PMs.var(pm, n, :cid, l)
@@ -291,49 +281,59 @@ function constraint_load_current_angle(pm::dHHC_SOC, n::Int, l, angmin, angmax)
     JuMP.@constraint(pm.model, cmd * min(cos(angmin), cos(angmax)) <= crd)
     JuMP.@constraint(pm.model, crd <= cmd * max(cos(angmin), cos(angmax)))
 
-    # NB: This changes the direction of the inequality.
+    # NB: This changes the direction of the inequality. 
     JuMP.@constraint(pm.model, [1/sqrt(2) * cmd; 1/sqrt(2) * cmd; vcat(crd, cid)] in JuMP.RotatedSecondOrderCone())
+end
+"" # needs work towards v0.2.1
+function constraint_load_constant_current(pm::_PMs.AbstractIVRModel, n::Int, l, mult)
+    crd = _PMs.var(pm, n, :crd, l)
+    cid = _PMs.var(pm, n, :cid, l)
+    fund_crd = _PMs.var(pm, 1, :crd, l)
+    fund_cid = _PMs.var(pm, 1, :cid, l)
+
+    JuMP.@constraint(pm.model, crd == mult * fund_crd)
+    JuMP.@constraint(pm.model, cid == mult * fund_cid)
 end
 
 # xfmr
 ""
-function constraint_transformer_core_magnetization(pm::_PMs.AbstractIVRModel, n::Int, t, int_a, int_b)
-    cmrt = _PMs.var(pm, n, :cmrt, t)
-    cmit = _PMs.var(pm, n, :cmit, t)
+function constraint_xfmr_core_magnetization(pm::_PMs.AbstractIVRModel, n::Int, x, int_a, int_b)
+    cmrx = _PMs.var(pm, n, :cmrx, x)
+    cmix = _PMs.var(pm, n, :cmix, x)
 
-    et = reduce(vcat,[[_PMs.var(pm, nw, :ert, t), _PMs.var(pm, nw, :eit, t)] 
-                                for nw in _PMs.ref(pm, n, :xfmr, t, "Hᴱ")])
+    et = reduce(vcat,[[_PMs.var(pm, nw, :erx, x), _PMs.var(pm, nw, :eix, x)] 
+                                for nw in _PMs.ref(pm, n, :xfmr, x, "Hᴱ")])
 
-    sym_exc_a = Symbol("exc_a_",n,"_",t)
-    sym_exc_b = Symbol("exc_b_",n,"_",t)
+    sym_exc_a = Symbol("exc_a_", n, "_", x)
+    sym_exc_b = Symbol("exc_b_", n, "_", x)
 
     JuMP.register(pm.model, sym_exc_a, length(et), int_a; autodiff=true)
     JuMP.register(pm.model, sym_exc_b, length(et), int_b; autodiff=true)
 
-    JuMP.add_nonlinear_constraint(pm.model, :($(cmrt) == $(sym_exc_a)($(et...))))
-    JuMP.add_nonlinear_constraint(pm.model, :($(cmit) == $(sym_exc_b)($(et...))))
+    JuMP.add_nonlinear_constraint(pm.model, :($(cmrx) == $(sym_exc_a)($(et...))))
+    JuMP.add_nonlinear_constraint(pm.model, :($(cmix) == $(sym_exc_b)($(et...))))
 end
 ""
-function constraint_transformer_core_magnetization(pm::_PMs.AbstractIVRModel, n::Int, t)
-    cmrt = _PMs.var(pm, n, :cmrt, t)
-    cmit = _PMs.var(pm, n, :cmit, t)
+function constraint_xfmr_core_magnetization(pm::_PMs.AbstractIVRModel, n::Int, x)
+    cmrx = _PMs.var(pm, n, :cmrx, x)
+    cmix = _PMs.var(pm, n, :cmix, x)
 
-    JuMP.@constraint(pm.model, cmrt == 0.0)
-    JuMP.@constraint(pm.model, cmit == 0.0)
+    JuMP.@constraint(pm.model, cmrx == 0.0)
+    JuMP.@constraint(pm.model, cmix == 0.0)
 end
 ""
-function constraint_transformer_core_voltage_drop(pm::_PMs.AbstractIVRModel, n::Int, t, f_idx, xsc)
-    ert = _PMs.var(pm, n, :ert, t)
-    eit = _PMs.var(pm, n, :eit, t)
+function constraint_xfmr_core_voltage_drop(pm::_PMs.AbstractIVRModel, n::Int, x, f_idx, xsc)
+    erx = _PMs.var(pm, n, :erx, x)
+    eix = _PMs.var(pm, n, :eix, x)
 
-    vrt = _PMs.var(pm, n, :vrt, f_idx)
-    vit = _PMs.var(pm, n, :vit, f_idx)
+    vrx = _PMs.var(pm, n, :vrx, f_idx)
+    vix = _PMs.var(pm, n, :vix, f_idx)
 
-    csrt = _PMs.var(pm, n, :csrt, f_idx)
-    csit = _PMs.var(pm, n, :csit, f_idx)
+    csrx = _PMs.var(pm, n, :csrx, f_idx)
+    csix = _PMs.var(pm, n, :csix, f_idx)
     
-    JuMP.@constraint(pm.model, vrt == ert - xsc * csit)
-    JuMP.@constraint(pm.model, vit == eit + xsc * csrt)
+    JuMP.@constraint(pm.model, vrx == erx - xsc * csix)
+    JuMP.@constraint(pm.model, vix == eix + xsc * csrx)
 end
 """
 first principles: uᵢ = tₓᵢⱼ * uⱼ
@@ -345,24 +345,15 @@ eʳₓₕ + j eⁱₓₕ = tʳₓᵢⱼₕ vʳₓⱼᵢₕ + j tʳₓᵢⱼₕ v
 Re: eʳₓₕ = tʳₓᵢⱼₕ vʳₓⱼᵢₕ - tⁱₓᵢⱼₕ vⁱₓⱼᵢₕ
 Im: eⁱₓₕ = tʳₓᵢⱼₕ vⁱₓⱼᵢₕ + tⁱₓᵢⱼₕ vʳₓⱼᵢₕ
 """
-function constraint_transformer_core_voltage_phase_shift(pm::_PMs.AbstractIVRModel, n::Int, t, t_idx, tr, ti, gnd1, gnd2)
-    ert = _PMs.var(pm, n, :ert, t)
-    eit = _PMs.var(pm, n, :eit, t)
+function constraint_xfmr_core_voltage_phase_shift(pm::_PMs.AbstractIVRModel, n::Int, x, t_idx, tr, ti)
+    erx = _PMs.var(pm, n, :erx, x)
+    eix = _PMs.var(pm, n, :eix, x)
 
-    vrt = _PMs.var(pm, n, :vrt, t_idx)
-    vit = _PMs.var(pm, n, :vit, t_idx)
+    vrx = _PMs.var(pm, n, :vrx, t_idx)
+    vix = _PMs.var(pm, n, :vix, t_idx)
 
-    JuMP.@constraint(pm.model, ert == tr * vrt - ti * vit)
-    JuMP.@constraint(pm.model, eit == tr * vit + ti * vrt)
-
-    # if both winding cnf ∈ {D,Y,Z}, forall h ∈ 𝓗⁰: fix the excitation voltage 
-    # to zero 
-    if is_zero_sequence(n) && gnd1 != 1 && gnd2 != 1
-        println("cstr: h=$n, xfmr=$t")
-
-        JuMP.@constraint(pm.model, ert == 0.0)
-        JuMP.@constraint(pm.model, eit == 0.0)
-    end
+    JuMP.@constraint(pm.model, erx == tr * vrx - ti * vix)
+    JuMP.@constraint(pm.model, eix == tr * vix + ti * vrx)
 end
 """
 first principles: conj(tₓᵢⱼ) * iₓᵢⱼ + iₓⱼᵢ = 0
@@ -374,101 +365,101 @@ tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓ�
 Re: tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) + iˢ⁻ʳₓⱼᵢₕ = 0
 Im: tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) - tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + iˢ⁻ⁱₓⱼᵢₕ = 0
 """
-function constraint_transformer_core_current_balance(pm::_PMs.AbstractIVRModel, n::Int, t, f_idx, t_idx, tr, ti, rsh)
-    cmrt = _PMs.var(pm, n, :cmrt, t)
-    cmit = _PMs.var(pm, n, :cmit, t)
+function constraint_xfmr_core_current_balance(pm::_PMs.AbstractIVRModel, n::Int, x, f_idx, t_idx, tr, ti, rsh)
+    cmrx = _PMs.var(pm, n, :cmrx, x)
+    cmix = _PMs.var(pm, n, :cmix, x)
 
-    csrt_fr = _PMs.var(pm, n, :csrt, f_idx)
-    csit_fr = _PMs.var(pm, n, :csit, f_idx)
+    csrx_fr = _PMs.var(pm, n, :csrx, f_idx)
+    csix_fr = _PMs.var(pm, n, :csix, f_idx)
 
-    csrt_to = _PMs.var(pm, n, :csrt, t_idx)
-    csit_to = _PMs.var(pm, n, :csit, t_idx)
+    csrx_to = _PMs.var(pm, n, :csrx, t_idx)
+    csix_to = _PMs.var(pm, n, :csix, t_idx)
 
-    ert = _PMs.var(pm, n, :ert, t)
-    eit = _PMs.var(pm, n, :eit, t)
+    erx = _PMs.var(pm, n, :erx, x)
+    eix = _PMs.var(pm, n, :eix, x)
 
-    JuMP.@constraint(pm.model,  tr * (csrt_fr - cmrt - ert / rsh)
-                                + ti * (csit_fr - cmit - eit / rsh)
-                                + csrt_to 
+    JuMP.@constraint(pm.model,  tr * (csrx_fr - cmrx - erx / rsh)
+                                + ti * (csix_fr - cmix - eix / rsh)
+                                + csrx_to 
                                     == 
                                 0.0
                     )
-    JuMP.@constraint(pm.model,  tr * (csit_fr - cmit - eit / rsh)
-                                - ti * (csrt_fr - cmrt - ert / rsh)
-                                + csit_to
+    JuMP.@constraint(pm.model,  tr * (csix_fr - cmix - eix / rsh)
+                                - ti * (csrx_fr - cmrx - erx / rsh)
+                                + csix_to
                                     == 
                                 0.0
                     )
 end
 ""
-function constraint_transformer_winding_config(pm::_PMs.AbstractIVRModel, n::Int, i, idx, r, re, xe, gnd)
+function constraint_xfmr_winding_config(pm::_PMs.AbstractIVRModel, n::Int, i, idx, r, re, xe, gnd)
     vr = _PMs.var(pm, n, :vr, i)
     vi = _PMs.var(pm, n, :vi, i)
 
-    vrt = _PMs.var(pm, n, :vrt, idx)
-    vit = _PMs.var(pm, n, :vit, idx)
+    vrx = _PMs.var(pm, n, :vrx, idx)
+    vix = _PMs.var(pm, n, :vix, idx)
 
-    crt = _PMs.var(pm, n, :crt, idx)
-    cit = _PMs.var(pm, n, :cit, idx)
+    crx = _PMs.var(pm, n, :crx, idx)
+    cix = _PMs.var(pm, n, :cix, idx)
 
     # h ∈ 𝓗⁺ ⋃ 𝓗⁻
     if !is_zero_sequence(n)
-        JuMP.@constraint(pm.model, vrt == vr - r * crt)
-        JuMP.@constraint(pm.model, vit == vi - r * cit)
+        JuMP.@constraint(pm.model, vrx == vr - r * crx)
+        JuMP.@constraint(pm.model, vix == vi - r * cix)
     end
 
     # h ∈ 𝓗⁰, gnd == true -> cnf ∈ {Ye, Ze}
     if is_zero_sequence(n) && gnd == 1
-        JuMP.@constraint(pm.model, vrt == vr - (r + 3re) * crt + 3xe * cit)
-        JuMP.@constraint(pm.model, vit == vi - (r + 3re) * cit - 3xe * crt)
+        JuMP.@constraint(pm.model, vrx == vr - (r + 3re) * crx + 3xe * cix)
+        JuMP.@constraint(pm.model, vix == vi - (r + 3re) * cix - 3xe * crx)
     end
 
     # h ∈ 𝓗⁰, gnd == false -> cnf ∈ {D, Y, Z}
     if is_zero_sequence(n) && gnd != 1
-        JuMP.@constraint(pm.model, crt == 0)
-        JuMP.@constraint(pm.model, cit == 0)
+        JuMP.@constraint(pm.model, crx == 0)
+        JuMP.@constraint(pm.model, cix == 0)
     end
 end
 ""
-function constraint_transformer_winding_current_balance(pm::_PMs.AbstractIVRModel, n::Int, idx, r, b_sh, g_sh, cnf)
-    vrt = _PMs.var(pm, n, :vrt, idx)
-    vit = _PMs.var(pm, n, :vit, idx)
+function constraint_xfmr_winding_current_balance(pm::_PMs.AbstractIVRModel, n::Int, idx, r, b_sh, g_sh, cnf)
+    vrx = _PMs.var(pm, n, :vrx, idx)
+    vix = _PMs.var(pm, n, :vix, idx)
     
-    crt = _PMs.var(pm, n, :crt, idx)
-    cit = _PMs.var(pm, n, :cit, idx)
+    crx = _PMs.var(pm, n, :crx, idx)
+    cix = _PMs.var(pm, n, :cix, idx)
 
-    csrt = _PMs.var(pm, n, :csrt, idx)
-    csit = _PMs.var(pm, n, :csit, idx)
+    csrx = _PMs.var(pm, n, :csrx, idx)
+    csix = _PMs.var(pm, n, :csix, idx)
 
     # h ∈ 𝓗⁺ ⋃ 𝓗⁻
     if !is_zero_sequence(n)
-        JuMP.@constraint(pm.model, crt == csrt - g_sh * vrt + b_sh * vit)
-        JuMP.@constraint(pm.model, cit == csit - g_sh * vit - b_sh * vrt)
+        JuMP.@constraint(pm.model, crx == csrx - g_sh * vrx + b_sh * vix)
+        JuMP.@constraint(pm.model, cix == csix - g_sh * vix - b_sh * vrx)
     end
 
     # h ∈ 𝓗⁰, cnf ∈ {Y(e), Z(e)}
     if is_zero_sequence(n) && cnf in ['Y','Z']
-        JuMP.@constraint(pm.model, crt == csrt - g_sh * vrt + b_sh * vit)
-        JuMP.@constraint(pm.model, cit == csit - g_sh * vit - b_sh * vrt)
+        JuMP.@constraint(pm.model, crx == csrx - g_sh * vrx + b_sh * vix)
+        JuMP.@constraint(pm.model, cix == csix - g_sh * vix - b_sh * vrx)
     end
 
     # h ∈ 𝓗⁰, cnf ∈ {D}
     if is_zero_sequence(n) && cnf in ['D'] && r ≠ 0.0
-        JuMP.@constraint(pm.model, crt == csrt - g_sh * vrt + b_sh * vit - vrt / r)
-        JuMP.@constraint(pm.model, cit == csit - g_sh * vit - b_sh * vrt - vit / r)
+        JuMP.@constraint(pm.model, crx == csrx - g_sh * vrx + b_sh * vix - vrx / r)
+        JuMP.@constraint(pm.model, cix == csix - g_sh * vix - b_sh * vrx - vix / r)
     end
 end
 ""
-function constraint_transformer_winding_current_rms_limit(pm::_PMs.AbstractIVRModel, idx, c_rating)
-    crt =  [_PMs.var(pm, n, :crt, idx) for n in sorted_nw_ids(pm)]
-    cit =  [_PMs.var(pm, n, :cit, idx) for n in sorted_nw_ids(pm)]
+function constraint_xfmr_current_rms_limit(pm::_PMs.AbstractIVRModel, idx, c_rating)
+    crx =  [_PMs.var(pm, n, :crx, idx) for n in sorted_nw_ids(pm)]
+    cix =  [_PMs.var(pm, n, :cix, idx) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2)
+    JuMP.@constraint(pm.model, sum(crx.^2 + cix.^2) <= c_rating^2)
 end
 ""
-function constraint_transformer_winding_current_rms_limit(pm::dHHC_SOC, idx, c_rating, cm_fund)
-    crt =  [_PMs.var(pm, n, :crt, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
-    cit =  [_PMs.var(pm, n, :cit, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+function constraint_xfmr_current_rms_limit(pm::dHHC_SOC, idx, c_rating, cm_fund)
+    crx =  [_PMs.var(pm, n, :crx, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+    cix =  [_PMs.var(pm, n, :cix, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2 - cm_fund^2) 
+    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund^2); vcat(crx, cix)] in JuMP.SecondOrderCone())
 end

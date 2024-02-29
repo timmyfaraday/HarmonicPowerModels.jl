@@ -7,6 +7,7 @@
 # Authors: Tom Van Acker, Hakan Ergun                                          #
 ################################################################################
 # Changelog:                                                                   #
+# v0.2.0 - reviewed TVA                                                        #
 ################################################################################
 
 @testset "Harmonic Hosting Capacity" begin
@@ -144,28 +145,28 @@
                           xfmr["re2"] * im
                 ysh_to  = ifelse(cnf2 == 'D' && nh ∈ H⁰, 1 / xfmr["r2"], 0.0)
 
-                e       = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["ert"] +
-                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["eit"] * im
+                e       = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["erx"] +
+                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["eix"] * im
                 θe      = angle(e)
 
-                vt_fr   = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["vrt_fr"] +
-                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["vit_fr"] * im
-                vt_to   = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["vrt_to"] +
-                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["vit_to"] * im
+                vt_fr   = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["vrx_fr"] +
+                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["vix_fr"] * im
+                vt_to   = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["vrx_to"] +
+                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["vix_to"] * im
                 θv      = angle(vt_to)
 
-                cmt     = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["cmrt"] +
-                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["cmit"] * im
+                cmt     = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["cmrx"] +
+                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["cmix"] * im
 
-                ct_fr   = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["crt_fr"] +
-                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["cit_fr"] * im
-                ct_to   = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["crt_to"] + 
-                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["cit_to"] * im 
+                ct_fr   = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["crx_fr"] +
+                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["cix_fr"] * im
+                ct_to   = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["crx_to"] + 
+                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["cix_to"] * im 
 
-                cst_fr  = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["csrt_fr"] +
-                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["csit_fr"] * im
-                cst_to  = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["csrt_to"] + 
-                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["csit_to"] * im
+                cst_fr  = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["csrx_fr"] +
+                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["csix_fr"] * im
+                cst_to  = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["csrx_to"] + 
+                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["csix_to"] * im
 
                 ## Core
                 # Kirchhoff's current law
@@ -218,7 +219,7 @@
                 elseif HPM.is_zero_sequence(nh)
                     Δθ = ceil(abs(θv - θe), digits=10)
                 end
-                @test Δθ % 2pi ≈ 0.0
+                @test e ≈ 0.0 || Δθ % 2pi ≈ 0.0
             end
         end
     end
@@ -248,7 +249,7 @@
 
         @testset "Feasibility and Objective" begin
             # solved to optimality
-            @test results_hhc["termination_status"] == ALMOST_OPTIMAL
+            @test results_hhc["termination_status"] == OPTIMAL
             # objective value depending on fairness principle
             if !haskey(hdata, "principle")
                 @test isapprox(results_hhc["objective"], 0.160236; atol = 1e-4)
@@ -362,28 +363,28 @@
                           xfmr["re2"] * im
                 ysh_to  = ifelse(cnf2 == 'D' && nh ∈ H⁰, 1 / xfmr["r2"], 0.0)
 
-                e       = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["ert"] +
-                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["eit"] * im
+                e       = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["erx"] +
+                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["eix"] * im
                 θe      = angle(e)
 
-                vt_fr   = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["vrt_fr"] +
-                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["vit_fr"] * im
-                vt_to   = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["vrt_to"] +
-                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["vit_to"] * im
+                vt_fr   = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["vrx_fr"] +
+                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["vix_fr"] * im
+                vt_to   = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["vrx_to"] +
+                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["vix_to"] * im
                 θv      = angle(vt_to)
 
-                cmt     = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["cmrt"] +
-                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["cmit"] * im
+                cmt     = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["cmrx"] +
+                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["cmix"] * im
 
-                ct_fr   = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["crt_fr"] +
-                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["cit_fr"] * im
-                ct_to   = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["crt_to"] + 
-                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["cit_to"] * im 
+                ct_fr   = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["crx_fr"] +
+                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["cix_fr"] * im
+                ct_to   = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["crx_to"] + 
+                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["cix_to"] * im 
 
-                cst_fr  = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["csrt_fr"] +
-                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["csit_fr"] * im
-                cst_to  = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["csrt_to"] + 
-                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["csit_to"] * im
+                cst_fr  = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["csrx_fr"] +
+                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["csix_fr"] * im
+                cst_to  = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["csrx_to"] + 
+                          results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["csix_to"] * im
 
                 ## Core
                 # Kirchhoff's current law
@@ -429,7 +430,6 @@
                 #       θⱽ - θᵉ ≈ -vg * π/6
                 # - 'zero sequence' harmonics, i.e., h = 3 + 3n = 3, 6, 9...
                 #       θⱽ ≈ θᵉ
-                println("nh = $nh, xfmr = $nx")
                 if HPM.is_pos_sequence(nh)
                     Δθ = ceil(abs(θv - θe - vg * π/6), digits=10)
                 elseif HPM.is_neg_sequence(nh)
@@ -437,7 +437,7 @@
                 elseif HPM.is_zero_sequence(nh)
                     Δθ = ceil(abs(θv - θe), digits=10)
                 end
-                @test Δθ % 2pi ≈ 0.0
+                @test e ≈ 0.0 || Δθ % 2pi ≈ 0.0
             end end
         end
     end
@@ -468,7 +468,7 @@
 
         @testset "Feasibility" begin
             @test results_hhc_nlp["termination_status"] == LOCALLY_SOLVED
-            @test results_hhc_soc["termination_status"] == ALMOST_OPTIMAL
+            @test results_hhc_soc["termination_status"] == OPTIMAL
             @test isapprox(results_hhc_nlp["objective"], results_hhc_soc["objective"], atol=1e-4)
         end
     end

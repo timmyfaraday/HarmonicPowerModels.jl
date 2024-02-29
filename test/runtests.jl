@@ -16,7 +16,7 @@ using JuMP
 using PowerModels
 using HarmonicPowerModels
 
-using Hypatia
+using Clarabel
 using Ipopt
 
 # pkg const
@@ -29,7 +29,7 @@ const HPM = HarmonicPowerModels
 
 # solvers
 solver_nlp = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
-solver_soc = JuMP.optimizer_with_attributes(Hypatia.Optimizer, "verbose" => 0)
+solver_soc = JuMP.optimizer_with_attributes(Clarabel.Optimizer, "verbose" => 0)
 
 # silence the warnings of PowerModels
 PMs.silence()
@@ -40,8 +40,5 @@ PMs.silence()
     include("hhc.jl")
     include("hpf.jl")
     include("hopf.jl")
-
-    # components
-    include("xfmr.jl")
 
 end

@@ -58,7 +58,7 @@ print("======== Transformer currents for 3x Harmonics ==================", "\n")
 for h in H0
     print("Harmonic Order ", h, "\n")
     for (x, xfmr) in results_hhc_nlp["solution"]["nw"][h]["xfmr"]
-        print("Type: ", hdata_nlp["nw"][h]["xfmr"][x]["vg"], ", Total current from side: ", round(xfmr["crt_fr"] + xfmr["cit_fr"]im, digits = 6), ", Total current to side: ", round(xfmr["crt_to"] + xfmr["cit_to"]im, digits = 6), "\n")
+        print("Type: ", hdata_nlp["nw"][h]["xfmr"][x]["vg"], ", Total current from side: ", round(xfmr["crx_fr"] + xfmr["cix_fr"]im, digits = 6), ", Total current to side: ", round(xfmr["crx_to"] + xfmr["cix_to"]im, digits = 6), "\n")
     end
 end
 
@@ -109,8 +109,8 @@ for h in H
         ei = (vi_to * xfmr["tr"] - vr_to * xfmr["ti"]) / (xfmr["tr"]^2 + xfmr["ti"]^2) 
         e = (er + (ei)im) 
 
-        print("XFMR ", x, ", Excitation voltage calculated: ", round(e, digits = 6), "\n")
-        print("XFMR ", x, ", Excitation voltage results: ", round(rxfmr["ert"] + (rxfmr["eit"])im, digits = 6), "\n")
+        print("XFMR ", x, ", Excixation voltage calculated: ", round(e, digits = 6), "\n")
+        print("XFMR ", x, ", Excitation voltage results: ", round(rxfmr["erx"] + (rxfmr["eix"])im, digits = 6), "\n")
 
         csh = e / xfmr["rsh"]
         cst = (v_fr - e) / (xfmr["r1"]+ xfmr["r2"] + xfmr["xsc"]im)
@@ -119,12 +119,12 @@ for h in H
         vt = v_fr - cst * (xfmr["r1"]+ xfmr["r2"])
 
         print("XFMR ", x, ", Internal voltage calculated: ", round(vt, digits = 6), "\n")
-        print("XFMR ", x, ", Internal voltage results: ", round(rxfmr["vrt_fr"] + (rxfmr["vit_fr"])im, digits = 6), "\n")
+        print("XFMR ", x, ", Internal voltage results: ", round(rxfmr["vrx_fr"] + (rxfmr["vix_fr"])im, digits = 6), "\n")
 
         print("XFMR ", x, ", Total current calculated: ", round(ct, digits = 6), "\n")
-        print("XFMR ", x, ", Total current results: ", round(rxfmr["crt_fr"] + (rxfmr["cit_fr"])im, digits = 6), "\n")
+        print("XFMR ", x, ", Total current results: ", round(rxfmr["crx_fr"] + (rxfmr["cix_fr"])im, digits = 6), "\n")
 
         print("XFMR ", x, ", Series current calculated: ", round(cst, digits = 6), "\n")
-        print("XFMR ", x, ", Series current results: ", round(rxfmr["csrt_fr"] + (rxfmr["csit_fr"])im, digits = 6), "\n")
+        print("XFMR ", x, ", Series current results: ", round(rxfmr["csrx_fr"] + (rxfmr["csix_fr"])im, digits = 6), "\n")
     end
 end

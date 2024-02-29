@@ -7,6 +7,7 @@
 # Authors: Tom Van Acker, Frederik Geth                                        #
 ################################################################################
 # Changelog:                                                                   #
+# v0.2.0 - reviewed TVA                                                        #
 ################################################################################
 
 # filter
@@ -47,13 +48,13 @@ function _ref_add_xfmr!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         ref[:xfmr] = Dict(x for x in ref[:xfmr] if  x.second["f_bus"] in keys(ref[:bus]) &&
                                                     x.second["t_bus"] in keys(ref[:bus]))
         
-        ref[:xfmr_arcs_from] = [(t,xfmr["f_bus"],xfmr["t_bus"]) for (t,xfmr) in ref[:xfmr]]
-        ref[:xfmr_arcs_to]   = [(t,xfmr["t_bus"],xfmr["f_bus"]) for (t,xfmr) in ref[:xfmr]]
+        ref[:xfmr_arcs_from] = [(x,xfmr["f_bus"],xfmr["t_bus"]) for (x,xfmr) in ref[:xfmr]]
+        ref[:xfmr_arcs_to]   = [(x,xfmr["t_bus"],xfmr["f_bus"]) for (x,xfmr) in ref[:xfmr]]
         ref[:xfmr_arcs] = [ref[:xfmr_arcs_from]; ref[:xfmr_arcs_to]]
 
         bus_arcs_xfmr = Dict((i, []) for (i,bus) in ref[:bus])
-        for (t,i,j) in ref[:xfmr_arcs]
-            push!(bus_arcs_xfmr[i], (t,i,j))
+        for (x,i,j) in ref[:xfmr_arcs]
+            push!(bus_arcs_xfmr[i], (x,i,j))
         end
         ref[:bus_arcs_xfmr] = bus_arcs_xfmr
     end

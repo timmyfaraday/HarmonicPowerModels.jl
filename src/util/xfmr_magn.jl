@@ -7,6 +7,7 @@
 # Authors: Tom Van Acker, Frederik Geth                                        #
 ################################################################################
 # Changelog:                                                                   #
+# v0.2.0 - reviewed TVA                                                        #
 ################################################################################
 
 """
@@ -91,10 +92,10 @@ function sample_magnetizing_current(hdata::Dict{String,<:Any}, xfmr_magn::Dict{S
             xfrm["Im_B"]  = (x...) -> xfrm["INT_B"](x...)
 
             # set the excitation voltage limits
-            xfrm["eat_min"], xfrm["eat_max"] = 0.0, 2π
-            xfrm["emt_min"], xfrm["emt_max"] = bus["vmin"], bus["vmax"]
-            xfrm["ert_min"], xfrm["ert_max"] = - xfmr_magn["Emax"], xfmr_magn["Emax"]
-            xfrm["eit_min"], xfrm["eit_max"] = - xfmr_magn["Emax"], xfmr_magn["Emax"]
+            xfrm["eax_min"], xfrm["eax_max"] = 0.0, 2π
+            xfrm["emx_min"], xfrm["emx_max"] = bus["vmin"], bus["vmax"]
+            xfrm["erx_min"], xfrm["erx_max"] = - xfmr_magn["Emax"], xfmr_magn["Emax"]
+            xfrm["eix_min"], xfrm["eix_max"] = - xfmr_magn["Emax"], xfmr_magn["Emax"]
         end
     end
 end

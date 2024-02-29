@@ -7,6 +7,7 @@
 # Authors: Tom Van Acker, Frederik Geth                                        #
 ################################################################################
 # Changelog:                                                                   #
+# v0.2.0 - reviewed TVA                                                        #
 ################################################################################
 
 ""
@@ -24,11 +25,11 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
     for n in _PMs.nw_ids(pm)
         ## voltage variables
         variable_bus_voltage(pm, nw=n, bounded=false)
-        variable_transformer_voltage(pm, nw=n, bounded=false)
+        variable_xfmr_voltage(pm, nw=n, bounded=false)
         
         ## edge current variables 
         variable_branch_current(pm, nw=n, bounded=false)
-        variable_transformer_current(pm, nw=n, bounded=false)
+        variable_xfmr_current(pm, nw=n, bounded=false)
 
         ## unit current variables
         variable_filter_current(pm, nw=n, bounded=false)
@@ -42,26 +43,26 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
     # constraint
     ## overall or fundamental constraints
     ### node
-    for i in _PMs.ids(pm, :bus, nw=fundamental(pm))
-        constraint_voltage_rms_limit(pm, i, nw=fundamental(pm))
-        constraint_voltage_thd_limit(pm, i, nw=fundamental(pm))
+    for i in ids(pm, :bus)
+        constraint_voltage_rms_limit(pm, i)
+        constraint_voltage_thd_limit(pm, i)
     end
     ### branch 
-    for b in _PMs.ids(pm, :branch, nw=fundamental(pm))
-        constraint_current_rms_limit(pm, b, nw=fundamental(pm))
+    for b in ids(pm, :branch)
+        constraint_current_rms_limit(pm, b)
     end
     ### filter
-    for f in _PMs.ids(pm, :filter, nw=fundamental(pm))
-        constraint_active_filter_current(pm, f, nw=fundamental(pm))
+    for f in ids(pm, :filter)
+        constraint_active_filter_current(pm, f)
     end
     ### generator
-    for g in _PMs.ids(pm, :gen, nw=fundamental(pm))
+    for g in ids(pm, :gen)
         _PMs.constraint_gen_active_bounds(pm, g, nw=fundamental(pm))
         _PMs.constraint_gen_reactive_bounds(pm, g, nw=fundamental(pm))
     end
     ### xfmr 
-    for t in _PMs.ids(pm, :xfmr, nw=fundamental(pm))
-        constraint_transformer_winding_current_rms_limit(pm, t, nw=fundamental(pm))
+    for x in ids(pm, :xfmr)
+        constraint_xfmr_current_rms_limit(pm, x)
     end
 
     ## harmonic constraints
@@ -86,14 +87,14 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
         end
     
         ### xfmr
-        for t in _PMs.ids(pm, :xfmr, nw=n)
-            constraint_transformer_core_magnetization(pm, t, nw=n)
-            constraint_transformer_core_voltage_drop(pm, t, nw=n)
-            constraint_transformer_core_voltage_phase_shift(pm, t, nw=n)
-            constraint_transformer_core_current_balance(pm, t, nw=n)
+        for x in _PMs.ids(pm, :xfmr, nw=n)
+            constraint_xfmr_core_magnetization(pm, x, nw=n)
+            constraint_xfmr_core_voltage_drop(pm, x, nw=n)
+            constraint_xfmr_core_voltage_phase_shift(pm, x, nw=n)
+            constraint_xfmr_core_current_balance(pm, x, nw=n)
             
-            constraint_transformer_winding_config(pm, t, nw=n)
-            constraint_transformer_winding_current_balance(pm, t, nw=n)
+            constraint_xfmr_winding_config(pm, x, nw=n)
+            constraint_xfmr_winding_current_balance(pm, x, nw=n)
         end
 
         ### harmonic unit

@@ -7,6 +7,7 @@
 # Authors: Tom Van Acker, Frederik Geth                                        #
 ################################################################################
 # Changelog:                                                                   #
+# v0.2.0 - reviewed by TVA                                                     #
 ################################################################################
 
 # ref bus
@@ -26,28 +27,28 @@ end
 
 # bus
 ""
-function constraint_voltage_rms_limit(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
-    vminrms = _PMs.ref(pm, nw, :bus, i, "vminrms")
-    vmaxrms = _PMs.ref(pm, nw, :bus, i, "vmaxrms")
+function constraint_voltage_rms_limit(pm::_PMs.AbstractPowerModel, i::Int)
+    vminrms = _PMs.ref(pm, fundamental(pm), :bus, i, "vminrms")
+    vmaxrms = _PMs.ref(pm, fundamental(pm), :bus, i, "vmaxrms")
 
     constraint_voltage_rms_limit(pm, i, vminrms, vmaxrms)
 end
 ""
-function constraint_voltage_rms_limit(pm::dHHC_SOC, i::Int; nw::Int=fundamental(pm))
-    vmaxrms = _PMs.ref(pm, nw, :bus, i, "vmaxrms")
+function constraint_voltage_rms_limit(pm::dHHC_SOC, i::Int)
+    vmaxrms = _PMs.ref(pm, fundamental(pm), :bus, i, "vmaxrms")
     vmfund  = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
 
     constraint_voltage_rms_limit(pm, i, vmaxrms, vmfund)
 end
 ""
-function constraint_voltage_thd_limit(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
-    thdmax = _PMs.ref(pm, nw, :bus, i, "thdmax")
+function constraint_voltage_thd_limit(pm::_PMs.AbstractPowerModel, i::Int)
+    thdmax = _PMs.ref(pm, fundamental(pm), :bus, i, "thdmax")
    
     constraint_voltage_thd_limit(pm, i, thdmax)
 end
 ""
-function constraint_voltage_thd_limit(pm::dHHC_SOC, i::Int; nw::Int=fundamental(pm))
-    thdmax = _PMs.ref(pm, nw, :bus, i, "thdmax")
+function constraint_voltage_thd_limit(pm::dHHC_SOC, i::Int)
+    thdmax = _PMs.ref(pm, fundamental(pm), :bus, i, "thdmax")
     vmfund = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
    
     constraint_voltage_thd_limit(pm, i, thdmax, vmfund)
@@ -89,8 +90,8 @@ end
 
 # branch
 ""
-function constraint_current_rms_limit(pm::_PMs.AbstractPowerModel, b::Int; nw::Int=fundamental(pm))
-    branch = _PMs.ref(pm, nw, :branch, b)
+function constraint_current_rms_limit(pm::_PMs.AbstractPowerModel, b::Int)
+    branch = _PMs.ref(pm, fundamental(pm), :branch, b)
     f_bus, t_bus = branch["f_bus"], branch["t_bus"]
     f_idx, t_idx = (b, f_bus, t_bus), (b, t_bus, f_bus)
 
@@ -99,8 +100,8 @@ function constraint_current_rms_limit(pm::_PMs.AbstractPowerModel, b::Int; nw::I
     constraint_current_rms_limit(pm, f_idx, t_idx, c_rating)
 end
 ""
-function constraint_current_rms_limit(pm::dHHC_SOC, b::Int; nw::Int=fundamental(pm))
-    branch = _PMs.ref(pm, nw, :branch, b)
+function constraint_current_rms_limit(pm::dHHC_SOC, b::Int)
+    branch = _PMs.ref(pm, fundamental(pm), :branch, b)
     f_bus, t_bus = branch["f_bus"], branch["t_bus"]
     f_idx, t_idx = (b, f_bus, t_bus), (b, t_bus, f_bus)
 
@@ -123,17 +124,17 @@ end
 
 # filter
 ""
-function constraint_active_filter_current(pm::_PMs.AbstractPowerModel, f::Int; nw::Int=fundamental(pm))
-    filter  = _PMs.ref(pm, nw, :filter, f)
+function constraint_active_filter_current(pm::_PMs.AbstractPowerModel, f::Int)
+    filter  = _PMs.ref(pm, fundamental(pm), :filter, f)
     bus     = filter["bus"]
 
     if filter["a/p"] == "a"
-        constraint_active_filter_current(pm, nw, f, bus)
+        constraint_active_filter_current(pm, f, bus)
     end
 end
 
 # load
-""
+"" # needs work towards v0.2.1
 function constraint_load_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fundamental(pm))
     load = _PMs.ref(pm, nw, :load, l)
 
@@ -149,7 +150,7 @@ function constraint_load_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fu
         constraint_load_current_angle(pm, nw, l, angmin, angmax)
     end  
 end
-""
+"" # needs work towards v0.2.1
 function constraint_load_power(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fundamental(pm))
     load = _PMs.ref(pm, nw, :load, l)
 
@@ -166,117 +167,114 @@ end
 
 # xfmr
 ""
-function constraint_transformer_core_magnetization(pm::_PMs.AbstractPowerModel, t::Int; nw::Int=fundamental(pm))
-    xfmr = _PMs.ref(pm, nw, :xfmr, t)
-    Hᴵ = haskey(xfmr, "Hᴵ") ? xfmr["Hᴵ"] : Int[] ;
+function constraint_xfmr_core_magnetization(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
+    xfmr    = _PMs.ref(pm, nw, :xfmr, x)
+    Hᴵ      = haskey(xfmr, "Hᴵ") ? xfmr["Hᴵ"] : Int[] ;
 
     if nw in Hᴵ
-        int_a = _PMs.ref(pm, nw, :xfmr, t, "Im_A")
-        int_b = _PMs.ref(pm, nw, :xfmr, t, "Im_B")
+        int_a = _PMs.ref(pm, nw, :xfmr, x, "Im_A")
+        int_b = _PMs.ref(pm, nw, :xfmr, x, "Im_B")
 
-        constraint_transformer_core_magnetization(pm, nw, t, int_a, int_b)
+        constraint_xfmr_core_magnetization(pm, nw, x, int_a, int_b)
     else 
-        constraint_transformer_core_magnetization(pm, nw, t)
+        constraint_xfmr_core_magnetization(pm, nw, x)
     end
 end
 ""
-function constraint_transformer_core_voltage_drop(pm::_PMs.AbstractPowerModel, t::Int; nw::Int=fundamental(pm))
-    f_bus = _PMs.ref(pm, nw, :xfmr, t, "f_bus")
-    t_bus = _PMs.ref(pm, nw, :xfmr, t, "t_bus")
-    f_idx = (t,f_bus,t_bus)
+function constraint_xfmr_core_voltage_drop(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
+    f_bus = _PMs.ref(pm, nw, :xfmr, x, "f_bus")
+    t_bus = _PMs.ref(pm, nw, :xfmr, x, "t_bus")
+    f_idx = (x,f_bus,t_bus)
     
-    xsc = _PMs.ref(pm, nw, :xfmr, t, "xsc")
+    xsc = _PMs.ref(pm, nw, :xfmr, x, "xsc")
     
-    constraint_transformer_core_voltage_drop(pm, nw, t, f_idx, xsc)
+    constraint_xfmr_core_voltage_drop(pm, nw, x, f_idx, xsc)
 end
 "" 
-function constraint_transformer_core_voltage_phase_shift(pm::_PMs.AbstractPowerModel, t::Int; nw::Int=fundamental(pm))
-    f_bus = _PMs.ref(pm, nw, :xfmr, t, "f_bus")
-    t_bus = _PMs.ref(pm, nw, :xfmr, t, "t_bus")
-    t_idx = (t,t_bus,f_bus)
+function constraint_xfmr_core_voltage_phase_shift(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
+    f_bus = _PMs.ref(pm, nw, :xfmr, x, "f_bus")
+    t_bus = _PMs.ref(pm, nw, :xfmr, x, "t_bus")
+    t_idx = (x,t_bus,f_bus)
     
-    tr = _PMs.ref(pm, nw, :xfmr, t, "tr")
-    ti = _PMs.ref(pm, nw, :xfmr, t, "ti")
-
-    gnd1 = _PMs.ref(pm, nw, :xfmr, t, "gnd1")
-    gnd2 = _PMs.ref(pm, nw, :xfmr, t, "gnd2")
+    tr = _PMs.ref(pm, nw, :xfmr, x, "tr")
+    ti = _PMs.ref(pm, nw, :xfmr, x, "ti")
     
-    constraint_transformer_core_voltage_phase_shift(pm, nw, t, t_idx, tr, ti, gnd1, gnd2)
+    constraint_xfmr_core_voltage_phase_shift(pm, nw, x, t_idx, tr, ti)
 end
 ""
-function constraint_transformer_core_current_balance(pm::_PMs.AbstractPowerModel, t::Int; nw::Int=fundamental(pm))
-    f_bus = _PMs.ref(pm, nw, :xfmr, t, "f_bus")
-    t_bus = _PMs.ref(pm, nw, :xfmr, t, "t_bus")
-    f_idx = (t,f_bus,t_bus)
-    t_idx = (t,t_bus,f_bus)
+function constraint_xfmr_core_current_balance(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
+    f_bus = _PMs.ref(pm, nw, :xfmr, x, "f_bus")
+    t_bus = _PMs.ref(pm, nw, :xfmr, x, "t_bus")
+    f_idx = (x,f_bus,t_bus)
+    t_idx = (x,t_bus,f_bus)
     
-    tr = _PMs.ref(pm, nw, :xfmr, t, "tr")
-    ti = _PMs.ref(pm, nw, :xfmr, t, "ti")
+    tr = _PMs.ref(pm, nw, :xfmr, x, "tr")
+    ti = _PMs.ref(pm, nw, :xfmr, x, "ti")
 
-    rsh = _PMs.ref(pm, nw, :xfmr, t, "rsh")
+    rsh = _PMs.ref(pm, nw, :xfmr, x, "rsh")
 
-    constraint_transformer_core_current_balance(pm, nw, t, f_idx, t_idx, tr, ti, rsh)
+    constraint_xfmr_core_current_balance(pm, nw, x, f_idx, t_idx, tr, ti, rsh)
 end
 ""
-function constraint_transformer_winding_config(pm::_PMs.AbstractPowerModel, t::Int; nw::Int=fundamental(pm))
-    f_bus = _PMs.ref(pm, nw, :xfmr, t, "f_bus")
-    t_bus = _PMs.ref(pm, nw, :xfmr, t, "t_bus")
+function constraint_xfmr_winding_config(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
+    f_bus = _PMs.ref(pm, nw, :xfmr, x, "f_bus")
+    t_bus = _PMs.ref(pm, nw, :xfmr, x, "t_bus")
     w_bus = [f_bus, t_bus]
-    w_idx = [(t,f_bus,t_bus), (t,t_bus,f_bus)]
+    w_idx = [(x,f_bus,t_bus), (x,t_bus,f_bus)]
 
-    r  = [_PMs.ref(pm, nw, :xfmr, t, nk) for nk in ["r1","r2"]]
-    re = [_PMs.ref(pm, nw, :xfmr, t, nk) for nk in ["re1","re2"]]
-    xe = [_PMs.ref(pm, nw, :xfmr, t, nk) for nk in ["xe1","xe2"]]
+    r  = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["r1","r2"]]
+    re = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["re1","re2"]]
+    xe = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["xe1","xe2"]]
 
-    gnd = [_PMs.ref(pm, nw, :xfmr, t, nk) for nk in ["gnd1","gnd2"]]
+    gnd = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["gnd1","gnd2"]]
 
     for w in 1:2
-        constraint_transformer_winding_config(pm, nw, w_bus[w], w_idx[w], r[w], re[w], xe[w], gnd[w])
+        constraint_xfmr_winding_config(pm, nw, w_bus[w], w_idx[w], r[w], re[w], xe[w], gnd[w])
     end
 end
 ""
-function constraint_transformer_winding_current_balance(pm::_PMs.AbstractPowerModel, t::Int; nw::Int=fundamental(pm))
-    f_bus = _PMs.ref(pm, nw, :xfmr, t, "f_bus")
-    t_bus = _PMs.ref(pm, nw, :xfmr, t, "t_bus")
-    w_idx = [(t,f_bus,t_bus), (t,t_bus,f_bus)]
+function constraint_xfmr_winding_current_balance(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
+    f_bus = _PMs.ref(pm, nw, :xfmr, x, "f_bus")
+    t_bus = _PMs.ref(pm, nw, :xfmr, x, "t_bus")
+    w_idx = [(x,f_bus,t_bus), (x,t_bus,f_bus)]
     
-    r = [_PMs.ref(pm, nw, :xfmr, t, nk) for nk in ["r1","r2"]]
+    r = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["r1","r2"]]
     b_sh = [0.0,0.0]
     g_sh = [0.0,0.0]
 
-    cnf = [_PMs.ref(pm, nw, :xfmr, t, nk) for nk in ["cnf1","cnf2"]]
+    cnf = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["cnf1","cnf2"]]
 
     for w in 1:2
-        constraint_transformer_winding_current_balance(pm, nw, w_idx[w], r[w], b_sh[w], g_sh[w], cnf[w])
+        constraint_xfmr_winding_current_balance(pm, nw, w_idx[w], r[w], b_sh[w], g_sh[w], cnf[w])
     end
 end
 ""
-function constraint_transformer_winding_current_rms_limit(pm::_PMs.AbstractPowerModel, t::Int; nw::Int=fundamental(pm))
-    xfmr = _PMs.ref(pm, nw, :xfmr, t)
+function constraint_xfmr_current_rms_limit(pm::_PMs.AbstractPowerModel, x::Int)
+    xfmr = _PMs.ref(pm, fundamental(pm), :xfmr, x)
 
-    f_bus = _PMs.ref(pm, nw, :xfmr, t, "f_bus")
-    t_bus = _PMs.ref(pm, nw, :xfmr, t, "t_bus")
-    w_idx = [(t,f_bus,t_bus), (t,t_bus,f_bus)]
+    f_bus = _PMs.ref(pm, fundamental(pm), :xfmr, x, "f_bus")
+    t_bus = _PMs.ref(pm, fundamental(pm), :xfmr, x, "t_bus")
+    w_idx = [(x,f_bus,t_bus), (x,t_bus,f_bus)]
 
     c_rating = xfmr["c_rating"]
 
     for w in 1:2
-        constraint_transformer_winding_current_rms_limit(pm, w_idx[w], c_rating)
+        constraint_xfmr_current_rms_limit(pm, w_idx[w], c_rating)
     end
 end
 ""
-function constraint_transformer_winding_current_rms_limit(pm::dHHC_SOC, t::Int; nw::Int=fundamental(pm))
-    xfmr = _PMs.ref(pm, nw, :xfmr, t)
+function constraint_xfmr_current_rms_limit(pm::dHHC_SOC, x::Int)
+    xfmr = _PMs.ref(pm, fundamental(pm), :xfmr, x)
 
-    f_bus = _PMs.ref(pm, nw, :xfmr, t, "f_bus")
-    t_bus = _PMs.ref(pm, nw, :xfmr, t, "t_bus")
-    w_idx = [(t,f_bus,t_bus), (t,t_bus,f_bus)]
+    f_bus = _PMs.ref(pm, fundamental(pm), :xfmr, x, "f_bus")
+    t_bus = _PMs.ref(pm, fundamental(pm), :xfmr, x, "t_bus")
+    w_idx = [(x,f_bus,t_bus), (x,t_bus,f_bus)]
 
     c_rating = xfmr["c_rating"]
 
     cm_fund = [xfmr["ctm_fr"], xfmr["ctm_to"]]
 
     for w in 1:2
-        constraint_transformer_winding_current_rms_limit(pm, w_idx[w], c_rating, cm_fund[w])
+        constraint_xfmr_current_rms_limit(pm, w_idx[w], c_rating, cm_fund[w])
     end
 end

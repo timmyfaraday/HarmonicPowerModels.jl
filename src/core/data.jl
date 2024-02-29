@@ -7,12 +7,8 @@
 # Authors: Tom Van Acker, Frederik Geth, Hakan Ergun                           #
 ################################################################################
 # Changelog:                                                                   #
+# v0.2.0 - reviewed TVA                                                        #
 ################################################################################
-
-""
-is_pos_sequence(nh::Int) = nh % 3 == 1
-is_neg_sequence(nh::Int) = nh % 3 == 2
-is_zero_sequence(nh::Int) = nh % 3 == 0
 
 ""
 const ihd_limits = Dict(
@@ -44,31 +40,12 @@ const thd_limits = Dict(
     "IEC61000-3-6:2008" =>          0.08000) 
 
 """
-    HarmonicPowerModels.extend_H!(H::Array{Int}, data::Dict{String, Any})
-
-Returns all relevant harmonics `H` based on a PowerModels data dictionary `data`
-and transformer magnetizing dictionary `xfmr_magn`.
-"""
-function extend_H!(H::Array{Int}, data::Dict{String, Any}, 
-                   xfmr_magn::Dict{String, Any})
-    Hbus = [parse(Int,ni[4:end]) for ni in keys(data["bus"]["1"]) if ni[1:2] == "nh"]
-    push!(H, Hbus...)
-    
-    if haskey(xfmr_magn, "Hᴱ") push!(H, xfmr_magn["Hᴱ"]...) end
-    if haskey(xfmr_magn, "Hᴵ") push!(H, xfmr_magn["Hᴵ"]...) end  
-
-    unique!(sort!(H))
-end
-
-"""
     HarmonicPowerModels.replicate
 """
 function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[], 
                         xfmr_magn::Dict{String,Any}=Dict{String,Any}())
-    # extend the user-provided harmonics `H` based on data input
-    # extend_H!(H, data, xfmr_magn)
-
-    # set the current rating of all branches and xfmrs
+    ### Add entries to the fundamental data ####################################
+    # set the branch current rating
     if haskey(data,"branch") 
         for branch in values(data["branch"])
             f_bus = data["bus"][string(branch["f_bus"])]
@@ -76,8 +53,10 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
             
             vmmin = min(f_bus["vmin"], t_bus["vmin"])
             
-            branch["c_rating"] = branch["rate_a"] / vmmin                           # @Hakan: klopt dit
+            branch["c_rating"] = branch["rate_a"] / vmmin                       # @Hakan: klopt dit
     end end
+
+    # add xfmr current rating
     if haskey(data,"xfmr") 
         for xfmr in values(data["xfmr"])
             f_bus = data["bus"][string(xfmr["f_bus"])]
@@ -85,17 +64,16 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
             
             vmmin = min(f_bus["vmin"], t_bus["vmin"])
             
-            xfmr["c_rating"] = xfmr["rateA"] / data["baseMVA"] / vmmin              # @Hakan: klopt dit
+            xfmr["c_rating"] = xfmr["rateA"] / data["baseMVA"] / vmmin          # @Hakan: klopt dit
     end end
 
     # add the thd limits based on standard, if available
     for bus in values(data["bus"])
-        if haskey(bus, "standard") if bus["standard"] in keys(thd_limits)
+        if haskey(bus, "standard") && bus["standard"] in keys(thd_limits)
             bus["thdmax"] = thd_limits[bus["standard"]]
-        end end 
-    end
+    end end
 
-    # create multi-network data structure, only keep the ntws whos id in H
+    ### create multi-network data structure, only keep ntws in H ###############
     hdata = _PMs.replicate(data, last(H))
     for nh in 1:last(H) if nh ∉ H delete!(hdata["nw"],"$nh") end end
 
@@ -103,6 +81,7 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
     hdata["name"] = data["name"]
     haskey(data, "principle") ? hdata["principle"] = data["principle"] : ~ ;
 
+    ### add entries to the harmonic data #######################################
     # add the xfmr magnetizing current
     if !isempty(xfmr_magn)
         sample_magnetizing_current(hdata, xfmr_magn)
@@ -136,8 +115,7 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
                     load["reference_harmonic_angle"] = -bus["ref_angle"]
                 elseif is_zero_sequence(nh)
                     load["reference_harmonic_angle"] = 0.0
-                end
-            end
+            end end
 
             if haskey(bus, "angle_range")
                 load["harmonic_angle_range"] = bus["angle_range"]
@@ -156,8 +134,7 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
                     #harmonics can be injected/absorbed to match load 
                     gen["pmin"] = -abs(gen["pmax"])
                     gen["qmin"] = -abs(gen["qmax"])
-                end
-            end
+            end end
             gen_bus = gen["gen_bus"]
             gen["c_rating"] = sqrt(max(abs(gen["pmin"]), abs(gen["pmax"]))^2 + max(abs(gen["qmin"]), abs(gen["qmax"]))^2) / (sqrt(3) * ntw["bus"]["$gen_bus"]["vmin"])
         end
@@ -181,8 +158,7 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
                         bus["ihdmax"] = ihd_limits[std][nh]
                     else
                         println("harmonic $nh not included in $std")            # change to warn 
-                    end
-            end end 
+            end end end 
         end
 
         # re-evaluate the branch data 
@@ -218,10 +194,8 @@ function _HPM.replicate(data::Dict{String, Any}; H::Array{Int}=Int[],
                 elseif is_zero_sequence(nh)
                     xfmr["tr"] = 1.0
                     xfmr["ti"] = 0.0
-                end
-            end
-        end
-    end
+        end end end
+    end 
 
     return hdata
 end
