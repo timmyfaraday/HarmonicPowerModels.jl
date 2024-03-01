@@ -114,12 +114,10 @@ end
 
 # fairness principle
 ""
-function constraint_fairness_principle(pm::_PMs.AbstractPowerModel)
-    principle   = pm.data["principle"]
+function constraint_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm))
+    load_ids = sort(collect(_PMs.ids(pm, :load, nw=nw)))
 
-    load_ids    = sort(collect(_PMs.ids(pm, :load, nw=fundamental(pm))))
-
-    constraint_fairness_principle(pm, principle, load_ids)
+    constraint_fairness_principle(pm, nw, load_ids)
 end
 
 # filter

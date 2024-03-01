@@ -20,7 +20,7 @@ end
 
 # branch 
 ""
-function variable_branch_current(pm::_PMs.AbstractIVRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_branch_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_branch_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_branch_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 
@@ -30,7 +30,7 @@ end
 
 # filter
 ""
-function variable_filter_current(pm::_PMs.AbstractIVRModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_filter_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_filter_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_filter_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
@@ -89,11 +89,39 @@ function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel)
 end
 ""
 function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
-    cmd = [_PMs.var(pm, n, :cmd, l) for n in _PMs.nw_ids(pm) 
-                                    for l in _PMs.ids(pm, :load, nw=n) 
-                                    if n ≠ fundamental(pm)]
+    # maximum efficiency
+    if pm.data["principle"] == "maximum efficiency"
+        cmd = [_PMs.var(pm, n, :cmd, l) for n in _PMs.nw_ids(pm) 
+                                        for l in _PMs.ids(pm, :load, nw=n) 
+                                        if n ≠ fundamental(pm)]
     
-    JuMP.@objective(pm.model, Max, sum(cmd))
+        JuMP.@objective(pm.model, Max, sum(cmd))
+    end
+
+    # absolute equality
+    if pm.data["principle"] == "absolute equality"
+        cmd = [_PMs.var(pm, n, :cmd, l) for n in _PMs.nw_ids(pm) 
+                                        for l in _PMs.ids(pm, :load, nw=n) 
+                                        if n ≠ fundamental(pm)]
+    
+        JuMP.@objective(pm.model, Max, sum(cmd)) 
+    end
+
+    # maximin
+    if pm.data["principle"] == "maximin"
+        cmh = [_PMs.var(pm, n, :cmh) for n in _PMs.nw_ids(pm)
+                                     if n ≠ fundamental(pm)]
+
+        JuMP.@objective(pm.model, Max, sum(cmh))
+    end
+
+    # Kalai-Smorodinsky bargaining
+    if pm.data["principle"] == "Kalai-Smorodinsky bargaining"
+        fh = [_PMs.var(pm, n, :fh) for n in _PMs.nw_ids(pm)
+                                   if n ≠ fundamental(pm)]
+
+        JuMP.@objective(pm.model, Max, sum(fh))
+    end
 end
 
 ## constraints
@@ -214,14 +242,40 @@ end
 
 # fairness principle
 ""
-function constraint_fairness_principle(pm::_PMs.AbstractIVRModel, principle, load_ids)
-    cmd = [[_PMs.var(pm, n, :cmd, l) for n in _PMs.nw_ids(pm) 
-                                     if n ≠ fundamental(pm)] 
-                                     for l in load_ids]
-    
-    if principle == "equality"
+function constraint_fairness_principle(pm::_PMs.AbstractIVRModel, n, load_ids)
+    # maximum efficiency
+    if pm.data["principle"] == "maximum efficiency"
+        # no additional constraints
+    end
+
+    # absolute equality
+    if pm.data["principle"] == "absolute equality"
+        cmd = [_PMs.var(pm, n, :cmd, l) for l in load_ids]
+
         for l in load_ids[2:end]
             JuMP.@constraint(pm.model, cmd[first(load_ids)] .== cmd[l])
+    end end
+
+    # maximin
+    if pm.data["principle"] == "maximin"
+        cmh = _PMs.var(pm, n, :cmh)
+
+        for l in load_ids
+            cmd = _PMs.var(pm, n, :cmd, l)
+
+            JuMP.@constraint(pm.model, cmh <= cmd)
+    end end
+
+    # Kalai-Smorodinsky bargaining
+    if pm.data["principle"] == "Kalai-Smorodinsky bargaining"
+        fh = _PMs.var(pm, n, :fh)
+
+        for l in load_ids
+            cmd = _PMs.var(pm, n, :cmd, l)
+
+            cmdmax = _PMs.ref(pm, n, :load, l, "cmdmax")
+
+            JuMP.@constraint(pm.model, cmd == fh * cmdmax)
     end end
 end
 

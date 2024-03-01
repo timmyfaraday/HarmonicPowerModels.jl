@@ -34,9 +34,9 @@
             # solved to optimality
             @test results_hhc["termination_status"] == LOCALLY_SOLVED
             # objective value depending on fairness principle
-            if !haskey(hdata, "principle")
+            if hdata["principle"] == "maximum efficiency"
                 @test isapprox(results_hhc["objective"], 0.160236; atol = 1e-4)
-            elseif hdata["principle"] == "equality"
+            elseif hdata["principle"] == "absolute equality"
                 @test isapprox(results_hhc["objective"], 0.019055; atol = 1e-4)
             end
         end
@@ -251,9 +251,9 @@
             # solved to optimality
             @test results_hhc["termination_status"] == OPTIMAL
             # objective value depending on fairness principle
-            if !haskey(hdata, "principle")
+            if hdata["principle"] == "maximum efficiency"
                 @test isapprox(results_hhc["objective"], 0.160236; atol = 1e-4)
-            elseif hdata["principle"] == "equality"
+            elseif hdata["principle"] == "absolute equality"
                 @test isapprox(results_hhc["objective"], 0.019055; atol = 1e-4)
             end
         end

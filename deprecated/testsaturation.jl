@@ -7,7 +7,7 @@ const _SDC = SignalDecomposition
 const _INT = Interpolations
 
 const freq = 50.0
-const nw_id_default = 1
+const fundamental(pm) = 1
 
 xfmr = Dict("voltage_harmonics" => [1,3],
             "current_harmonics" => [1,3], #this one has to match the data in the matpower file

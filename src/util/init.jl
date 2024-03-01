@@ -10,6 +10,33 @@
 # v0.2.0 - reviewed TVA                                                        #
 ################################################################################
 
+""
+function update_hdata_with_fairness_principle_data!(hdata, model_type::Type, optimizer)
+    if hdata["principle"] == "Kalai-Smorodinsky bargaining"
+        for (l,load) in hdata["nw"]["1"]["load"]
+            # make a deepcopy of the hdata
+            hdata_temp = deepcopy(hdata)
+
+            # set the principle to maximum efficiency
+            hdata_temp["principle"] = "maximum efficiency"
+
+            # remove all the loads except for l, for all harmonics
+            for (nw,ntw) in hdata_temp["nw"], (nl,load) in ntw["load"] if nl ≠ l
+                delete!(ntw["load"], nl)
+            end end
+
+            # solve the harmonic hosting capacity problem for the single load
+            results_hhc = solve_hhc(hdata_temp, model_type, optimizer)
+
+            # write away the solution for each network
+            for (nw,ntw) in results_hhc["solution"]["nw"] if nw ≠ "1"
+                hdata["nw"]["$nw"]["load"]["$l"]["cmdmax"] = ntw["load"]["$l"]["cmd"]
+            end end
+        end
+    end
+end
+
+""
 function update_hdata_with_fundamental_hpf_results!(hdata, model_type::Type, optimizer)
     # remove all but the fundamental network
     hpf_data = deepcopy(hdata)

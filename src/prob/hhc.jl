@@ -12,6 +12,10 @@
 
 ""
 function solve_hhc(hdata, model_type::Type, optimizer; kwargs...)
+    # update hdata for chosen fairness principle
+    update_hdata_with_fairness_principle_data!(hdata, model_type, optimizer) 
+
+    # solve non-linear harmonic hosting capacity problem
     return _PMs.solve_model(hdata, model_type, optimizer, build_hhc; 
                                 ref_extensions=[ref_add_filter!,
                                                 ref_add_xfmr!], 
@@ -20,6 +24,9 @@ function solve_hhc(hdata, model_type::Type, optimizer; kwargs...)
 end
 ""
 function solve_hhc(hdata, model_type::Type, hhc_optimizer, hpf_optimizer; kwargs...)
+    # update hdata for chosen fairness principle
+    update_hdata_with_fairness_principle_data!(hdata, dHHC_NLP, hpf_optimizer) 
+
     # solve fundamental harmonic power flow problem and update hdata
     update_hdata_with_fundamental_hpf_results!(hdata, model_type, hpf_optimizer)
 
@@ -35,6 +42,9 @@ end
 function build_hhc(pm::dHHC_NLP)
     # variables 
     for n in _PMs.nw_ids(pm)
+        ## fairness variable 
+        variable_fairness_principle(pm, nw=n, bounded=true)
+
         ## voltage variables 
         variable_bus_voltage(pm, nw=n, bounded=true)
         variable_xfmr_voltage(pm, nw=n, bounded=true)
@@ -54,8 +64,6 @@ function build_hhc(pm::dHHC_NLP)
 
     # constraints 
     ## overall or fundamental constraints
-    ### fairness principle
-    constraint_fairness_principle(pm)
     ### node 
     for i in ids(pm, :bus)
         constraint_voltage_rms_limit(pm, i)
@@ -64,10 +72,6 @@ function build_hhc(pm::dHHC_NLP)
     ### branch
     for b in ids(pm, :branch)
         constraint_current_rms_limit(pm, b)
-    end
-    ### filter
-    for f in ids(pm, :filter)
-        constraint_active_filter_current(pm, f)
     end
     ### generator
     for g in ids(pm, :gen)
@@ -81,6 +85,11 @@ function build_hhc(pm::dHHC_NLP)
 
     ## harmonic constraints
     for n in _PMs.nw_ids(pm)
+        ### fairness principle
+        if n ≠ fundamental(pm)
+            constraint_fairness_principle(pm, nw=n)
+        end
+
         ### reference node
         for i in _PMs.ids(pm, :ref_buses, nw=n)
             constraint_voltage_ref_bus(pm, i, nw=n)
@@ -122,6 +131,9 @@ end
 function build_hhc(pm::dHHC_SOC)
     # variables 
     for n in _PMs.nw_ids(pm) if n ≠ fundamental(pm)
+        ## fairness variable 
+        variable_fairness_principle(pm, nw=n, bounded=true)
+
         ## voltage variables 
         variable_bus_voltage(pm, nw=n, bounded = true)
         variable_xfmr_voltage(pm, nw=n, bounded = true)
@@ -140,9 +152,7 @@ function build_hhc(pm::dHHC_SOC)
     objective_maximum_hosting_capacity(pm)
 
     # constraints 
-    ## overall or fundamental constraints
-    ### fairness principle
-    constraint_fairness_principle(pm)
+    ## overall constraints
     ### node
     for i in ids(pm, :bus)
         constraint_voltage_rms_limit(pm, i)
@@ -159,6 +169,9 @@ function build_hhc(pm::dHHC_SOC)
 
     ## harmonic constraints
     for n in _PMs.nw_ids(pm) if n ≠ fundamental(pm)
+        ### fairness principle
+        constraint_fairness_principle(pm, nw=n)
+        
         ### reference node
         for i in _PMs.ids(pm, :ref_buses, nw=n)
             constraint_voltage_ref_bus(pm, i, nw=n)

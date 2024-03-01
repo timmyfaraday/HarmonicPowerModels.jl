@@ -10,9 +10,51 @@
 # v0.2.0 - reviewed TVA                                                        #
 ################################################################################
 
+# fairness principle
+""
+function variable_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+    # maximum efficiency
+    if pm.data["principle"] == "maximum efficiency"
+        # no additional variables
+    end
+
+    # absolute equality
+    if pm.data["principle"] == "absolute equality"
+        # no additional variables 
+    end
+
+    # maximin -- needs work, not indexed over load 
+    if pm.data["principle"] == "maximin"
+        cmh = _PMs.var(pm, nw)[:cmh] = JuMP.@variable(pm.model, base_name="$(nw)_cmh",
+                #start = _PMs.comp_start_value(_PMs.ref(pm, nw), "cmh_start", 0.0)      # @Tom: start_value and reporting for variable without index
+        )
+
+        if bounded
+            JuMP.set_lower_bound(cmh, 0.0)
+            # JuMP.set_upper_bound(cmd[d], c_rating)                            # @Hakan: dit is ook bij :cmd, van waar komt deze c rating, the fundamental component - wat als die er niet is?
+        end
+
+        # report && _PMs.sol_component_value(pm, nw, :load, :cmh, _PMs.ids(pm, nw, :load), cmh)
+    end
+
+    # Kalai-Smorodinsky bargaining -- needs work, not indexed over load 
+    if pm.data["principle"] == "Kalai-Smorodinsky bargaining"
+        fh =  _PMs.var(pm, nw)[:fh] = JuMP.@variable(pm.model, base_name="$(nw)_fh",
+                #start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "fh_start", 0.0)
+        )
+
+        if bounded
+            JuMP.set_lower_bound(fh, 0.0)
+            JuMP.set_upper_bound(fh, 1.0)
+        end
+
+        # report && _PMs.sol_component_value(pm, nw, :load, :cmdh, _PMs.ids(pm, nw, :load), cmdh)
+    end
+end
+
 # bus
 ""
-function variable_bus_voltage_real(pm::_PMs.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_bus_voltage_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     vr = _PMs.var(pm, nw)[:vr] = JuMP.@variable(pm.model,
         [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_vr",
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, i), "vr_start", 1.0)
@@ -29,7 +71,7 @@ function variable_bus_voltage_real(pm::_PMs.AbstractPowerModel; nw::Int=nw_id_de
 end
 
 ""
-function variable_bus_voltage_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_bus_voltage_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     vi = _PMs.var(pm, nw)[:vi] = JuMP.@variable(pm.model,
         [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_vi",
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, i), "vi_start")
@@ -47,7 +89,7 @@ end
 
 # branch
 ""
-function variable_branch_current_real(pm::_PMs.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_branch_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     cr = _PMs.var(pm, nw)[:cr] = JuMP.@variable(pm.model,
         [(l,i,j) in _PMs.ref(pm, nw, :arcs)], base_name="$(nw)_cr",
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "cr_start")
@@ -64,7 +106,7 @@ function variable_branch_current_real(pm::_PMs.AbstractPowerModel; nw::Int=nw_id
     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :branch, :cr_fr, :cr_to, _PMs.ref(pm, nw, :arcs_from), _PMs.ref(pm, nw, :arcs_to), cr)
 end
 ""
-function variable_branch_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_branch_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     ci = _PMs.var(pm, nw)[:ci] = JuMP.@variable(pm.model,
         [(l,i,j) in _PMs.ref(pm, nw, :arcs)], base_name="$(nw)_ci",
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "ci_start")
@@ -81,7 +123,7 @@ function variable_branch_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=
     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :branch, :ci_fr, :ci_to, _PMs.ref(pm, nw, :arcs_from), _PMs.ref(pm, nw, :arcs_to), ci)
 end
 ""
-function variable_branch_series_current_real(pm::_PMs.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_branch_series_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     csr = _PMs.var(pm, nw)[:csr] = JuMP.@variable(pm.model,
         [l in _PMs.ids(pm, nw, :branch)], base_name="$(nw)_csr",
         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "csr_start", 0.0)
@@ -97,7 +139,7 @@ function variable_branch_series_current_real(pm::_PMs.AbstractPowerModel; nw::In
     report && _PMs.sol_component_value(pm, nw, :branch, :csr_fr, _PMs.ids(pm, nw, :branch), csr)
 end
 ""
-function variable_branch_series_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=nw_id_default, bounded::Bool=true, report::Bool=true)
+function variable_branch_series_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     csi = _PMs.var(pm, nw)[:csi] = JuMP.@variable(pm.model,
         [l in _PMs.ids(pm, nw, :branch)], base_name="$(nw)_csi",
         start=_PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "csi_start", 0.0)
