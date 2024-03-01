@@ -36,17 +36,17 @@ function build_hhc(pm::dHHC_NLP)
     # variables 
     for n in _PMs.nw_ids(pm)
         ## voltage variables 
-        variable_bus_voltage(pm, nw=n, bounded=false)
-        variable_xfmr_voltage(pm, nw=n, bounded=false)
+        variable_bus_voltage(pm, nw=n, bounded=true)
+        variable_xfmr_voltage(pm, nw=n, bounded=true)
 
         ## edge current variables
         variable_branch_current(pm, nw=n, bounded=true)
-        variable_xfmr_current(pm, nw=n, bounded=false)
+        variable_xfmr_current(pm, nw=n, bounded=true)
 
         ## unit current variables
         variable_filter_current(pm, nw=n, bounded=false)
-        variable_gen_current(pm, nw=n, bounded=false)
-        variable_load_current(pm, nw=n)
+        variable_gen_current(pm, nw=n, bounded=true)
+        variable_load_current(pm, nw=n, bounded=true)
     end
 
     # objective 
