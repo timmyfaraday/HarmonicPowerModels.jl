@@ -55,7 +55,7 @@ function _HPM.replicate(data::Dict{String, Any};
             
             vmmin = min(f_bus["vmin"], t_bus["vmin"])
             
-            branch["c_rating"] = branch["rate_a"] / vmmin                       # @Hakan: klopt dit
+            branch["c_rating"] = branch["rate_a"] / sqrt(3) / vmmin  
     end end
 
     # add xfmr current rating
