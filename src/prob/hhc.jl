@@ -42,8 +42,10 @@ end
 function build_hhc(pm::dHHC_NLP)
     # variables 
     for n in _PMs.nw_ids(pm)
-        ## fairness variable 
-        variable_fairness_principle(pm, nw=n, bounded=true)
+        ## fairness variable
+        if n ≠ fundamental(pm)
+            variable_fairness_principle(pm, nw=n, bounded=true)
+        end 
 
         ## voltage variables 
         variable_bus_voltage(pm, nw=n, bounded=true)
@@ -132,7 +134,9 @@ function build_hhc(pm::dHHC_SOC)
     # variables 
     for n in _PMs.nw_ids(pm) if n ≠ fundamental(pm)
         ## fairness variable 
-        variable_fairness_principle(pm, nw=n, bounded=true)
+        if n ≠ fundamental(pm)
+            variable_fairness_principle(pm, nw=n, bounded=true)
+        end 
 
         ## voltage variables 
         variable_bus_voltage(pm, nw=n, bounded = true)

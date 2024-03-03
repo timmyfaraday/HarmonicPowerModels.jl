@@ -26,7 +26,7 @@ function variable_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundam
     # maximin -- needs work, not indexed over load 
     if pm.data["principle"] == "maximin"
         cmh = _PMs.var(pm, nw)[:cmh] = JuMP.@variable(pm.model, base_name="$(nw)_cmh",
-                #start = _PMs.comp_start_value(_PMs.ref(pm, nw), "cmh_start", 0.0)      # @Tom: start_value and reporting for variable without index
+                start = 0.0
         )
 
         if bounded
@@ -34,13 +34,13 @@ function variable_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundam
             # JuMP.set_upper_bound(cmd[d], c_rating)                            # @Hakan: dit is ook bij :cmd, van waar komt deze c rating, the fundamental component - wat als die er niet is?
         end
 
-        # report && _PMs.sol_component_value(pm, nw, :load, :cmh, _PMs.ids(pm, nw, :load), cmh)
+        report && (_PMs.sol(pm, nw, :fairness)[:cmh] = cmh)
     end
 
     # Kalai-Smorodinsky bargaining -- needs work, not indexed over load 
     if pm.data["principle"] == "Kalai-Smorodinsky bargaining"
         fh =  _PMs.var(pm, nw)[:fh] = JuMP.@variable(pm.model, base_name="$(nw)_fh",
-                #start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "fh_start", 0.0)
+                start = 0.0
         )
 
         if bounded
@@ -48,7 +48,7 @@ function variable_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundam
             JuMP.set_upper_bound(fh, 1.0)
         end
 
-        # report && _PMs.sol_component_value(pm, nw, :load, :cmdh, _PMs.ids(pm, nw, :load), cmdh)
+        report && (_PMs.sol(pm, nw, :fairness)[:fh] = fh)
     end
 end
 

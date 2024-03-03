@@ -31,7 +31,7 @@ data = PMs.parse_file(path)
 H = [1, 3, 5, 7, 9, 13]
 
 # solve HHC problem -- NLP
-hdata = HPM.replicate(data, H=H)
+hdata_nlp = HPM.replicate(data, H=H)
 results_hhc_nlp = HPM.solve_hhc(hdata_nlp, dHHC_NLP, solver_nlp)
 
 # solve HHC problem -- SOC 
