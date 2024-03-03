@@ -23,7 +23,7 @@ function variable_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundam
         # no additional variables 
     end
 
-    # maximin -- needs work, not indexed over load 
+    # maximin
     if pm.data["principle"] == "maximin"
         cmh = _PMs.var(pm, nw)[:cmh] = JuMP.@variable(pm.model, base_name="$(nw)_cmh",
                 start = 0.0
@@ -37,7 +37,7 @@ function variable_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundam
         report && (_PMs.sol(pm, nw, :fairness)[:cmh] = cmh)
     end
 
-    # Kalai-Smorodinsky bargaining -- needs work, not indexed over load 
+    # Kalai-Smorodinsky bargaining
     if pm.data["principle"] == "Kalai-Smorodinsky bargaining"
         fh =  _PMs.var(pm, nw)[:fh] = JuMP.@variable(pm.model, base_name="$(nw)_fh",
                 start = 0.0

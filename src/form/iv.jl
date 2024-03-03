@@ -272,7 +272,6 @@ function constraint_fairness_principle(pm::_PMs.AbstractIVRModel, n, load_ids)
 
         for l in load_ids
             cmd = _PMs.var(pm, n, :cmd, l)
-
             cmdmax = _PMs.ref(pm, n, :load, l, "cmdmax")
 
             JuMP.@constraint(pm.model, cmd == fh * cmdmax)
