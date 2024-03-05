@@ -4,42 +4,36 @@
 # Optimization with Power Harmonics.                                           #
 # See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
 ################################################################################
-# Authors: Tom Van Acker, Frederik Geth, Hakan Ergun                           #
+# Authors: Tom Van Acker, Hakan Ergun                                          #
 ################################################################################
 # Changelog:                                                                   #
+# v0.2.0 - reviewed TVA                                                        #
 ################################################################################
 
-# load pkgs
-using Test
-
-using JuMP
-using PowerModels
-using HarmonicPowerModels
-
+# using pkgs
+using HarmonicPowerModels, PowerModels
 using Clarabel
-using Dierckx
-using Ipopt
+using Ipopt 
 
-# pkg const
+# pkg cte
 const PMs = PowerModels
 const HPM = HarmonicPowerModels
 
-# test functions
-≈(a,b) = isapprox(a, b, atol=1e-6)
-⪅(a,b) = (a <= b) || isapprox(a, b, atol=1e-6)
+# set the solver
+solver_soc = Clarabel.Optimizer
+solver_nlp = Ipopt.Optimizer
 
-# solvers
-solver_nlp = JuMP.optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
-solver_soc = JuMP.optimizer_with_attributes(Clarabel.Optimizer, "verbose" => 0)
+# read-in data 
+path = joinpath(HPM.BASE_DIR,"test/data/matpower/industrial_network_hhc.m")
+data = PMs.parse_file(path)
 
-# silence the warnings of PowerModels
-PMs.silence()
+# define the set of considered harmonics
+H = [1, 3, 5, 7, 9, 13]
 
-@testset "HarmonicPowerModels.jl" begin
-    
-    # models
-    include("hhc.jl")
-    include("hpf.jl")
-    include("hopf.jl")
+# solve HHC problem -- NLP
+hdata_nlp = HPM.replicate(data, H=H)
+results_hhc_nlp = HPM.solve_hhc(hdata_nlp, dHHC_NLP, solver_nlp)
 
-end
+# solve HHC problem -- SOC 
+hdata_soc = HPM.replicate(data, H=H)
+results_hhc_soc = HPM.solve_hhc(hdata_soc, dHHC_SOC, solver_soc, solver_nlp)

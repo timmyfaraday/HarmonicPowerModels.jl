@@ -1,13 +1,17 @@
 ################################################################################
-#  Copyright 2023, Frederik Geth, Tom Van Acker                                #
-################################################################################
 # HarmonicPowerModels.jl                                                       #
-# An extention package of PowerModels(Distribution).jl for Harmonics           #
+# Extension package of PowerModels.jl for Steady-State Power System            #
+# Optimization with Power Harmonics.                                           #
 # See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
+################################################################################
+# Authors: Frederik Geth                                                       #
+################################################################################
+# Changelog:                                                                   #
+# v0.2.0 - reviewed TVA                                                        #
 ################################################################################
 
 ""
-function sol_data_model!(pm::AbstractIVRModel, solution::Dict)
+function sol_data_model!(pm::_PMs.AbstractIVRModel, solution::Dict)
     _PMs.apply_pm!(_sol_data_model_ivr!, solution)
 end
 
@@ -34,12 +38,12 @@ function _sol_data_model_ivr!(solution::Dict)
     end
 
     if haskey(solution, "xfmr")
-        for (i, xfmr) in solution["xfmr"]
-            if haskey(xfmr, "pt_fr") && haskey(xfmr, "pt_to")
-                xfmr["ptloss"] = xfmr["pt_fr"] + xfmr["pt_to"]
+        for (x, xfmr) in solution["xfmr"]
+            if haskey(xfmr, "px_fr") && haskey(xfmr, "px_to")
+                xfmr["pxloss"] = xfmr["px_fr"] + xfmr["px_to"]
             end
-            if haskey(xfmr, "qt_fr") && haskey(xfmr, "qt_to")
-                xfmr["qtloss"] = xfmr["qt_fr"] + xfmr["qt_to"]
+            if haskey(xfmr, "qx_fr") && haskey(xfmr, "qx_to")
+                xfmr["qxloss"] = xfmr["qx_fr"] + xfmr["qx_to"]
             end
         end
     end
