@@ -139,13 +139,12 @@ function constraint_load_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fu
     i      = load["load_bus"]
     pd, qd = load["pd"], load["qd"]
 
-    angmin = load["reference_harmonic_angle"] - load["harmonic_angle_range"] / 2
-    angmax = load["reference_harmonic_angle"] + load["harmonic_angle_range"] / 2
+    aref   = load["ref_angle"]
 
     if nw == 1
         constraint_load_constant_power(pm, nw, l, i, pd, qd)
     else
-        constraint_load_current_angle(pm, nw, l, angmin, angmax)
+        constraint_load_current_angle(pm, nw, l, aref)
     end  
 end
 "" # needs work towards v0.2.1

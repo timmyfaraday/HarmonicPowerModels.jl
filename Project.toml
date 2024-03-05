@@ -1,7 +1,7 @@
 name = "HarmonicPowerModels"
 uuid = "56365af1-a032-4c1d-861b-3c9f15bdb54e"
 authors = ["Hakan Ergun", "Frederik Geth", "Tom Van Acker"]
-version = "0.1.0"
+version = "0.2.0"
 
 [deps]
 InfrastructureModels = "2030c09a-7f63-5d83-885d-db604e0e9cc0"

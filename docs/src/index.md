@@ -4,10 +4,8 @@
 CurrentModule = HarmonicPowerModels
 ```
 
-# HarmonicPowerModels.jl
-
 HarmonicPowerModels.jl is an extension package of PowerModels.jl for Steady-State 
-Power Network Optimization with Power Harmonics. 
+Power System Optimization with Power Harmonics. 
 
 ## Core Problem Specification
 - Balanced Harmonic Power Flow (hpf)
@@ -20,15 +18,13 @@ Power Network Optimization with Power Harmonics.
 
 ## Installation
 
-For now, HarmonicPowerModels is unregistered. Nevertheless, you can install it through
+The package requires `Julia 1.9` or newer. The latest stable release of `HarmonicPowerModels` can be installed using the Julia package manager with
 
-```
-] add https://github.com/timmyfaraday/HarmonicPowerModels.jl.git
+```julia
+] add HarmonicPowerModels
 ```
 
-At least one solver is required for running PowerModels.  The open-source solver 
-Ipopt is recommended, as it is fast, scaleable and can be used to solve a wide 
-variety of the problems and network formulations provided in HarmonicPowerModels. The Ipopt solver can be installed via the package manager with
+At least one solver is required for running HarmonicPowerModels.  The open-source solver Ipopt is recommended, as it is fast, scaleable and can be used to solve a wide variety of the problems provided in HarmonicPowerModels. The Ipopt solver can be installed via the package manager with
 
 ```julia
 ] add Ipopt
@@ -41,8 +37,7 @@ Test that the package works by running
 ```
 
 ## Acknowledgements
-This code has been developed by the following developers:
-  - Tom Van Acker, BASF Antwerp, ([@timmyfaraday](https://github.com/timmyfaraday)), 
+The primary developer is Tom Van Acker, BASF Antwerp, ([@timmyfaraday](https://github.com/timmyfaraday)), with support from the following contributors: 
   - Hakan Ergun, KU Leuven, ([@hakanergun](https://github.com/hakanergun)), and
   - Frederik Geth, GridQube, ([@frederikgeth](https://github.com/frederikgeth)).
 

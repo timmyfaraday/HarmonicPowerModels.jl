@@ -115,11 +115,11 @@ function _HPM.replicate(data::Dict{String, Any};
 
             if haskey(bus, "ref_angle")
                 if is_pos_sequence(nh)
-                    load["reference_harmonic_angle"] = bus["ref_angle"]
+                    load["ref_angle"] = bus["ref_angle"]
                 elseif is_neg_sequence(nh)
-                    load["reference_harmonic_angle"] = -bus["ref_angle"]
+                    load["ref_angle"] = -bus["ref_angle"]
                 elseif is_zero_sequence(nh)
-                    load["reference_harmonic_angle"] = 0.0
+                    load["ref_angle"] = 0.0
             end end
 
             if haskey(bus, "angle_range")

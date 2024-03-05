@@ -311,33 +311,22 @@ function constraint_load_constant_power(pm::_PMs.AbstractIVRModel, n::Int, l, i,
     JuMP.@constraint(pm.model, qd == vi*crd  - vr*cid)
 end
 "" # needs work towards v0.2.1
-function constraint_load_current_angle(pm::_PMs.AbstractIVRModel, n::Int, l, angmin, angmax)
+function constraint_load_current_angle(pm::_PMs.AbstractIVRModel, n::Int, l, aref)
     crd = _PMs.var(pm, n, :crd, l)
     cid = _PMs.var(pm, n, :cid, l)
     cmd = _PMs.var(pm, n, :cmd, l)
 
-    JuMP.@constraint(pm.model, cmd * min(sin(angmin), sin(angmax)) <= cid)
-    JuMP.@constraint(pm.model, cid <= cmd * max(sin(angmin), sin(angmax)))
-
-    JuMP.@constraint(pm.model, cmd * min(cos(angmin), cos(angmax)) <= crd)
-    JuMP.@constraint(pm.model, crd <= cmd * max(cos(angmin), cos(angmax)))
-
-    JuMP.@constraint(pm.model, cmd^2 <= crd^2 + cid^2)
+    JuMP.@constraint(pm.model, cmd * sin(aref) == cid)
+    JuMP.@constraint(pm.model, cmd * cos(aref) == crd)
 end
 "" # needs work towards v0.2.1
-function constraint_load_current_angle(pm::dHHC_SOC, n::Int, l, angmin, angmax)
+function constraint_load_current_angle(pm::dHHC_SOC, n::Int, l, aref)
     crd = _PMs.var(pm, n, :crd, l)
     cid = _PMs.var(pm, n, :cid, l)
     cmd = _PMs.var(pm, n, :cmd, l)
 
-    JuMP.@constraint(pm.model, cmd * min(sin(angmin), sin(angmax)) <= cid)
-    JuMP.@constraint(pm.model, cid <= cmd * max(sin(angmin), sin(angmax)))
-
-    JuMP.@constraint(pm.model, cmd * min(cos(angmin), cos(angmax)) <= crd)
-    JuMP.@constraint(pm.model, crd <= cmd * max(cos(angmin), cos(angmax)))
-
-    # NB: This changes the direction of the inequality. 
-    JuMP.@constraint(pm.model, [1/sqrt(2) * cmd; 1/sqrt(2) * cmd; vcat(crd, cid)] in JuMP.RotatedSecondOrderCone())
+    JuMP.@constraint(pm.model, cmd * sin(aref) == cid)
+    JuMP.@constraint(pm.model, cmd * cos(aref) == crd)
 end
 "" # needs work towards v0.2.1
 function constraint_load_constant_current(pm::_PMs.AbstractIVRModel, n::Int, l, mult)

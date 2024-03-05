@@ -35,7 +35,7 @@
             @test results_hhc["termination_status"] == LOCALLY_SOLVED
             # objective value depending on fairness principle
             if hdata["principle"] == "maximum efficiency"
-                @test isapprox(results_hhc["objective"], 0.160236; atol = 1e-4)
+                @test isapprox(results_hhc["objective"], 0.165255; atol = 1e-4)
             elseif hdata["principle"] == "absolute equality"
                 @test isapprox(results_hhc["objective"], 0.019055; atol = 1e-4)
             end
@@ -141,8 +141,8 @@
                 ysh_fr  = ifelse(cnf1 == 'D' && nh ∈ H⁰, 1 / xfmr["r1"], 0.0)
 
                 r_to    = xfmr["r2"]
-                z0_to   = xfmr["re1"] +
-                          xfmr["re2"] * im
+                z0_to   = xfmr["re2"] +
+                          xfmr["xe2"] * im
                 ysh_to  = ifelse(cnf2 == 'D' && nh ∈ H⁰, 1 / xfmr["r2"], 0.0)
 
                 e       = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["erx"] +
@@ -252,7 +252,7 @@
             @test results_hhc["termination_status"] == OPTIMAL
             # objective value depending on fairness principle
             if hdata["principle"] == "maximum efficiency"
-                @test isapprox(results_hhc["objective"], 0.160236; atol = 1e-4)
+                @test isapprox(results_hhc["objective"], 0.165255; atol = 1e-4)
             elseif hdata["principle"] == "absolute equality"
                 @test isapprox(results_hhc["objective"], 0.019055; atol = 1e-4)
             end
@@ -359,8 +359,8 @@
                 ysh_fr  = ifelse(cnf1 == 'D' && nh ∈ H⁰, 1 / xfmr["r1"], 0.0)
 
                 r_to    = xfmr["r2"]
-                z0_to   = xfmr["re1"] +
-                          xfmr["re2"] * im
+                z0_to   = xfmr["re2"] +
+                          xfmr["xe2"] * im
                 ysh_to  = ifelse(cnf2 == 'D' && nh ∈ H⁰, 1 / xfmr["r2"], 0.0)
 
                 e       = results_hhc["solution"]["nw"]["$nh"]["xfmr"]["$nx"]["erx"] +

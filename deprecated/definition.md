@@ -1,2 +1,0 @@
-# Root Mean Square (RMS)
-
