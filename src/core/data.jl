@@ -122,8 +122,8 @@ function _HPM.replicate(data::Dict{String, Any};
                     load["ref_angle"] = 0.0
             end end
 
-            if haskey(bus, "angle_range")
-                load["harmonic_angle_range"] = bus["angle_range"]
+            if haskey(bus, "rng_angle")
+                load["rng_angle"] = bus["rng_angle"]
             end
         end
 

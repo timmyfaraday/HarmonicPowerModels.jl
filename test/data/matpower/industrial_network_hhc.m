@@ -4,7 +4,7 @@
 function mpc = industrial_network
 mpc.version = '2';
 mpc.baseMVA =  100.00;
-mpc.principle = 'maximum efficiency'
+mpc.principle = 'absolute equality'
 
 %% bus data
 %	bus_id	type    Pd      Qd	    Gs	    Bs	    area	Vm	    Va	    baseKV  zone	Vmax	Vmin
@@ -21,17 +21,17 @@ mpc.bus = [
 ];
 
 %% bus harmonic data 
-%column_names%  ref_angle   standard 
+%column_names%  ref_angle   rng_angle   standard 
 mpc.bus_harmonics = [
-                0.0         'Clean Bus';                % 0
-                0.0         'IEC61000-3-6:2008';        % 1
-                5.759586531 'IEC61000-2-4:2002, Cl. 2'; % 2
-                5.759586531 'IEC61000-2-4:2002, Cl. 2'; % 3
-                5.759586531 'IEC61000-2-4:2002, Cl. 2'; % 4
-                5.759586531 'IEC61000-2-4:2002, Cl. 2'; % 5
-                2.617993878 'IEC61000-2-4:2002, Cl. 2'; % 6
-                2.617993878 'IEC61000-2-4:2002, Cl. 2'; % 7
-                2.617993878 'IEC61000-2-4:2002, Cl. 2'; % 8
+                90.0        0.0         'Clean Bus';                % 0
+                90.0        0.0         'IEC61000-3-6:2008';        % 1
+                60.0        20.0        'IEC61000-2-4:2002, Cl. 2'; % 2
+                60.0        0.0         'IEC61000-2-4:2002, Cl. 2'; % 3
+                60.0        20.0        'IEC61000-2-4:2002, Cl. 2'; % 4
+                60.0        0.0         'IEC61000-2-4:2002, Cl. 2'; % 5
+                30.0        20.0        'IEC61000-2-4:2002, Cl. 2'; % 6
+                30.0        0.0         'IEC61000-2-4:2002, Cl. 2'; % 7
+                30.0        20.0        'IEC61000-2-4:2002, Cl. 2'; % 8
 ]
 
 %% branch data

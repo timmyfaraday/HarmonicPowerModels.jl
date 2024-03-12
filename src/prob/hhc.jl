@@ -21,6 +21,8 @@ function solve_hhc(hdata, model_type::Type, optimizer; kwargs...)
                                                 ref_add_xfmr!], 
                                 solution_processors=[ _HPM.sol_data_model!], 
                                 multinetwork=true, kwargs...)
+
+                        
 end
 ""
 function solve_hhc(hdata, model_type::Type, hhc_optimizer, hpf_optimizer; kwargs...)
@@ -28,7 +30,7 @@ function solve_hhc(hdata, model_type::Type, hhc_optimizer, hpf_optimizer; kwargs
     update_hdata_with_fairness_principle_data!(hdata, dHHC_NLP, hpf_optimizer) 
 
     # solve fundamental harmonic power flow problem and update hdata
-    update_hdata_with_fundamental_hpf_results!(hdata, model_type, hpf_optimizer)
+    update_hdata_with_fundamental_hpf_results!(hdata, dHHC_NLP, hpf_optimizer)
 
     # solve second order cone harmonic hosting capacity problem
     return _PMs.solve_model(hdata, model_type, hhc_optimizer, build_hhc; 
@@ -125,18 +127,14 @@ function build_hhc(pm::dHHC_NLP)
             
             constraint_xfmr_winding_config(pm, x, nw=n)
             constraint_xfmr_winding_current_balance(pm, x, nw=n)
-        end
-    end
-end
+end end end
 
 ""
 function build_hhc(pm::dHHC_SOC)
     # variables 
     for n in _PMs.nw_ids(pm) if n ≠ fundamental(pm)
         ## fairness variable 
-        if n ≠ fundamental(pm)
-            variable_fairness_principle(pm, nw=n, bounded=true)
-        end 
+        variable_fairness_principle(pm, nw=n, bounded=true)
 
         ## voltage variables 
         variable_bus_voltage(pm, nw=n, bounded = true)
@@ -148,7 +146,7 @@ function build_hhc(pm::dHHC_SOC)
 
         ## node current variables
         variable_filter_current(pm, nw=n, bounded=false)
-        variable_load_current(pm, nw=n, bounded = true)
+        variable_load_current(pm, nw=n, bounded = true) 
         variable_gen_current(pm, nw=n, bounded = true)
     end end
 
@@ -208,7 +206,6 @@ function build_hhc(pm::dHHC_SOC)
 
         ### harmonic unit
         for l in _PMs.ids(pm, :load, nw=n)
-            constraint_load_current(pm, l, nw = n)
+            constraint_load_current(pm, l, nw = n) 
         end
-    end end
-end
+end end end

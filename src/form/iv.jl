@@ -7,7 +7,9 @@
 # Authors: Tom Van Acker, Frederik Geth, Hakan Ergun                           #
 ################################################################################
 # Changelog:                                                                   #
-# v0.2.0 - reviewed TVA                                                        #
+# v0.2.0 -  reviewed TVA                                                       #
+# v0.2.1 -  addition of angle range for load current, with named constraint to #
+#           add cuts (TVA)                                                     #
 ################################################################################
 
 ## variables
@@ -300,7 +302,7 @@ function constraint_active_filter_current(pm::_PMs.AbstractIVRModel, f, i)
 end
 
 # load
-"" # needs work towards v0.2.1
+""
 function constraint_load_constant_power(pm::_PMs.AbstractIVRModel, n::Int, l, i, pd, qd)
     vr = _PMs.var(pm, n, :vr, i)
     vi = _PMs.var(pm, n, :vi, i)
@@ -310,25 +312,44 @@ function constraint_load_constant_power(pm::_PMs.AbstractIVRModel, n::Int, l, i,
     JuMP.@constraint(pm.model, pd == vr*crd  + vi*cid)
     JuMP.@constraint(pm.model, qd == vi*crd  - vr*cid)
 end
-"" # needs work towards v0.2.1
-function constraint_load_current_angle(pm::_PMs.AbstractIVRModel, n::Int, l, aref)
+""
+function constraint_load_current_angle(pm::dHHC_NLP, n::Int, l, amin, amax)
     crd = _PMs.var(pm, n, :crd, l)
     cid = _PMs.var(pm, n, :cid, l)
     cmd = _PMs.var(pm, n, :cmd, l)
 
-    JuMP.@constraint(pm.model, cmd * sin(aref) == cid)
-    JuMP.@constraint(pm.model, cmd * cos(aref) == crd)
+    if amin == amax
+        JuMP.@constraint(pm.model, cmd * sin(amin) == cid)
+        JuMP.@constraint(pm.model, cmd * cos(amin) == crd)
+    else
+        JuMP.@constraint(pm.model, cmd * min(sind(amin), sind(amax)) <= cid)
+        JuMP.@constraint(pm.model, cid <= cmd * max(sind(amin), sind(amax)))
+
+        JuMP.@constraint(pm.model, cmd * min(cosd(amin), cosd(amax)) <= crd)
+        JuMP.@constraint(pm.model, crd <= cmd * max(cosd(amin), cosd(amax)))
+
+        JuMP.@constraint(pm.model, cmd^2 <= crd^2 + cid^2)
+    end
 end
-"" # needs work towards v0.2.1
-function constraint_load_current_angle(pm::dHHC_SOC, n::Int, l, aref)
+"" 
+function constraint_load_current_angle(pm::dHHC_SOC, n::Int, l, amin, amax)
     crd = _PMs.var(pm, n, :crd, l)
     cid = _PMs.var(pm, n, :cid, l)
     cmd = _PMs.var(pm, n, :cmd, l)
 
-    JuMP.@constraint(pm.model, cmd * sin(aref) == cid)
-    JuMP.@constraint(pm.model, cmd * cos(aref) == crd)
+    if amin == amax
+        JuMP.@constraint(pm.model, cmd * sind(amin) == cid)
+        JuMP.@constraint(pm.model, cmd * cosd(amin) == crd)
+    else
+        ar = (sind(amin) - sind(amax)) / sind(amin-amax)
+        ai = (cosd(amax) - cosd(amin)) / sind(amin-amax)
+
+        JuMP.@constraint(pm.model, ar * crd + ai * cid >= cmd, 
+                            base_name = "load_current_angle_$(n)_$(l)")
+        JuMP.@constraint(pm.model, [cmd; [crd, cid]] in JuMP.SecondOrderCone())
+    end
 end
-"" # needs work towards v0.2.1
+""
 function constraint_load_constant_current(pm::_PMs.AbstractIVRModel, n::Int, l, mult)
     crd = _PMs.var(pm, n, :crd, l)
     cid = _PMs.var(pm, n, :cid, l)
