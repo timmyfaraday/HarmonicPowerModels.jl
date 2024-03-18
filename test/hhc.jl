@@ -8,6 +8,7 @@
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
+# v0.2.1 - fixed error with zero-seq earth impedance (3z⁰)                     #
 ################################################################################
 
 @testset "Harmonic Hosting Capacity" begin
@@ -189,9 +190,9 @@
                 if nh ∉ H⁰ @test u_fr - vt_fr ≈ r_fr * ct_fr end 
                 if nh ∉ H⁰ @test u_to - vt_to ≈ r_to * ct_to end
                 # Ohm's law (zero seq.)
-                # Uᵢₕ - Vₓᵢⱼₕ = (rₓᵢⱼₕ + z⁰ₓᵢⱼₕ) Iₓᵢⱼₕ, ∀ xij ∈ Tˣ⁻ᵉᵃʳᵗʰᵉᵈ, h ∈ H⁰
-                if gnd1 == 1 && nh ∈ H⁰ @test u_fr - vt_fr ≈ (r_fr + z0_fr) * ct_fr end
-                if gnd2 == 1 && nh ∈ H⁰ @test u_to - vt_to ≈ (r_to + z0_to) * ct_to end
+                # Uᵢₕ - Vₓᵢⱼₕ = (rₓᵢⱼₕ + 3z⁰ₓᵢⱼₕ) Iₓᵢⱼₕ, ∀ xij ∈ Tˣ⁻ᵉᵃʳᵗʰᵉᵈ, h ∈ H⁰
+                if gnd1 == 1 && nh ∈ H⁰ @test u_fr - vt_fr ≈ (r_fr + 3z0_fr) * ct_fr end
+                if gnd2 == 1 && nh ∈ H⁰ @test u_to - vt_to ≈ (r_to + 3z0_to) * ct_to end
                 # Zero-seq. current blocking
                 # |I|ₓᵢⱼₕ = 0, ∀ xij ∈ Tˣ⁻ᵈᵉˡᵗᵃ, h ∈ H⁰
                 if cnf1 == 'D' && nh ∈ H⁰ @test abs(ct_fr) ≈ 0.0 end
@@ -408,8 +409,8 @@
                 if nh ∉ H⁰ @test u_to - vt_to ≈ r_to * ct_to end
                 # Ohm's law (zero seq.)
                 # Uᵢₕ - Vₓᵢⱼₕ = (rₓᵢⱼₕ + z⁰ₓᵢⱼₕ) Iₓᵢⱼₕ, ∀ xij ∈ Tˣ⁻ᵉᵃʳᵗʰᵉᵈ, h ∈ H⁰
-                if gnd1 == 1 && nh ∈ H⁰ @test u_fr - vt_fr ≈ (r_fr + z0_fr) * ct_fr end
-                if gnd2 == 1 && nh ∈ H⁰ @test u_to - vt_to ≈ (r_to + z0_to) * ct_to end
+                if gnd1 == 1 && nh ∈ H⁰ @test u_fr - vt_fr ≈ (r_fr + 3z0_fr) * ct_fr end
+                if gnd2 == 1 && nh ∈ H⁰ @test u_to - vt_to ≈ (r_to + 3z0_to) * ct_to end
                 # Zero-seq. current blocking
                 # |I|ₓᵢⱼₕ = 0, ∀ xij ∈ Tˣ⁻ᵈᵉˡᵗᵃ, h ∈ H⁰
                 if cnf1 == 'D' && nh ∈ H⁰ @test abs(ct_fr) ≈ 0.0 end
