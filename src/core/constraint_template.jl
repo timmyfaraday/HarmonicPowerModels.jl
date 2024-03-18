@@ -140,8 +140,8 @@ function constraint_load_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fu
     i       = load["load_bus"]
     pd, qd  = load["pd"], load["qd"]
 
-    aref    = load["ref_angle"]
-    arng    = load["rng_angle"]
+    aref    = load["angle_ref"]
+    arng    = load["angle_rng"]
 
     if nw == 1
         constraint_load_constant_power(pm, nw, l, i, pd, qd)

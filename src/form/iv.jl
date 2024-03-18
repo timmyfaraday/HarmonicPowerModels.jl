@@ -322,13 +322,13 @@ function constraint_load_current_angle(pm::dHHC_NLP, n::Int, l, amin, amax)
         JuMP.@constraint(pm.model, cmd * sin(amin) == cid)
         JuMP.@constraint(pm.model, cmd * cos(amin) == crd)
     else
-        JuMP.@constraint(pm.model, cmd * min(sind(amin), sind(amax)) <= cid)
-        JuMP.@constraint(pm.model, cid <= cmd * max(sind(amin), sind(amax)))
+        JuMP.@constraint(pm.model, cos(amin) * cid - sin(amin) * crd >= 0.0)
+        JuMP.@constraint(pm.model, cos(amax) * cid - sin(amax) * crd <= 0.0)
 
-        JuMP.@constraint(pm.model, cmd * min(cosd(amin), cosd(amax)) <= crd)
-        JuMP.@constraint(pm.model, crd <= cmd * max(cosd(amin), cosd(amax)))
-
-        JuMP.@constraint(pm.model, cmd^2 <= crd^2 + cid^2)
+        # Note: for at least the 'absolute equality' fairness criteria, an 
+        # inequality (<=) allows freedom to set the cmd lower to equal the max.
+        # cmd of all loads. As of now, the inequality is changed to equality.
+        JuMP.@constraint(pm.model, cmd^2 == crd^2 + cid^2)
     end
 end
 "" 
@@ -338,15 +338,17 @@ function constraint_load_current_angle(pm::dHHC_SOC, n::Int, l, amin, amax)
     cmd = _PMs.var(pm, n, :cmd, l)
 
     if amin == amax
-        JuMP.@constraint(pm.model, cmd * sind(amin) == cid)
-        JuMP.@constraint(pm.model, cmd * cosd(amin) == crd)
+        JuMP.@constraint(pm.model, cmd * sin(amin) == cid)
+        JuMP.@constraint(pm.model, cmd * cos(amin) == crd)
     else
-        ar = (sind(amin) - sind(amax)) / sind(amin-amax)
-        ai = (cosd(amax) - cosd(amin)) / sind(amin-amax)
+        ar = (sin(amin) - sin(amax)) / sin(amin-amax)
+        ai = (cos(amax) - cos(amin)) / sin(amin-amax)
 
-        JuMP.@constraint(pm.model, ar * crd + ai * cid >= cmd, 
-                            base_name = "load_current_angle_$(n)_$(l)")
+        JuMP.@constraint(pm.model, cos(amin) * cid - sin(amin) * crd >= 0.0)
+        JuMP.@constraint(pm.model, cos(amax) * cid - sin(amax) * crd <= 0.0)
+
         JuMP.@constraint(pm.model, [cmd; [crd, cid]] in JuMP.SecondOrderCone())
+        JuMP.@constraint(pm.model, ar*crd + ai*cid >= cmd, base_name="cstr_$(n)_$(l)")
     end
 end
 ""

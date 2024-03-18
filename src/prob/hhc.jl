@@ -8,6 +8,7 @@
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
+# v0.2.1 - added solve_model_with_current_angle_cuts for the SOC problem (TVA) #
 ################################################################################
 
 ""
@@ -33,11 +34,19 @@ function solve_hhc(hdata, model_type::Type, hhc_optimizer, hpf_optimizer; kwargs
     update_hdata_with_fundamental_hpf_results!(hdata, dHHC_NLP, hpf_optimizer)
 
     # solve second order cone harmonic hosting capacity problem
-    return _PMs.solve_model(hdata, model_type, hhc_optimizer, build_hhc; 
-                                ref_extensions=[ref_add_filter!,
-                                                ref_add_xfmr!], 
-                                solution_processors=[ _HPM.sol_data_model!], 
-                                multinetwork=true, kwargs...)
+    if hdata["arng"]
+        return solve_model_with_current_angle_cuts(hdata, model_type, hhc_optimizer;
+                                    ref_extensions=[ref_add_filter!,
+                                                    ref_add_xfmr!], 
+                                    solution_processors=[ _HPM.sol_data_model!], 
+                                    multinetwork=true, kwargs...)
+    else
+        return _PMs.solve_model(hdata, model_type, hhc_optimizer, build_hhc; 
+                                    ref_extensions=[ref_add_filter!,
+                                                    ref_add_xfmr!], 
+                                    solution_processors=[ _HPM.sol_data_model!], 
+                                    multinetwork=true, kwargs...)
+    end
 end
 
 ""
