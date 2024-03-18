@@ -1,0 +1,117 @@
+clear
+new circuit.plant   basekV=150 phases=3 
+! assume infinite bus
+~ mvasc3=200000 200000
+
+new transformer.T150/36Yd xhl=6
+~ wdg=1 bus=sourcebus.1.2.3.4 conn=wye     kV=150 kVA=125000 %r=0.5  ! Float the neutral of wye winding
+~ wdg=2 bus=b2         conn=Delta   kV=36  kVA=125000 %r=0.5 
+
+
+new transformer.T35/10Yy xhl=6
+~ wdg=1 bus=b3 conn=wye kV=36 kVA=25000 %r=0.5 
+~ wdg=2 bus=b4 conn=wye kV=10  kVA=25000 %r=0.5 
+
+new transformer.T10/0.69Dyn11 xhl=6
+~ wdg=1 bus=b5 conn=delta kV=10 kVA=2500 %r=0.5 
+~ wdg=2 bus=b6 conn=wye   kV=0.69  kVA=2500 %r=0.5 
+
+
+new transformer.T0.69/0.4Dz0 xhl=6
+~ wdg=1 bus=b7 conn=delta kV=0.69 kVA=250 %r=0.5 
+~ wdg=2 bus=b8 conn=wye   kV=0.4  kVA=250 %r=0.5 
+
+
+
+! http://www.tim-kabel.hr/images/stories/katalog/datasheetHRV/0516_NA2XS(F)2Y_ENG.pdf
+!external diam - 2x sheet = concentric neutral diameter
+! external diameter = avg(51.4,55.5) = 53.5
+! conductor diameter = 24.6mm
+! concentric neutral diam = 53.5- 2 x 2.5 = 48.5
+! insulation thickness = 8.8 mm
+! diains = diameter + 2x inslayer = 24.6+ 2x8.8 = 42.2
+New CNData.NA2XS(FL)2Y_400/35
+~ Runits=km radunits=mm GMRunits=mm
+~ InsLayer=8.8 DiaIns=42.2 DiaCable=53.5 !Cable
+~ Rdc=0.0778  Diam=24.6 !Phase Conductor
+~ Rstrand=0.4886 ! -> copper, 35mm
+~ DiaStrand=1.0  k= 39 !Neutral 
+
+!right next to eachother, i.e. 
+New LineGeometry.NA2XS3x1x400/35 nconds=3 nphases=3 reduce=no
+~ cond=1 CNCable=NA2XS(FL)2Y_400/35 x=0 h=0 units=m
+~ cond=2 CNCable=NA2XS(FL)2Y_400/35 x=0.0535 h=0 units=m
+~ cond=3 CNCable=NA2XS(FL)2Y_400/35 x=0.107 h=0 units=m
+
+
+
+
+! http://www.tim-kabel.hr/images/stories/katalog/datasheetHRV/0516_NA2XS(F)2Y_ENG.pdf
+! external diam - 2x sheet = concentric neutral diameter
+! external diameter = avg(50,46) = 48
+! conductor diameter = 19.2 mm
+! concentric neutral diam = 46- 2 x 2.5 = 41
+! insulation thickness = 8.8 mm
+! diains = diameter + 2x inslayer = 19.2+ 2x8.8 = 36.8
+New CNData.NA2XS(FL)2Y_240/25
+~ Runits=km radunits=mm GMRunits=mm
+~ InsLayer=8.8 DiaIns=36.8 DiaCable=48 !Cable
+~ Rdc=0.125  Diam=19.2 !Phase Conductor
+~ Rstrand=0.684 ! -> copper, 25mm
+~ DiaStrand=1.0  k= 28 !Neutral 
+
+!right next to eachother, i.e. 
+New LineGeometry.NA2XS3x1x240/25 nconds=3 nphases=3 reduce=no
+~ cond=1 CNCable=NA2XS(FL)2Y_240/25 x=0 h=0 units=m
+~ cond=2 CNCable=NA2XS(FL)2Y_240/25 x=0.048 h=0 units=m
+~ cond=3 CNCable=NA2XS(FL)2Y_240/25 x=0.096 h=0 units=m
+
+
+
+!http://www.tim-kabel.hr/images/stories/katalog/datasheetHRV/0501_NYY_ENG.pdf
+! external diam - 2x sheet = concentric neutral diameter
+! external diameter = avg(46,54) = 50 
+! sheath thicness 2.8mm
+! filler thickness 2mm
+! insulation thickness 2mm
+! therefore all conductors conductor including insulation -> 50-2x2.8-2x2 = 40.4 mm
+! individual conductor is about circle arc within 20mm x 20 mm square
+! diacable same as NA2XS(FL)2Y_240, i.e. 19.2 mm
+! diains = diameter + 2x inslayer = 19.2 + 2x2 = 23.2
+! conductor diameter = mm
+! concentric neutral diam = - 2 x  = 
+New CNData.NYY240/120
+~ Runits=km radunits=mm GMRunits=mm
+~ InsLayer=4 DiaIns=23.2 DiaCable=50 !Cable
+~ Rdc=0.0754  Diam=19.2 !Phase Conductor 240mm2 copper
+~ Rstrand=0.4275 ! -> copper, 120mm/3
+~ DiaStrand=2.24  k=20 !Neutral 
+
+New LineGeometry.NYY240x3x240/120 nconds=3 nphases=3 reduce=no
+~ cond=1 CNCable=NYY240/120 x=0 h=0 units=m
+~ cond=2 CNCable=NYY240/120 x=0.0232 h=0 units=m
+~ cond=3 CNCable=NYY240/120 x=0 h=0.0232 units=m
+
+
+
+New line.section1 phases=3 bus1=b2 bus2=b3 geometry=NA2XS3x1x400/35  length=1500 units=m
+
+New line.section2 phases=3 bus1=b4 bus2=b5 geometry=NA2XS3x1x240/25  length=200 units=m
+
+New line.section3 phases=3 bus1=b6 bus2=b7 geometry=NYY240x3x240/120  length=70 units=m
+
+
+
+New load.l1 bus1=b4 phases=3 conn=delta model=1 kv=36 kw=10000 kvar=10000 vminpu=0.7 vmaxpu=1.3
+
+
+
+set voltagebases=[150, 36, 10, 0.69, 0.4] 
+calcvoltagebases     ! **** let DSS compute voltage bases
+
+!-----------------------
+!solve fundamental
+solve
+
+!verify fundamental results
+show voltages LN Nodes 
