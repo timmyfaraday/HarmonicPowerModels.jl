@@ -8,6 +8,7 @@
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
+# v0.2.1 - addition of several current angle properties (TVA)                  #
 ################################################################################
 
 ""
@@ -84,7 +85,12 @@ function _HPM.replicate(data::Dict{String, Any};
 
     # rename the case
     hdata["name"] = data["name"]
+    
+    # set principle
     haskey(data, "principle") ? hdata["principle"] = data["principle"] : ~ ;
+
+    # set boolean for angle range
+    hdata["arng"] = haskey(first(values(data["bus"])), "angle_rng") ? any([bus["angle_rng"] for (nb,bus) in data["bus"]] .≠ 0.0) : false ;
 
     ### add entries to the harmonic data #######################################
     # add the xfmr magnetizing current
@@ -113,17 +119,19 @@ function _HPM.replicate(data::Dict{String, Any};
 
             load["c_rating"] = 1.0 # TODO
 
-            if haskey(bus, "ref_angle")
+            # transform angle reference: deg -> rad and set it in first rotation
+            if haskey(bus, "angle_ref")
                 if is_pos_sequence(nh)
-                    load["ref_angle"] = bus["ref_angle"]
+                    load["angle_ref"] = deg2rad((bus["angle_ref"]+360.0)%360.0)
                 elseif is_neg_sequence(nh)
-                    load["ref_angle"] = -bus["ref_angle"]
+                    load["angle_ref"] = deg2rad((-bus["angle_ref"]+360.0)%360.0)
                 elseif is_zero_sequence(nh)
-                    load["ref_angle"] = 0.0
+                    load["angle_ref"] = 0.0
             end end
 
-            if haskey(bus, "angle_range")
-                load["harmonic_angle_range"] = bus["angle_range"]
+            # transform angle range: deg -> rad
+            if haskey(bus, "angle_rng")
+                load["angle_rng"] = deg2rad(bus["angle_rng"])
             end
         end
 

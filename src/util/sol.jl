@@ -7,7 +7,7 @@
 # Authors: Frederik Geth                                                       #
 ################################################################################
 # Changelog:                                                                   #
-# v0.2.0 - reviewed TVA                                                        #
+# v0.2.0 -  reviewed TVA                                                       #
 ################################################################################
 
 ""
@@ -60,7 +60,8 @@ function _sol_data_model_ivr!(solution::Dict)
     if haskey(solution, "load")
         for (i, load) in solution["load"]
             if haskey(load, "crd") && haskey(load, "cid")
-                load["cm"] = hypot(load["crd"], load["cid"])
+                load["cm"] = hypot(load["crd"],load["cid"])
+                load["ca"] = (atan(load["cid"],load["crd"])+2pi)%2pi
             end
         end
     end

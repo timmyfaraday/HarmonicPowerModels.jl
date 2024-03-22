@@ -8,6 +8,7 @@
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed by TVA                                                     #
+# v0.2.1 - addition of angle range for load current constraint (TVA)           #
 ################################################################################
 
 # ref bus
@@ -132,22 +133,23 @@ function constraint_active_filter_current(pm::_PMs.AbstractPowerModel, f::Int)
 end
 
 # load
-"" # needs work towards v0.2.1
+""
 function constraint_load_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fundamental(pm))
     load = _PMs.ref(pm, nw, :load, l)
 
-    i      = load["load_bus"]
-    pd, qd = load["pd"], load["qd"]
+    i       = load["load_bus"]
+    pd, qd  = load["pd"], load["qd"]
 
-    aref   = load["ref_angle"]
+    aref    = load["angle_ref"]
+    arng    = load["angle_rng"]
 
     if nw == 1
         constraint_load_constant_power(pm, nw, l, i, pd, qd)
     else
-        constraint_load_current_angle(pm, nw, l, aref)
+        constraint_load_current_angle(pm, nw, l, aref - arng/2, aref + arng/2)
     end  
 end
-"" # needs work towards v0.2.1
+"" 
 function constraint_load_power(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fundamental(pm))
     load = _PMs.ref(pm, nw, :load, l)
 

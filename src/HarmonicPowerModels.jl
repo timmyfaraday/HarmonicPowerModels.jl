@@ -7,7 +7,8 @@
 # Authors: Tom Van Acker, Frederik Geth, Hakan Ergun                           #
 ################################################################################
 # Changelog:                                                                   #
-# v0.2.0 - reviewed TVA                                                        #
+# v0.2.0 -  reviewed TVA                                                       #
+# v0.2.1 -  add util/cuts.jl (TVA)                                             #
 ################################################################################
 
 module HarmonicPowerModels
@@ -58,10 +59,12 @@ module HarmonicPowerModels
     include("prob/hpf.jl")
     include("prob/hhc.jl")
 
+    include("util/cuts.jl")
     include("util/init.jl")
     include("util/ref.jl")
     include("util/sol.jl")
     include("util/xfmr_magn.jl")
+    include("util/io.jl")
 
     # export
     export BASE_DIR
