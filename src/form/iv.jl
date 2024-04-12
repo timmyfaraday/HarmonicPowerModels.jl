@@ -299,6 +299,33 @@ function constraint_active_filter_current(pm::_PMs.AbstractIVRModel, f, i)
                     )
 end
 
+# generator
+""
+function constraint_gen_current(pm::_PMs.AbstractIVRModel, n::Int, g, i, gsc, bsc)
+    vr = _PMs.var(pm, n, :vr, i)
+    vi = _PMs.var(pm, n, :vi, i)
+
+    crg = _PMs.var(pm, n, :crg, g)
+    cig = _PMs.var(pm, n, :cig, g)
+
+    JuMP.@constraint(pm.model, crg == gsc*vr - bsc*vi)
+    JuMP.@constraint(pm.model, cig == gsc*vi + bsc*vr)
+end
+""
+function constraint_gen_current_rms_limit(pm::_PMs.AbstractIVRModel, g, c_rating)
+    crg =  [_PMs.var(pm, n, :crg, g) for n in sorted_nw_ids(pm)]
+    cig =  [_PMs.var(pm, n, :cig, g) for n in sorted_nw_ids(pm)]
+
+    JuMP.@constraint(pm.model, sum(crg.^2 + cig.^2) <= c_rating^2)
+end
+""
+function constraint_gen_current_rms_limit(pm::dHHC_SOC, g, c_rating, cm_fund)
+    crg =  [_PMs.var(pm, n, :crg, g) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+    cig =  [_PMs.var(pm, n, :cig, g) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+
+    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund^2); vcat(crg, cig)] in JuMP.SecondOrderCone())
+end
+
 # load
 "" # needs work towards v0.2.1
 function constraint_load_constant_power(pm::_PMs.AbstractIVRModel, n::Int, l, i, pd, qd)
@@ -401,15 +428,15 @@ function constraint_xfmr_core_voltage_phase_shift(pm::_PMs.AbstractIVRModel, n::
 end
 """
 first principles: conj(tₓᵢⱼ) * iₓᵢⱼ + iₓⱼᵢ = 0
-conj(tₓᵢⱼₕ) * (iˢₓᵢⱼₕ - iᵐₓₕ - eₓₕ / rˢʰₓₕ) + iₓⱼᵢₕ = 0
-(tʳₓᵢⱼₕ - j tⁱₓᵢⱼₕ) * (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ + j (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ)) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
-tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + j tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) - j tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) - j² tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
-tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + j tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) - j tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
+conj(tₓᵢⱼₕ) * (iˢₓᵢⱼₕ - iᵐₓₕ - eₓₕ) + iₓⱼᵢₕ = 0
+(tʳₓᵢⱼₕ - j tⁱₓᵢⱼₕ) * (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ + j (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ)) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
+tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) + j tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) - j tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) - j² tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
+tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) + j tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) - j tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) + tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
 
-Re: tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) + iˢ⁻ʳₓⱼᵢₕ = 0
-Im: tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) - tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + iˢ⁻ⁱₓⱼᵢₕ = 0
+Re: tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) + tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) + iˢ⁻ʳₓⱼᵢₕ = 0
+Im: tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) - tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) + iˢ⁻ⁱₓⱼᵢₕ = 0
 """
-function constraint_xfmr_core_current_balance(pm::_PMs.AbstractIVRModel, n::Int, x, f_idx, t_idx, tr, ti, rsh)
+function constraint_xfmr_core_current_balance(pm::_PMs.AbstractIVRModel, n::Int, x, f_idx, t_idx, tr, ti, gsh)
     cmrx = _PMs.var(pm, n, :cmrx, x)
     cmix = _PMs.var(pm, n, :cmix, x)
 
@@ -422,14 +449,14 @@ function constraint_xfmr_core_current_balance(pm::_PMs.AbstractIVRModel, n::Int,
     erx = _PMs.var(pm, n, :erx, x)
     eix = _PMs.var(pm, n, :eix, x)
 
-    JuMP.@constraint(pm.model,  tr * (csrx_fr - cmrx - erx / rsh)
-                                + ti * (csix_fr - cmix - eix / rsh)
+    JuMP.@constraint(pm.model,  tr * (csrx_fr - cmrx - gsh * erx)
+                                + ti * (csix_fr - cmix - gsh * eix)
                                 + csrx_to 
                                     == 
                                 0.0
                     )
-    JuMP.@constraint(pm.model,  tr * (csix_fr - cmix - eix / rsh)
-                                - ti * (csrx_fr - cmrx - erx / rsh)
+    JuMP.@constraint(pm.model,  tr * (csix_fr - cmix - gsh * eix)
+                                - ti * (csrx_fr - cmrx - gsh * erx)
                                 + csix_to
                                     == 
                                 0.0

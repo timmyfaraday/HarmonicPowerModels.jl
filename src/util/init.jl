@@ -60,6 +60,10 @@ function update_hdata_with_fundamental_hpf_results!(hdata, model_type::Type, opt
         branch["cm_to"] = sqrt( hpf_results["solution"]["nw"]["1"]["branch"][b]["cr_to"]^2 
                                 + hpf_results["solution"]["nw"]["1"]["branch"][b]["ci_to"]^2)
     end
+    for (g, gen) in hdata["nw"]["1"]["gen"]
+        gen["cm"] = sqrt(   hpf_results["solution"]["nw"]["1"]["gen"][g]["crg"]^2 
+                            + hpf_results["solution"]["nw"]["1"]["gen"][g]["cig"]^2)
+    end
     for (x, xfmr) in hdata["nw"]["1"]["xfmr"]
         xfmr["ctm_fr"] = sqrt(  hpf_results["solution"]["nw"]["1"]["xfmr"][x]["crx_fr"]^2 
                                 + hpf_results["solution"]["nw"]["1"]["xfmr"][x]["cix_fr"]^2)

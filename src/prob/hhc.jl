@@ -77,6 +77,8 @@ function build_hhc(pm::dHHC_NLP)
     end
     ### generator
     for g in ids(pm, :gen)
+        constraint_gen_current_rms_limit(pm, g)
+
         _PMs.constraint_gen_active_bounds(pm, g, nw=fundamental(pm))
         _PMs.constraint_gen_reactive_bounds(pm, g, nw=fundamental(pm))
     end
@@ -109,6 +111,11 @@ function build_hhc(pm::dHHC_NLP)
             _PMs.constraint_current_to(pm, b, nw=n)
 
             _PMs.constraint_voltage_drop(pm, b, nw=n)
+        end
+
+        ### generator
+        for g in _PMs.ids(pm, :gen, nw=n)
+            constraint_gen_current(pm, g, nw=n)
         end
 
         ### harmonic load
