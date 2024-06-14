@@ -149,6 +149,10 @@ function constraint_voltage_rms_limit(pm::dHHC_SOC, i, vmaxrms, vmfund)
     vr = [_PMs.var(pm, n, :vr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     vi = [_PMs.var(pm, n, :vi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
+    if i == 79
+        println(i, " ", vmaxrms, " ", vmfund)
+    end
+
     JuMP.@constraint(pm.model, [sqrt(vmaxrms^2 - vmfund^2); vcat(vr, vi)] in JuMP.SecondOrderCone())
 end
 ""

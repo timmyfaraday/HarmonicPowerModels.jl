@@ -42,7 +42,7 @@ function update_hdata_with_fundamental_hpf_results!(hdata, model_type::Type, opt
     hpf_data = deepcopy(hdata)
     for n in keys(hpf_data["nw"])
         if n ≠ "1"
-            delete!(hpf_data, n)
+            delete!(hpf_data["nw"], n)
         end
     end
 

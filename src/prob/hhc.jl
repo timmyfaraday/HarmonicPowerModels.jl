@@ -154,7 +154,7 @@ function build_hhc(pm::dHHC_SOC)
         variable_xfmr_current(pm, nw=n, bounded = true)
 
         ## node current variables
-        variable_filter_current(pm, nw=n, bounded=false)
+        variable_filter_current(pm, nw=n, bounded = true)
         variable_load_current(pm, nw=n, bounded = true)
         variable_gen_current(pm, nw=n, bounded = true)
     end end
@@ -184,9 +184,9 @@ function build_hhc(pm::dHHC_SOC)
         constraint_fairness_principle(pm, nw=n)
         
         ### reference node
-        for i in _PMs.ids(pm, :ref_buses, nw=n)
-            constraint_voltage_ref_bus(pm, i, nw=n)
-        end
+        # for i in _PMs.ids(pm, :ref_buses, nw=n)
+        #     constraint_voltage_ref_bus(pm, i, nw=n)
+        # end
 
         ### node
         for i in _PMs.ids(pm, :bus, nw=n)
