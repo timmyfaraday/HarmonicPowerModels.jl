@@ -50,7 +50,8 @@ end
 
 
 # Add principle
-data["principle"] = "maximum efficiency"
+# {"maximum efficiency", "absolute equality", "maximin", "Kalai-Smorodinsky bargaining"}
+data["principle"] = "Kalai-Smorodinsky bargaining"
 
 for (b, bus) in data["bus"]
     bus["standard"] = "IEC61000-2-4:2002, Cl. 2"
@@ -61,8 +62,19 @@ for (b, bus) in data["bus"]
     end
 end
 
+for (g,gen) in data["gen"]
+    if !haskey(gen, "gsc") 
+        gen["gsc"] = 0.0
+    end
+    if !haskey(gen, "bsc") 
+        gen["bsc"] = 0.0
+    end
+end
+
+
+
 # define the set of considered harmonics
-H = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49]
+H = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21]#, 23, 25, 27, 29, 31, 33, 35, 37, 39, 41, 43, 45, 47, 49]
 
 # solve HHC problem -- NLP
 # hdata_nlp = HPM.replicate(data, H=H)
@@ -70,6 +82,11 @@ H = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35, 37, 39, 
 
 # solve HHC problem -- SOC 
 hdata_soc = HPM.replicate(data, H=H)
+for (n, nw) in hdata_soc["nw"]
+    for (x, xfmr) in nw["xfmr"]
+        xfmr["c_rating"] = xfmr["c_rating"] * 10
+    end
+end
 total_time = @elapsed results_hhc = HPM.solve_hhc(hdata_soc, dHHC_SOC, solver_soc, solver_nlp)
 
 filename = joinpath(HPM.BASE_DIR, "results", join([case, "_", data["principle"]]))

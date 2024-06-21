@@ -26,9 +26,9 @@ function update_hdata_with_fairness_principle_data!(hdata, model_type::Type; hpf
             end end
 
             # solve the harmonic hosting capacity problem for the single load
-            if model_type isa dHHC_NLP
+            if model_type <: dHHC_NLP
                 results_hhc = solve_hhc(hdata_temp, model_type, hhc_optimizer)
-            elseif model_type isa dHHC_SOC
+            elseif model_type <: dHHC_SOC
                 results_hhc = solve_hhc(hdata_temp, model_type, hpf_optimizer, hhc_optimizer)
             end
 

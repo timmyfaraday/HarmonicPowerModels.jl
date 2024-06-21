@@ -77,7 +77,7 @@ function _HPM.replicate(data::Dict{String, Any};
             
             vmmin = min(f_bus["vmin"], t_bus["vmin"])
             
-            xfmr["c_rating"] = xfmr["rateA"] / data["baseMVA"] / vmmin  * 10        # @Hakan: klopt dit
+            xfmr["c_rating"] = xfmr["rateA"] / data["baseMVA"] / vmmin        # @Hakan: klopt dit
     end end
 
     # add the thd limits based on standard, if available
