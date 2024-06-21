@@ -11,7 +11,7 @@
 ################################################################################
 
 ""
-function update_hdata_with_fairness_principle_data!(hdata, model_type::Type, optimizer)
+function update_hdata_with_fairness_principle_data!(hdata, model_type::Type; hpf_optimizer, hhc_optimizer)
     if hdata["principle"] == "Kalai-Smorodinsky bargaining"
         for (l,load) in hdata["nw"]["1"]["load"]
             # make a deepcopy of the hdata
@@ -26,7 +26,11 @@ function update_hdata_with_fairness_principle_data!(hdata, model_type::Type, opt
             end end
 
             # solve the harmonic hosting capacity problem for the single load
-            results_hhc = solve_hhc(hdata_temp, model_type, optimizer)
+            if model_type isa dHHC_NLP
+                results_hhc = solve_hhc(hdata_temp, model_type, hhc_optimizer)
+            elseif model_type isa dHHC_SOC
+                results_hhc = solve_hhc(hdata_temp, model_type, hpf_optimizer, hhc_optimizer)
+            end
 
             # write away the solution for each network
             for (nw,ntw) in results_hhc["solution"]["nw"] if nw ≠ "1"

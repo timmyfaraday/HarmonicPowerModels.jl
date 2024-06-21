@@ -13,7 +13,7 @@
 ""
 function solve_hhc(hdata, model_type::Type, optimizer; kwargs...)
     # update hdata for chosen fairness principle
-    update_hdata_with_fairness_principle_data!(hdata, model_type, optimizer) 
+    update_hdata_with_fairness_principle_data!(hdata, model_type, hpf_optimizer = optimizer, hhc_optimizer = optimizer, ) 
 
     # solve non-linear harmonic hosting capacity problem
     return _PMs.solve_model(hdata, model_type, optimizer, build_hhc; 
@@ -25,7 +25,7 @@ end
 ""
 function solve_hhc(hdata, model_type::Type, hhc_optimizer, hpf_optimizer; kwargs...)
     # update hdata for chosen fairness principle
-    update_hdata_with_fairness_principle_data!(hdata, dHHC_NLP, hpf_optimizer) 
+    update_hdata_with_fairness_principle_data!(hdata, dHHC_SOC, hpf_optimizer = hpf_optimizer, hhc_optimizer = hhc_optimizer) 
 
     # solve fundamental harmonic power flow problem and update hdata
     update_hdata_with_fundamental_hpf_results!(hdata, model_type, hpf_optimizer)
