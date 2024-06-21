@@ -17,6 +17,8 @@ module HarmonicPowerModels
 
     # import pkgs
     import JuMP
+    import MathOptInterface
+
     import PowerModels
     import InfrastructureModels
 
@@ -28,6 +30,8 @@ module HarmonicPowerModels
 
     # pkg constants 
     const _HPM = HarmonicPowerModels
+
+    const _MOI = MathOptInterface
 
     const _PMs = PowerModels
     const _IMs = InfrastructureModels

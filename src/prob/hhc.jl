@@ -138,6 +138,9 @@ end
 
 ""
 function build_hhc(pm::dHHC_SOC)
+    # add SOCtoNonConvexQuadBridge
+    JuMP.add_bridge(pm.model, _MOI.Bridges.Constraint.SOCtoNonConvexQuadBridge)
+
     # variables 
     for n in _PMs.nw_ids(pm) if n ≠ fundamental(pm)
         ## fairness variable 
