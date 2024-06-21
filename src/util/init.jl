@@ -29,7 +29,7 @@ function update_hdata_with_fairness_principle_data!(hdata, model_type::Type; hpf
             if model_type <: dHHC_NLP
                 results_hhc = solve_hhc(hdata_temp, model_type, hhc_optimizer)
             elseif model_type <: dHHC_SOC
-                results_hhc = solve_hhc(hdata_temp, model_type, hpf_optimizer, hhc_optimizer)
+                results_hhc = solve_hhc(hdata_temp, model_type, hhc_optimizer, hpf_optimizer)
             end
 
             # write away the solution for each network

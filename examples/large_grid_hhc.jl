@@ -84,7 +84,7 @@ H = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21]#, 23, 25, 27, 29, 31, 33, 35, 37, 39
 hdata_soc = HPM.replicate(data, H=H)
 for (n, nw) in hdata_soc["nw"]
     for (x, xfmr) in nw["xfmr"]
-        xfmr["c_rating"] = xfmr["c_rating"] * 10
+        xfmr["c_rating"] = xfmr["c_rating"] * 100
     end
 end
 total_time = @elapsed results_hhc = HPM.solve_hhc(hdata_soc, dHHC_SOC, solver_soc, solver_nlp)
