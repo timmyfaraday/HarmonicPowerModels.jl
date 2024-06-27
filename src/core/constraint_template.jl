@@ -174,7 +174,7 @@ function constraint_load_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fu
 
     aref   = load["ref_angle"]
 
-    if nw == 1
+    if nw == fundamental(pm)
         constraint_load_constant_power(pm, nw, l, i, pd, qd)
     else
         constraint_load_current_angle(pm, nw, l, aref)

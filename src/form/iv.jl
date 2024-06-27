@@ -347,8 +347,8 @@ function constraint_load_current_angle(pm::_PMs.AbstractIVRModel, n::Int, l, are
     cid = _PMs.var(pm, n, :cid, l)
     cmd = _PMs.var(pm, n, :cmd, l)
 
-    JuMP.@constraint(pm.model, cmd * sin(aref) == cid)
-    JuMP.@constraint(pm.model, cmd * cos(aref) == crd)
+    JuMP.@constraint(pm.model, cmd * sind(aref) == cid)
+    JuMP.@constraint(pm.model, cmd * cosd(aref) == crd)
 end
 "" # needs work towards v0.2.1
 function constraint_load_current_angle(pm::dHHC_SOC, n::Int, l, aref)
@@ -356,8 +356,8 @@ function constraint_load_current_angle(pm::dHHC_SOC, n::Int, l, aref)
     cid = _PMs.var(pm, n, :cid, l)
     cmd = _PMs.var(pm, n, :cmd, l)
 
-    JuMP.@constraint(pm.model, cmd * sin(aref) == cid)
-    JuMP.@constraint(pm.model, cmd * cos(aref) == crd)
+    JuMP.@constraint(pm.model, cmd * sind(aref) == cid)
+    JuMP.@constraint(pm.model, cmd * cosd(aref) == crd)
 end
 "" # needs work towards v0.2.1
 function constraint_load_constant_current(pm::_PMs.AbstractIVRModel, n::Int, l, mult)
