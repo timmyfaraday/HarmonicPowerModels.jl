@@ -257,7 +257,7 @@ function constraint_fairness_principle(pm::_PMs.AbstractIVRModel, n, load_ids)
         cmd = [_PMs.var(pm, n, :cmd, l) for l in load_ids]
 
         for l in load_ids[2:end]
-            JuMP.@constraint(pm.model, cmd[first(load_ids)] .== cmd[l])
+            JuMP.@constraint(pm.model, cmd[first(load_ids)] == cmd[l]) ## is this correct
     end end
 
     # maximin
