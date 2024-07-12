@@ -187,8 +187,10 @@ function build_hhc(pm::dHHC_SOC)
         constraint_fairness_principle(pm, nw=n)
         
         ### reference node
-        for i in _PMs.ids(pm, :ref_buses, nw=n)
-            constraint_voltage_ref_bus(pm, i, nw=n)
+        if !haskey(pm.setting, "fix_refbus_angle") || pm.setting["fix_refbus_angle"] == true 
+            for i in _PMs.ids(pm, :ref_buses, nw=n)
+                constraint_voltage_ref_bus(pm, i, nw=n)
+            end
         end
 
         ### node

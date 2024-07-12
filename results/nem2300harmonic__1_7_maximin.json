@@ -1,0 +1,1 @@
+{"solve_time":0.030913114547729492,"optimizer":"Gurobi","termination_status":"INFEASIBLE_OR_UNBOUNDED","dual_status":"NO_SOLUTION","primal_status":"NO_SOLUTION","objective":null,"solution":{},"objective_lb":null}
