@@ -8,6 +8,7 @@
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
+# v0.2.1 - reviewed TVA - this needs to be reworked asap                       #
 ################################################################################
 
 ""
@@ -173,9 +174,8 @@ function _HPM.replicate(data::Dict{String, Any};
                     if nh <= length(ihd_limits[std])
                         bus["ihdmax"] = ihd_limits[std][nh]
                     else
-                        println("harmonic $nh not included in $std")            # change to warn 
-            end end end 
-        end
+                        @warn "harmonic $nh not included in $std"
+        end end end end
 
         # re-evaluate the branch data 
         for branch in values(ntw["branch"])
