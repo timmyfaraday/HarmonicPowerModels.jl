@@ -147,7 +147,9 @@ function _HPM.replicate(data::Dict{String, Any};
                 gen["qmin"] = -abs(gen["qmax"])
             else #is true generator
                 if nw != "1" #cost of harmonics set to 0 
-                    gen["cost"] *= 0 
+                    if haskey(gen, "cost")
+                        gen["cost"] *= 0 
+                    end
                     #harmonics can be injected/absorbed to match load 
                     gen["pmin"] = -abs(gen["pmax"])
                     gen["qmin"] = -abs(gen["qmax"])
