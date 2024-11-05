@@ -8,6 +8,7 @@
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
+# v0.2.1 - reviewed TVA                                                        #
 ################################################################################
 
 ## variables
@@ -224,11 +225,11 @@ function constraint_current_rms_limit(pm::_PMs.AbstractIVRModel, f_idx, t_idx, c
     crf =  [_PMs.var(pm, n, :cr, f_idx) for n in sorted_nw_ids(pm)]
     cif =  [_PMs.var(pm, n, :ci, f_idx) for n in sorted_nw_ids(pm)]
 
-    crx =  [_PMs.var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm)]
-    cix =  [_PMs.var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm)]
+    crt =  [_PMs.var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm)]
+    cit =  [_PMs.var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm)]
 
     JuMP.@constraint(pm.model, sum(crf.^2 + cif.^2) <= c_rating^2)
-    JuMP.@constraint(pm.model, sum(crx.^2 + cix.^2) <= c_rating^2)
+    JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2)
 end
 ""
 function constraint_current_rms_limit(pm::dHHC_SOC, f_idx, t_idx, c_rating, cm_fund_fr, cm_fund_to)
@@ -329,7 +330,7 @@ function constraint_gen_current_rms_limit(pm::dHHC_SOC, g, c_rating, cm_fund)
 end
 
 # load
-"" # needs work towards v0.2.1
+""
 function constraint_load_constant_power(pm::_PMs.AbstractIVRModel, n::Int, l, i, pd, qd)
     vr = _PMs.var(pm, n, :vr, i)
     vi = _PMs.var(pm, n, :vi, i)
@@ -339,7 +340,7 @@ function constraint_load_constant_power(pm::_PMs.AbstractIVRModel, n::Int, l, i,
     JuMP.@constraint(pm.model, pd == vr*crd  + vi*cid)
     JuMP.@constraint(pm.model, qd == vi*crd  - vr*cid)
 end
-"" # needs work towards v0.2.1
+""
 function constraint_load_current_angle(pm::_PMs.AbstractIVRModel, n::Int, l, aref)
     crd = _PMs.var(pm, n, :crd, l)
     cid = _PMs.var(pm, n, :cid, l)
@@ -348,7 +349,7 @@ function constraint_load_current_angle(pm::_PMs.AbstractIVRModel, n::Int, l, are
     JuMP.@constraint(pm.model, cmd * sind(aref) == cid)
     JuMP.@constraint(pm.model, cmd * cosd(aref) == crd)
 end
-"" # needs work towards v0.2.1
+""
 function constraint_load_current_angle(pm::dHHC_SOC, n::Int, l, aref)
     crd = _PMs.var(pm, n, :crd, l)
     cid = _PMs.var(pm, n, :cid, l)
@@ -357,7 +358,7 @@ function constraint_load_current_angle(pm::dHHC_SOC, n::Int, l, aref)
     JuMP.@constraint(pm.model, cmd * sind(aref) == cid)
     JuMP.@constraint(pm.model, cmd * cosd(aref) == crd)
 end
-"" # needs work towards v0.2.1
+""
 function constraint_load_constant_current(pm::_PMs.AbstractIVRModel, n::Int, l, mult)
     crd = _PMs.var(pm, n, :crd, l)
     cid = _PMs.var(pm, n, :cid, l)

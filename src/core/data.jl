@@ -8,6 +8,7 @@
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
+# v0.2.1 - reviewed TVA - this needs to be reworked asap                       #
 ################################################################################
 
 ""
@@ -146,7 +147,9 @@ function _HPM.replicate(data::Dict{String, Any};
                 gen["qmin"] = -abs(gen["qmax"])
             else #is true generator
                 if nw != "1" #cost of harmonics set to 0 
-                    gen["cost"] *= 0 
+                    if haskey(gen, "cost")
+                        gen["cost"] *= 0 
+                    end
                     #harmonics can be injected/absorbed to match load 
                     gen["pmin"] = -abs(gen["pmax"])
                     gen["qmin"] = -abs(gen["qmax"])
@@ -173,9 +176,8 @@ function _HPM.replicate(data::Dict{String, Any};
                     if nh <= length(ihd_limits[std])
                         bus["ihdmax"] = ihd_limits[std][nh]
                     else
-                        println("harmonic $nh not included in $std")            # change to warn 
-            end end end 
-        end
+                        @warn "harmonic $nh not included in $std"
+        end end end end
 
         # re-evaluate the branch data 
         for branch in values(ntw["branch"])

@@ -8,6 +8,7 @@
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed by TVA                                                     #
+# v0.2.1 - reviewed by TVA                                                     #
 ################################################################################
 
 # ref bus
@@ -16,11 +17,8 @@ function constraint_voltage_ref_bus(pm::_PMs.AbstractPowerModel, i::Int; nw::Int
     if nw == 1
         vref = 1.0
     else
-        if hasref(pm, _PMs.pm_it_sym, nw, :bus, i, "ihdmax")
-            vref = _PMs.ref(pm, nw, :bus, i, "ihdmax")
-        else
-            vref = 0.0 
-    end end
+        vref = 0.0 
+    end
 
     constraint_voltage_ref_bus(pm, nw, i, vref)
 end
@@ -55,18 +53,18 @@ function constraint_voltage_thd_limit(pm::dHHC_SOC, i::Int)
 end
 ""
 function constraint_voltage_ihd_limit(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
-    ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
-
     if nw ≠ fundamental(pm)
+        ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
+
         constraint_voltage_ihd_limit(pm, nw, i, ihdmax)
     end
 end
 ""
 function constraint_voltage_ihd_limit(pm::dHHC_SOC, i::Int; nw::Int=fundamental(pm))
-    ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
-    vmfund = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
-
     if nw ≠ fundamental(pm)
+        ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
+        vmfund = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
+
         constraint_voltage_ihd_limit(pm, nw, i, ihdmax, vmfund)
     end
 end
