@@ -43,13 +43,17 @@ const ihd_limits = Dict(
                                     0.01087, 0.00200, 0.00200, 0.00200, 0.00986,
                                     0.00200, 0.00943, 0.00200, 0.00200, 0.00200,
                                     0.00871, 0.00200, 0.00840, 0.00200, 0.00200,
-                                    0.00200, 0.00785, 0.00200, 0.00761, 0.00200])
+                                    0.00200, 0.00785, 0.00200, 0.00761, 0.00200],
+    "IEEE519-2022-1/69kV" =>       [1.0, 0.030 .* ones(49)...],
+    "IEEE519-2022-69/161kV" =>     [1.0, 0.015 .* ones(49)...])
 
 const thd_limits = Dict(
     "Clean Bus" =>                  0.00000,
     "IEC61000-2-4:2002, Cl. 2" =>   0.08000,
     "IEC61000-3-6:2008" =>          0.08000,
-    "AS/NZS61000-3-6" =>            0.08000) 
+    "AS/NZS61000-3-6" =>            0.08000,
+    "IEEE519-2022-1/69kV" =>        0.05000,
+    "IEEE519-2022-69/161kV" =>      0.02500) 
 
 """
     HarmonicPowerModels.replicate
@@ -113,11 +117,7 @@ function _HPM.replicate(data::Dict{String, Any};
         for load in values(ntw["load"])
             bus = ntw["bus"]["$(load["source_id"][2])"]
                 
-            if nh == 1
-                mult = haskey(bus, "nh_$nh") ? bus["nh_$nh"] : 1.0 ;
-            else
-                mult = haskey(bus, "nh_$nh") ? bus["nh_$nh"] : 1.0 ;
-            end
+            mult = haskey(bus, "nh_$nh") ? bus["nh_$nh"] : 1.0 ;
 
             haskey(load, "pd") ? load["pd"] *= mult : ~ ;
             haskey(load, "qd") ? load["qd"] *= mult : ~ ;

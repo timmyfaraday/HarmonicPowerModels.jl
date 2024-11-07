@@ -132,9 +132,7 @@ function constraint_voltage_ref_bus(pm::_PMs.AbstractIVRModel, n::Int, i::Int, v
     vr = _PMs.var(pm, n, :vr, i)
     vi = _PMs.var(pm, n, :vi, i)
 
-    if n==fundamental(pm)
-        JuMP.@constraint(pm.model, vr == 1.0)   # to be checked
-    end
+    JuMP.@constraint(pm.model, vr == vref) 
     JuMP.@constraint(pm.model, vi == 0.0)
 end
 
