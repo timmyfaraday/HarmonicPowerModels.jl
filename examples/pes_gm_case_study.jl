@@ -219,23 +219,23 @@ for (nw, ntw) in hdata_ind_519["nw"] if parse(Int, nw) ≠ 1
 
         load["multiplier"] = ihd_limit_519(v, i , parse(Int,nw))
 end end end
-results_hpf_ind_519 = HPM.solve_hpf(hdata_ind_519, PMs.IVRPowerModel, solver_nlp)
+results_ieee = HPM.solve_hpf(hdata_ind_519, PMs.IVRPowerModel, solver_nlp)
 
 
-# Plots
-## input
-nb = 17
-nl = 1
-## function
-vm(bus)     = abs(bus["vr"] + im * bus["vi"])
+# # Plots
+# ## input
+# nb = 17
+# nl = 1
+# ## function
+# vm(bus)     = abs(bus["vr"] + im * bus["vi"])
 
-## plots 
-bar(2:50, [data["bus"]["$nb"]["i_ihd_519"][nh-1] for nh in 2:50], 
-        label="IEEE519-2022",
-        xlabel="harmonic h [-]",
-        ylabel="individual harmonic unit current Iⁱʰᵈ [pu]")
-bar(2:50, [results_hpf_ind_519["solution"]["nw"]["$nh"]["load"]["$nl"]["cm"] for nh in 2:50])
-bar(1:50, [vm(results_hpf_ind_519["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in 1:50],
-        label="IEEE519-2022",
-        xlabel="harmonic h [-]",
-        ylabel="individual harmonic bus voltage Uⁱʰᵈ [pu]")
+# ## plots 
+# bar(2:50, [data["bus"]["$nb"]["i_ihd_519"][nh-1] for nh in 2:50], 
+#         label="IEEE519-2022",
+#         xlabel="harmonic h [-]",
+#         ylabel="individual harmonic unit current Iⁱʰᵈ [pu]")
+# bar(2:50, [results_hpf_ind_519["solution"]["nw"]["$nh"]["load"]["$nl"]["cm"] for nh in 2:50])
+# bar(1:50, [vm(results_hpf_ind_519["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in 2:50],
+#         label="IEEE519-2022",
+#         xlabel="harmonic h [-]",
+#         ylabel="individual harmonic bus voltage Uⁱʰᵈ [pu]")
