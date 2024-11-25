@@ -7,7 +7,7 @@
 # Authors: Tom Van Acker                                                       #
 ################################################################################
 # Changelog:                                                                   #
-# v0.2.2 - init                                                                #
+# v0.3.0 - init                                                                #
 ################################################################################
 
 
@@ -165,15 +165,10 @@ end
     return Y 
 end
 
-global h = 1
-
 # calculate harmonic impedance
 function calculate_pos_seq_harmonic_impedance(data::Dict{String,Any}, 
                                               freq::Vector,
                                               idn::Vector)
-    # init necessary parameters
-    Nn  = length(data["bus"])
-    
     # init harmonic impedance dictionary
     Z = Dict(ni => Complex[] for ni in idn)
 

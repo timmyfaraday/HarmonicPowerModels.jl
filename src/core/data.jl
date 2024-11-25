@@ -55,6 +55,156 @@ const thd_limits = Dict(
     "IEEE519-2022-1/69kV" =>        0.05000,
     "IEEE519-2022-69/161kV" =>      0.02500) 
 
+""
+function ihd_current_limit_ieee_519(voltage, i_ratio, harmonic)
+    if voltage < 69.0
+        if i_ratio == Inf
+            return 0.0
+        elseif i_ratio < 20
+            if 2 <= harmonic < 11
+                return 0.04
+            elseif 11 <= harmonic < 17
+                return 0.02
+            elseif 17 <= harmonic < 23
+                return 0.015
+            elseif 23 <= harmonic < 35
+                return 0.006
+            elseif 35 <= harmonic <= 50
+                return 0.003
+            else
+                return 0.0
+            end
+        elseif 20.0 <= i_ratio < 50.0
+            if 2 <= harmonic < 11
+                return 0.07
+            elseif 11 <= harmonic < 17
+                return 0.035
+            elseif 17 <= harmonic < 23
+                return 0.025
+            elseif 23 <= harmonic < 35
+                return 0.010
+            elseif 35 <= harmonic <= 50
+                return 0.005
+            else
+                return 0.0
+            end
+        elseif 50.0 <= i_ratio < 100.0
+            if 2 <= harmonic < 11
+                return 0.10
+            elseif 11 <= harmonic < 17
+                return 0.045
+            elseif 17 <= harmonic < 23
+                return 0.040
+            elseif 23 <= harmonic < 35
+                return 0.015
+            elseif 35 <= harmonic <= 50
+                return 0.007
+            else
+                return 0.0
+            end
+        elseif 100.0 <= i_ratio < 1000.0
+            if 2 <= harmonic < 11
+                return 0.12
+            elseif 11 <= harmonic < 17
+                return 0.055
+            elseif 17 <= harmonic < 23
+                return 0.050
+            elseif 23 <= harmonic < 35
+                return 0.020
+            elseif 35 <= harmonic <= 50
+                return 0.010
+            else
+                return 0.0
+            end
+        else
+            if 2 <= harmonic < 11
+                return 0.15
+            elseif 11 <= harmonic < 17
+                return 0.07
+            elseif 17 <= harmonic < 23
+                return 0.06
+            elseif 23 <= harmonic < 35
+                return 0.025
+            elseif 35 <= harmonic <= 50
+                return 0.014
+            else
+                return 0.0
+            end
+        end
+    else
+        if i_ratio == Inf
+            return 0.0
+        elseif i_ratio < 20       
+            if 2 <= harmonic < 11
+                return 0.02
+            elseif 11 <= harmonic < 17
+                return 0.01
+            elseif 17 <= harmonic < 23
+                return 0.0075
+            elseif 23 <= harmonic < 35
+                return 0.003
+            elseif 35 <= harmonic <= 50
+                return 0.0015
+            else
+                return 0.0
+            end
+        elseif 20.0 <= i_ratio < 50.0
+            if 2 <= harmonic < 11
+                return 0.035
+            elseif 11 <= harmonic < 17
+                return 0.0175
+            elseif 17 <= harmonic < 23
+                return 0.0125
+            elseif 23 <= harmonic < 35
+                return 0.005
+            elseif 35 <= harmonic <= 50
+                return 0.0025
+            else
+                return 0.0
+            end
+        elseif 50.0 <= i_ratio < 100.0
+            if 2 <= harmonic < 11
+                return 0.05
+            elseif 11 <= harmonic < 17
+                return 0.0225
+            elseif 17 <= harmonic < 23
+                return 0.02
+            elseif 23 <= harmonic < 35
+                return 0.0075
+            elseif 35 <= harmonic <= 50
+                return 0.0035
+            else
+                return 0.0
+            end
+        elseif 100.0 <= i_ratio < 1000.0
+            if 2 <= harmonic < 11
+                return 0.06
+            elseif 11 <= harmonic < 17
+                return 0.0275
+            elseif 17 <= harmonic < 23
+                return 0.025
+            elseif 23 <= harmonic < 35
+                return 0.01
+            elseif 35 <= harmonic <= 50
+                return 0.005
+            else
+                return 0.0
+            end
+        else
+            if 2 <= harmonic < 11
+                return 0.075
+            elseif 11 <= harmonic < 17
+                return 0.035
+            elseif 17 <= harmonic < 23
+                return 0.03
+            elseif 23 <= harmonic < 35
+                return 0.0125
+            elseif 35 <= harmonic <= 50
+                return 0.007
+            else
+                return 0.0
+end end end end
+
 """
     HarmonicPowerModels.replicate
 """

@@ -24,10 +24,10 @@
 # v0.2.0 - reviewed TVA                                                        #
 ################################################################################
 
+# INPUT ########################################################################
 # using pkgs
 using HarmonicPowerModels, PowerModels
 using Ipopt 
-using Revise
 using PrettyTables
 
 # pkg cte
@@ -44,7 +44,7 @@ data = PMs.parse_file(path)
 # define the set of considered harmonics
 H = [1, 3, 5, 7]
 
-# RESULTS ######################################################################
+# COMPUTATION ##################################################################
 ## absolute equality (ae) ######################################################
 data["principle"] = "absolute equality"
 
@@ -89,9 +89,7 @@ results_hhc_nlp_ks = HPM.solve_hhc(hdata_nlp_ks, dHHC_NLP, solver_nlp)
 hdata_soc_ks = HPM.replicate(data, H=H)
 results_hhc_soc_ks = HPM.solve_hhc(hdata_soc_ks, dHHC_SOC, solver_nlp, solver_nlp)
 
-################################################################################
-
-# VISUALISATION ################################################################
+# RESULTS ######################################################################
 # TABLE: Harmonic current injection from the non-linear model with the 
 # Kalai-Smorodinsky bargaining fairness objective 
 
