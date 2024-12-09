@@ -4,12 +4,12 @@ using HarmonicPowerModels
 
 const HPM = HarmonicPowerModels
 
-case = "nem2300harmonic"
+case = "case1888_rte"
 harmonic_range = "__1_50_"
 
 # Laoding input data
 
-path = joinpath(HPM.BASE_DIR,"test","data","json", join([case, ".json"]))
+path = joinpath(HPM.BASE_DIR,"test","data","matpower", join([case, ".m"]))
 data = Dict{String, Any}()
 open(path) do f
 dicttxt = read(f,String)  # file information to string
@@ -38,9 +38,33 @@ dicttxt = read(f, String)
 global r_mm = JSON.parse(dicttxt)
 end
 
+filename = joinpath(HPM.BASE_DIR, "results", join([case, harmonic_range, "Kalai-Smorodinsky bargaining.json"]))
+r_ksb = Dict{String, Any}()
+open(filename) do f
+dicttxt = read(f, String)
+global r_ksb = JSON.parse(dicttxt)
+end
 
-bus_id = 
 
+bus_id = 1
+
+vm_ae = zeros(1, 49)
+vm_mm = zeros(1, 49)
+vm_me = zeros(1, 49)
+vm_ksb = zeros(1, 49)
+
+for idx in 1:49
+    h = idx + 1
+    vm_ae[idx] = r_ae["solution"]["nw"]["$h"]["bus"]["$bus_id"]["vm"]
+    vm_mm[idx] = r_mm["solution"]["nw"]["$h"]["bus"]["$bus_id"]["vm"]
+    vm_me[idx] = r_me["solution"]["nw"]["$h"]["bus"]["$bus_id"]["vm"]
+    vm_ksb[idx] = r_ksb["solution"]["nw"]["$h"]["bus"]["$bus_id"]["vm"]
+end
+
+vmh = plot(1:49, vm_ae', marker = :diamond, label = "absolute equality", yaxis = :log10)
+plot!(vmh, 1:49, vm_me', marker = :diamond, label = "maximum efficieny", yaxis = :log10)
+plot!(vmh, 1:49, vm_ksb', marker = :diamond, label = "Kalai-Smorodinsky bargaining", yaxis = :log10)
+plot!(vmh, 1:49, vm_mm', marker = :diamond, label = "maximin", yaxis = :log10, ylabel = "\$V_{h}~[pu]\$", xlabel = "h [-]", fontfamily = "Computer Modern")
 
 
 

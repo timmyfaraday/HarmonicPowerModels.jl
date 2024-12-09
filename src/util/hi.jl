@@ -120,7 +120,10 @@ end
 
     # add the branch admittances
     for (nb, branch) in data["branch"]
-        nf, nt = branch["f_bus"], branch["t_bus"]
+        nf_, nt_ = branch["f_bus"], branch["t_bus"]
+
+        nf = data["bus"]["$nf_"]["hb_idx"]
+        nt = data["bus"]["$nt_"]["hb_idx"]
 
         # 1) series admittance on-diagonal
         Y[nf,nf] = :($(Y[nf,nf]) + $(admittance_branch_series_ondiag(branch)))
@@ -138,7 +141,12 @@ end
     # add the xfmr admittances
     if haskey(data, "xfmr")
         for (nx, xfmr) in data["xfmr"]
-            nf, nt = xfmr["f_bus"], xfmr["t_bus"]
+            # nf, nt = xfmr["f_bus"], xfmr["t_bus"]
+
+            nf_, nt_ = xfmr["f_bus"], xfmr["t_bus"]
+
+            nf = data["bus"]["$nf_"]["hb_idx"]
+            nt = data["bus"]["$nt_"]["hb_idx"]
 
             # 1) series admittance on-diagonal
             Y[nf,nf] = :($(Y[nf,nf]) + $(admittance_xfmr_series_ondiag(xfmr)))
@@ -155,7 +163,13 @@ end
 
     # add the gen admittances
     for (ng, gen) in data["gen"]
-        nn  = gen["gen_bus"]
+        # nn  = gen["gen_bus"]
+
+        nn_  = gen["gen_bus"]
+
+
+        nn = data["bus"]["$nn_"]["hb_idx"]
+
         
         # 1) shunt admittance on-diagonal
         Y[nn,nn] = :($(Y[nn,nn]) + $(admittance_gen_shunt_ondiag(gen)))
@@ -178,21 +192,35 @@ function calculate_pos_seq_harmonic_impedance(data::Dict{String,Any},
     Z = Dict(ni => Complex[] for ni in idn)
 
     # build admittance matrix
-    Y = build_admittance_matrix(data)
+
+    println("Building Y matrix")
+
+    @time Y = build_admittance_matrix(data)
 
     # enumerate of the required frequency
     for nf in freq
         global h = nf / 50.0
-        
-        Yh = eval.(Y)
+
+        println("Evaluate Yh for ", nf, " Hz")
+        @time Yh = eval.(Y)
+
+        Yhc = zeros(ComplexF64, Nn, Nn)
+
+        for i in 1:Nn
+            for j in 1:Nn
+                Yhc[i, j] = float(Yh[i,j])
+            end
+        end
+
+        Yhs = SparseArrays.sparse(Yhc)
 
         for ni in idn
-            I = zeros(Complex, Nn)
+            I = zeros(ComplexF64, Nn)
             I[ni] = 1.0 + 0.0im
 
-            push!(Z[ni], (Yh \ I)[ni])
+            println("Calculate Z for bus ", ni)
+            @time push!(Z[ni], (Yhs \ I)[ni])
     end end
-
-    # return Z 
+ 
     return Z
 end
