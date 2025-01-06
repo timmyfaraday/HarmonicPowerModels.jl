@@ -15,49 +15,51 @@
 ""
 function update_hdata_with_fairness_principle_data!(hdata, model_type::Type, hhc_optimizer)
     if hdata["principle"] == "Kalai-Smorodinsky bargaining"
-        # make a deepcopy of the hdata
-        hdata_temp = deepcopy(hdata)
+        if !haskey(hdata, "skip KS precalc") || hdata["skip KS precalc"] == false
+            # make a deepcopy of the hdata
+            hdata_temp = deepcopy(hdata)
 
-        # set the principle to maximum efficiency
-        hdata_temp["principle"] = "maximum efficiency"
+            # set the principle to maximum efficiency
+            hdata_temp["principle"] = "maximum efficiency"
 
-        # instantiate with all loads
-        pm = _PMs.instantiate_model(hdata_temp, model_type, build_hhc; ref_extensions=[ref_add_filter!, ref_add_xfmr!])
-    
-        # solve the maximum efficiency harmonic hosting capacity problem for 
-        # each individual load
-        for (l,load) in hdata["nw"]["1"]["load"]
-            for (nw,ntw) in hdata_temp["nw"], (nl,load) in ntw["load"] 
-                nw_ = parse(Int, nw)
-                nl_ = parse(Int, nl)
-                c_rating = load["c_rating"]
-                if nw_ ≠ 1
-                    if nl ≠ l
-                        JuMP.set_lower_bound(_PMs.var(pm, nw_, :crd, nl_), 0.0)
-                        JuMP.set_upper_bound(_PMs.var(pm, nw_, :crd, nl_), 0.0)
-                        JuMP.set_lower_bound(_PMs.var(pm, nw_, :cid, nl_), 0.0)
-                        JuMP.set_upper_bound(_PMs.var(pm, nw_, :cid, nl_), 0.0)
-                        JuMP.set_lower_bound(_PMs.var(pm, nw_, :cmd, nl_), 0.0)
-                        JuMP.set_upper_bound(_PMs.var(pm, nw_, :cmd, nl_), 0.0)
-                    else 
-                        JuMP.set_lower_bound(_PMs.var(pm, nw_, :crd, nl_), -c_rating)
-                        JuMP.set_upper_bound(_PMs.var(pm, nw_, :crd, nl_),  c_rating)
-                        JuMP.set_lower_bound(_PMs.var(pm, nw_, :cid, nl_), -c_rating)
-                        JuMP.set_upper_bound(_PMs.var(pm, nw_, :cid, nl_),  c_rating)
-                        JuMP.set_lower_bound(_PMs.var(pm, nw_, :cmd, nl_),  0.0)
-                        JuMP.set_upper_bound(_PMs.var(pm, nw_, :cmd, nl_),  c_rating)
+            # instantiate with all loads
+            pm = _PMs.instantiate_model(hdata_temp, model_type, build_hhc; ref_extensions=[ref_add_filter!, ref_add_xfmr!])
+        
+            # solve the maximum efficiency harmonic hosting capacity problem for 
+            # each individual load
+            for (l,load) in hdata["nw"]["1"]["load"]
+                for (nw,ntw) in hdata_temp["nw"], (nl,load) in ntw["load"] 
+                    nw_ = parse(Int, nw)
+                    nl_ = parse(Int, nl)
+                    c_rating = load["c_rating"]
+                    if nw_ ≠ 1
+                        if nl ≠ l
+                            JuMP.set_lower_bound(_PMs.var(pm, nw_, :crd, nl_), 0.0)
+                            JuMP.set_upper_bound(_PMs.var(pm, nw_, :crd, nl_), 0.0)
+                            JuMP.set_lower_bound(_PMs.var(pm, nw_, :cid, nl_), 0.0)
+                            JuMP.set_upper_bound(_PMs.var(pm, nw_, :cid, nl_), 0.0)
+                            JuMP.set_lower_bound(_PMs.var(pm, nw_, :cmd, nl_), 0.0)
+                            JuMP.set_upper_bound(_PMs.var(pm, nw_, :cmd, nl_), 0.0)
+                        else 
+                            JuMP.set_lower_bound(_PMs.var(pm, nw_, :crd, nl_), -c_rating)
+                            JuMP.set_upper_bound(_PMs.var(pm, nw_, :crd, nl_),  c_rating)
+                            JuMP.set_lower_bound(_PMs.var(pm, nw_, :cid, nl_), -c_rating)
+                            JuMP.set_upper_bound(_PMs.var(pm, nw_, :cid, nl_),  c_rating)
+                            JuMP.set_lower_bound(_PMs.var(pm, nw_, :cmd, nl_),  0.0)
+                            JuMP.set_upper_bound(_PMs.var(pm, nw_, :cmd, nl_),  c_rating)
+                        end 
                     end 
-                end 
-            end
+                end
 
-            # solve the harmonic hosting capacity problem for the single load
-            results_hhc_temp = _PMs.optimize_model!(pm, optimizer = hhc_optimizer)
+                # solve the harmonic hosting capacity problem for the single load
+                results_hhc_temp = _PMs.optimize_model!(pm, optimizer = hhc_optimizer)
 
-            # write away the solution for each network
-            for (nw,ntw) in results_hhc_temp["solution"]["nw"] 
-                if nw ≠ "1"
-                    hdata["nw"]["$nw"]["load"]["$l"]["cmdmax"] = ntw["load"]["$l"]["cmd"]
-                end 
+                # write away the solution for each network
+                for (nw,ntw) in results_hhc_temp["solution"]["nw"] 
+                    if nw ≠ "1"
+                        hdata["nw"]["$nw"]["load"]["$l"]["cmdmax"] = ntw["load"]["$l"]["cmd"]
+                    end 
+                end
             end
         end
     end

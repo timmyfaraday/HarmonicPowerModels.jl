@@ -150,6 +150,10 @@ function constraint_voltage_rms_limit(pm::dHHC_SOC, i, vmaxrms, vmfund)
     vr = [_PMs.var(pm, n, :vr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     vi = [_PMs.var(pm, n, :vi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
+    if vmaxrms^2 < vmfund^2
+        println(i)
+    end
+
     JuMP.@constraint(pm.model, [sqrt(vmaxrms^2 - vmfund^2); vcat(vr, vi)] in JuMP.SecondOrderCone())
 end
 ""
@@ -237,6 +241,10 @@ function constraint_current_rms_limit(pm::dHHC_SOC, f_idx, t_idx, c_rating, cm_f
     crx =  [_PMs.var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     cix =  [_PMs.var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
+
+    if c_rating^2 < cm_fund_fr^2
+        println(f_idx, " ",t_idx,)
+    end
     JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund_fr^2); vcat(crf, cif)] in JuMP.SecondOrderCone())
     JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund_to^2); vcat(crx, cix)] in JuMP.SecondOrderCone())
 end
@@ -532,6 +540,8 @@ end
 function constraint_xfmr_current_rms_limit(pm::dHHC_SOC, idx, c_rating, cm_fund)
     crx =  [_PMs.var(pm, n, :crx, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     cix =  [_PMs.var(pm, n, :cix, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
-
+    if c_rating^2 < cm_fund^2
+        println(idx)
+    end
     JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund^2); vcat(crx, cix)] in JuMP.SecondOrderCone())
 end

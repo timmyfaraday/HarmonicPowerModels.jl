@@ -74,7 +74,7 @@ function build_hhc(pm::dHHC_NLP)
     end
     ### branch
     for b in ids(pm, :branch)
-        constraint_current_rms_limit(pm, b)
+        constraint_current_rms_limit(pm, b)x
     end
     ### generator
     for g in ids(pm, :gen)
@@ -170,16 +170,16 @@ function build_hhc(pm::dHHC_SOC)
     ## overall constraints
     ### node
     for i in ids(pm, :bus)
-        # constraint_voltage_rms_limit(pm, i)
-        # constraint_voltage_thd_limit(pm, i)
+        constraint_voltage_rms_limit(pm, i)
+        #constraint_voltage_thd_limit(pm, i)
     end
     ### branch
     for b in ids(pm, :branch)
-        # constraint_current_rms_limit(pm, b)
+        constraint_current_rms_limit(pm, b)
     end
     ### xfmr 
     for x in ids(pm, :xfmr)
-        # constraint_xfmr_current_rms_limit(pm, x)
+        constraint_xfmr_current_rms_limit(pm, x)
     end
 
     ## harmonic constraints
