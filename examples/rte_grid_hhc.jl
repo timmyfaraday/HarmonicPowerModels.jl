@@ -19,6 +19,7 @@ using JSON
 using Plots
 using StatsPlots
 using SparseArrays
+using JuMP
 
 # pkg cte
 const PMs = PowerModels
@@ -28,7 +29,7 @@ const HPM = HarmonicPowerModels
 include(joinpath(HPM.BASE_DIR,"src/util/hi.jl"))
 
 # set the solver
-solver_soc = Gurobi.Optimizer
+solver_soc = Gurobi.Optimizer#JuMP.optimizer_with_attributes(Gurobi.Optimizer)
 solver_nlp = Ipopt.Optimizer
 
 # read-in data 
@@ -59,37 +60,65 @@ zh_buses = collect(1:number_of_buses)
 
 # Add principle
 # {"maximum efficiency", "absolute equality", "maximin", "Kalai-Smorodinsky bargaining"}
-data["principle"] = "maximum efficiency"
+data["principle"] = "absolute equality"
 
+# Enforce bus voltage limits and standard
 for (b, bus) in data["bus"]
     bus["standard"] = "IEC61000-3-6:2008"
     bus["ref_angle"] = 0.0
-    bus["vmax"] = 1.7
+    bus["vmax"] = 1.1#min(1.1, bus["vmax"])
+    bus["vmin"] = 0.9##max(0.90, bus["vmin"]) 
 end
 
-# Switch on all generators
+# get rid of negative reactances and resistances
+for (br, branch) in data["branch"]
+    branch["tap"] = 1.0
+    branch["shift"] = 0.0
+    branch["c_rating"] = branch["rate_a"]
+end
+
+# Switch on all generators and set their lower bound to zero
 for (g, gen) in data["gen"]
-    gen["gen_status"] = 1
+    gen[ "gen_status"] = 1
+    gen["pmin"] = 0.0
+    gen_bus = gen["gen_bus"]
+    data["bus"]["$gen_bus"]["bus_type"] = 2
 end
-
 # solve an OPF to find a feasible starting point
-result_opf = PMs.solve_opf(data, PMs.ACPPowerModel, solver_nlp)
+result_opf = PMs.solve_opf_iv(data, PMs.IVRPowerModel, solver_nlp)
 
 # update voltage and power setpoints
 for (g, gen) in data["gen"]
     gen["p"] = result_opf["solution"]["gen"]["$g"]["pg"]
     gen["q"] = result_opf["solution"]["gen"]["$g"]["qg"]
+    gen["crg"] = result_opf["solution"]["gen"]["$g"]["crg"]
+    gen["cig"] = result_opf["solution"]["gen"]["$g"]["cig"]
+    gen["cm"] = sqrt(gen["crg"]^2 + gen["cig"]^2)
+end
+
+for (br, branch) in data["branch"]
+    branch["cr_fr"] = result_opf["solution"]["branch"]["$br"]["cr_fr"]
+    branch["ci_fr"] = result_opf["solution"]["branch"]["$br"]["ci_fr"]
+    branch["cr_to"] = result_opf["solution"]["branch"]["$br"]["cr_to"]
+    branch["ci_to"] = result_opf["solution"]["branch"]["$br"]["ci_to"] 
+    branch["cm_fr"] = sqrt(branch["cr_fr"]^2 + branch["ci_fr"]^2)
+    branch["cm_to"] = sqrt(branch["cr_to"]^2 + branch["ci_to"]^2)
 end
 
 for (b, bus) in data["bus"]
-    bus["vm"] = result_opf["solution"]["bus"]["$b"]["vm"]
-    bus["va"] = result_opf["solution"]["bus"]["$b"]["va"]
+    bus["vm"] = sqrt(result_opf["solution"]["bus"]["$b"]["vr"]^2 + result_opf["solution"]["bus"]["$b"]["vi"]^2)
+    bus["va"] = atan(result_opf["solution"]["bus"]["$b"]["vi"] / result_opf["solution"]["bus"]["$b"]["vr"])
+
+    bus["vi"] = result_opf["solution"]["bus"]["$b"]["vi"]
+    bus["vr"] = result_opf["solution"]["bus"]["$b"]["vr"]
+    bus["vmax"] = bus["vmax"] + 1e-5
 end
+
 
 # Convert data format to include transformers:
 
 data["xfmr"] = Dict{String, Any}()
-sc_ratio = 0.15
+sc_ratio = 1.0
 
 for (br, branch) in data["branch"]
     f_bus = branch["f_bus"]
@@ -103,6 +132,8 @@ for (br, branch) in data["branch"]
         xfmr["gsh"] =  0.0
         xfmr["r1"] = branch["br_r"] / 2
         xfmr["r2"] = branch["br_r"] / 2
+        xfmr["ctm_fr"] = branch["cm_fr"]
+        xfmr["ctm_to"] = branch["cm_to"]
         # Determine vector group: if Vp >= 30 kV -> star, if Vs >= 30.0 -> star, otherwise delta
         Vp = max(data["bus"]["$f_bus"]["base_kv"], data["bus"]["$t_bus"]["base_kv"])
         Vs = max(data["bus"]["$f_bus"]["base_kv"], data["bus"]["$t_bus"]["base_kv"])
@@ -130,7 +161,7 @@ for (br, branch) in data["branch"]
         xfmr["re2"] = re2
         xfmr["xe1"] = 0.0
         xfmr["xe2"] = 0.0
-        xfmr["rateA"] = branch["rate_a"] * data["baseMVA"]
+        xfmr["rateA"] = branch["rate_a"] * data["baseMVA"] # replicate function devides by the base MVA....
 
         delete!(data["branch"], br)
     end
@@ -177,34 +208,19 @@ end
 # define the set of considered harmonics
 H = [h for h in 1:30]
 
-
 # solve HHC problem -- SOC 
 hdata_soc = HPM.replicate(data, H=H)
 
-# first solve hOPF to have good starting values:
-# hdata_opf = deepcopy(hdata_soc)
 
-# for (n, nw) in hdata_opf["nw"]
-#     if n !== "1" && n !== "2"
-#         delete!(hdata_opf["nw"], n)
-#     end
+#######
+# for (b, branch) in hdata_soc["nw"]["1"]["branch"]
+#     branch["c_rating"] = branch["c_rating"] * 10 # this needs to be checked.......
 # end
 
-# result_opf = HPM.solve_hopf(hdata_opf, PMs.IVRPowerModel, solver_nlp)
 
-
-
-
-########
-for (b, branch) in hdata_soc["nw"]["1"]["branch"]
-    branch["c_rating"] = branch["c_rating"] * 10
-end
-
-for (x, xfmr) in hdata_soc["nw"]["1"]["xfmr"]
-    xfmr["c_rating"] = xfmr["c_rating"] * 10
-end
-
-
+# for (x, xfmr) in hdata_soc["nw"]["1"]["xfmr"]
+#     xfmr["c_rating"] = xfmr["c_rating"] * 10
+# end
 
 if write_ihdmax == true
     filename = joinpath(HPM.BASE_DIR, "results", join([case, "_Zh.json"]))
@@ -229,16 +245,37 @@ if write_ihdmax == true
 end
 
 s = Dict("fix_refbus_angle" => true)
+
 total_time = @elapsed results_hhc = HPM.solve_hhc(hdata_soc, dHHC_SOC, solver_soc, solver_nlp; setting = s)
 
-h_1 = H[1]
-h_end = H[end]
-harmonic_range = join(["_", "$h_1", "_", "$h_end", "_"])
-filename = joinpath(HPM.BASE_DIR, "results", join([case, "_", harmonic_range, data["principle"],".json"]))
-json_string = JSON.json(results_hhc)
-open(filename,"w") do f
-write(f, json_string)
-end
+# h_1 = H[1]
+# h_end = H[end]
+# harmonic_range = join(["_", "$h_1", "_", "$h_end", "_"])
+# filename = joinpath(HPM.BASE_DIR, "results", join([case, "_", harmonic_range, data["principle"],".json"]))
+# json_string = JSON.json(results_hhc)
+# open(filename,"w") do f
+# write(f, json_string)
+# end
+
+
+
+# plot([bus["vm"] for (i, bus) in hdata_soc["nw"]["1"]["bus"]], label = "voltage magnitude")
+
+# hpf_data = deepcopy(hdata_soc)
+# for n in keys(hpf_data["nw"])
+#     if n ≠ "1"
+#         delete!(hpf_data["nw"], n)
+#     end
+# end
+
+# # solve hpf problem for the fundamental harmonic only
+# hpf_results = HPM.solve_hpf(hpf_data, dHHC_NLP, solver_nlp)
+
+# for (b, bus) in hpf_results["solution"]["nw"]["1"]["bus"]
+#     if bus["vm"] > 1.15
+#         println( b, " " , bus["vm"])
+#     end
+# end
 
 # for (n, nw) in hdata_soc["nw"]
 #     for (x, xfmr) in nw["xfmr"]
@@ -264,3 +301,13 @@ end
 #         end
 #     end
 
+# first solve hOPF to have good starting values:
+# hdata_opf = deepcopy(hdata_soc)
+
+# for (n, nw) in hdata_opf["nw"]
+#     if n !== "1" && n !== "2"
+#         delete!(hdata_opf["nw"], n)
+#     end
+# end
+
+# result_opf = HPM.solve_hopf(hdata_opf, PMs.IVRPowerModel, solver_nlp)

@@ -26,7 +26,7 @@ end
 ""
 function solve_hhc(hdata, model_type::Type, hhc_optimizer, hpf_optimizer; kwargs...)
     # solve fundamental harmonic power flow problem and update hdata
-    update_hdata_with_fundamental_hpf_results!(hdata, model_type, hpf_optimizer)
+    #update_hdata_with_fundamental_hpf_results!(hdata, dHHC_NLP, hpf_optimizer)
 
     # update hdata for chosen fairness principle
     update_hdata_with_fairness_principle_data!(hdata, dHHC_SOC, hhc_optimizer) 
@@ -171,7 +171,7 @@ function build_hhc(pm::dHHC_SOC)
     ### node
     for i in ids(pm, :bus)
         constraint_voltage_rms_limit(pm, i)
-        #constraint_voltage_thd_limit(pm, i)
+        constraint_voltage_thd_limit(pm, i)
     end
     ### branch
     for b in ids(pm, :branch)
