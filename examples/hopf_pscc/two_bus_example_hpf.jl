@@ -39,7 +39,7 @@ results_fund = PMs.solve_pf_iv(data, PMs.IVRPowerModel, solver)
 # define the set of considered harmonics
 H = [1, 3]
 
-# RESULTS ######################################################################
+# COMPUTATION ##################################################################
 # solve HPF problem
 hdata   = HPM.replicate(data, H=H)
 results = HarmonicPowerModels.solve_hpf(hdata, PMs.IVRPowerModel, solver)

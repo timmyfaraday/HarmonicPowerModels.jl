@@ -223,52 +223,66 @@ plot(f ./ 50, [abs.(Zh_ind[nb]), abs.(Zh_cap[nb])],
         fontfamily="Computer Modern",
         label=["Case A: Inductive network" "Case B: Underground cable network"],
         legend=:bottomright,
+        linestyle=[:solid :dash],
         xlabel="harmonic \$h\$ [-]",
         yaxis=:log10,
         ylabel="impedance \$Z_{h}\$ [pu]",
         ylim=(1e-2,1e1),
         yminorgrid=true)
+savefig("examples/dhhc_pes_gm/results/harmonic_impedance_bus_$nb.png")
 
 # plot harmonic current
 plot(setdiff(H,1), [[hdata_ind_519["nw"]["$nh"]["bus"]["$nb"]["i_ihd"] for nh in setdiff(H,1)],
                     [hdata_ind_iec["nw"]["$nh"]["bus"]["$nb"]["i_ihd"] for nh in setdiff(H,1)],
                     [results_ind_hhc["solution"]["nw"]["$nh"]["load"]["$nl"]["cmd"] for nh in setdiff(H,1)],
                     [hdata_cap_iec["nw"]["$nh"]["bus"]["$nb"]["i_ihd"] for nh in setdiff(H,1)],
-                    [results_cap_hhc["solution"]["nw"]["$nh"]["load"]["$nl"]["cmd"] for nh in setdiff(H,1)]],
+                    [results_cap_hhc["solution"]["nw"]["$nh"]["load"]["$nl"]["cmd"] for nh in setdiff(H,1)]
+                   ],
         bottom_margin=10mm,
         color=[:blue :orange :green :orange :green],
         fontfamily="Computer Modern",
-        label=["CASE A/B: IEEE519" "CASE A: IEC61000" "CASE A: HHC" "CASE B: IEC61000" "CASE B: HHC"],
+        label=["CASE A/B: IEEE519" "CASE B: IEC61000" "CASE B: HHC" "CASE A: IEC61000" "CASE A: HHC"],
         left_margin=10mm,
         legend=:outerright,
-        marker=[:diamond :diamond :diamond :circle :circle], 
+        linestyle=[:dot :dot :dot :solid :solid :solid],  
+        marker=[:square :square :square :diamond :diamond :diamond],  
+        markersize=5,
         size=(1200,266),
         xlabel="harmonic \$h\$ [-]",
+        xlim=(0,51),
         yaxis=:log10,
-        ylabel="current \$|I^{ihd}_{h}|\$ [pu]",
+        ylabel="current \$|𝗜^{ihd}_{h}|\$ [pu]",
         ylim=(1e-5,1e-2),
         yminorgrid=true)
+savefig("examples/dhhc_pes_gm/results/harmonic_current_load_$nl.png")
+
+nb = 26
 
 # plot harmonic voltage
 vm(result) = abs(result["vr"] + im * result["vi"])
 lim = data["bus"]["$nb"]["base_kv"] <= 69.0 ? 0.03 : 0.015 ;
-plot([0,50],[lim,lim],color=:black,label="harmonic current limit",linewidth=3)
+plot([0,50],[lim,lim],color=:black,label="harmonic voltage limit",linewidth=3)
 plot!(setdiff(H,1), [[vm(results_ind_519["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
-                    [vm(results_ind_iec["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
-                    [vm(results_ind_hhc["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
-                    [vm(results_cap_519["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
-                    [vm(results_cap_iec["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
-                    [vm(results_cap_hhc["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)]],
+                     [vm(results_ind_iec["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
+                     [vm(results_ind_hhc["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
+                     [vm(results_cap_519["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
+                     [vm(results_cap_iec["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
+                     [vm(results_cap_hhc["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)]
+                    ],
         bottom_margin=10mm,
         color=[:blue :orange :green :blue :orange :green],
         fontfamily="Computer Modern",
-        label=["CASE A: IEEE519" "CASE A: IEC61000" "CASE A: HHC" "CASE B: IEEE519" "CASE B: IEC61000" "CASE B: HHC"],
+        label=["CASE A: IEEE519" "CASE A: IEC61000" "CASE A: HHC" "CASE B: IEEE519" "CASE B: IEC61000" "CASE B: HHC"],  
         left_margin=10mm,
         legend=:outerright,
-        marker=[:diamond :diamond :diamond :circle :circle :circle], 
+        linestyle=[:solid :solid :solid :dash :dash :dash], 
+        marker=[:diamond :diamond :diamond :square :square :square],  
+        markersize=5,
         size=(1200,266),
         xlabel="harmonic \$h\$ [-]",
+        xlim=(0,51),
         yaxis=:log10,
-        ylabel="Voltage \$|U^{ihd}_{h}|\$ [pu]",
-        ylim=(1e-5,1e-0),
+        ylabel="voltage \$|𝗨^{ihd}_{h}|\$ [pu]",
+        ylim=(1e-5,1e0),
         yminorgrid=true)
+savefig("examples/dhhc_pes_gm/results/harmonic_voltage_bus_$nb.png")
