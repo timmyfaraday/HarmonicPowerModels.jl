@@ -25,6 +25,7 @@ module HarmonicPowerModels
 
     import SignalDecomposition
     import Interpolations
+    import SparseArrays
     
     # import function to overwrite
     import InfrastructureModels: replicate
@@ -39,6 +40,7 @@ module HarmonicPowerModels
     
     const _SDC = SignalDecomposition
     const _INT = Interpolations
+    const _SPA = SparseArrays
 
     # const 
     const freq = 50.0
@@ -63,6 +65,7 @@ module HarmonicPowerModels
     include("prob/hpf.jl")
     include("prob/hhc.jl")
 
+    include("util/hi.jl")
     include("util/init.jl")
     include("util/ref.jl")
     include("util/sol.jl")
@@ -75,4 +78,5 @@ module HarmonicPowerModels
     export replicate
     export solve_hpf, solve_hopf, solve_hhc 
 
+    export calculate_pos_seq_harmonic_impedance
 end

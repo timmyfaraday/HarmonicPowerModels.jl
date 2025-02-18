@@ -11,6 +11,7 @@ MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
 PowerModels = "c36e90e8-916a-50a6-bd94-075b64ef4655"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 SignalDecomposition = "11a47235-7b84-4c7c-b885-fc3e2a9cf955"
+SparseArrays = "2f01184e-e22b-5df5-ae63-d93ebab69eaf"
 
 [compat]
 InfrastructureModels = "~0.6, ~0.7"

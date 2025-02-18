@@ -102,12 +102,40 @@ function admittance_xfmr_shunt_ondiag_to(xfmr::Dict{String,Any})
 end
 
 # generator, shunt at gen node #################################################
-#### ysh    = rˢᶜ * sqrt(h) + im * h * xˢᶜ
-#### yᵢᵢ    = rˢᶜ * sqrt(h) + im * h * xˢᶜ
+#### ysh    = 1 / (rˢᶜ * sqrt(h) + im * h * xˢᶜ)
+#### yᵢᵢ    = 1 / (rˢᶜ * sqrt(h) + im * h * xˢᶜ)
 function admittance_gen_shunt_ondiag(gen::Dict{String,Any})
     r, x = gen["rsc"], gen["xsc"]
 
     return :(1 / ($(r) * sqrt(h) + im * $(x) * h))
+end
+
+# motor, shunt at mot node #####################################################
+#### ysh    = 1 / (rˢᶜ * sqrt(h) + im * h * xˢᶜ)
+#### yᵢᵢ    = 1 / (rˢᶜ * sqrt(h) + im * h * xˢᶜ)
+function admittance_mot_shunt_ondiag(mot::Dict{String,Any})
+    r, x = mot["rsc"], mot["xsc"]
+
+    return :(1 / ($(r) * sqrt(h) + im * $(x) * h))
+end
+
+# capacitance, shunt at mot node #####################################################
+#### ysh    = 1 / (rˢᶜ * sqrt(h) + im * h * xˢᶜ)
+#### yᵢᵢ    = 1 / (rˢᶜ * sqrt(h) + im * h * xˢᶜ)
+function admittance_cap_shunt_ondiag(cap::Dict{String,Any})
+    xl, xc = cap["xl"], cap["xc"]
+
+    return :(1 / (im * $(xl) * h - im * $(xc) / h))
+end
+
+# inf bus, shunt at inf node ###################################################
+function admittance_inf_shunt_ondiag(inf::Dict{String,Any})
+    H, z, a = inf["h"], inf["z"], inf["a"]
+
+    r = _INT.linear_interpolation(H, z .* cos.(a))
+    x = _INT.linear_interpolation(H, z .* sin.(a))
+
+    return :(1 / ($r(h) + im * $x(h)))
 end
 
 # build admittance matrix ######################################################
@@ -163,16 +191,38 @@ end
 
     # add the gen admittances
     for (ng, gen) in data["gen"]
-        # nn  = gen["gen_bus"]
-
         nn_  = gen["gen_bus"]
-
-
         nn = data["bus"]["$nn_"]["hb_idx"]
 
-        
         # 1) shunt admittance on-diagonal
         Y[nn,nn] = :($(Y[nn,nn]) + $(admittance_gen_shunt_ondiag(gen)))
+    end
+
+    # add motor admittances
+    for (nm, mot) in data["mot"]
+        nn_ = mot["mot_bus"]
+        nn  = data["bus"]["$nn_"]["hb_idx"]
+
+        # 1) shunt admittance on-diagonal
+        Y[nn,nn] = :($(Y[nn,nn]) + $(admittance_mot_shunt_ondiag(mot)))
+    end
+
+    # add capacitance admittances
+    for (nc, cap) in data["cap"]
+        nn_ = cap["cap_bus"]
+        nn  = data["bus"]["$nn_"]["hb_idx"]
+
+        # 1) shunt admittance on-diagonal
+        Y[nn,nn] = :($(Y[nn,nn]) + $(admittance_cap_shunt_ondiag(cap)))
+    end
+
+    # add the inf admittances
+    for (ni, inf) in data["inf"]
+        nn_  = inf["inf_bus"]
+        nn   = data["bus"]["$nn_"]["hb_idx"]
+
+        # 1) shunt admittance on-diagonal
+        Y[nn,nn] = :($(Y[nn,nn]) + $(admittance_inf_shunt_ondiag(inf)))
     end
 
     # return admittance matrix
@@ -212,7 +262,7 @@ function calculate_pos_seq_harmonic_impedance(data::Dict{String,Any},
             end
         end
 
-        Yhs = SparseArrays.sparse(Yhc)
+        Yhs = _SPA.sparse(Yhc)
 
         for ni in idn
             I = zeros(ComplexF64, Nn)
