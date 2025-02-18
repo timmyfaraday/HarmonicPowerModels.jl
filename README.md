@@ -4,7 +4,7 @@
 # HarmonicPowerModels.jl
 
 HarmonicPowerModels.jl is an extension package of PowerModels.jl for Steady-State 
-Power System Optimization with Power Harmonics. 
+Phase-Balanced Three-Phase Power System Optimization with Power Harmonics. 
 
 ## Core Problem Specification
 - Balanced Harmonic Power Flow (hpf)
@@ -23,22 +23,20 @@ The package requires `Julia 1.9` or newer. The latest stable release of `Harmoni
 ] add HarmonicPowerModels
 ```
 
-At least one solver is required for running HarmonicPowerModels.  The open-source solver Ipopt is recommended, as it is fast, scaleable and can be used to solve a wide variety of the problems provided in HarmonicPowerModels. The Ipopt solver can be installed via the package manager with
-
-```julia
-] add Ipopt
-```
-
 Test that the package works by running
 
 ```julia
 ] test HarmonicPowerModels
 ```
 
+## Examples
+
+The numerical illustrations and case studies of the papers written as part of the package development can be found in the `examples`-folder.
+
 ## Acknowledgements
-The primary developer is Tom Van Acker, BASF Antwerp, ([@timmyfaraday](https://github.com/timmyfaraday)), with support from the following contributors: 
-  - Hakan Ergun, KU Leuven, ([@hakanergun](https://github.com/hakanergun)), and
-  - Frederik Geth, GridQube, ([@frederikgeth](https://github.com/frederikgeth)).
+The primary developer is Tom Van Acker ([@timmyfaraday](https://github.com/timmyfaraday)), with support from the following contributors: 
+  - Hakan Ergun ([@hakanergun](https://github.com/hakanergun)), and
+  - Frederik Geth ([@frederikgeth](https://github.com/frederikgeth)).
 
 ## License
 This code is provided under a BSD 3-Clause License.

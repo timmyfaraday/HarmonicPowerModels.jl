@@ -4,11 +4,31 @@
 # Optimization with Power Harmonics.                                           #
 # See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
 ################################################################################
+# Example considering the harmonic hosting capacity of an industrial power     #
+# system taken from: Exact Lower Bound on Equitable Harmonic Hosting Capacity  #
+# by T. Van Acker and H. Ergun, pg. 8, § III.B.                                #
+# ---------------------------------------------------------------------------- #
+# This numerical illustration aims to demonstrate the developed harmonic       #
+# hosting capacity optimization model on a large transmission grid. The Rte    #
+# 1888 bus test system, inspired by the French transmission grid is used for   #
+# that purpose. The test system has twelve voltage levels ranging from 380 kV  #
+# to 3 kV, 551 transformers, 1980 branches, and 1000 units. All necessary data #
+# are derived from the MATPOWER source file [24], and the power quality        #
+# standard IEC61000-3-6:2008 [10]. As the source file does not specify the     #
+# transformer vector group, a YNYn0 vector group is assumed for transformers   #
+# with a primary voltage greater than or equal to 30 kV, while a YNd11 vector  #
+# group is assumed for all others. The considered harmonic set is              #
+# H ∈ {2, 3, ..., 50}. The aim of this numerical illustration is to            #
+# 1) show the impact of the chosen fairness principle on a power system of     #
+#    realistic size, and                                                       #
+# 2) show the computational efficiency of the second-order cone model.         #
+# Only the second-order cone formulation of the harmonic hosting capacity      #
+# model is considered, and is solved using GUROBI V11.0.3.                     #
+################################################################################
 # Authors: Tom Van Acker, Hakan Ergun                                          #
 ################################################################################
 # Changelog:                                                                   #
-# v0.1.0 - reviewed TVA                                                        #
-# temp   - testing for cutting approach (TVA)                                  #
+# v0.3.0 - init                                                                #
 ################################################################################
 
 # using pkgs
