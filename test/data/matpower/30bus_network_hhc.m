@@ -99,7 +99,7 @@ mpc.bus_harmonics = [
 %% generator data
 %	bus	Pg	Qg	Qmax	Qmin	Vg	mBase	status	Pmax	Pmin
 mpc.gen = [
-	1	 135.5	 5.0	 10.0	 0.0	 1.0	 100.0	 1	 271	 0.0; % NG
+	1	 135.5	 5.0	 10.0	 0.0	 1.0	 100.0	 1	 271 0.0; % NG
 	2	 46.0	 3.0	 46.0	 -40.0	 1.0	 100.0	 1	 92	 0.0; % NG
 	5	 0.0	 0.0	 40.0	 -40.0	 1.0	 100.0	 1	 0	 0.0; % SYNC
 	8	 0.0	 15.0	 40.0	 -10.0	 1.0	 100.0	 1	 0	 0.0; % SYNC

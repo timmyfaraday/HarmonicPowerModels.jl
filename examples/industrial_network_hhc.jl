@@ -27,7 +27,7 @@
 # using pkgs
 using HarmonicPowerModels, PowerModels
 using Ipopt 
-using Revise
+# using Revise
 using PrettyTables
 
 # pkg cte
@@ -81,13 +81,14 @@ results_hhc_soc_mm = HPM.solve_hhc(hdata_soc_mm, dHHC_SOC, solver_nlp, solver_nl
 ## Kalai-Smorodinsky bargaining (ks) ###########################################
 data["principle"] = "Kalai-Smorodinsky bargaining"
 
-# solve HHC problem -- NLP
+# # solve HHC problem -- NLP
 hdata_nlp_ks = HPM.replicate(data, H=H)
 results_hhc_nlp_ks = HPM.solve_hhc(hdata_nlp_ks, dHHC_NLP, solver_nlp)
 
 # solve HHC problem -- SOC 
 hdata_soc_ks = HPM.replicate(data, H=H)
 results_hhc_soc_ks = HPM.solve_hhc(hdata_soc_ks, dHHC_SOC, solver_nlp, solver_nlp)
+
 
 ################################################################################
 

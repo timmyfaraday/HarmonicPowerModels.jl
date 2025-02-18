@@ -29,7 +29,7 @@ const HPM = HarmonicPowerModels
 include(joinpath(HPM.BASE_DIR,"src/util/hi.jl"))
 
 # set the solver
-solver_soc = Gurobi.Optimizer#JuMP.optimizer_with_attributes(Gurobi.Optimizer)
+solver_soc = JuMP.optimizer_with_attributes(Gurobi.Optimizer, "BarConvTol" => 1e-4)
 solver_nlp = Ipopt.Optimizer
 
 # read-in data 
@@ -60,7 +60,7 @@ zh_buses = collect(1:number_of_buses)
 
 # Add principle
 # {"maximum efficiency", "absolute equality", "maximin", "Kalai-Smorodinsky bargaining"}
-data["principle"] = "absolute equality"
+data["principle"] = "maximin"
 
 # Enforce bus voltage limits and standard
 for (b, bus) in data["bus"]
@@ -74,7 +74,7 @@ end
 for (br, branch) in data["branch"]
     branch["tap"] = 1.0
     branch["shift"] = 0.0
-    branch["c_rating"] = branch["rate_a"]
+    branch["c_rating"] = (branch["rate_a"] / 0.9) 
 end
 
 # Switch on all generators and set their lower bound to zero
@@ -94,6 +94,13 @@ for (g, gen) in data["gen"]
     gen["crg"] = result_opf["solution"]["gen"]["$g"]["crg"]
     gen["cig"] = result_opf["solution"]["gen"]["$g"]["cig"]
     gen["cm"] = sqrt(gen["crg"]^2 + gen["cig"]^2)
+    gen_bus = gen["gen_bus"]
+    v = data["bus"]["$gen_bus"]["base_kv"]
+    xd_ohm = (v * 1000)^2 / (sqrt(gen["pmax"]^2 + gen["qmax"]^2) * data["baseMVA"] * 1e6)
+    zbase = (v * 1000)^2 / (data["baseMVA"] * 1e6)
+    xd_pu = xd_ohm / zbase
+    gen["bg"] = - 1 / xd_pu   # x = Sbase / Snom = 1 / Snom in pu. Empiric value Hapold & Oeding Table A.4
+    gen["c_rating"]= gen["cm"] # amske sure current rating is fine
 end
 
 for (br, branch) in data["branch"]
@@ -161,7 +168,8 @@ for (br, branch) in data["branch"]
         xfmr["re2"] = re2
         xfmr["xe1"] = 0.0
         xfmr["xe2"] = 0.0
-        xfmr["rateA"] = branch["rate_a"] * data["baseMVA"] # replicate function devides by the base MVA....
+        xfmr["rateA"] = branch["rate_a"] #* data["baseMVA"] # replicate function devides by the base MVA....
+        xfmr["c_rating"] = branch["c_rating"]
 
         delete!(data["branch"], br)
     end
@@ -205,8 +213,14 @@ end
 
 ###################
 
+idx = 1
+for b in collect(sort(parse.(Int, keys(data["bus"]))))
+    data["bus"]["$b"]["hb_idx"] = idx
+    global idx = idx + 1
+end
+
 # define the set of considered harmonics
-H = [h for h in 1:30]
+H = [h for h in 1:50]
 
 # solve HHC problem -- SOC 
 hdata_soc = HPM.replicate(data, H=H)
@@ -223,6 +237,8 @@ hdata_soc = HPM.replicate(data, H=H)
 # end
 
 if write_ihdmax == true
+    #### Add bus indexes for the case of non sequential bus numbers
+
     filename = joinpath(HPM.BASE_DIR, "results", join([case, "_Zh.json"]))
     Zh = Dict{String, Any}()
     open(filename) do f
@@ -257,6 +273,12 @@ total_time = @elapsed results_hhc = HPM.solve_hhc(hdata_soc, dHHC_SOC, solver_so
 # write(f, json_string)
 # end
 
+
+# zh127 = [sqrt(Zh["127"][h]["re"]^2 + Zh["127"][h]["im"]^2)  for h in 1:50]
+# index = 1:50
+# mh = hcat(index, zh127)
+# header = ["h" "zh"]
+# writedlm(joinpath(HPM.BASE_DIR,"results", join(["zh127.csv"])),  [header ; mh], ',')
 
 
 # plot([bus["vm"] for (i, bus) in hdata_soc["nw"]["1"]["bus"]], label = "voltage magnitude")

@@ -74,7 +74,7 @@ function build_hhc(pm::dHHC_NLP)
     end
     ### branch
     for b in ids(pm, :branch)
-        constraint_current_rms_limit(pm, b)x
+        constraint_current_rms_limit(pm, b)
     end
     ### generator
     for g in ids(pm, :gen)
@@ -181,6 +181,10 @@ function build_hhc(pm::dHHC_SOC)
     for x in ids(pm, :xfmr)
         constraint_xfmr_current_rms_limit(pm, x)
     end
+    ### generator 
+    # for g in ids(pm, :gen)
+    #     constraint_gen_current_rms_limit(pm, g)
+    # end
 
     ## harmonic constraints
     for n in _PMs.nw_ids(pm) if n ≠ fundamental(pm)

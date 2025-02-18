@@ -80,10 +80,11 @@ function constraint_current_balance(pm::_PMs.AbstractPowerModel, i::Int; nw::Int
 
     bus_gs  = Dict(k => _PMs.ref(pm, nw, :shunt, k, "gs") for k in bus_shunts)
     bus_bs  = Dict(k => _PMs.ref(pm, nw, :shunt, k, "bs") for k in bus_shunts)
+    gen_bg  = Dict(k => _PMs.ref(pm, nw, :gen, k, "bg") for k in bus_gens)
 
     constraint_current_balance(pm, nw, i,   bus_arcs, bus_arcs_xfmr, 
                                             bus_filters, bus_gens, bus_loads, 
-                                            bus_gs, bus_bs)
+                                            bus_gs, bus_bs, gen_bg)
 end
 
 # branch
@@ -159,7 +160,7 @@ function constraint_gen_current_rms_limit(pm::dHHC_SOC, g::Int)
     cm_fund = gen["cm"]
     c_rating = gen["c_rating"]
 
-    constraint_current_rms_limit(pm, g, c_rating, cm_fund)
+    constraint_gen_current_rms_limit(pm, g, c_rating, cm_fund)
 end
 
 # load

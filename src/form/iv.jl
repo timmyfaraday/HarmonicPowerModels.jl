@@ -150,10 +150,6 @@ function constraint_voltage_rms_limit(pm::dHHC_SOC, i, vmaxrms, vmfund)
     vr = [_PMs.var(pm, n, :vr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     vi = [_PMs.var(pm, n, :vi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    if vmaxrms^2 < vmfund^2
-        println(i)
-    end
-
     JuMP.@constraint(pm.model, [sqrt(vmaxrms^2 - vmfund^2); vcat(vr, vi)] in JuMP.SecondOrderCone())
 end
 ""
@@ -185,7 +181,7 @@ function constraint_voltage_ihd_limit(pm::dHHC_SOC, n::Int, i, ihdmax, vmfund)
     JuMP.@constraint(pm.model, [ihdmax * vmfund; vcat(vr, vi)] in JuMP.SecondOrderCone())
 end
 ""
-function constraint_current_balance(pm::_PMs.AbstractIVRModel, n::Int, i, bus_arcs, bus_arcs_xfmr, bus_filters, bus_gens, bus_loads, bus_gs, bus_bs)
+function constraint_current_balance(pm::_PMs.AbstractIVRModel, n::Int, i, bus_arcs, bus_arcs_xfmr, bus_filters, bus_gens, bus_loads, bus_gs, bus_bs, gen_bg)
     vr = _PMs.var(pm, n, :vr, i)
     vi = _PMs.var(pm, n, :vi, i)
 
@@ -196,8 +192,8 @@ function constraint_current_balance(pm::_PMs.AbstractIVRModel, n::Int, i, bus_ar
 
     crf = _PMs.var(pm, n, :crf)
     cif = _PMs.var(pm, n, :cif)
-    crg = _PMs.var(pm, n, :crg)
-    cig = _PMs.var(pm, n, :cig)
+    # crg = _PMs.var(pm, n, :crg)
+    # cig = _PMs.var(pm, n, :cig)
     crd = _PMs.var(pm, n, :crd)
     cid = _PMs.var(pm, n, :cid)
 
@@ -205,19 +201,21 @@ function constraint_current_balance(pm::_PMs.AbstractIVRModel, n::Int, i, bus_ar
                                 + sum(crx[t] for t in bus_arcs_xfmr)
                                 ==
                                 sum(crf[f] for f in bus_filters)
-                                + sum(crg[g] for g in bus_gens)
+                                #+ sum(crg[g] for g in bus_gens) # remove later for generators + add sum(gs for gs in values(gen_gs))*vr .....
                                 - sum(crd[d] for d in bus_loads)
                                 - sum(gs for gs in values(bus_gs))*vr 
                                 + sum(bs for bs in values(bus_bs))*vi
+                                + sum(bg for bg in values(gen_bg))*vi
                                 )
     JuMP.@constraint(pm.model,  sum(ci[a] for a in bus_arcs)
                                 + sum(cix[t] for t in bus_arcs_xfmr)
                                 ==
                                 sum(cif[f] for f in bus_filters)
-                                + sum(cig[g] for g in bus_gens)
+                                # + sum(cig[g] for g in bus_gens) # check later for generators
                                 - sum(cid[d] for d in bus_loads)
                                 - sum(gs for gs in values(bus_gs))*vi 
                                 - sum(bs for bs in values(bus_bs))*vr
+                                - sum(bg for bg in values(gen_bg))*vr
                                 )
 end
 
@@ -241,12 +239,8 @@ function constraint_current_rms_limit(pm::dHHC_SOC, f_idx, t_idx, c_rating, cm_f
     crx =  [_PMs.var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     cix =  [_PMs.var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-
-    if c_rating^2 < cm_fund_fr^2
-        println(f_idx, " ",t_idx,)
-    end
-    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund_fr^2); vcat(crf, cif)] in JuMP.SecondOrderCone())
-    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund_to^2); vcat(crx, cix)] in JuMP.SecondOrderCone())
+    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund_fr^2)./10000; vcat(crf, cif)./10000] in JuMP.SecondOrderCone())
+    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund_to^2)./10000; vcat(crx, cix)./10000] in JuMP.SecondOrderCone())
 end
 
 # fairness principle
@@ -332,7 +326,7 @@ function constraint_gen_current_rms_limit(pm::dHHC_SOC, g, c_rating, cm_fund)
     crg =  [_PMs.var(pm, n, :crg, g) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     cig =  [_PMs.var(pm, n, :cig, g) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund^2); vcat(crg, cig)] in JuMP.SecondOrderCone())
+    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund^2)./1000; vcat(crg, cig)./1000] in JuMP.SecondOrderCone())
 end
 
 # load
@@ -543,5 +537,5 @@ function constraint_xfmr_current_rms_limit(pm::dHHC_SOC, idx, c_rating, cm_fund)
     if c_rating^2 < cm_fund^2
         println(idx)
     end
-    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund^2); vcat(crx, cix)] in JuMP.SecondOrderCone())
+    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund^2)./10000; vcat(crx, cix)./10000] in JuMP.SecondOrderCone())
 end
