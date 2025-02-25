@@ -1,0 +1,43 @@
+################################################################################
+# HarmonicPowerModels.jl                                                       #
+# Extension package of PowerModels.jl for Steady-State Power System            #
+# Optimization with Power Harmonics.                                           #
+# See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
+################################################################################
+# Authors: Tom Van Acker                                                       #
+################################################################################
+# Changelog:                                                                   #
+# v0.3.0 - init                                                                #
+################################################################################
+
+# parameters ###################################################################
+""
+function add_ref_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
+    for (nw, ntw) in hdata["nw"], (nb, bus) in ntw["bus"] 
+        if bus["type"] == 3
+            bus["v_fund_ref"] = 1.0
+end end end
+
+# constraints ##################################################################
+## reference bus voltage constraint ############################################
+""
+function constraint_ref_voltage(pm::HarmonicPowerModel, i::Int; nw::Int=fundamental(pm))
+    v_fund_ref  = _PMs.ref(pm, nw, :bus, i, "v_fund_ref")
+
+    nw == fundamental(pm) && constraint_ref_voltage_fundamental(pm, nw, i, v_fund_ref)
+    nw ≠  fundamental(pm) && constraint_ref_voltage_harmonic(pm, nw, i, v_fund_ref)
+end
+""
+function constraint_ref_voltage_fundamental(pm::HarmonicPowerModel, n::Int, i, v_fund_ref)
+    vr = _PMs.var(pm, n, :vr, i)
+    vi = _PMs.var(pm, n, :vi, i)
+
+    JuMP.@constraint(pm.model, vr == v_fund_ref)
+    JuMP.@constraint(pm.model, vi == 0.0)
+end
+""
+function constraint_ref_voltage_harmonic(pm::HarmonicPowerModel, n::Int, i, v_fund_ref)
+    vi = _PMs.var(pm, n, :vi, i)
+
+    JuMP.@constraint(pm.model, vi == 0.0)
+end

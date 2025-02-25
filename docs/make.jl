@@ -9,10 +9,10 @@ makedocs(
     pages       =   [    "Home"                   => "index.md",
                          "Components"             => 
                          [    "Bus"               => "bus.md",
-                              "Reference Bus"     => "ref_bus.md",
-                              "Branch"            => "branch.md",
-                              "Transformer"       => "xfmr.md",
-                              "Harmonic Load"     => "load.md"
+                              "Reference Bus"     => "bus_ref.md",
+                              # "Branch"            => "branch.md",
+                              # "Transformer"       => "xfmr.md",
+                              # "Harmonic Load"     => "load.md"
                          ],
                          "Problem Formulation"    =>
                          [    "HPF"               => "power_flow.md",

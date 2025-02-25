@@ -9,6 +9,7 @@
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
 # v0.2.1 - reviewed TVA                                                        #
+# v0.3.0 - adapted for extended graph representation                           #
 ################################################################################
 
 ""
@@ -45,8 +46,8 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
     ## overall or fundamental constraints
     ### node
     for i in ids(pm, :bus)
-        constraint_voltage_rms_limit(pm, i)
-        constraint_voltage_thd_limit(pm, i)
+        constraint_bus_voltage_rms_limit(pm, i)
+        constraint_bus_voltage_thd_limit(pm, i)
     end
     ### branch 
     for b in ids(pm, :branch)
@@ -70,13 +71,13 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
     for n in _PMs.nw_ids(pm)
         ### reference node
         for i in _PMs.ids(pm, :ref_buses, nw=n) 
-            constraint_voltage_ref_bus(pm, i, nw=n)
+            constraint_ref_voltage(pm, i, nw=n)
         end
 
         ### node
         for i in _PMs.ids(pm, :bus, nw=n)
-            constraint_current_balance(pm, i, nw=n)
-            constraint_voltage_ihd_limit(pm, i, nw=n)
+            constraint_bus_current_balance(pm, i, nw=n)
+            constraint_bus_voltage_ihd_limit(pm, i, nw=n)
         end
 
         ### branch

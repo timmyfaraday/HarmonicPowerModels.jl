@@ -13,8 +13,8 @@
 ################################################################################
 
 ""
-is_pos_sequence(nh::Int) = nh % 3 == 1
-is_neg_sequence(nh::Int) = nh % 3 == 2
+is_pos_sequence(nh::Int)  = nh % 3 == 1
+is_neg_sequence(nh::Int)  = nh % 3 == 2
 is_zero_sequence(nh::Int) = nh % 3 == 0
 
 ""

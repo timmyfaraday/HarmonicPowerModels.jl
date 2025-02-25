@@ -7,21 +7,15 @@
 # Authors: Tom Van Acker                                                       #
 ################################################################################
 # Changelog:                                                                   #
-# v0.2.0 - reviewed TVA                                                        #
-# v0.2.1 - reviewed TVA                                                        #
-# v0.3.0 - redefine structs                                                    #
+# v0.3.0 - init                                                                #
 ################################################################################
 
+# voltage ######################################################################
 ""
-mutable struct HarmonicPowerModel   <: _PMs.AbstractIVRModel    _PMs.@pm_fields end
-mutable struct dHHCPowerModel       <: HarmonicPowerModel       _PMs.@pm_fields end
-
-"""
-Deterministic Harmonic Hosting Capacity (NLP)
-"""
-mutable struct dHHC_NLP <: _PMs.AbstractIVRModel _PMs.@pm_fields end
-
-"""
-Deterministic Harmonic Hosting Capacity (SOC)
-"""
-mutable struct dHHC_SOC <: _PMs.AbstractIVRModel _PMs.@pm_fields end
+const voltage_thd_limits = Dict(
+    "Clean Bus" =>                  0.00000,
+    "IEC61000-2-4:2002, Cl. 2" =>   0.08000,
+    "IEC61000-3-6:2008" =>          0.08000,
+    "AS/NZS61000-3-6" =>            0.08000,
+    "IEEE519-2022-1/69kV" =>        0.05000,
+    "IEEE519-2022-69/161kV" =>      0.02500) 

@@ -13,11 +13,11 @@
 
 ## variables
 # bus
-""
-function variable_bus_voltage(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
-    variable_bus_voltage_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_bus_voltage_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-end
+# ""
+# function variable_bus_voltage(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+#     variable_bus_voltage_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+#     variable_bus_voltage_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+# end
 
 # branch 
 ""
@@ -125,99 +125,99 @@ function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
     end
 end
 
-## constraints
-# ref bus
-""
-function constraint_voltage_ref_bus(pm::_PMs.AbstractIVRModel, n::Int, i::Int, vref)
-    vr = _PMs.var(pm, n, :vr, i)
-    vi = _PMs.var(pm, n, :vi, i)
+# ## constraints
+# # ref bus
+# ""
+# function constraint_voltage_ref_bus(pm::_PMs.AbstractIVRModel, n::Int, i::Int, vref)
+#     vr = _PMs.var(pm, n, :vr, i)
+#     vi = _PMs.var(pm, n, :vi, i)
 
-    JuMP.@constraint(pm.model, vr == vref) 
-    JuMP.@constraint(pm.model, vi == 0.0)
-end
+#     JuMP.@constraint(pm.model, vr == vref) 
+#     JuMP.@constraint(pm.model, vi == 0.0)
+# end
 
-# bus
-""
-function constraint_voltage_rms_limit(pm::_PMs.AbstractIVRModel, i, vminrms, vmaxrms)
-    vr = [_PMs.var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
-    vi = [_PMs.var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
+# # bus
+# ""
+# function constraint_voltage_rms_limit(pm::_PMs.AbstractIVRModel, i, vminrms, vmaxrms)
+#     vr = [_PMs.var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
+#     vi = [_PMs.var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, vminrms^2 <= sum(vr.^2 + vi.^2)               )
-    JuMP.@constraint(pm.model,              sum(vr.^2 + vi.^2)  <= vmaxrms^2 )
-end
-""
-function constraint_voltage_rms_limit(pm::dHHC_SOC, i, vmaxrms, vmfund)
-    vr = [_PMs.var(pm, n, :vr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
-    vi = [_PMs.var(pm, n, :vi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+#     JuMP.@constraint(pm.model, vminrms^2 <= sum(vr.^2 + vi.^2)               )
+#     JuMP.@constraint(pm.model,              sum(vr.^2 + vi.^2)  <= vmaxrms^2 )
+# end
+# ""
+# function constraint_voltage_rms_limit(pm::dHHC_SOC, i, vmaxrms, vmfund)
+#     vr = [_PMs.var(pm, n, :vr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+#     vi = [_PMs.var(pm, n, :vi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    JuMP.@constraint(pm.model, [sqrt(vmaxrms^2 - vmfund^2); vcat(vr, vi)] in JuMP.SecondOrderCone())
-end
-""
-function constraint_voltage_thd_limit(pm::_PMs.AbstractIVRModel, i, thdmax)
-    vr = [_PMs.var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
-    vi = [_PMs.var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
+#     JuMP.@constraint(pm.model, [sqrt(vmaxrms^2 - vmfund^2); vcat(vr, vi)] in JuMP.SecondOrderCone())
+# end
+# ""
+# function constraint_voltage_thd_limit(pm::_PMs.AbstractIVRModel, i, thdmax)
+#     vr = [_PMs.var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
+#     vi = [_PMs.var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, sum(vr[2:end].^2 + vi[2:end].^2) <= thdmax^2 * (vr[1]^2 + vi[1]^2))
-end
-""
-function constraint_voltage_thd_limit(pm::dHHC_SOC, i, thdmax, vmfund)
-    vr = [_PMs.var(pm, n, :vr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
-    vi = [_PMs.var(pm, n, :vi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+#     JuMP.@constraint(pm.model, sum(vr[2:end].^2 + vi[2:end].^2) <= thdmax^2 * (vr[1]^2 + vi[1]^2))
+# end
+# ""
+# function constraint_voltage_thd_limit(pm::dHHC_SOC, i, thdmax, vmfund)
+#     vr = [_PMs.var(pm, n, :vr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+#     vi = [_PMs.var(pm, n, :vi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    JuMP.@constraint(pm.model, [thdmax * vmfund; vcat(vr, vi)] in JuMP.SecondOrderCone())
-end
-""
-function constraint_voltage_ihd_limit(pm::_PMs.AbstractIVRModel, n::Int, i, ihdmax)
-    vr = [_PMs.var(pm, 1, :vr, i), _PMs.var(pm, n, :vr, i)] 
-    vi = [_PMs.var(pm, 1, :vi, i), _PMs.var(pm, n, :vi, i)]
+#     JuMP.@constraint(pm.model, [thdmax * vmfund; vcat(vr, vi)] in JuMP.SecondOrderCone())
+# end
+# ""
+# function constraint_voltage_ihd_limit(pm::_PMs.AbstractIVRModel, n::Int, i, ihdmax)
+#     vr = [_PMs.var(pm, 1, :vr, i), _PMs.var(pm, n, :vr, i)] 
+#     vi = [_PMs.var(pm, 1, :vi, i), _PMs.var(pm, n, :vi, i)]
 
-    JuMP.@constraint(pm.model, (vr[2]^2 + vi[2]^2) <= ihdmax^2 * (vr[1]^2 + vi[1]^2))
-end
-""
-function constraint_voltage_ihd_limit(pm::dHHC_SOC, n::Int, i, ihdmax, vmfund)
-    vr = _PMs.var(pm, n, :vr, i)
-    vi = _PMs.var(pm, n, :vi, i)
+#     JuMP.@constraint(pm.model, (vr[2]^2 + vi[2]^2) <= ihdmax^2 * (vr[1]^2 + vi[1]^2))
+# end
+# ""
+# function constraint_voltage_ihd_limit(pm::dHHC_SOC, n::Int, i, ihdmax, vmfund)
+#     vr = _PMs.var(pm, n, :vr, i)
+#     vi = _PMs.var(pm, n, :vi, i)
 
-    JuMP.@constraint(pm.model, [ihdmax * vmfund; vcat(vr, vi)] in JuMP.SecondOrderCone())
-end
-""
-function constraint_current_balance(pm::_PMs.AbstractIVRModel, n::Int, i, bus_arcs, bus_arcs_xfmr, bus_filters, bus_gens, bus_loads, bus_gs, bus_bs, gen_bg)
-    vr = _PMs.var(pm, n, :vr, i)
-    vi = _PMs.var(pm, n, :vi, i)
+#     JuMP.@constraint(pm.model, [ihdmax * vmfund; vcat(vr, vi)] in JuMP.SecondOrderCone())
+# end
+# ""
+# function constraint_current_balance(pm::_PMs.AbstractIVRModel, n::Int, i, bus_arcs, bus_arcs_xfmr, bus_filters, bus_gens, bus_loads, bus_gs, bus_bs, gen_bg)
+#     vr = _PMs.var(pm, n, :vr, i)
+#     vi = _PMs.var(pm, n, :vi, i)
 
-    cr = _PMs.var(pm, n, :cr)
-    ci = _PMs.var(pm, n, :ci)
-    crx = _PMs.var(pm, n, :crx)
-    cix = _PMs.var(pm, n, :cix)
+#     cr = _PMs.var(pm, n, :cr)
+#     ci = _PMs.var(pm, n, :ci)
+#     crx = _PMs.var(pm, n, :crx)
+#     cix = _PMs.var(pm, n, :cix)
 
-    crf = _PMs.var(pm, n, :crf)
-    cif = _PMs.var(pm, n, :cif)
-    # crg = _PMs.var(pm, n, :crg)
-    # cig = _PMs.var(pm, n, :cig)
-    crd = _PMs.var(pm, n, :crd)
-    cid = _PMs.var(pm, n, :cid)
+#     crf = _PMs.var(pm, n, :crf)
+#     cif = _PMs.var(pm, n, :cif)
+#     # crg = _PMs.var(pm, n, :crg)
+#     # cig = _PMs.var(pm, n, :cig)
+#     crd = _PMs.var(pm, n, :crd)
+#     cid = _PMs.var(pm, n, :cid)
 
-    JuMP.@constraint(pm.model,  sum(cr[a] for a in bus_arcs)
-                                + sum(crx[t] for t in bus_arcs_xfmr)
-                                ==
-                                sum(crf[f] for f in bus_filters)
-                                #+ sum(crg[g] for g in bus_gens) # remove later for generators + add sum(gs for gs in values(gen_gs))*vr .....
-                                - sum(crd[d] for d in bus_loads)
-                                - sum(gs for gs in values(bus_gs))*vr 
-                                + sum(bs for bs in values(bus_bs))*vi
-                                + sum(bg for bg in values(gen_bg))*vi
-                                )
-    JuMP.@constraint(pm.model,  sum(ci[a] for a in bus_arcs)
-                                + sum(cix[t] for t in bus_arcs_xfmr)
-                                ==
-                                sum(cif[f] for f in bus_filters)
-                                # + sum(cig[g] for g in bus_gens) # check later for generators
-                                - sum(cid[d] for d in bus_loads)
-                                - sum(gs for gs in values(bus_gs))*vi 
-                                - sum(bs for bs in values(bus_bs))*vr
-                                - sum(bg for bg in values(gen_bg))*vr
-                                )
-end
+#     JuMP.@constraint(pm.model,  sum(cr[a] for a in bus_arcs)
+#                                 + sum(crx[t] for t in bus_arcs_xfmr)
+#                                 ==
+#                                 sum(crf[f] for f in bus_filters)
+#                                 #+ sum(crg[g] for g in bus_gens) # remove later for generators + add sum(gs for gs in values(gen_gs))*vr .....
+#                                 - sum(crd[d] for d in bus_loads)
+#                                 - sum(gs for gs in values(bus_gs))*vr 
+#                                 + sum(bs for bs in values(bus_bs))*vi
+#                                 + sum(bg for bg in values(gen_bg))*vi
+#                                 )
+#     JuMP.@constraint(pm.model,  sum(ci[a] for a in bus_arcs)
+#                                 + sum(cix[t] for t in bus_arcs_xfmr)
+#                                 ==
+#                                 sum(cif[f] for f in bus_filters)
+#                                 # + sum(cig[g] for g in bus_gens) # check later for generators
+#                                 - sum(cid[d] for d in bus_loads)
+#                                 - sum(gs for gs in values(bus_gs))*vi 
+#                                 - sum(bs for bs in values(bus_bs))*vr
+#                                 - sum(bg for bg in values(gen_bg))*vr
+#                                 )
+# end
 
 # branch
 ""

@@ -9,6 +9,8 @@
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
 # v0.2.1 - reviewed TVA                                                        #
+# v0.3.0 - 1) tighten variable limits                                          #
+#          2) provide logical start values                                     #                                 
 ################################################################################
 
 # fairness principle
@@ -53,40 +55,46 @@ function variable_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundam
     end
 end
 
-# bus
-""
-function variable_bus_voltage_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    vr = _PMs.var(pm, nw)[:vr] = JuMP.@variable(pm.model,
-        [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_vr",
-        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, i), "vr_start", 1.0)
-    )
+# # bus
+# ""
+# function variable_bus_voltage_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+#     vlim    = collect_harmonic_bus_voltage_magnitude_limits(pm, nw)
 
-    if bounded
-        for (i, bus) in _PMs.ref(pm, nw, :bus)
-            JuMP.set_lower_bound(vr[i], -bus["vmax"])
-            JuMP.set_upper_bound(vr[i],  bus["vmax"])
-        end
-    end
+#     vr      = _PMs.var(pm, nw)[:vr] = 
+#                 JuMP.@variable( pm.model,
+#                                 [i in _PMs.ids(pm, nw, :bus)], 
+#                                 base_name="$(nw)_vr",
+#                                 start = vlim)
 
-    report && _PMs.sol_component_value(pm, nw, :bus, :vr, _PMs.ids(pm, nw, :bus), vr)
-end
+#     if bounded
+#         for i in _PMs.ids(pm, nw, :bus)
+#             JuMP.set_lower_bound(vr[i], -vlim[i])
+#             JuMP.set_upper_bound(vr[i],  vlim[i])
+#         end
+#     end
 
-""
-function variable_bus_voltage_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    vi = _PMs.var(pm, nw)[:vi] = JuMP.@variable(pm.model,
-        [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_vi",
-        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :bus, i), "vi_start")
-    )
+#     report && _PMs.sol_component_value(pm, nw, :bus, :vr, _PMs.ids(pm, nw, :bus), vr)
+# end
 
-    if bounded
-        for (i, bus) in _PMs.ref(pm, nw, :bus)
-            JuMP.set_lower_bound(vi[i], -bus["vmax"])
-            JuMP.set_upper_bound(vi[i],  bus["vmax"])
-        end
-    end
+# ""
+# function variable_bus_voltage_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+#     vlim    = collect_harmonic_bus_voltage_magnitude_limits(pm, nw)
 
-    report && _PMs.sol_component_value(pm, nw, :bus, :vi, _PMs.ids(pm, nw, :bus), vi)
-end
+#     vi      = _PMs.var(pm, nw)[:vi] = 
+#                 JuMP.@variable( pm.model,
+#                                 [i in _PMs.ids(pm, nw, :bus)], 
+#                                 base_name="$(nw)_vi",
+#                                 start = 0.0)
+
+#     if bounded
+#         for i in _PMs.ids(pm, nw, :bus)
+#             JuMP.set_lower_bound(vi[i], -vlim[i])
+#             JuMP.set_upper_bound(vi[i],  vlim[i])
+#         end
+#     end
+
+#     report && _PMs.sol_component_value(pm, nw, :bus, :vi, _PMs.ids(pm, nw, :bus), vi)
+# end
 
 # branch
 ""

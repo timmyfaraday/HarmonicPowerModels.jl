@@ -59,6 +59,9 @@ module HarmonicPowerModels
     include("core/data.jl")
     include("core/variable.jl")
 
+    include("comp/bus/bus.jl")
+    include("comp/bus/bus_ref.jl")
+
     include("form/iv.jl")
 
     include("prob/hopf.jl")
@@ -66,9 +69,11 @@ module HarmonicPowerModels
     include("prob/hhc.jl")
 
     include("util/imp.jl") 
+    include("util/ihd.jl")
     include("util/init.jl")
     include("util/ref.jl")
     include("util/sol.jl")
+    include("util/thd.jl")
     include("util/xfmr_magn.jl")
 
     # export

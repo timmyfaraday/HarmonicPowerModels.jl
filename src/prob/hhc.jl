@@ -9,6 +9,7 @@
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
 # v0.2.1 - reviewed TVA                                                        #
+# v0.3.0 - adapted for extended graph representation                           #
 ################################################################################
 
 ""
@@ -40,7 +41,7 @@ function solve_hhc(hdata, model_type::Type, hhc_optimizer, hpf_optimizer; kwargs
 end
 
 ""
-function build_hhc(pm::dHHC_NLP)
+function build_hhc(pm::HarmonicPowerModel)
     # variables 
     for n in _PMs.nw_ids(pm)
         ## fairness variable
@@ -69,8 +70,8 @@ function build_hhc(pm::dHHC_NLP)
     ## overall or fundamental constraints
     ### node 
     for i in ids(pm, :bus)
-        constraint_voltage_rms_limit(pm, i)
-        constraint_voltage_thd_limit(pm, i)
+        constraint_bus_voltage_rms_limit(pm, i)
+        constraint_bus_voltage_thd_limit(pm, i)
     end
     ### branch
     for b in ids(pm, :branch)
@@ -95,15 +96,15 @@ function build_hhc(pm::dHHC_NLP)
             constraint_fairness_principle(pm, nw=n)
         end
 
-        ### reference node
+        ### reference bus
         for i in _PMs.ids(pm, :ref_buses, nw=n)
-            constraint_voltage_ref_bus(pm, i, nw=n)
+            constraint_ref_voltage(pm, i, nw=n)
         end
 
-        ### node
+        ### bus
         for i in _PMs.ids(pm, :bus, nw=n)
-            constraint_current_balance(pm, i, nw=n)
-            constraint_voltage_ihd_limit(pm, i, nw=n)
+            constraint_bus_current_balance(pm, i, nw=n)
+            constraint_bus_voltage_ihd_limit(pm, i, nw=n)
         end
 
         ### branch
@@ -138,7 +139,7 @@ function build_hhc(pm::dHHC_NLP)
 end
 
 ""
-function build_hhc(pm::dHHC_SOC)
+function build_hhc(pm::dHHCPowerModel)
     # add SOCtoNonConvexQuadBridge
     JuMP.add_bridge(pm.model, _MOI.Bridges.Constraint.SOCtoNonConvexQuadBridge)
 
@@ -170,8 +171,8 @@ function build_hhc(pm::dHHC_SOC)
     ## overall constraints
     ### node
     for i in ids(pm, :bus)
-        constraint_voltage_rms_limit(pm, i)
-        constraint_voltage_thd_limit(pm, i)
+        constraint_bus_voltage_rms_limit(pm, i)
+        constraint_bus_voltage_thd_limit(pm, i)
     end
     ### branch
     for b in ids(pm, :branch)
@@ -194,14 +195,14 @@ function build_hhc(pm::dHHC_SOC)
         ### reference node
         if !haskey(pm.setting, "fix_refbus_angle") || pm.setting["fix_refbus_angle"] == true 
             for i in _PMs.ids(pm, :ref_buses, nw=n)
-                constraint_voltage_ref_bus(pm, i, nw=n)
+                constraint_ref_voltage(pm, i, nw=n)
             end
         end
 
         ### node
         for i in _PMs.ids(pm, :bus, nw=n)
-            constraint_current_balance(pm, i, nw=n)
-            constraint_voltage_ihd_limit(pm, i, nw=n)
+            constraint_bus_current_balance(pm, i, nw=n)
+            constraint_bus_voltage_ihd_limit(pm, i, nw=n)
         end
 
         ### branch

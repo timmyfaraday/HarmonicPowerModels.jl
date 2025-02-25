@@ -12,80 +12,80 @@
 ################################################################################
 
 # ref bus
-""
-function constraint_voltage_ref_bus(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
-    if nw == 1
-        vref = 1.0
-    else
-        vref = 0.0 
-    end
+# ""
+# function constraint_voltage_ref_bus(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
+#     if nw == 1
+#         vref = 1.0
+#     else
+#         vref = 0.0 
+#     end
 
-    constraint_voltage_ref_bus(pm, nw, i, vref)
-end
+#     constraint_voltage_ref_bus(pm, nw, i, vref)
+# end
 
 # bus
-""
-function constraint_voltage_rms_limit(pm::_PMs.AbstractPowerModel, i::Int)
-    vminrms = _PMs.ref(pm, fundamental(pm), :bus, i, "vminrms")
-    vmaxrms = _PMs.ref(pm, fundamental(pm), :bus, i, "vmaxrms")
+# ""
+# function constraint_voltage_rms_limit(pm::_PMs.AbstractPowerModel, i::Int)
+#     vminrms = _PMs.ref(pm, fundamental(pm), :bus, i, "vminrms")
+#     vmaxrms = _PMs.ref(pm, fundamental(pm), :bus, i, "vmaxrms")
 
-    constraint_voltage_rms_limit(pm, i, vminrms, vmaxrms)
-end
-""
-function constraint_voltage_rms_limit(pm::dHHC_SOC, i::Int)
-    vmaxrms = _PMs.ref(pm, fundamental(pm), :bus, i, "vmaxrms")
-    vmfund  = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
+#     constraint_voltage_rms_limit(pm, i, vminrms, vmaxrms)
+# end
+# ""
+# function constraint_voltage_rms_limit(pm::dHHC_SOC, i::Int)
+#     vmaxrms = _PMs.ref(pm, fundamental(pm), :bus, i, "vmaxrms")
+#     vmfund  = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
 
-    constraint_voltage_rms_limit(pm, i, vmaxrms, vmfund)
-end
-""
-function constraint_voltage_thd_limit(pm::_PMs.AbstractPowerModel, i::Int)
-    thdmax = _PMs.ref(pm, fundamental(pm), :bus, i, "thdmax")
+#     constraint_voltage_rms_limit(pm, i, vmaxrms, vmfund)
+# end
+# ""
+# function constraint_voltage_thd_limit(pm::_PMs.AbstractPowerModel, i::Int)
+#     thdmax = _PMs.ref(pm, fundamental(pm), :bus, i, "thdmax")
    
-    constraint_voltage_thd_limit(pm, i, thdmax)
-end
-""
-function constraint_voltage_thd_limit(pm::dHHC_SOC, i::Int)
-    thdmax = _PMs.ref(pm, fundamental(pm), :bus, i, "thdmax")
-    vmfund = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
+#     constraint_voltage_thd_limit(pm, i, thdmax)
+# end
+# ""
+# function constraint_voltage_thd_limit(pm::dHHC_SOC, i::Int)
+#     thdmax = _PMs.ref(pm, fundamental(pm), :bus, i, "thdmax")
+#     vmfund = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
    
-    constraint_voltage_thd_limit(pm, i, thdmax, vmfund)
-end
-""
-function constraint_voltage_ihd_limit(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
-    if nw ≠ fundamental(pm)
-        ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
+#     constraint_voltage_thd_limit(pm, i, thdmax, vmfund)
+# end
+# ""
+# function constraint_voltage_ihd_limit(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
+#     if nw ≠ fundamental(pm)
+#         ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
 
-        constraint_voltage_ihd_limit(pm, nw, i, ihdmax)
-    end
-end
-""
-function constraint_voltage_ihd_limit(pm::dHHC_SOC, i::Int; nw::Int=fundamental(pm))
-    if nw ≠ fundamental(pm)
-        ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
-        vmfund = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
+#         constraint_voltage_ihd_limit(pm, nw, i, ihdmax)
+#     end
+# end
+# ""
+# function constraint_voltage_ihd_limit(pm::dHHC_SOC, i::Int; nw::Int=fundamental(pm))
+#     if nw ≠ fundamental(pm)
+#         ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
+#         vmfund = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
 
-        constraint_voltage_ihd_limit(pm, nw, i, ihdmax, vmfund)
-    end
-end
-""
-function constraint_current_balance(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
-    bus_arcs      = _PMs.ref(pm, nw, :bus_arcs, i)
-    bus_arcs_xfmr = _PMs.ref(pm, nw, :bus_arcs_xfmr, i)
+#         constraint_voltage_ihd_limit(pm, nw, i, ihdmax, vmfund)
+#     end
+# end
+# ""
+# function constraint_current_balance(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
+#     bus_arcs      = _PMs.ref(pm, nw, :bus_arcs, i)
+#     bus_arcs_xfmr = _PMs.ref(pm, nw, :bus_arcs_xfmr, i)
 
-    bus_filters   = _PMs.ref(pm, nw, :bus_filters, i)
-    bus_gens      = _PMs.ref(pm, nw, :bus_gens, i)
-    bus_loads     = _PMs.ref(pm, nw, :bus_loads, i)
-    bus_shunts    = _PMs.ref(pm, nw, :bus_shunts, i)
+#     bus_filters   = _PMs.ref(pm, nw, :bus_filters, i)
+#     bus_gens      = _PMs.ref(pm, nw, :bus_gens, i)
+#     bus_loads     = _PMs.ref(pm, nw, :bus_loads, i)
+#     bus_shunts    = _PMs.ref(pm, nw, :bus_shunts, i)
 
-    bus_gs  = Dict(k => _PMs.ref(pm, nw, :shunt, k, "gs") for k in bus_shunts)
-    bus_bs  = Dict(k => _PMs.ref(pm, nw, :shunt, k, "bs") for k in bus_shunts)
-    gen_bg  = Dict(k => _PMs.ref(pm, nw, :gen, k, "bg") for k in bus_gens)
+#     bus_gs  = Dict(k => _PMs.ref(pm, nw, :shunt, k, "gs") for k in bus_shunts)
+#     bus_bs  = Dict(k => _PMs.ref(pm, nw, :shunt, k, "bs") for k in bus_shunts)
+#     gen_bg  = Dict(k => _PMs.ref(pm, nw, :gen, k, "bg") for k in bus_gens)
 
-    constraint_current_balance(pm, nw, i,   bus_arcs, bus_arcs_xfmr, 
-                                            bus_filters, bus_gens, bus_loads, 
-                                            bus_gs, bus_bs, gen_bg)
-end
+#     constraint_current_balance(pm, nw, i,   bus_arcs, bus_arcs_xfmr, 
+#                                             bus_filters, bus_gens, bus_loads, 
+#                                             bus_gs, bus_bs, gen_bg)
+# end
 
 # branch
 ""

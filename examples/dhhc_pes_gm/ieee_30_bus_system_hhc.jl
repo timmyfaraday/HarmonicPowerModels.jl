@@ -111,7 +111,7 @@ for nh in setdiff(H,1)
         v = bus["base_kv"]
         i = bus["i_ratio"]
 
-        bus["i_ihd"] = HPM.ihd_current_limit_ieee_519(v, i, nh) * bus["i_load"] 
+        bus["i_ihd"] = HPM.current_ihd_limits_ieee519(v, i, nh) * bus["i_load"] 
     end
     for (nl, load) in hdata_ind_519["nw"]["$nh"]["load"]
         nb = load["load_bus"]
@@ -119,7 +119,7 @@ for nh in setdiff(H,1)
         v = data["bus"]["$nb"]["base_kv"]
         i = data["bus"]["$nb"]["i_ratio"]
 
-        load["multiplier"] = HPM.ihd_current_limit_ieee_519(v, i, nh)
+        load["multiplier"] = HPM.current_ihd_limits_ieee519(v, i, nh)
 end end
 # solve the harmonic power flow
 results_ind_519 = HPM.solve_hpf(hdata_ind_519, PMs.IVRPowerModel, solver_nlp)
@@ -170,7 +170,7 @@ for nh in setdiff(H,1)
         v = bus["base_kv"]
         i = bus["i_ratio"]
 
-        bus["i_ihd"] = HPM.ihd_current_limit_ieee_519(v, i, nh) * bus["i_load"] 
+        bus["i_ihd"] = HPM.current_ihd_limits_ieee519(v, i, nh) * bus["i_load"] 
     end
     for (nl, load) in hdata_cap_519["nw"]["$nh"]["load"]
         nb = load["load_bus"]
@@ -178,7 +178,7 @@ for nh in setdiff(H,1)
         v = data["bus"]["$nb"]["base_kv"]
         i = data["bus"]["$nb"]["i_ratio"]
 
-        load["multiplier"] = HPM.ihd_current_limit_ieee_519(v, i, nh)
+        load["multiplier"] = HPM.current_ihd_limits_ieee519(v, i, nh)
 end end
 # solve the harmonic power flow
 results_cap_519 = HPM.solve_hpf(hdata_cap_519, PMs.IVRPowerModel, solver_nlp)

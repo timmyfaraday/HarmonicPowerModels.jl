@@ -9,12 +9,12 @@ Power System Optimization with Power Harmonics.
 
 ## Core Problem Specification
 - Balanced Harmonic Power Flow (hpf)
-  - IVR (`IVRPowerModel`)
+  - IVR (`HarmonicPowerModel`)
 - Balanced Harmonic Optimal Power Flow (hopf)
-  - IVR (`IVRPowerModel`)
+  - IVR (`HarmonicPowerModel`)
 - Balanced Harmonic Hosting Capacity (hhc)
-  - Deterministic NLP (`dHHC_NLP <: IVRPowerModel`)
-  - Deterministic SOC (`dHHC_SOC <: IVRPowerModel`)
+  - Deterministic NLP - IVR (`HarmonicPowerModel`)
+  - Deterministic SOC - IVR (`dHHCPowerModel`)
 
 ## Installation
 
@@ -37,9 +37,9 @@ Test that the package works by running
 ```
 
 ## Acknowledgements
-The primary developer is Tom Van Acker, BASF Antwerp, ([@timmyfaraday](https://github.com/timmyfaraday)), with support from the following contributors: 
-  - Hakan Ergun, KU Leuven, ([@hakanergun](https://github.com/hakanergun)), and
-  - Frederik Geth, GridQube, ([@frederikgeth](https://github.com/frederikgeth)).
+The primary developer is Tom Van Acker, ([@timmyfaraday](https://github.com/timmyfaraday)), with support from the following contributors: 
+  - Hakan Ergun, ([@hakanergun](https://github.com/hakanergun)), and
+  - Frederik Geth, ([@frederikgeth](https://github.com/frederikgeth)).
 
 ## License
 This code is provided under a BSD 3-Clause License.
