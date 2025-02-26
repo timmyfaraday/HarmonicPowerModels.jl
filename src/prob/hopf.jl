@@ -51,7 +51,7 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
     end
     ### branch 
     for b in ids(pm, :branch)
-        constraint_current_rms_limit(pm, b)
+        constraint_branch_current_rms_limit(pm, b)
     end
     ### filter
     for f in ids(pm, :filter)
@@ -82,10 +82,10 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
 
         ### branch
         for b in _PMs.ids(pm, :branch, nw=n)
-            _PMs.constraint_current_from(pm, b, nw=n)
-            _PMs.constraint_current_to(pm, b, nw=n)
+            constraint_branch_current_from(pm, b, nw=n)
+            constraint_branch_current_to(pm, b, nw=n)
             
-            _PMs.constraint_voltage_drop(pm, b, nw=n)
+            constraint_branch_voltage_drop(pm, b, nw=n)
         end
 
         ### harmonic load

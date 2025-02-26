@@ -64,10 +64,10 @@ function build_hpf(pm::_PMs.AbstractIVRModel)
 
         ### branch 
         for b in _PMs.ids(pm, :branch, nw=n)
-            _PMs.constraint_current_from(pm, b, nw=n)
-            _PMs.constraint_current_to(pm, b, nw=n)
+            constraint_branch_current_from(pm, b, nw=n)
+            constraint_branch_current_to(pm, b, nw=n)
             
-            _PMs.constraint_voltage_drop(pm, b, nw=n)
+            constraint_branch_voltage_drop(pm, b, nw=n)
         end
 
         ### xfmr 

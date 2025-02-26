@@ -34,7 +34,7 @@ end end
 
 # build from matpower file #####################################################
 ""
-function build_hdata_from_matpower_file(fdata::Dict{String,Any}; H::Vector{Int}=Int[1],)
+function build_hdata_from_matpower_file(fdata::Dict{String,Any}; H::Vector{Int}=Int[1])
     hdata = init_hdata(fdata, H)
 
     add_bus_hdata!(hdata, fdata)

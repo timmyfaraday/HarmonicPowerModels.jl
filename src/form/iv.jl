@@ -20,14 +20,14 @@
 # end
 
 # branch 
-""
-function variable_branch_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
-    variable_branch_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_branch_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+# ""
+# function variable_branch_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+#     variable_branch_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+#     variable_branch_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 
-    variable_branch_series_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_branch_series_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-end
+#     variable_branch_series_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+#     variable_branch_series_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+# end
 
 # filter
 ""

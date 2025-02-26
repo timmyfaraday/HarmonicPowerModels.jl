@@ -75,7 +75,7 @@ function build_hhc(pm::HarmonicPowerModel)
     end
     ### branch
     for b in ids(pm, :branch)
-        constraint_current_rms_limit(pm, b)
+        constraint_branch_current_rms_limit(pm, b)
     end
     ### generator
     for g in ids(pm, :gen)
@@ -109,10 +109,10 @@ function build_hhc(pm::HarmonicPowerModel)
 
         ### branch
         for b in _PMs.ids(pm, :branch, nw=n)
-            _PMs.constraint_current_from(pm, b, nw=n)
-            _PMs.constraint_current_to(pm, b, nw=n)
+            constraint_branch_current_from(pm, b, nw=n)
+            constraint_branch_current_to(pm, b, nw=n)
 
-            _PMs.constraint_voltage_drop(pm, b, nw=n)
+            constraint_branch_voltage_drop(pm, b, nw=n)
         end
 
         ### generator

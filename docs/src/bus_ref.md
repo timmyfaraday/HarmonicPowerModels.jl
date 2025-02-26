@@ -12,4 +12,16 @@ The reference buses $i \in I^{ref}$ are the nodes of the extended graph to which
 
 ### HarmonicPowerModel
 
-xxx
+Reference bus real fundamental voltage - $\forall i \in I^{ref}$:
+```math
+\begin{align}
+    U^{re}_{i,1} &= U^{fund,ref}_{i} 
+\end{align}
+```
+
+Reference bus imaginary voltage - $\forall i \in I^{ref}, h \in H$:
+```math
+\begin{align}
+    U^{im}_{i,h} &= 0 
+\end{align}
+```

@@ -6,9 +6,9 @@ The buses $i \in I$ are the nodes of the extended graph. In general, a harmonic 
 
 | name          | symb.                 | unit  | type      | $\subset H$   | def.  | definition                                            |
 |---------------|-----------------------|-------|-----------|---------------|-------|-------------------------------------------------------|
-| id            | $i$                   | -     | Int       | 1             | -     | unique index of the bus                               |
+| index         | $i$                   | -     | Int       | 1             | -     | unique index of the bus                               |
 | std           | -                     | -     | String    | 1             | -     | relevant standard for voltage quality                 |
-| type          | -                     | -     | Int       | 1             | -     | bus type, where ...                                   |
+| type          | -                     | -     | Int       | 1             | -     | bus type, see matpower manuel                         |
 | v_base_kv     | -                     | kV    | Real      | 1             | -     | base bus voltage magnitude                            |
 | v_fund_magn   | $U^{fund,magn}_{i}$   | pu    | Real      | 1             | 1.0   | fundamental bus voltage magnitude                     |
 | v_ihd_max     | $U^{ihd,max}_{i,h}$   | pu    | Real      | H/1           | -     | maximum individual harmonic bus voltage distortion    |
@@ -27,14 +27,58 @@ Additional remarks:
 - the primal starting value is set to the relevant voltage limit, i.e., `v_rms_max` or `v_ihd_max`, and zero for the real and imaginary part of the harmonic bus voltage, respectively; and
 - if bounded, the real and imaginary part of the harmonic bus voltage is lower (-) and upper (+) bounded to the relevant voltage limit, i.e., `v_rms_max` or `v_ihd_max`.
 
-TODO add figure 
-
 ## Constraints
 
 ### HarmonicPowerModel
 
-xxx
+Bus current balance (Kirchhoff's current law) - $\forall i \in I, h \in H$: 
+```math
+\begin{align}
+    \sum_{eij \in T^{e}} I^{re}_{eij,h} + \sum_{ui \in T^{u}} I^{re}_{ui,h} &= 0 \\ 
+    \sum_{eij \in T^{e}} I^{im}_{eij,h} + \sum_{ui \in T^{u}} I^{im}_{ui,h} &= 0
+\end{align}
+```
+
+Bus individual harmonic voltage distortion limit - $\forall i \in I, h \in H$:
+```math
+\begin{align}
+    (U^{re}_{i,h})^{2} + (U^{im}_{i,h})^{2} &\leq (U^{ihd,max}_{i})^{2} \cdot \Big( (U^{re}_{i,1})^{2} + (U^{im}_{i,1})^{2} \Big)
+\end{align}
+```
+
+Bus root-mean-square voltage limit - $\forall i \in I$:
+```math
+\begin{align}
+    (U^{rms,min}_{i})^{2} \leq \sum_{h \in H} (U^{re}_{i,h})^{2} + (U^{im}_{i,h})^{2} &\leq (U^{rms,max}_{i})^{2}
+\end{align}
+```
+
+Bus total harmonic voltage distortion limit - $\forall i \in I$:
+```math
+\begin{align}
+    \sum_{h \in H\backslash\{1\}} (U^{re}_{i,h})^{2} + (U^{im}_{i,h})^{2} &\leq (U^{thd,max}_{i})^{2} \cdot \Big( (U^{re}_{i,1})^{2} + (U^{im}_{i,1})^{2} \Big)
+\end{align}
+```
 
 ### dHHCPowerModel
 
-xxx
+Bus individual harmonic voltage distortion limit - $\forall i \in I, h \in H$:
+```math
+\begin{align}
+    (U^{re}_{i,h})^{2} + (U^{im}_{i,h})^{2} &\leq (U^{ihd,max}_{i})^{2} \cdot (U^{fund,magn}_{i})^{2}
+\end{align}
+```
+
+Bus root-mean-square voltage limit - $\forall i \in I$:
+```math
+\begin{align}
+    \sum_{h \in H\backslash\{1\}} (U^{re}_{i,h})^{2} + (U^{im}_{i,h})^{2} &\leq (U^{rms,max}_{i})^{2} - (U^{fund,magn}_{i})^{2}
+\end{align}
+```
+
+Bus total harmonic voltage distortion limit - $\forall i \in I$:
+```math
+\begin{align}
+    \sum_{h \in H\backslash\{1\}} (U^{re}_{i,h})^{2} + (U^{im}_{i,h})^{2} &\leq (U^{thd,max}_{i})^{2} \cdot (U^{fund,magn}_{i})^{2}
+\end{align}
+```

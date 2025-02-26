@@ -9,79 +9,80 @@
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
 # v0.2.1 - reviewed TVA                                                        #
+# v0.3.0 - adapted for extend graph representation                             #
 ################################################################################
 
 module HarmonicPowerModels
 
     # using pkgs 
-    using ProgressMeter
+    # using ProgressMeter
 
-    # import pkgs
-    import JuMP
-    import MathOptInterface
+    # # import pkgs
+    # import JuMP
+    # import MathOptInterface
 
-    import PowerModels
-    import InfrastructureModels
+    # import PowerModels
+    # import InfrastructureModels
 
-    import SignalDecomposition
-    import Interpolations
-    import SparseArrays
+    # import SignalDecomposition
+    # import Interpolations
+    # import SparseArrays
     
-    # import function to overwrite
-    import InfrastructureModels: replicate
+    # # import function to overwrite
+    # import InfrastructureModels: replicate
 
-    # pkg constants 
-    const _HPM = HarmonicPowerModels
+    # # pkg constants 
+    # const _HPM = HarmonicPowerModels
 
-    const _MOI = MathOptInterface
+    # const _MOI = MathOptInterface
 
-    const _PMs = PowerModels
-    const _IMs = InfrastructureModels
+    # const _PMs = PowerModels
+    # const _IMs = InfrastructureModels
     
-    const _SDC = SignalDecomposition
-    const _INT = Interpolations
-    const _SPA = SparseArrays
+    # const _SDC = SignalDecomposition
+    # const _INT = Interpolations
+    # const _SPA = SparseArrays
 
-    # const 
-    const freq = 50.0
+    # # const 
+    # const freq = 50.0
 
-    # funct
-    fundamental(pm) = 1
-    sorted_nw_ids(pm) = sort(collect(_PMs.nw_ids(pm)))
+    # # funct
+    # fundamental(pm) = 1
+    # sorted_nw_ids(pm) = sort(collect(_PMs.nw_ids(pm)))
 
     # paths
     const BASE_DIR = dirname(@__DIR__)
 
-    # include
-    include("core/base.jl")
-    include("core/types.jl")
-    include("core/constraint_template.jl")
-    include("core/data.jl")
-    include("core/variable.jl")
+    # # include
+    # include("core/base.jl")
+    # include("core/types.jl")
+    # # include("core/constraint_template.jl")
+    # include("core/data.jl")
+    # # include("core/variable.jl")
 
-    include("comp/bus/bus.jl")
-    include("comp/bus/bus_ref.jl")
+    # include("comp/bus/bus.jl")
+    # include("comp/bus/bus_ref.jl")
 
-    include("form/iv.jl")
+    # # include("form/iv.jl")
 
-    include("prob/hopf.jl")
-    include("prob/hpf.jl")
-    include("prob/hhc.jl")
+    # include("prob/hopf.jl")
+    # include("prob/hpf.jl")
+    # include("prob/hhc.jl")
 
-    include("util/imp.jl") 
-    include("util/ihd.jl")
-    include("util/init.jl")
-    include("util/ref.jl")
-    include("util/sol.jl")
-    include("util/thd.jl")
-    include("util/xfmr_magn.jl")
+    # # include("util/imp.jl") 
+    # include("util/ihd.jl")
+    # include("util/init.jl")
+    # include("util/ref.jl")
+    # include("util/sol.jl")
+    # include("util/thd.jl")
+    # include("util/xfmr_magn.jl")
 
-    # export
-    export BASE_DIR
-    export dHHC_NLP, dHHC_SOC
+    # # export
+    # export BASE_DIR
+    # export HarmonicPowerModel, dHHCPowerModel
 
-    export replicate
-    export solve_hpf, solve_hopf, solve_hhc 
+    # export build_hdata_from_matpower_file
+    # export solve_hpf, solve_hopf, solve_hhc 
 
-    export calculate_pos_seq_harmonic_impedance
+    # # export calculate_pos_seq_harmonic_impedance
 end

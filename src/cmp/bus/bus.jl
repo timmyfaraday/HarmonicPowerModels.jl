@@ -32,9 +32,10 @@ function add_bus_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
     for (nw, ntw) in hdata["nw"], (nb, bus) in ntw["bus"]
         bdata = fdata["bus"][nb]
         if nw == "1"
-            bus = Dict( "id"            => bdata["id"],
+            bus = Dict( "id"            => bdata["index"],
                         "std"           => bdata["std"],
                         "type"          => bdata["type"],
+                        #-----------------------------------#
                         "v_base_kv"     => bdata["base_kv"],
                         "v_fund_magn"   => 1.0,
                         "v_rms_min"     => bdata["vmin"],
@@ -44,7 +45,7 @@ function add_bus_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
             bus = Dict( "v_ihd_max"     => voltage_ihd_limits[bdata["std"]])
 end end end
 
-# variable #####################################################################
+# variables ####################################################################
 ""
 function variable_bus_voltage(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_bus_voltage_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
@@ -52,18 +53,18 @@ function variable_bus_voltage(pm::HarmonicPowerModel; nw::Int=fundamental(pm), b
 end
 ""
 function variable_bus_voltage_real(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    vlim    = collect_bus_voltage_magnitude_limits(pm, nw)
+    v_lim   = collect_bus_voltage_magnitude_limits(pm, nw)
 
     vr      = _PMs.var(pm, nw)[:vr] = 
                 JuMP.@variable( pm.model,
                                 [i in _PMs.ids(pm, nw, :bus)], 
                                 base_name="$(nw)_vr",
-                                start = vlim)
+                                start=v_lim)
 
     if bounded
         for i in _PMs.ids(pm, nw, :bus)
-            JuMP.set_lower_bound(vr[i], -vlim[i])
-            JuMP.set_upper_bound(vr[i],  vlim[i])
+            JuMP.set_lower_bound(vr[i], -v_lim[i])
+            JuMP.set_upper_bound(vr[i],  v_lim[i])
         end
     end
 
@@ -72,18 +73,18 @@ end
 
 ""
 function variable_bus_voltage_imaginary(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    vlim    = collect_bus_voltage_magnitude_limits(pm, nw)
+    v_lim   = collect_bus_voltage_magnitude_limits(pm, nw)
 
     vi      = _PMs.var(pm, nw)[:vi] = 
                 JuMP.@variable( pm.model,
                                 [i in _PMs.ids(pm, nw, :bus)], 
                                 base_name="$(nw)_vi",
-                                start = 0.0)
+                                start=0.0)
 
     if bounded
         for i in _PMs.ids(pm, nw, :bus)
-            JuMP.set_lower_bound(vi[i], -vlim[i])
-            JuMP.set_upper_bound(vi[i],  vlim[i])
+            JuMP.set_lower_bound(vi[i], -v_lim[i])
+            JuMP.set_upper_bound(vi[i],  v_lim[i])
         end
     end
 

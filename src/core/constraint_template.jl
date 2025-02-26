@@ -88,28 +88,28 @@
 # end
 
 # branch
-""
-function constraint_current_rms_limit(pm::_PMs.AbstractPowerModel, b::Int)
-    branch = _PMs.ref(pm, fundamental(pm), :branch, b)
-    f_bus, t_bus = branch["f_bus"], branch["t_bus"]
-    f_idx, t_idx = (b, f_bus, t_bus), (b, t_bus, f_bus)
+# ""
+# function constraint_current_rms_limit(pm::_PMs.AbstractPowerModel, b::Int)
+#     branch = _PMs.ref(pm, fundamental(pm), :branch, b)
+#     f_bus, t_bus = branch["f_bus"], branch["t_bus"]
+#     f_idx, t_idx = (b, f_bus, t_bus), (b, t_bus, f_bus)
 
-    c_rating = branch["c_rating"]
+#     c_rating = branch["c_rating"]
 
-    constraint_current_rms_limit(pm, f_idx, t_idx, c_rating)
-end
-""
-function constraint_current_rms_limit(pm::dHHC_SOC, b::Int)
-    branch = _PMs.ref(pm, fundamental(pm), :branch, b)
-    f_bus, t_bus = branch["f_bus"], branch["t_bus"]
-    f_idx, t_idx = (b, f_bus, t_bus), (b, t_bus, f_bus)
+#     constraint_current_rms_limit(pm, f_idx, t_idx, c_rating)
+# end
+# ""
+# function constraint_current_rms_limit(pm::dHHC_SOC, b::Int)
+#     branch = _PMs.ref(pm, fundamental(pm), :branch, b)
+#     f_bus, t_bus = branch["f_bus"], branch["t_bus"]
+#     f_idx, t_idx = (b, f_bus, t_bus), (b, t_bus, f_bus)
 
-    c_rating = branch["c_rating"]
-    cm_fund_fr = branch["cm_fr"]
-    cm_fund_to = branch["cm_to"]
+#     c_rating = branch["c_rating"]
+#     cm_fund_fr = branch["cm_fr"]
+#     cm_fund_to = branch["cm_to"]
 
-    constraint_current_rms_limit(pm, f_idx, t_idx, c_rating, cm_fund_fr, cm_fund_to)
-end
+#     constraint_current_rms_limit(pm, f_idx, t_idx, c_rating, cm_fund_fr, cm_fund_to)
+# end
 
 # fairness principle
 ""
