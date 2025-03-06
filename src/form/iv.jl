@@ -37,25 +37,25 @@ function variable_filter_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(
 end
 
 # xfmr
-""
-function variable_xfmr_voltage(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
-    variable_xfmr_voltage_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_xfmr_voltage_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+# ""
+# function variable_xfmr_voltage(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+#     variable_xfmr_voltage_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+#     variable_xfmr_voltage_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     
-    variable_xfmr_voltage_excitation_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_xfmr_voltage_excitation_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-end
-""
-function variable_xfmr_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
-    variable_xfmr_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_xfmr_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+#     variable_xfmr_voltage_excitation_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+#     variable_xfmr_voltage_excitation_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+# end
+# ""
+# function variable_xfmr_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+#     variable_xfmr_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+#     variable_xfmr_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 
-    variable_xfmr_current_series_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_xfmr_current_series_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+#     variable_xfmr_current_series_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+#     variable_xfmr_current_series_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 
-    variable_xfmr_current_magnetizing_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_xfmr_current_magnetizing_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-end
+#     variable_xfmr_current_magnetizing_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+#     variable_xfmr_current_magnetizing_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+# end
 
 # generator
 ""
@@ -220,28 +220,28 @@ end
 # end
 
 # branch
-""
-function constraint_current_rms_limit(pm::_PMs.AbstractIVRModel, f_idx, t_idx, c_rating)
-    crf =  [_PMs.var(pm, n, :cr, f_idx) for n in sorted_nw_ids(pm)]
-    cif =  [_PMs.var(pm, n, :ci, f_idx) for n in sorted_nw_ids(pm)]
+# ""
+# function constraint_current_rms_limit(pm::_PMs.AbstractIVRModel, f_idx, t_idx, c_rating)
+#     crf =  [_PMs.var(pm, n, :cr, f_idx) for n in sorted_nw_ids(pm)]
+#     cif =  [_PMs.var(pm, n, :ci, f_idx) for n in sorted_nw_ids(pm)]
 
-    crt =  [_PMs.var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm)]
-    cit =  [_PMs.var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm)]
+#     crt =  [_PMs.var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm)]
+#     cit =  [_PMs.var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, sum(crf.^2 + cif.^2) <= c_rating^2)
-    JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2)
-end
-""
-function constraint_current_rms_limit(pm::dHHC_SOC, f_idx, t_idx, c_rating, cm_fund_fr, cm_fund_to)
-    crf =  [_PMs.var(pm, n, :cr, f_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
-    cif =  [_PMs.var(pm, n, :ci, f_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+#     JuMP.@constraint(pm.model, sum(crf.^2 + cif.^2) <= c_rating^2)
+#     JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2)
+# end
+# ""
+# function constraint_current_rms_limit(pm::dHHC_SOC, f_idx, t_idx, c_rating, cm_fund_fr, cm_fund_to)
+#     crf =  [_PMs.var(pm, n, :cr, f_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+#     cif =  [_PMs.var(pm, n, :ci, f_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    crx =  [_PMs.var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
-    cix =  [_PMs.var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+#     crx =  [_PMs.var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+#     cix =  [_PMs.var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund_fr^2)./10000; vcat(crf, cif)./10000] in JuMP.SecondOrderCone())
-    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund_to^2)./10000; vcat(crx, cix)./10000] in JuMP.SecondOrderCone())
-end
+#     JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund_fr^2)./10000; vcat(crf, cif)./10000] in JuMP.SecondOrderCone())
+#     JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund_to^2)./10000; vcat(crx, cix)./10000] in JuMP.SecondOrderCone())
+# end
 
 # fairness principle
 ""

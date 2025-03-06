@@ -39,6 +39,9 @@ function build_hdata_from_matpower_file(fdata::Dict{String,Any}; H::Vector{Int}=
 
     add_bus_hdata!(hdata, fdata)
     add_ref_hdata!(hdata, fdata)
+
+    add_branch_hdata!(hdata, fdata)
+    add_xfmr_hdata!(hdata, fdata)
 end
 
 ""

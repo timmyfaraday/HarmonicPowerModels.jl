@@ -75,7 +75,7 @@ function variable_branch_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(
 end
 ""
 function variable_branch_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    i_lim   = collect_branch_current_magnitude_limits(pm, nw)
+    c_lim   = collect_branch_current_magnitude_limits(pm, nw)
 
     cbr     = _PMs.var(pm, nw)[:cbr] = 
                 JuMP.@variable( pm.model,
@@ -85,8 +85,8 @@ function variable_branch_current_real(pm::_PMs.AbstractPowerModel; nw::Int=funda
 
     if bounded
         for (b,i,j) in _PMs.ref(pm, nw, :arcs)
-            JuMP.set_lower_bound(cr[(b,i,j)], -i_lim[b])
-            JuMP.set_upper_bound(cr[(b,i,j)],  i_lim[b])
+            JuMP.set_lower_bound(cr[(b,i,j)], -c_lim[b])
+            JuMP.set_upper_bound(cr[(b,i,j)],  c_lim[b])
         end
     end
 
@@ -94,7 +94,7 @@ function variable_branch_current_real(pm::_PMs.AbstractPowerModel; nw::Int=funda
 end
 ""
 function variable_branch_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    i_lim   = collect_branch_current_magnitude_limits(pm, nw)
+    c_lim   = collect_branch_current_magnitude_limits(pm, nw)
 
     cbi     = _PMs.var(pm, nw)[:cbi] = 
                 JuMP.@variable( pm.model,
@@ -104,8 +104,8 @@ function variable_branch_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=
 
     if bounded
         for (b,i,j) in _PMs.ref(pm, nw, :arcs)
-            JuMP.set_lower_bound(ci[(b,i,j)], -i_lim[b])
-            JuMP.set_upper_bound(ci[(b,i,j)],  i_lim[b])
+            JuMP.set_lower_bound(ci[(b,i,j)], -c_lim[b])
+            JuMP.set_upper_bound(ci[(b,i,j)],  c_lim[b])
         end
     end
 
@@ -113,7 +113,7 @@ function variable_branch_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=
 end
 ""
 function variable_branch_series_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    i_lim   = collect_branch_current_magnitude_limits(pm, nw)
+    c_lim   = collect_branch_current_magnitude_limits(pm, nw)
 
     cbsr    = _PMs.var(pm, nw)[:cbsr] = 
                 JuMP.@variable( pm.model,
@@ -123,8 +123,8 @@ function variable_branch_series_current_real(pm::_PMs.AbstractPowerModel; nw::In
 
     if bounded
         for b in _PMs.ids(pm, nw, :branch)
-            JuMP.set_lower_bound(cbsr[b], -i_lim[b])
-            JuMP.set_upper_bound(cbsr[b],  i_lim[b])
+            JuMP.set_lower_bound(cbsr[b], -c_lim[b])
+            JuMP.set_upper_bound(cbsr[b],  c_lim[b])
         end
     end
 
@@ -132,7 +132,7 @@ function variable_branch_series_current_real(pm::_PMs.AbstractPowerModel; nw::In
 end
 ""
 function variable_branch_series_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    i_lim   = collect_branch_current_magnitude_limits(pm, nw)
+    c_lim   = collect_branch_current_magnitude_limits(pm, nw)
 
     cbsi    = _PMs.var(pm, nw)[:cbsi] = 
                 JuMP.@variable( pm.model,
@@ -142,8 +142,8 @@ function variable_branch_series_current_imaginary(pm::_PMs.AbstractPowerModel; n
 
     if bounded
         for b in _PMs.ids(pm, nw, :branch)
-            JuMP.set_lower_bound(cbsi[b], -i_lim[b])
-            JuMP.set_upper_bound(cbsi[b],  i_lim[b])
+            JuMP.set_lower_bound(cbsi[b], -c_lim[b])
+            JuMP.set_upper_bound(cbsi[b],  c_lim[b])
         end
     end
 

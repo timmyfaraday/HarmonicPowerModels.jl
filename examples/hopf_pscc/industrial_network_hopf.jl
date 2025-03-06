@@ -49,7 +49,7 @@ BH_powercore_h100_23 = Dierckx.Spline1D(Bᵗ, Hᵗ; k=3, bc="nearest")
 magn = Dict("Hᴱ"    => [1, 5], 
             "Hᴵ"    => [1, 3, 5, 7, 9, 13],
             "Emax"  => 1.1,
-            "IDH"   => [1.0, 0.06],
+            "IHD"   => [1.0, 0.06],
             "pcs"   => [21, 11],
             "xfmr"  => Dict(1 => Dict(  "l"     => 11.4,
                                         "A"     => 0.5,

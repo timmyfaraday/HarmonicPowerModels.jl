@@ -12,9 +12,9 @@
 
 # util #########################################################################
 ""
-fundamental_voltage_multiplier(pm::HarmonicPowerModel, i) = 
+fundamental_bus_voltage_multiplier(pm::HarmonicPowerModel, i) = 
     _PMs.ref(pm, fundamental(pm), :bus, i, "v_rms_max")
-fundamental_voltage_multiplier(pm::dHHCPowerModel, i) = 
+fundamental_bus_voltage_multiplier(pm::dHHCPowerModel, i) = 
     _PMs.ref(pm, fundamental(pm), :bus, i, "v_fund_magn")
 
 ""
@@ -22,7 +22,7 @@ collect_bus_voltage_magnitude_limits(pm::HarmonicPowerModel, nw::Int) =
     Dict(i => ifelse(   nw == fundamental(pm),
                         _PMs.ref(pm, nw, :bus, i, "v_rms_max"), 
                         _PMs.ref(pm, nw, :bus, i, "v_ihd_max") * 
-                        fundamental_voltage_multiplier(pm, i)
+                        fundamental_bus_voltage_multiplier(pm, i)
                     ) 
             for i in _PMs.ids(pm, nw, :bus))
 

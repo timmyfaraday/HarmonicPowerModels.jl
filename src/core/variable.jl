@@ -96,73 +96,73 @@ end
 #     report && _PMs.sol_component_value(pm, nw, :bus, :vi, _PMs.ids(pm, nw, :bus), vi)
 # end
 
-# branch
-""
-function variable_branch_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    cr = _PMs.var(pm, nw)[:cr] = JuMP.@variable(pm.model,
-        [(l,i,j) in _PMs.ref(pm, nw, :arcs)], base_name="$(nw)_cr",
-        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "cr_start")
-    )
+# # branch
+# ""
+# function variable_branch_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+#     cr = _PMs.var(pm, nw)[:cr] = JuMP.@variable(pm.model,
+#         [(l,i,j) in _PMs.ref(pm, nw, :arcs)], base_name="$(nw)_cr",
+#         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "cr_start")
+#     )
 
-    if bounded
-        for (l,i,j) in _PMs.ref(pm, nw, :arcs)
-            branch = _PMs.ref(pm, nw, :branch, l)
-            JuMP.set_lower_bound(cr[(l,i,j)], -branch["c_rating"])
-            JuMP.set_upper_bound(cr[(l,i,j)],  branch["c_rating"])
-        end
-    end
+#     if bounded
+#         for (l,i,j) in _PMs.ref(pm, nw, :arcs)
+#             branch = _PMs.ref(pm, nw, :branch, l)
+#             JuMP.set_lower_bound(cr[(l,i,j)], -branch["c_rating"])
+#             JuMP.set_upper_bound(cr[(l,i,j)],  branch["c_rating"])
+#         end
+#     end
 
-    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :branch, :cr_fr, :cr_to, _PMs.ref(pm, nw, :arcs_from), _PMs.ref(pm, nw, :arcs_to), cr)
-end
-""
-function variable_branch_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    ci = _PMs.var(pm, nw)[:ci] = JuMP.@variable(pm.model,
-        [(l,i,j) in _PMs.ref(pm, nw, :arcs)], base_name="$(nw)_ci",
-        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "ci_start")
-    )
+#     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :branch, :cr_fr, :cr_to, _PMs.ref(pm, nw, :arcs_from), _PMs.ref(pm, nw, :arcs_to), cr)
+# end
+# ""
+# function variable_branch_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+#     ci = _PMs.var(pm, nw)[:ci] = JuMP.@variable(pm.model,
+#         [(l,i,j) in _PMs.ref(pm, nw, :arcs)], base_name="$(nw)_ci",
+#         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "ci_start")
+#     )
 
-    if bounded
-        for (l,i,j) in _PMs.ref(pm, nw, :arcs)
-            branch = _PMs.ref(pm, nw, :branch, l)
-            JuMP.set_lower_bound(ci[(l,i,j)], -branch["c_rating"])
-            JuMP.set_upper_bound(ci[(l,i,j)],  branch["c_rating"])
-        end
-    end
+#     if bounded
+#         for (l,i,j) in _PMs.ref(pm, nw, :arcs)
+#             branch = _PMs.ref(pm, nw, :branch, l)
+#             JuMP.set_lower_bound(ci[(l,i,j)], -branch["c_rating"])
+#             JuMP.set_upper_bound(ci[(l,i,j)],  branch["c_rating"])
+#         end
+#     end
 
-    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :branch, :ci_fr, :ci_to, _PMs.ref(pm, nw, :arcs_from), _PMs.ref(pm, nw, :arcs_to), ci)
-end
-""
-function variable_branch_series_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    csr = _PMs.var(pm, nw)[:csr] = JuMP.@variable(pm.model,
-        [l in _PMs.ids(pm, nw, :branch)], base_name="$(nw)_csr",
-        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "csr_start", 0.0)
-    )
+#     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :branch, :ci_fr, :ci_to, _PMs.ref(pm, nw, :arcs_from), _PMs.ref(pm, nw, :arcs_to), ci)
+# end
+# ""
+# function variable_branch_series_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+#     csr = _PMs.var(pm, nw)[:csr] = JuMP.@variable(pm.model,
+#         [l in _PMs.ids(pm, nw, :branch)], base_name="$(nw)_csr",
+#         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "csr_start", 0.0)
+#     )
 
-    if bounded
-        for (b, branch) in _PMs.ref(pm, nw, :branch)
-            JuMP.set_lower_bound(csr[b], -branch["c_rating"])
-            JuMP.set_upper_bound(csr[b],  branch["c_rating"])
-        end
-    end
+#     if bounded
+#         for (b, branch) in _PMs.ref(pm, nw, :branch)
+#             JuMP.set_lower_bound(csr[b], -branch["c_rating"])
+#             JuMP.set_upper_bound(csr[b],  branch["c_rating"])
+#         end
+#     end
 
-    report && _PMs.sol_component_value(pm, nw, :branch, :csr_fr, _PMs.ids(pm, nw, :branch), csr)
-end
-""
-function variable_branch_series_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    csi = _PMs.var(pm, nw)[:csi] = JuMP.@variable(pm.model,
-        [l in _PMs.ids(pm, nw, :branch)], base_name="$(nw)_csi",
-        start=_PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "csi_start", 0.0)
-    )
+#     report && _PMs.sol_component_value(pm, nw, :branch, :csr_fr, _PMs.ids(pm, nw, :branch), csr)
+# end
+# ""
+# function variable_branch_series_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+#     csi = _PMs.var(pm, nw)[:csi] = JuMP.@variable(pm.model,
+#         [l in _PMs.ids(pm, nw, :branch)], base_name="$(nw)_csi",
+#         start=_PMs.comp_start_value(_PMs.ref(pm, nw, :branch, l), "csi_start", 0.0)
+#     )
 
-    if bounded
-        for (b, branch) in _PMs.ref(pm, nw, :branch)
-            JuMP.set_lower_bound(csi[b], -branch["c_rating"])
-            JuMP.set_upper_bound(csi[b],  branch["c_rating"])
-        end
-    end
+#     if bounded
+#         for (b, branch) in _PMs.ref(pm, nw, :branch)
+#             JuMP.set_lower_bound(csi[b], -branch["c_rating"])
+#             JuMP.set_upper_bound(csi[b],  branch["c_rating"])
+#         end
+#     end
 
-    report && _PMs.sol_component_value(pm, nw, :branch, :csi_fr, _PMs.ids(pm, nw, :branch), csi)
-end
+#     report && _PMs.sol_component_value(pm, nw, :branch, :csi_fr, _PMs.ids(pm, nw, :branch), csi)
+# end
 
 # filter
 ""
@@ -199,85 +199,85 @@ function variable_filter_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=
 end
 
 # xfmr 
-""
-function variable_xfmr_voltage_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    vrx = _PMs.var(pm, nw)[:vrx] = JuMP.@variable(pm.model, 
-            [(x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_vrx",
-            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "vrx_start", 1.0)
-    )
+# ""
+# function variable_xfmr_voltage_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+#     vrx = _PMs.var(pm, nw)[:vrx] = JuMP.@variable(pm.model, 
+#             [(x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_vrx",
+#             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "vrx_start", 1.0)
+#     )
 
-    if bounded
-        for (x, i, j) in _PMs.ref(pm, nw, :xfmr_arcs)
-            vrx_min = - _PMs.ref(pm, nw, :bus, i)["vmax"] * _PMs.ref(pm, nw, :bus, i)["ihdmax"]
-            vrx_max =   _PMs.ref(pm, nw, :bus, i)["vmax"] * _PMs.ref(pm, nw, :bus, i)["ihdmax"]
+#     if bounded
+#         for (x, i, j) in _PMs.ref(pm, nw, :xfmr_arcs)
+#             vrx_min = - _PMs.ref(pm, nw, :bus, i)["vmax"] * _PMs.ref(pm, nw, :bus, i)["ihdmax"]
+#             vrx_max =   _PMs.ref(pm, nw, :bus, i)["vmax"] * _PMs.ref(pm, nw, :bus, i)["ihdmax"]
 
-            JuMP.set_lower_bound(vrx[(x, i, j)], vrx_min)
-            JuMP.set_upper_bound(vrx[(x, i, j)], vrx_max)
-        end
-    end
+#             JuMP.set_lower_bound(vrx[(x, i, j)], vrx_min)
+#             JuMP.set_upper_bound(vrx[(x, i, j)], vrx_max)
+#         end
+#     end
 
-    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :vrx_fr, :vrx_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), vrx)
-end
-""
-function variable_xfmr_voltage_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    vix = _PMs.var(pm, nw)[:vix] = JuMP.@variable(pm.model,
-        [(x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_vix",
-        start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "vix_start", 0.0)
-    )
+#     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :vrx_fr, :vrx_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), vrx)
+# end
+# ""
+# function variable_xfmr_voltage_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+#     vix = _PMs.var(pm, nw)[:vix] = JuMP.@variable(pm.model,
+#         [(x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_vix",
+#         start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "vix_start", 0.0)
+#     )
 
-    if bounded
-        for (x, i, j) in _PMs.ref(pm, nw, :xfmr_arcs)
-            vix_min = - _PMs.ref(pm, nw, :bus, i)["vmax"] * _PMs.ref(pm, nw, :bus, i)["ihdmax"]
-            vix_max =   _PMs.ref(pm, nw, :bus, i)["vmax"] * _PMs.ref(pm, nw, :bus, i)["ihdmax"]
+#     if bounded
+#         for (x, i, j) in _PMs.ref(pm, nw, :xfmr_arcs)
+#             vix_min = - _PMs.ref(pm, nw, :bus, i)["vmax"] * _PMs.ref(pm, nw, :bus, i)["ihdmax"]
+#             vix_max =   _PMs.ref(pm, nw, :bus, i)["vmax"] * _PMs.ref(pm, nw, :bus, i)["ihdmax"]
 
-            JuMP.set_lower_bound(vix[(x, i, j)], vix_min)
-            JuMP.set_upper_bound(vix[(x, i, j)], vix_max)
-        end
-    end
+#             JuMP.set_lower_bound(vix[(x, i, j)], vix_min)
+#             JuMP.set_upper_bound(vix[(x, i, j)], vix_max)
+#         end
+#     end
 
-    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :vix_fr, :vix_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), vix)
-end
-""
-function variable_xfmr_voltage_excitation_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, epsilon::Float64=1E-6)
-    erx = _PMs.var(pm, nw)[:erx] = JuMP.@variable(pm.model,
-            [x in _PMs.ids(pm, nw, :xfmr)], base_name="$(nw)_erx",
-            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "erx_start", 0.0)
-    )
+#     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :vix_fr, :vix_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), vix)
+# end
+# ""
+# function variable_xfmr_voltage_excitation_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, epsilon::Float64=1E-6)
+#     erx = _PMs.var(pm, nw)[:erx] = JuMP.@variable(pm.model,
+#             [x in _PMs.ids(pm, nw, :xfmr)], base_name="$(nw)_erx",
+#             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "erx_start", 0.0)
+#     )
 
-    if bounded
-        for (x, xfmr) in _PMs.ref(pm, nw, :xfmr)
-            if haskey(xfmr, "erx_min")
-                JuMP.set_lower_bound(erx[x], xfmr["erx_min"] + epsilon)
-                JuMP.set_upper_bound(erx[x], xfmr["erx_max"] - epsilon)
-            else
-                JuMP.set_lower_bound(erx[x], -_PMs.ref(pm, nw, :bus, xfmr["f_bus"])["vmax"])
-                JuMP.set_upper_bound(erx[x],  _PMs.ref(pm, nw, :bus, xfmr["f_bus"])["vmax"])
-            end
-        end
-    end
+#     if bounded
+#         for (x, xfmr) in _PMs.ref(pm, nw, :xfmr)
+#             if haskey(xfmr, "erx_min")
+#                 JuMP.set_lower_bound(erx[x], xfmr["erx_min"] + epsilon)
+#                 JuMP.set_upper_bound(erx[x], xfmr["erx_max"] - epsilon)
+#             else
+#                 JuMP.set_lower_bound(erx[x], -_PMs.ref(pm, nw, :bus, xfmr["f_bus"])["vmax"])
+#                 JuMP.set_upper_bound(erx[x],  _PMs.ref(pm, nw, :bus, xfmr["f_bus"])["vmax"])
+#             end
+#         end
+#     end
 
-    report && _PMs.sol_component_value(pm, nw, :xfmr, :erx, _PMs.ids(pm, nw, :xfmr), erx)
-end
-function variable_xfmr_voltage_excitation_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, epsilon::Float64=1E-6)
-    eix = _PMs.var(pm, nw)[:eix] = JuMP.@variable(pm.model,
-            [x in _PMs.ids(pm, nw, :xfmr)], base_name="$(nw)_eix",
-            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "eix_start", 0.0)
-    )
+#     report && _PMs.sol_component_value(pm, nw, :xfmr, :erx, _PMs.ids(pm, nw, :xfmr), erx)
+# end
+# function variable_xfmr_voltage_excitation_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, epsilon::Float64=1E-6)
+#     eix = _PMs.var(pm, nw)[:eix] = JuMP.@variable(pm.model,
+#             [x in _PMs.ids(pm, nw, :xfmr)], base_name="$(nw)_eix",
+#             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "eix_start", 0.0)
+#     )
 
-    if bounded
-        for (x, xfmr) in _PMs.ref(pm, nw, :xfmr)
-            if haskey(xfmr, "erx_min")
-                JuMP.set_lower_bound(eix[x], xfmr["eix_min"] + epsilon)
-                JuMP.set_upper_bound(eix[x], xfmr["eix_max"] - epsilon)
-             else
-                JuMP.set_lower_bound(eix[x], -_PMs.ref(pm, nw, :bus, xfmr["f_bus"])["vmax"])
-                JuMP.set_upper_bound(eix[x],  _PMs.ref(pm, nw, :bus, xfmr["f_bus"])["vmax"])
-            end
-        end
-    end
+#     if bounded
+#         for (x, xfmr) in _PMs.ref(pm, nw, :xfmr)
+#             if haskey(xfmr, "erx_min")
+#                 JuMP.set_lower_bound(eix[x], xfmr["eix_min"] + epsilon)
+#                 JuMP.set_upper_bound(eix[x], xfmr["eix_max"] - epsilon)
+#              else
+#                 JuMP.set_lower_bound(eix[x], -_PMs.ref(pm, nw, :bus, xfmr["f_bus"])["vmax"])
+#                 JuMP.set_upper_bound(eix[x],  _PMs.ref(pm, nw, :bus, xfmr["f_bus"])["vmax"])
+#             end
+#         end
+#     end
 
-    report && _PMs.sol_component_value(pm, nw, :xfmr, :eix, _PMs.ids(pm, nw, :xfmr), eix)
-end
+#     report && _PMs.sol_component_value(pm, nw, :xfmr, :eix, _PMs.ids(pm, nw, :xfmr), eix)
+# end
 
 ""
 function variable_xfmr_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)

@@ -2,7 +2,7 @@
 
 The branches $b \in B$ are a subset of the edges $e \in E$ of the extended graph, and group the edges for which no voltage transformation occurs, e.g., cables and overhead lines. A branch is uniquely represented by a pi-model.
 
-[Illustration of the equivalent single-phase circuit diagram (pi-model) of a branch$](figure/branch_pi_model.JPG)
+[Illustration of the equivalent single-phase circuit diagram (pi-model) of a branch](figure/branch_pi_model.JPG)
 
 ## Parameters
 

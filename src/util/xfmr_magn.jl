@@ -30,8 +30,8 @@ function sample_magnetizing_current(hdata::Dict{String,<:Any}, xfmr_magn::Dict{S
         Abase   = hdata["nw"]["1"]["baseMVA"] * 10e6 / xfmr["Vbase"]            # base current [A]
 
         # sample the excitation voltage
-        IDH, Emax, pcs = xfmr_magn["IDH"], xfmr_magn["Emax"], xfmr_magn["pcs"]
-        S = [range(-IDH[ni] * Emax, IDH[ni] * Emax, length=pcs[ni]) 
+        IHD, Emax, pcs = xfmr_magn["IHD"], xfmr_magn["Emax"], xfmr_magn["pcs"]
+        S = [range(-IHD[ni] * Emax, IHD[ni] * Emax, length=pcs[ni]) 
                 for ni in repeat(1:NHᴱ, inner=2)]                               # samples of the real and imaginary excitation voltage, consecutively, for each excitation voltage harmonic numbers
         R = [1:pcs[ni] for ni in repeat(1:NHᴱ, inner=2)]                        # range of the samples of the real and imaginary excitation voltage, consecutively, for each excitation voltage harmonic numbers
 

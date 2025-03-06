@@ -58,7 +58,7 @@ mpc.gencost = [
 ];
 
 %% transformer data
-%column_names%  f_bus   t_bus   xsc     gsh     r1      r2      vg      gnd1    gnd2    re1     xe1     re2         xe2         rateA
+%column_names%  f_bus   t_bus   xsc     gsh     r1      r2      vg      gnd1    gnd2    re1     xe1     re2         xe2         rate_a
 mpc.xfmr = [
                 1       2       0.13    0.07752 0.00211 0.00211 'Yd11'  0       0       0.0     0.0     0.0         0.0         125; 
                 3       4       0.0229  0.01420 0.00030 0.00030 'Yy0'   0       0       0.0     0.0     0.0         0.0         31.5;
