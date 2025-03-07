@@ -81,8 +81,8 @@ function build_hhc(pm::HarmonicPowerModel)
     for g in ids(pm, :gen)
         constraint_gen_current_rms_limit(pm, g)
 
-        _PMs.constraint_gen_active_bounds(pm, g, nw=fundamental(pm))
-        _PMs.constraint_gen_reactive_bounds(pm, g, nw=fundamental(pm))
+        _PMs.constraint_gen_active_bounds(pm, g, nw=fundamental(pm))   # CHECK IF NEEDED
+        _PMs.constraint_gen_reactive_bounds(pm, g, nw=fundamental(pm))    # CHECK IF NEEDED
     end
     ### xfmr 
     for x in ids(pm, :xfmr)
@@ -183,9 +183,9 @@ function build_hhc(pm::dHHCPowerModel)
         constraint_xfmr_current_rms_limit(pm, x)
     end
     ### generator 
-    # for g in ids(pm, :gen)
-    #     constraint_gen_current_rms_limit(pm, g)
-    # end
+    for g in ids(pm, :gen)
+        constraint_gen_current_rms_limit(pm, g)
+    end
 
     ## harmonic constraints
     for n in _PMs.nw_ids(pm) if n ≠ fundamental(pm)
