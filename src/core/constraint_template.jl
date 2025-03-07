@@ -113,11 +113,11 @@
 
 # fairness principle
 ""
-function constraint_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm))
-    load_ids = sort(collect(_PMs.ids(pm, :load, nw=nw)))
+# function constraint_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm))
+#     source_ids = sort(collect(_PMs.ids(pm, :load, nw=nw)))
 
-    constraint_fairness_principle(pm, nw, load_ids)
-end
+#     constraint_fairness_principle(pm, nw, source_ids)
+# end
 
 # filter
 ""
@@ -165,34 +165,34 @@ end
 
 # load
 ""
-function constraint_load_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fundamental(pm))
-    load = _PMs.ref(pm, nw, :load, l)
+# function constraint_load_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fundamental(pm))
+#     load = _PMs.ref(pm, nw, :load, l)
 
-    i      = load["load_bus"]
-    pd, qd = load["pd"], load["qd"]
+#     i      = load["load_bus"]
+#     pd, qd = load["pd"], load["qd"]
 
-    aref   = load["ref_angle"]
+#     aref   = load["ref_angle"]
 
-    if nw == fundamental(pm)
-        constraint_load_constant_power(pm, nw, l, i, pd, qd)
-    else
-        constraint_load_current_angle(pm, nw, l, aref)
-    end  
-end
-""
-function constraint_load_power(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fundamental(pm))
-    load = _PMs.ref(pm, nw, :load, l)
+#     if nw == fundamental(pm)
+#         constraint_load_constant_power(pm, nw, l, i, pd, qd)
+#     else
+#         constraint_load_current_angle(pm, nw, l, aref)
+#     end  
+# end
+# ""
+# function constraint_load_power(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fundamental(pm))
+#     load = _PMs.ref(pm, nw, :load, l)
 
-    i       = load["load_bus"]
-    pd, qd  = load["pd"], load["qd"]
-    mult    = load["multiplier"]
+#     i       = load["load_bus"]
+#     pd, qd  = load["pd"], load["qd"]
+#     mult    = load["multiplier"]
 
-    if nw == 1
-        constraint_load_constant_power(pm, nw, l, i, pd, qd)
-    else
-        constraint_load_constant_current(pm, nw, l, mult)
-    end
-end
+#     if nw == 1
+#         constraint_load_constant_power(pm, nw, l, i, pd, qd)
+#     else
+#         constraint_load_constant_current(pm, nw, l, mult)
+#     end
+# end
 
 # xfmr
 ""

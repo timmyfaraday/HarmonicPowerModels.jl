@@ -36,7 +36,7 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
         ## unit current variables
         variable_filter_current(pm, nw=n, bounded=false)
         variable_gen_current(pm, nw=n, bounded=false) 
-        variable_load_current(pm, nw=n, bounded=false)
+        variable_source_current(pm, nw=n, bounded=false)
     end 
 
     # objective
@@ -89,8 +89,8 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
         end
 
         ### harmonic load
-        for l in _PMs.ids(pm, :load, nw=n)
-            constraint_load_power(pm, l, nw=n)
+        for s in _PMs.ids(pm, :source, nw=n)
+            constraint_hsrc_power(pm, s, nw=n)
         end   
     
         ### xfmr

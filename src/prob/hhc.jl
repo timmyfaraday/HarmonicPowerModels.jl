@@ -60,7 +60,7 @@ function build_hhc(pm::HarmonicPowerModel)
         ## unit current variables
         variable_filter_current(pm, nw=n, bounded=false)
         variable_gen_current(pm, nw=n, bounded=true)
-        variable_load_current(pm, nw=n, bounded=true)
+        variable_hsrc_current(pm, nw=n, bounded=true)
     end
 
     # objective 
@@ -120,9 +120,9 @@ function build_hhc(pm::HarmonicPowerModel)
             constraint_gen_current(pm, g, nw=n)
         end
 
-        ### harmonic load
-        for l in _PMs.ids(pm, :load, nw=n)
-            constraint_load_current(pm, l, nw = n)
+        ### harmonic source
+        for s in _PMs.ids(pm, :source, nw=n)
+            constraint_hsrc_current(pm, s, nw = n)
         end
 
         ### xfmr
@@ -160,7 +160,7 @@ function build_hhc(pm::dHHCPowerModel)
 
         ## node current variables
         variable_filter_current(pm, nw=n, bounded = true)
-        variable_load_current(pm, nw=n, bounded = true)
+        variable_hsrc_current(pm, nw=n, bounded = true)
         variable_gen_current(pm, nw=n, bounded = true)
     end end
 
@@ -224,9 +224,9 @@ function build_hhc(pm::dHHCPowerModel)
             constraint_xfmr_winding_current_balance(pm, x, nw=n)
         end
 
-        ### harmonic unit
-        for l in _PMs.ids(pm, :load, nw=n)
-            constraint_load_current(pm, l, nw = n)
+        ### harmonic source
+        for s in _PMs.ids(pm, :source, nw=n)
+            constraint_hsrc_current(pm, s, nw = n)
         end
     end end
 end

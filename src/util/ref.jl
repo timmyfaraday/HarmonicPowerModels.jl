@@ -60,3 +60,23 @@ function _ref_add_xfmr!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         ref[:bus_arcs_xfmr] = bus_arcs_xfmr
     end
 end
+# harmonic source
+""
+function ref_add_hsrc!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    _PMs.apply_pm!(_ref_add_hsrc!, ref, data)
+end
+""
+function _ref_add_hsrc!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    if !haskey(ref, :source)
+        ref[:source] = Dict()
+        ref[:bus_sources] = Dict((i, []) for (i,bus) in ref[:bus])
+    else
+        ref[:source] = Dict(f for f in ref[:source] if f.second["bus"] in keys(ref[:bus]))
+
+        bus_sources = Dict((i, Int[]) for (i,bus) in ref[:bus])
+        for (i,source) in ref[:source]
+            push!(bus_sources[filter["source_bus"]], i)
+        end
+        ref[:bus_sources] = bus_sources
+    end
+end

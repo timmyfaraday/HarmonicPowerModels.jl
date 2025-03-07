@@ -37,7 +37,7 @@ function build_hpf(pm::_PMs.AbstractIVRModel)
         ## unit current variables
         variable_filter_current(pm, nw=n, bounded=false)
         variable_gen_current(pm, nw=n, bounded=false)
-        variable_load_current(pm, nw=n, bounded=false)        
+        variable_source_current(pm, nw=n, bounded=false)        
     end 
 
     # objective
@@ -82,8 +82,8 @@ function build_hpf(pm::_PMs.AbstractIVRModel)
         end
 
         ### harmonic unit
-        for l in _PMs.ids(pm, :load, nw=n)
-            constraint_load_power(pm, l, nw=n)
+        for s in _PMs.ids(pm, :source, nw=n)
+            constraint_source_power(pm, l, nw=n)
         end
     end
 end

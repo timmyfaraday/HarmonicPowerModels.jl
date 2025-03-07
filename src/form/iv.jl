@@ -66,64 +66,64 @@ end
 
 # load 
 ""
-function variable_load_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
-    variable_load_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_load_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    if nw ≠ fundamental(pm)
-        variable_load_current_magnitude(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    end
-end
+# function variable_load_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+#     variable_load_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+#     variable_load_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+#     if nw ≠ fundamental(pm)
+#         variable_load_current_magnitude(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+#     end
+# end
 
-## objective
-""
-function objective_power_flow(pm::_PMs.AbstractIVRModel)
-    JuMP.@objective(pm.model, Min, 0.0)
-end
-""
-function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel) 
-    bus_id = pm.data["bus_id"]
+# ## objective
+# ""
+# function objective_power_flow(pm::_PMs.AbstractIVRModel)
+#     JuMP.@objective(pm.model, Min, 0.0)
+# end
+# ""
+# function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel) 
+#     bus_id = pm.data["bus_id"]
 
-    vr = [_PMs.var(pm, n, :vr, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
-    vi = [_PMs.var(pm, n, :vi, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
+#     vr = [_PMs.var(pm, n, :vr, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
+#     vi = [_PMs.var(pm, n, :vi, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
 
-    JuMP.@objective(pm.model, Min, sum(vr.^2 + vi.^2))
-end
-""
-function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
-    # maximum efficiency
-    if pm.data["principle"] == "maximum efficiency"
-        cmd = [_PMs.var(pm, n, :cmd, l) for n in _PMs.nw_ids(pm) 
-                                        for l in _PMs.ids(pm, :load, nw=n) 
-                                        if n ≠ fundamental(pm)]
+#     JuMP.@objective(pm.model, Min, sum(vr.^2 + vi.^2))
+# end
+# ""
+# function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
+#     # maximum efficiency
+#     if pm.data["principle"] == "maximum efficiency"
+#         cmd = [_PMs.var(pm, n, :cmd, l) for n in _PMs.nw_ids(pm) 
+#                                         for l in _PMs.ids(pm, :load, nw=n) 
+#                                         if n ≠ fundamental(pm)]
     
-        JuMP.@objective(pm.model, Max, sum(cmd))
-    end
+#         JuMP.@objective(pm.model, Max, sum(cmd))
+#     end
 
-    # absolute equality
-    if pm.data["principle"] == "absolute equality"
-        cmd = [_PMs.var(pm, n, :cmd, l) for n in _PMs.nw_ids(pm) 
-                                        for l in _PMs.ids(pm, :load, nw=n) 
-                                        if n ≠ fundamental(pm)]
+#     # absolute equality
+#     if pm.data["principle"] == "absolute equality"
+#         cmd = [_PMs.var(pm, n, :cmd, l) for n in _PMs.nw_ids(pm) 
+#                                         for l in _PMs.ids(pm, :load, nw=n) 
+#                                         if n ≠ fundamental(pm)]
     
-        JuMP.@objective(pm.model, Max, sum(cmd)) 
-    end
+#         JuMP.@objective(pm.model, Max, sum(cmd)) 
+#     end
 
-    # maximin
-    if pm.data["principle"] == "maximin"
-        cmh = [_PMs.var(pm, n, :cmh) for n in _PMs.nw_ids(pm)
-                                     if n ≠ fundamental(pm)]
+#     # maximin
+#     if pm.data["principle"] == "maximin"
+#         cmh = [_PMs.var(pm, n, :cmh) for n in _PMs.nw_ids(pm)
+#                                      if n ≠ fundamental(pm)]
 
-        JuMP.@objective(pm.model, Max, sum(cmh))
-    end
+#         JuMP.@objective(pm.model, Max, sum(cmh))
+#     end
 
-    # Kalai-Smorodinsky bargaining
-    if pm.data["principle"] == "Kalai-Smorodinsky bargaining"
-        fh = [_PMs.var(pm, n, :fh) for n in _PMs.nw_ids(pm)
-                                   if n ≠ fundamental(pm)]
+#     # Kalai-Smorodinsky bargaining
+#     if pm.data["principle"] == "Kalai-Smorodinsky bargaining"
+#         fh = [_PMs.var(pm, n, :fh) for n in _PMs.nw_ids(pm)
+#                                    if n ≠ fundamental(pm)]
 
-        JuMP.@objective(pm.model, Max, sum(fh))
-    end
-end
+#         JuMP.@objective(pm.model, Max, sum(fh))
+#     end
+# end
 
 # ## constraints
 # # ref bus
@@ -245,41 +245,41 @@ end
 
 # fairness principle
 ""
-function constraint_fairness_principle(pm::_PMs.AbstractIVRModel, n, load_ids)
-    # maximum efficiency
-    if pm.data["principle"] == "maximum efficiency"
-        # no additional constraints
-    end
+# function constraint_fairness_principle(pm::_PMs.AbstractIVRModel, n, load_ids)
+#     # maximum efficiency
+#     if pm.data["principle"] == "maximum efficiency"
+#         # no additional constraints
+#     end
 
-    # absolute equality
-    if pm.data["principle"] == "absolute equality"
-        cmd = [_PMs.var(pm, n, :cmd, l) for l in load_ids]
+#     # absolute equality
+#     if pm.data["principle"] == "absolute equality"
+#         cmd = [_PMs.var(pm, n, :cmd, l) for l in load_ids]
 
-        for l in load_ids[2:end]
-            JuMP.@constraint(pm.model, cmd[first(load_ids)] == cmd[l]) ## is this correct
-    end end
+#         for l in load_ids[2:end]
+#             JuMP.@constraint(pm.model, cmd[first(load_ids)] == cmd[l]) ## is this correct
+#     end end
 
-    # maximin
-    if pm.data["principle"] == "maximin"
-        cmh = _PMs.var(pm, n, :cmh)
+#     # maximin
+#     if pm.data["principle"] == "maximin"
+#         cmh = _PMs.var(pm, n, :cmh)
 
-        for l in load_ids
-            cmd = _PMs.var(pm, n, :cmd, l)
+#         for l in load_ids
+#             cmd = _PMs.var(pm, n, :cmd, l)
 
-            JuMP.@constraint(pm.model, cmh <= cmd)
-    end end
+#             JuMP.@constraint(pm.model, cmh <= cmd)
+#     end end
 
-    # Kalai-Smorodinsky bargaining
-    if pm.data["principle"] == "Kalai-Smorodinsky bargaining"
-        fh = _PMs.var(pm, n, :fh)
+#     # Kalai-Smorodinsky bargaining
+#     if pm.data["principle"] == "Kalai-Smorodinsky bargaining"
+#         fh = _PMs.var(pm, n, :fh)
 
-        for l in load_ids
-            cmd = _PMs.var(pm, n, :cmd, l)
-            cmdmax = _PMs.ref(pm, n, :load, l, "cmdmax")
+#         for l in load_ids
+#             cmd = _PMs.var(pm, n, :cmd, l)
+#             cmdmax = _PMs.ref(pm, n, :load, l, "cmdmax")
 
-            JuMP.@constraint(pm.model, cmd == fh * cmdmax)
-    end end
-end
+#             JuMP.@constraint(pm.model, cmd == fh * cmdmax)
+#     end end
+# end
 
 # filter
 ""
@@ -304,70 +304,70 @@ end
 
 # generator
 ""
-function constraint_gen_current(pm::_PMs.AbstractIVRModel, n::Int, g, i, gsc, bsc)
-    vr = _PMs.var(pm, n, :vr, i)
-    vi = _PMs.var(pm, n, :vi, i)
+# function constraint_gen_current(pm::_PMs.AbstractIVRModel, n::Int, g, i, gsc, bsc)
+#     vr = _PMs.var(pm, n, :vr, i)
+#     vi = _PMs.var(pm, n, :vi, i)
 
-    crg = _PMs.var(pm, n, :crg, g)
-    cig = _PMs.var(pm, n, :cig, g)
+#     crg = _PMs.var(pm, n, :crg, g)
+#     cig = _PMs.var(pm, n, :cig, g)
 
-    JuMP.@constraint(pm.model, crg == gsc*vr - bsc*vi)
-    JuMP.@constraint(pm.model, cig == gsc*vi + bsc*vr)
-end
-""
-function constraint_gen_current_rms_limit(pm::_PMs.AbstractIVRModel, g, c_rating)
-    crg =  [_PMs.var(pm, n, :crg, g) for n in sorted_nw_ids(pm)]
-    cig =  [_PMs.var(pm, n, :cig, g) for n in sorted_nw_ids(pm)]
+#     JuMP.@constraint(pm.model, crg == gsc*vr - bsc*vi)
+#     JuMP.@constraint(pm.model, cig == gsc*vi + bsc*vr)
+# end
+# ""
+# function constraint_gen_current_rms_limit(pm::_PMs.AbstractIVRModel, g, c_rating)
+#     crg =  [_PMs.var(pm, n, :crg, g) for n in sorted_nw_ids(pm)]
+#     cig =  [_PMs.var(pm, n, :cig, g) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, sum(crg.^2 + cig.^2) <= c_rating^2)
-end
-""
-function constraint_gen_current_rms_limit(pm::dHHC_SOC, g, c_rating, cm_fund)
-    crg =  [_PMs.var(pm, n, :crg, g) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
-    cig =  [_PMs.var(pm, n, :cig, g) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+#     JuMP.@constraint(pm.model, sum(crg.^2 + cig.^2) <= c_rating^2)
+# end
+# ""
+# function constraint_gen_current_rms_limit(pm::dHHC_SOC, g, c_rating, cm_fund)
+#     crg =  [_PMs.var(pm, n, :crg, g) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+#     cig =  [_PMs.var(pm, n, :cig, g) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund^2)./1000; vcat(crg, cig)./1000] in JuMP.SecondOrderCone())
-end
+#     JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund^2)./1000; vcat(crg, cig)./1000] in JuMP.SecondOrderCone())
+# end
 
 # load
-""
-function constraint_load_constant_power(pm::_PMs.AbstractIVRModel, n::Int, l, i, pd, qd)
-    vr = _PMs.var(pm, n, :vr, i)
-    vi = _PMs.var(pm, n, :vi, i)
-    crd = _PMs.var(pm, n, :crd, l)
-    cid = _PMs.var(pm, n, :cid, l)
+# ""
+# function constraint_load_constant_power(pm::_PMs.AbstractIVRModel, n::Int, l, i, pd, qd)
+#     vr = _PMs.var(pm, n, :vr, i)
+#     vi = _PMs.var(pm, n, :vi, i)
+#     crd = _PMs.var(pm, n, :crd, l)
+#     cid = _PMs.var(pm, n, :cid, l)
 
-    JuMP.@constraint(pm.model, pd == vr*crd  + vi*cid)
-    JuMP.@constraint(pm.model, qd == vi*crd  - vr*cid)
-end
-""
-function constraint_load_current_angle(pm::_PMs.AbstractIVRModel, n::Int, l, aref)
-    crd = _PMs.var(pm, n, :crd, l)
-    cid = _PMs.var(pm, n, :cid, l)
-    cmd = _PMs.var(pm, n, :cmd, l)
+#     JuMP.@constraint(pm.model, pd == vr*crd  + vi*cid)
+#     JuMP.@constraint(pm.model, qd == vi*crd  - vr*cid)
+# end
+# ""
+# function constraint_load_current_angle(pm::_PMs.AbstractIVRModel, n::Int, l, aref)
+#     crd = _PMs.var(pm, n, :crd, l)
+#     cid = _PMs.var(pm, n, :cid, l)
+#     cmd = _PMs.var(pm, n, :cmd, l)
 
-    JuMP.@constraint(pm.model, cmd * sind(aref) == cid)
-    JuMP.@constraint(pm.model, cmd * cosd(aref) == crd)
-end
-""
-function constraint_load_current_angle(pm::dHHC_SOC, n::Int, l, aref)
-    crd = _PMs.var(pm, n, :crd, l)
-    cid = _PMs.var(pm, n, :cid, l)
-    cmd = _PMs.var(pm, n, :cmd, l)
+#     JuMP.@constraint(pm.model, cmd * sind(aref) == cid)
+#     JuMP.@constraint(pm.model, cmd * cosd(aref) == crd)
+# end
+# ""
+# function constraint_load_current_angle(pm::dHHC_SOC, n::Int, l, aref)
+#     crd = _PMs.var(pm, n, :crd, l)
+#     cid = _PMs.var(pm, n, :cid, l)
+#     cmd = _PMs.var(pm, n, :cmd, l)
 
-    JuMP.@constraint(pm.model, cmd * sind(aref) == cid)
-    JuMP.@constraint(pm.model, cmd * cosd(aref) == crd)
-end
-""
-function constraint_load_constant_current(pm::_PMs.AbstractIVRModel, n::Int, l, mult)
-    crd = _PMs.var(pm, n, :crd, l)
-    cid = _PMs.var(pm, n, :cid, l)
-    fund_crd = _PMs.var(pm, 1, :crd, l)
-    fund_cid = _PMs.var(pm, 1, :cid, l)
+#     JuMP.@constraint(pm.model, cmd * sind(aref) == cid)
+#     JuMP.@constraint(pm.model, cmd * cosd(aref) == crd)
+# end
+# ""
+# function constraint_load_constant_current(pm::_PMs.AbstractIVRModel, n::Int, l, mult)
+#     crd = _PMs.var(pm, n, :crd, l)
+#     cid = _PMs.var(pm, n, :cid, l)
+#     fund_crd = _PMs.var(pm, 1, :crd, l)
+#     fund_cid = _PMs.var(pm, 1, :cid, l)
 
-    JuMP.@constraint(pm.model, crd == mult * fund_crd)
-    JuMP.@constraint(pm.model, cid == mult * fund_cid)
-end
+#     JuMP.@constraint(pm.model, crd == mult * fund_crd)
+#     JuMP.@constraint(pm.model, cid == mult * fund_cid)
+# end
 
 # xfmr
 ""
