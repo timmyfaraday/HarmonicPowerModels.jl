@@ -6,6 +6,9 @@ The transformers (xfmr) $x \in X$ are a subset of the edges $e \in E$ of the ext
 [Illustration of the equivalent single-phase circuit diagram (t-model) of the winding of an xfmr, for the positive and negative sequence components](figure/xfrm_winding_pos_seq.JPG)
 [Illustration of the equivalent single-phase circuit diagram (t-model) of the winding of an xfmr, for the zero sequence components](figure/xfrm_winding_zero_seq.JPG)
 
+!note 
+Currently, only two-winding xfmrs are included, however, the code is written is such a way that extension towards multi-winding xfmrs is fairly straightforward; mainly, the core variables and constraints need to be adapted.
+
 ## Parameters
 
 | name          | symb.                 | unit  | type              | $\subset H$   | def.      | definition                                                            |
@@ -13,13 +16,16 @@ The transformers (xfmr) $x \in X$ are a subset of the edges $e \in E$ of the ext
 | index         | $x$                   | -     | Int               | 1             | -         | unique index of the xfmr                                              |
 | bus           | $i$                   | -     | Vector{Int}       | 1             | -         | unique index of the connected buses of the xfmr                       |
 | nw            | $N^{w}$               | -     | Int               | 1             | -         | number of windings of the xfmr                                        |
-| cnf           | -                     | -     | Vector{String}    | 1             | -         | configuration of the xfmr windings                                    |
+| linear_magn   | -                     | -     | Bool              | 1             | true      | boolean indicating linear representation of magnitizing current       |
+| cnf           | -                     | -     | Vector{Char}      | 1             | -         | configuration of the xfmr windings                                    |
 | gnd           | -                     | -     | Vector{Bool}      | 1             | -         | grounding of the xfmr windings                                        |
-| x             | $x_{x,h}$             | pu    | Real              | H             | -         | core - series reactance of the xfmr                                   |
-| b             | $b_{x,h}$             | pu    | Real              | H             | 0         | core - shunt reactance of the xfmr                                    |
-| g             | $g_{x,h}$             | pu    | Real              | H             | -         | core - shunt resistance of the xfmr                                   |
-| tr            | $t^{re}_{x,h}$        | pu    | Real              | H             | -         | core - real part of the phase shift of the xfmr                       |
-| ti            | $t^{im}_{x,h}$        | pu    | Real              | H             | -         | core - imaginary part of the phase shift of the xfmr                  |
+| Hᴵ            | -                     | -     | Vector{Int}       | 1             | []        | subset of harmonics with non-linear magnetizing current               |
+| Hᴱ            | -                     | -     | Vector{Int}       | 1             | []        | subset of harmonics with exc. voltages rel. for nl. magn. current     | 
+| x_core        | $x^{core}_{x,h}$      | pu    | Real              | H             | -         | core - series reactance of the xfmr                                   |
+| b_core        | $b^{core}_{x,h}$      | pu    | Real              | H             | 0         | core - shunt reactance of the xfmr                                    |
+| g_core        | $g^{core}_{x,h}$      | pu    | Real              | H             | -         | core - shunt resistance of the xfmr                                   |
+| tr            | $t^{re}_{x,h}$        | pu    | Real              | H             | -         | ? - real part of the phase shift of the xfmr                       |
+| ti            | $t^{im}_{x,h}$        | pu    | Real              | H             | -         | ? - imaginary part of the phase shift of the xfmr                  |
 | r             | $r_{xi,h}$            | pu    | Vector{Real}      | H             | -         | winding - series resistance of the xfmr                               |
 | r_gnd         | $r^{gnd}_{xi,h}$      | pu    | Vector{Real}      | H             | [0,...]   | winding - real part of the grounding impedance of the xfmr            |
 | x_gnd         | $x^{gnd}_{xi,h}$      | pu    | Vector{Real}      | H             | [0,...]   | winding - imaginary part of the grounding impedance of the xfmr       |

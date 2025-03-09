@@ -132,8 +132,9 @@ function build_hhc(pm::HarmonicPowerModel)
             constraint_xfmr_core_voltage_phase_shift(pm, x, nw=n)
             constraint_xfmr_core_current_balance(pm, x, nw=n)
             
-            constraint_xfmr_winding_config(pm, x, nw=n)
             constraint_xfmr_winding_current_balance(pm, x, nw=n)
+            constraint_xfmr_winding_voltage_drop(pm, x, nw=n)
+            constraint_xfmr_winding_zero_seq_current_blocking(pm, x, nw=n)
         end
     end
 end
@@ -207,10 +208,10 @@ function build_hhc(pm::dHHCPowerModel)
 
         ### branch
         for b in _PMs.ids(pm, :branch, nw=n)
-            _PMs.constraint_current_from(pm, b, nw=n)
-            _PMs.constraint_current_to(pm, b, nw=n)
+            constraint_current_from(pm, b, nw=n)
+            constraint_current_to(pm, b, nw=n)
 
-            _PMs.constraint_voltage_drop(pm, b, nw=n)
+            constraint_voltage_drop(pm, b, nw=n)
         end
 
         ### xfmr
@@ -220,8 +221,9 @@ function build_hhc(pm::dHHCPowerModel)
             constraint_xfmr_core_voltage_phase_shift(pm, x, nw=n)
             constraint_xfmr_core_current_balance(pm, x, nw=n)
             
-            constraint_xfmr_winding_config(pm, x, nw=n)
             constraint_xfmr_winding_current_balance(pm, x, nw=n)
+            constraint_xfmr_winding_voltage_drop(pm, x, nw=n)
+            constraint_xfmr_winding_zero_seq_current_blocking(pm, x, nw=n)
         end
 
         ### harmonic source

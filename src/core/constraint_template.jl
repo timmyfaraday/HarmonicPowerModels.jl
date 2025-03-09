@@ -195,115 +195,115 @@ end
 # end
 
 # xfmr
-""
-function constraint_xfmr_core_magnetization(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
-    xfmr    = _PMs.ref(pm, nw, :xfmr, x)
-    Hᴵ      = haskey(xfmr, "Hᴵ") ? xfmr["Hᴵ"] : Int[] ;
+# ""
+# function constraint_xfmr_core_magnetization(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
+#     xfmr    = _PMs.ref(pm, nw, :xfmr, x)
+#     Hᴵ      = haskey(xfmr, "Hᴵ") ? xfmr["Hᴵ"] : Int[] ;
 
-    if nw in Hᴵ
-        int_a = _PMs.ref(pm, nw, :xfmr, x, "Im_A")
-        int_b = _PMs.ref(pm, nw, :xfmr, x, "Im_B")
+#     if nw in Hᴵ
+#         int_a = _PMs.ref(pm, nw, :xfmr, x, "Im_A")
+#         int_b = _PMs.ref(pm, nw, :xfmr, x, "Im_B")
 
-        constraint_xfmr_core_magnetization(pm, nw, x, int_a, int_b)
-    else 
-        constraint_xfmr_core_magnetization(pm, nw, x)
-    end
-end
-""
-function constraint_xfmr_core_voltage_drop(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
-    f_bus = _PMs.ref(pm, nw, :xfmr, x, "f_bus")
-    t_bus = _PMs.ref(pm, nw, :xfmr, x, "t_bus")
-    f_idx = (x,f_bus,t_bus)
+#         constraint_xfmr_core_magnetization(pm, nw, x, int_a, int_b)
+#     else 
+#         constraint_xfmr_core_magnetization(pm, nw, x)
+#     end
+# end
+# ""
+# function constraint_xfmr_core_voltage_drop(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
+#     f_bus = _PMs.ref(pm, nw, :xfmr, x, "f_bus")
+#     t_bus = _PMs.ref(pm, nw, :xfmr, x, "t_bus")
+#     f_idx = (x,f_bus,t_bus)
     
-    xsc = _PMs.ref(pm, nw, :xfmr, x, "xsc")
+#     xsc = _PMs.ref(pm, nw, :xfmr, x, "xsc")
     
-    constraint_xfmr_core_voltage_drop(pm, nw, x, f_idx, xsc)
-end
-"" 
-function constraint_xfmr_core_voltage_phase_shift(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
-    f_bus = _PMs.ref(pm, nw, :xfmr, x, "f_bus")
-    t_bus = _PMs.ref(pm, nw, :xfmr, x, "t_bus")
-    t_idx = (x,t_bus,f_bus)
+#     constraint_xfmr_core_voltage_drop(pm, nw, x, f_idx, xsc)
+# end
+# "" 
+# function constraint_xfmr_core_voltage_phase_shift(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
+#     f_bus = _PMs.ref(pm, nw, :xfmr, x, "f_bus")
+#     t_bus = _PMs.ref(pm, nw, :xfmr, x, "t_bus")
+#     t_idx = (x,t_bus,f_bus)
     
-    tr = _PMs.ref(pm, nw, :xfmr, x, "tr")
-    ti = _PMs.ref(pm, nw, :xfmr, x, "ti")
+#     tr = _PMs.ref(pm, nw, :xfmr, x, "tr")
+#     ti = _PMs.ref(pm, nw, :xfmr, x, "ti")
     
-    constraint_xfmr_core_voltage_phase_shift(pm, nw, x, t_idx, tr, ti)
-end
-""
-function constraint_xfmr_core_current_balance(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
-    f_bus = _PMs.ref(pm, nw, :xfmr, x, "f_bus")
-    t_bus = _PMs.ref(pm, nw, :xfmr, x, "t_bus")
-    f_idx = (x,f_bus,t_bus)
-    t_idx = (x,t_bus,f_bus)
+#     constraint_xfmr_core_voltage_phase_shift(pm, nw, x, t_idx, tr, ti)
+# end
+# ""
+# function constraint_xfmr_core_current_balance(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
+#     f_bus = _PMs.ref(pm, nw, :xfmr, x, "f_bus")
+#     t_bus = _PMs.ref(pm, nw, :xfmr, x, "t_bus")
+#     f_idx = (x,f_bus,t_bus)
+#     t_idx = (x,t_bus,f_bus)
     
-    tr = _PMs.ref(pm, nw, :xfmr, x, "tr")
-    ti = _PMs.ref(pm, nw, :xfmr, x, "ti")
+#     tr = _PMs.ref(pm, nw, :xfmr, x, "tr")
+#     ti = _PMs.ref(pm, nw, :xfmr, x, "ti")
 
-    gsh = _PMs.ref(pm, nw, :xfmr, x, "gsh")
+#     gsh = _PMs.ref(pm, nw, :xfmr, x, "gsh")
 
-    constraint_xfmr_core_current_balance(pm, nw, x, f_idx, t_idx, tr, ti, gsh)
-end
-""
-function constraint_xfmr_winding_config(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
-    f_bus = _PMs.ref(pm, nw, :xfmr, x, "f_bus")
-    t_bus = _PMs.ref(pm, nw, :xfmr, x, "t_bus")
-    w_bus = [f_bus, t_bus]
-    w_idx = [(x,f_bus,t_bus), (x,t_bus,f_bus)]
+#     constraint_xfmr_core_current_balance(pm, nw, x, f_idx, t_idx, tr, ti, gsh)
+# end
+# ""
+# function constraint_xfmr_winding_config(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
+#     f_bus = _PMs.ref(pm, nw, :xfmr, x, "f_bus")
+#     t_bus = _PMs.ref(pm, nw, :xfmr, x, "t_bus")
+#     w_bus = [f_bus, t_bus]
+#     w_idx = [(x,f_bus,t_bus), (x,t_bus,f_bus)]
 
-    r  = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["r1","r2"]]
-    re = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["re1","re2"]]
-    xe = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["xe1","xe2"]]
+#     r  = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["r1","r2"]]
+#     re = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["re1","re2"]]
+#     xe = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["xe1","xe2"]]
 
-    gnd = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["gnd1","gnd2"]]
+#     gnd = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["gnd1","gnd2"]]
 
-    for w in 1:2
-        constraint_xfmr_winding_config(pm, nw, w_bus[w], w_idx[w], r[w], re[w], xe[w], gnd[w])
-    end
-end
-""
-function constraint_xfmr_winding_current_balance(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
-    f_bus = _PMs.ref(pm, nw, :xfmr, x, "f_bus")
-    t_bus = _PMs.ref(pm, nw, :xfmr, x, "t_bus")
-    w_idx = [(x,f_bus,t_bus), (x,t_bus,f_bus)]
+#     for w in 1:2
+#         constraint_xfmr_winding_config(pm, nw, w_bus[w], w_idx[w], r[w], re[w], xe[w], gnd[w])
+#     end
+# end
+# ""
+# function constraint_xfmr_winding_current_balance(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))
+#     f_bus = _PMs.ref(pm, nw, :xfmr, x, "f_bus")
+#     t_bus = _PMs.ref(pm, nw, :xfmr, x, "t_bus")
+#     w_idx = [(x,f_bus,t_bus), (x,t_bus,f_bus)]
     
-    r = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["r1","r2"]]
-    b_sh = [0.0,0.0]
-    g_sh = [0.0,0.0]
+#     r = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["r1","r2"]]
+#     b_sh = [0.0,0.0]
+#     g_sh = [0.0,0.0]
 
-    cnf = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["cnf1","cnf2"]]
+#     cnf = [_PMs.ref(pm, nw, :xfmr, x, nk) for nk in ["cnf1","cnf2"]]
 
-    for w in 1:2
-        constraint_xfmr_winding_current_balance(pm, nw, w_idx[w], r[w], b_sh[w], g_sh[w], cnf[w])
-    end
-end
-""
-function constraint_xfmr_current_rms_limit(pm::_PMs.AbstractPowerModel, x::Int)
-    xfmr = _PMs.ref(pm, fundamental(pm), :xfmr, x)
+#     for w in 1:2
+#         constraint_xfmr_winding_current_balance(pm, nw, w_idx[w], r[w], b_sh[w], g_sh[w], cnf[w])
+#     end
+# end
+# ""
+# function constraint_xfmr_current_rms_limit(pm::_PMs.AbstractPowerModel, x::Int)
+#     xfmr = _PMs.ref(pm, fundamental(pm), :xfmr, x)
 
-    f_bus = _PMs.ref(pm, fundamental(pm), :xfmr, x, "f_bus")
-    t_bus = _PMs.ref(pm, fundamental(pm), :xfmr, x, "t_bus")
-    w_idx = [(x,f_bus,t_bus), (x,t_bus,f_bus)]
+#     f_bus = _PMs.ref(pm, fundamental(pm), :xfmr, x, "f_bus")
+#     t_bus = _PMs.ref(pm, fundamental(pm), :xfmr, x, "t_bus")
+#     w_idx = [(x,f_bus,t_bus), (x,t_bus,f_bus)]
 
-    c_rating = xfmr["c_rating"]
+#     c_rating = xfmr["c_rating"]
 
-    for w in 1:2
-        constraint_xfmr_current_rms_limit(pm, w_idx[w], c_rating)
-    end
-end
-""
-function constraint_xfmr_current_rms_limit(pm::dHHC_SOC, x::Int)
-    xfmr = _PMs.ref(pm, fundamental(pm), :xfmr, x)
+#     for w in 1:2
+#         constraint_xfmr_current_rms_limit(pm, w_idx[w], c_rating)
+#     end
+# end
+# ""
+# function constraint_xfmr_current_rms_limit(pm::dHHC_SOC, x::Int)
+#     xfmr = _PMs.ref(pm, fundamental(pm), :xfmr, x)
 
-    f_bus = _PMs.ref(pm, fundamental(pm), :xfmr, x, "f_bus")
-    t_bus = _PMs.ref(pm, fundamental(pm), :xfmr, x, "t_bus")
-    w_idx = [(x,f_bus,t_bus), (x,t_bus,f_bus)]
+#     f_bus = _PMs.ref(pm, fundamental(pm), :xfmr, x, "f_bus")
+#     t_bus = _PMs.ref(pm, fundamental(pm), :xfmr, x, "t_bus")
+#     w_idx = [(x,f_bus,t_bus), (x,t_bus,f_bus)]
 
-    c_rating = xfmr["c_rating"]
+#     c_rating = xfmr["c_rating"]
 
-    cm_fund = [xfmr["ctm_fr"], xfmr["ctm_to"]]
+#     cm_fund = [xfmr["ctm_fr"], xfmr["ctm_to"]]
 
-    for w in 1:2
-        constraint_xfmr_current_rms_limit(pm, w_idx[w], c_rating, cm_fund[w])
-    end
-end
+#     for w in 1:2
+#         constraint_xfmr_current_rms_limit(pm, w_idx[w], c_rating, cm_fund[w])
+#     end
+# end

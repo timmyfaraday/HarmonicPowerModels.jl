@@ -18,14 +18,14 @@
 ""
 # i_base_ka = s_base_mva / v_base_kv, see Power System Analysis, pg. 26
 calc_branch_current_base(hdata::Dict{String,Any}, bdata::Dict{String,Any}) =
-    hdata["s_base_mva"] / hdata["nw"]["1"]["bus"][string(bdata["f_bus"])]["v_base_kv"]
+    hdata["s_base_mva"] / hdata["nw"]["1"]["bus"][string(bdata["bus_fr"])]["v_base_kv"]
 ""
-# i_rms_max = S_nom / s_base_mva / sqrt(3) / min(v_rms_max(f_bus), v_rms_max(t_bus))
+# i_rms_max = S_nom / s_base_mva / sqrt(3) / min(v_rms_max(bus_fr), v_rms_max(bus_to))
 function calc_branch_current_rms_max(hdata::Dict{String,Any}, bdata::Dict{String,Any})
     S_nom       = bdata["rate_a"] 
     s_base_mva  = hdata["s_base_mva"]
-    v_rms_max   = min(hdata["nw"]["1"]["bus"][string(bdata["f_bus"])]["v_rms_max"],
-                      hdata["nw"]["1"]["bus"][string(bdata["t_bus"])]["v_rms_max"])
+    v_rms_max   = min(hdata["nw"]["1"]["bus"][string(bdata["bus_fr"])]["v_rms_max"],
+                      hdata["nw"]["1"]["bus"][string(bdata["bus_to"])]["v_rms_max"])
      
     return S_nom / s_base_mva / sqrt(3) / v_rms_max
 end
@@ -42,8 +42,8 @@ function add_branch_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
         bdata   = fdata["branch"][nb]
         if nw == "1"
             branch = Dict(  "id"            => bdata["index"],
-                            "f_bus"         => bdata["f_bus"],
-                            "t_bus"         => bdata["t_bus"],
+                            "bus_fr"        => bdata["f_bus"],
+                            "bus_to"        => bdata["bus_to"],
                             #-----------------------------------#
                             "r"             => bdata["br_r"],
                             "x"             => bdata["br_x"],
@@ -156,7 +156,7 @@ end
 function constraint_branch_current_from(pm::HarmonicPowerModel, i::Int; nw::Int=fundamental(pm))
     branch  = _PMs.ref(pm, nw, :branch, i)
 
-    idx     = (i, branch["f_bus"], branch["t_bus"])
+    idx     = (i, branch["bus_fr"], branch["bus_to"])
 
     g       = branch["g_fr"]
     b       = branch["b_fr"]
@@ -167,7 +167,7 @@ end
 function constraint_branch_current_to(pm::HarmonicPowerModel, i::Int; nw::Int=fundamental(pm))
     branch  = _PMs.ref(pm, nw, :branch, i)
     
-    idx     = (i, branch["t_bus"], branch["f_bus"])
+    idx     = (i, branch["bus_to"], branch["bus_fr"])
 
     g       = branch["g_to"]
     b       = branch["b_to"]
@@ -193,7 +193,7 @@ end
 function constraint_branch_voltage_drop(pm::HarmonicPowerModel, i::Int; nw::Int=fundamental(pm))
     branch  = _PMs.ref(pm, nw, :branch, i)
 
-    idx     = (i, branch["f_bus"], branch["t_bus"])
+    idx     = (i, branch["bus_fr"], branch["bus_to"])
 
     r       = branch["r"]
     x       = branch["x"]
@@ -218,15 +218,14 @@ end
 ""
 function constraint_branch_current_rms_limit(pm::HarmonicPowerModel, i::Int)
     branch      = _PMs.ref(pm, fundamental(pm), :branch, i)
-    idx_fr      = (i, branch["f_bus"], branch["t_bus"])
-    idx_to      = (i, branch["t_bus"], branch["f_bus"])
+    idx_fr      = (i, branch["bus_fr"], branch["bus_to"])
+    idx_to      = (i, branch["bus_to"], branch["bus_fr"])
 
     i_rms_max   = branch["i_rms_max"]
     i_fund_magn = branch["i_fund_magn"]
 
     constraint_branch_current_rms_limit(pm, idx_fr, idx_to, i_rms_max, i_fund_magn)
 end
-# branch
 ""
 function constraint_branch_current_rms_limit(pm::HarmonicPowerModel, idx_fr, idx_to, i_rms_max, i_fund_magn)
     cbr_fr  = [_PMs.var(pm, n, :cbr, idx_fr) for n in sorted_nw_ids(pm)]

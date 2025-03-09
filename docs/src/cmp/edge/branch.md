@@ -13,10 +13,10 @@ The branches $b \in B$ are a subset of the edges $e \in E$ of the extended graph
 | t_bus         | $j$                   | -     | Int           | 1             | -     | unique index of the to-bus of the branch                              |
 | r             | $r_{b,h}$             | pu    | Real          | H             | -     | real part of the series impedance of the branch                       |
 | x             | $x_{b,h}$             | pu    | Real          | H             | -     | imaginary part of the series impedance of the branch                  |
-| g_fr          | $g_{bi,h}             | pu    | Real          | H             | -     | real part of the shunt admittance at the from-bus of the branch       |
-| b_fr          | $b_{bi,h}             | pu    | Real          | H             | -     | imaginary part of the shunt admittance at the from-bus of the branch  |
-| g_to          | $g_{bj,h}             | pu    | Real          | H             | -     | real part of the shunt admittance at the to-bus of the branch         |
-| b_to          | $b_{bj,h}             | pu    | Real          | H             | -     | imaginary part of the shunt admittance at the to-bus of the branch    |
+| g_fr          | $g_{bi,h}$            | pu    | Real          | H             | -     | real part of the shunt admittance at the from-bus of the branch       |
+| b_fr          | $b_{bi,h}$            | pu    | Real          | H             | -     | imaginary part of the shunt admittance at the from-bus of the branch  |
+| g_to          | $g_{bj,h}$            | pu    | Real          | H             | -     | real part of the shunt admittance at the to-bus of the branch         |
+| b_to          | $b_{bj,h}$            | pu    | Real          | H             | -     | imaginary part of the shunt admittance at the to-bus of the branch    |
 | i_base_ka     | -                     | kA    | Real          | 1             | -     | base branch current magnitude                                         |
 | i_fund_magn   | $I^{fund,magn}_{b}$   | pu    | Vector{Real}  | 1             | [0,0] | fundamental from- and to-side branch current magnitude                | 
 | i_rms_max     | $I^{rms,max}_{b}$     | pu    | Real          | 1             | -     | maximum root-mean-square branch current                               |

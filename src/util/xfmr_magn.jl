@@ -14,7 +14,7 @@
 """
     sample_magnetizing_current
 """
-function sample_magnetizing_current(hdata::Dict{String,<:Any}, xfmr_magn::Dict{String,<:Any})
+function sample_magnetizing_current(hdata::Dict{String,<:Any}, xfmr_magn::Dict{String,<:Any}) # to be checked
     # derived input
     dt      = (1 / (100 * _HPM.freq * maximum(xfmr_magn["Hᴵ"])))
     tmax    = (5.0 / _HPM.freq)

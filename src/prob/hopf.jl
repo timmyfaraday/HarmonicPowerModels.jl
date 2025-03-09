@@ -100,8 +100,9 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
             constraint_xfmr_core_voltage_phase_shift(pm, x, nw=n)
             constraint_xfmr_core_current_balance(pm, x, nw=n)
             
-            constraint_xfmr_winding_config(pm, x, nw=n)
             constraint_xfmr_winding_current_balance(pm, x, nw=n)
+            constraint_xfmr_winding_voltage_drop(pm, x, nw=n)
+            constraint_xfmr_winding_zero_seq_current_blocking(pm, x, nw=n)
         end     
     end
 end

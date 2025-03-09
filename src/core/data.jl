@@ -34,17 +34,21 @@ end end
 
 # build from matpower file #####################################################
 ""
-function build_hdata_from_matpower_file(fdata::Dict{String,Any}; H::Vector{Int}=Int[1])
+function build_hdata_from_matpower_file(fdata::Dict{String,Any}; 
+                                        
+                                        H::Vector{Int}=Int[1], 
+                                        xfmr_magn::Dict{String,Any}=Dict{String,Any}(), 
+                                        xfmr_magn::Dict{String,Any}=Dict{String,Any}())
     hdata = init_hdata(fdata, H)
 
     add_bus_hdata!(hdata, fdata)
     add_ref_hdata!(hdata, fdata)
 
     add_branch_hdata!(hdata, fdata)
-    add_xfmr_hdata!(hdata, fdata)
+    add_xfmr_hdata!(hdata, fdata, xfmr_magn)
 
     add_source_hdata!(hdata, fdata)
-    add_gen_hdata!(hdata, fdata)
+    add_gen_hdata!(hdata, fdata, xfmr_magn)
 end
 
 ""
@@ -56,32 +60,32 @@ function _HPM.replicate(data::Dict{String, Any};
 
     ### Add entries to the fundamental data ####################################
     # set the branch current rating
-    if haskey(data,"branch") 
-        for branch in values(data["branch"])
-            f_bus = data["bus"][string(branch["f_bus"])]
-            t_bus = data["bus"][string(branch["t_bus"])]
+    # if haskey(data,"branch") 
+    #     for branch in values(data["branch"])
+    #         f_bus = data["bus"][string(branch["f_bus"])]
+    #         t_bus = data["bus"][string(branch["t_bus"])]
             
-            vmmin = min(f_bus["vmin"], t_bus["vmin"])
+    #         vmmin = min(f_bus["vmin"], t_bus["vmin"])
             
-            #branch["c_rating"] = branch["rate_a"] / sqrt(3) #/ vmmin             # @Hakan: klopt dit
-    end end
+    #         #branch["c_rating"] = branch["rate_a"] / sqrt(3) #/ vmmin             # @Hakan: klopt dit
+    # end end
 
-    # add xfmr current rating
-    if haskey(data,"xfmr") 
-        for xfmr in values(data["xfmr"])
-            f_bus = data["bus"][string(xfmr["f_bus"])]
-            t_bus = data["bus"][string(xfmr["t_bus"])]
+    # # add xfmr current rating
+    # if haskey(data,"xfmr") 
+    #     for xfmr in values(data["xfmr"])
+    #         f_bus = data["bus"][string(xfmr["f_bus"])]
+    #         t_bus = data["bus"][string(xfmr["t_bus"])]
             
-            vmmin = min(f_bus["vmin"], t_bus["vmin"])
+    #         vmmin = min(f_bus["vmin"], t_bus["vmin"])
             
-            # xfmr["c_rating"] = xfmr["rateA"] / data["baseMVA"] / vmmin        # @Hakan: klopt dit
-    end end
+    #         # xfmr["c_rating"] = xfmr["rateA"] / data["baseMVA"] / vmmin        # @Hakan: klopt dit
+    # end end
 
-    # add the thd limits based on standard, if available
-    for bus in values(data["bus"])
-        if haskey(bus, "standard") && bus["standard"] in keys(thd_limits)
-            bus["thdmax"] = thd_limits[bus["standard"]]
-    end end
+    # # add the thd limits based on standard, if available
+    # for bus in values(data["bus"])
+    #     if haskey(bus, "standard") && bus["standard"] in keys(thd_limits)
+    #         bus["thdmax"] = thd_limits[bus["standard"]]
+    # end end
 
     ### create multi-network data structure, only keep ntws in H ###############
     hdata = _PMs.replicate(data, last(H))
