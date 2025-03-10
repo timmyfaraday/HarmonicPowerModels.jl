@@ -11,10 +11,8 @@
 # v0.2.1 - reviewed TVA                                                        #
 ################################################################################
 
-"""
-    sample_magnetizing_current
-"""
-function sample_magnetizing_current(hdata::Dict{String,<:Any}, xfmr_magn::Dict{String,<:Any}) # to be checked
+""
+function sample_magnetizing_current(hdata::Dict{String,<:Any}, xfmr_magn::Dict{String,<:Any})
     # derived input
     dt      = (1 / (100 * _HPM.freq * maximum(xfmr_magn["Hᴵ"])))
     tmax    = (5.0 / _HPM.freq)
@@ -27,7 +25,7 @@ function sample_magnetizing_current(hdata::Dict{String,<:Any}, xfmr_magn::Dict{S
     fq      = _SDC.Sinusoidal(_HPM.freq .* xfmr_magn["Hᴵ"])
 
     for (nx, xfmr) in xfmr_magn["xfmr"]
-        Abase   = hdata["nw"]["1"]["baseMVA"] * 10e6 / xfmr["Vbase"]            # base current [A]
+        Abase   = hdata["s_base_mva"] * 10e6 / xfmr["Vbase"]                    # base current [A]
 
         # sample the excitation voltage
         IHD, Emax, pcs = xfmr_magn["IHD"], xfmr_magn["Emax"], xfmr_magn["pcs"]
@@ -72,8 +70,7 @@ function sample_magnetizing_current(hdata::Dict{String,<:Any}, xfmr_magn::Dict{S
             for (ni,nh) in enumerate(keys(hdata["nw"]))
                 Ire[nh][nr...] = Imgn[ni] .* cos(Iphs[ni])                      # determine the real part [pu] of the magnitizing current, consecutively, for each magnitizing current harmonic number
                 Iim[nh][nr...] = Imgn[ni] .* sin(Iphs[ni])                      # determine the imaginary part [pu] of the magnitizing current, consecutively, for each magnitizing current harmonic number
-            end
-        end
+        end end
 
         # fill the xfmr data structure, enumerating over all harmonics 
         for (nw,ntw) in hdata["nw"]
@@ -82,21 +79,13 @@ function sample_magnetizing_current(hdata::Dict{String,<:Any}, xfmr_magn::Dict{S
             xfrm = ntw["xfmr"]["$nx"]                                           # note xfrm ≠ xfmr
 
             # set general data
-            xfrm["Hᴱ"] = xfmr_magn["Hᴱ"]
-            xfrm["Hᴵ"] = xfmr_magn["Hᴵ"]
+            if nw == "1"
+                xfrm["Hᴱ"] = xfmr_magn["Hᴱ"]
+                xfrm["Hᴵ"] = xfmr_magn["Hᴵ"]
+            end
 
             # interpolate and set magnetizing current data
             method = _INT.BSpline(_INT.Cubic(_INT.Line(_INT.OnGrid())))
-            xfrm["INT_A"] = _INT.extrapolate(_INT.scale(_INT.interpolate(Ire[nw], method), S...), _INT.Line())
-            xfrm["INT_B"] = _INT.extrapolate(_INT.scale(_INT.interpolate(Iim[nw], method), S...), _INT.Line())
-            xfrm["Im_A"]  = (x...) -> xfrm["INT_A"](x...)
-            xfrm["Im_B"]  = (x...) -> xfrm["INT_B"](x...)
-
-            # set the excitation voltage limits
-            xfrm["eax_min"], xfrm["eax_max"] = 0.0, 2π
-            xfrm["emx_min"], xfrm["emx_max"] = bus["vmin"], bus["vmax"]
-            xfrm["erx_min"], xfrm["erx_max"] = - xfmr_magn["Emax"], xfmr_magn["Emax"]
-            xfrm["eix_min"], xfrm["eix_max"] = - xfmr_magn["Emax"], xfmr_magn["Emax"]
-        end
-    end
-end
+            xfrm["cxmfr"]  = (x...) -> _INT.extrapolate(_INT.scale(_INT.interpolate(Ire[nw], method), S...), _INT.Line())(x...)
+            xfrm["cxmfi"]  = (x...) -> _INT.extrapolate(_INT.scale(_INT.interpolate(Iim[nw], method), S...), _INT.Line())(x...)
+end end end

@@ -12,71 +12,74 @@
 
 # util #########################################################################
 ""
-function calc_gen_conductance(gen::Dict{String, Any}, nw::String)
-    nh = parse(Int, nw)
-    rx_ratio = 1/20.0
-    return (1 / (sqrt(gen["pmax"]^2 + gen["qmax"]^2) * rx_ratio)) / sqrt(nh)
+calc_gen_admittance_real(hdata::Dict{String,Any}, gdata::Dict{String,Any}, h) = # to be reviewe by Hakan
+    (1 / (gdata["rx_ratio"] * sqrt(gdata["pmax"]^2 + gdata["qmax"]^2))) / sqrt(h)
+""
+calc_gen_admittance_imaginary(hdata::Dict{String,Any}, gdata::Dict{String,Any}, h) = # to be reviewed by Hakan
+    (1 / (gdata["xr_ratio"] * sqrt(gdata["pmax"]^2 + gdata["qmax"]^2))) / h
+""
+# i_base_ka = s_base_mva / v_base_kv, see Power System Analysis, pg. 26
+calc_gen_current_base(hdata::Dict{String,Any}, gdata::Dict{String,Any}) =
+    hdata["s_base_mva"] / hdata["nw"]["1"]["bus"][string(gdata["gen_bus"])]["v_base_kv"] 
+""
+# i_rms_max = S_nom / s_base_mva / sqrt(3) / v_rms_max(bus)
+function calc_gen_current_rms_max(hdata::Dict{String,Any}, gdata::Dict{String,Any})
+    S_nom       = sqrt(gdata["pmax"]^2 + gdata["qmax"]^2) 
+    s_base_mva  = hdata["s_base_mva"]
+    v_rms_max   = hdata["nw"]["1"]["bus"][string(gdata["gen_bus"])]["v_rms_max"]
+     
+    return S_nom / s_base_mva / sqrt(3) ./ v_rms_max
 end
 ""
-function calc_gen_admittance(gen::Dict{String, Any}, nw::String)
-    nh = parse(Int, nw)
-    return (1 / sqrt(gen["pmax"]^2 + gen["qmax"]^2)) / nh
-end
-""
-function calculate_max_gen_current(gen::Dict{String, Any})
-    return sqrt(gen["pmax"]^2 + gen["qmax"]^2)
-end
-""
-function calculate_fundamental_gen_current(gen::Dict{String, Any}, ntw::Dict{String, Any})
-    gen_bus = gen["gen_bus"]
-    bus_voltage = ntw["bus"]["$gen_bus"]["vm"]
-    return sqrt(gen["pmax"]^2 + gen["qmax"]^2) / bus_voltage
-end
+collect_gen_current_magnitude_limits(pm::HarmonicPowerModel, nw::Int) = 
+    Dict(g => _PMs.ref(pm, fundamental(pm), :gen, g, "i_rms_max")
+            for g in _PMs.ids(pm, nw, :gen))
+
 # parameters ###################################################################
 ""
 function add_gen_hdata(hdata::Dict{String,Any}, fdata::Dict{String,Any})
     for (nw, ntw) in hdata["nw"], (g, gen) in ntw["gen"]
-        b
+        h       = parse(Int, nw)
+        gdata   = fdata["gen"][g] 
         if nw == "1"
-            ntw["gen"][g] = Dict(  "gen_bus" => gen["gen_bus"],
-                                   "pg" => gen["pg"],
-                                   "qg" => gen["qg"],
-                                   "cost" => gen["cost"],
-                                   "pmax" => gen["pmax"],
-                                   "pmin" => gen["pmin"],
-                                   "qmax" => gen["qmax"],
-                                   "qmin" => gen["qmin"],
-                                   "ncost" => gen["ncost"],
-                                   "inf" => 0,                               # check what to do with the infinite bus
-                                   "gsc" => calc_gen_conductance(gen, nw),
-                                   "bsc" => calc_gen_admittance(gen, nw),
-                                   "c_rating" => calculate_max_gen_current(gen),
-                                   "cm" => calculate_fundamental_gen_current(gen, ntw),
-                                   "gen_status" => gen["gen_status"])
-        
+            gen = Dict( "id"            => gdata["index"],
+                        "bus"           => gdata["gen_bus"],
+                        #-----------------------------------#
+                        "gsc"           => calc_gen_admittance_real(hdata, gdata, h),
+                        "bsc"           => calc_gen_admittance_imaginary(hdata, gdata, h),
+                        #-----------------------------------#
+                        "i_base_ka"     => calc_gen_current_base(hdata, gdata),
+                        "i_fund_magn"   => 0.0,
+                        "i_rms_max"     => calc_gen_current_rms_max(hdata, gdata),
+                        "p_fund_min"    => gdata["pmin"],
+                        "p_fund_max"    => gdata["pmax"],
+                        "q_fund_min"    => gdata["qmin"],
+                        "q_fund_max"    => gdata["qmax"])
         else
-            ntw["gen"][g] = Dict( "gen_bus" => gen["gen_bus"],
-                                  "inf" => 0,                               # check what to do with the infinite bus
-                                  "gsc" => calc_gen_conductance(gen, nw),
-                                  "bsc" => calc_gen_admittance(gen, nw),
-                                  "c_rating" => calculate_gen_current(gen))
-        end 
-    end
-end
+            gen = Dict( "gsc"           => calc_gen_admittance_real(hdata, gdata, h),
+                        "bsc"           => calc_gen_admittance_imaginary(hdata, gdata, h))
+end end end
 
 # variables ####################################################################
 ""
+function variable_gen_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+    variable_gen_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_gen_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+end
+""
 function variable_gen_current_real(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    cgr = _PMs.var(pm, nw)[:cgr] = JuMP.@variable(pm.model,
-            [g in _PMs.ids(pm, nw, :gen)], base_name="$(nw)_cgr",
-            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :gen, g), "cgr_start", 0.0)
-    )
+    c_lim   = collect_gen_current_magnitude_limits(pm, nw)
+
+    cgr = _PMs.var(pm, nw)[:cgr] = 
+            JuMP.@variable( pm.model,
+                            [g in _PMs.ids(pm, nw, :gen)], 
+                            base_name="$(nw)_cgr",
+                            start=0.0)
 
     if bounded
-        for (g, gen) in _PMs.ref(pm, nw, :gen)
-            c_rating = gen["c_rating"]
-            JuMP.set_lower_bound(cgr[g], -c_rating)
-            JuMP.set_upper_bound(cgr[g],  c_rating)
+        for g in _PMs.ids(pm, nw, :gen)
+            JuMP.set_lower_bound(cgr[g], -c_lim[g])
+            JuMP.set_upper_bound(cgr[g],  c_lim[g])
         end
     end
 
@@ -84,83 +87,113 @@ function variable_gen_current_real(pm::HarmonicPowerModel; nw::Int=fundamental(p
 end
 ""
 function variable_gen_current_imaginary(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    cgi = _PMs.var(pm, nw)[:cgi] = JuMP.@variable(pm.model,
-            [g in _PMs.ids(pm, nw, :gen)], base_name="$(nw)_cgi",
-            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :gen, g), "cgi_start", 0.0)
-    )
+    c_lim   = collect_gen_current_magnitude_limits(pm, nw)
+    
+    cgi = _PMs.var(pm, nw)[:cgi] = 
+            JuMP.@variable( pm.model,
+                            [g in _PMs.ids(pm, nw, :gen)], 
+                            base_name="$(nw)_cgi",
+                            start=0.0)
 
     if bounded
-        for (g, gen) in _PMs.ref(pm, nw, :gen)
-            c_rating = gen["c_rating"]
-            JuMP.set_lower_bound(cgi[g], -c_rating)
-            JuMP.set_upper_bound(cgi[g],  c_rating)
+        for g in _PMs.ids(pm, nw, :gen)
+            JuMP.set_lower_bound(cgi[g], -c_lim[g])
+            JuMP.set_upper_bound(cgi[g],  c_lim[g])
         end
     end
 
     report && _PMs.sol_component_value(pm, nw, :gen, :cgi, _PMs.ids(pm, nw, :gen), cgi)
 end
 
-# contraint generator current ####################################################################
+# constraints ##################################################################
+## generator current constraint ################################################
 ""
 function constraint_gen_current(pm::HarmonicPowerModel, g::Int; nw::Int=fundamental(pm))
-    gen = _PMs.ref(pm, fundamental(pm), :gen, g)
-    bus = gen["gen_bus"]
+    i   = _PMs.ref(pm, fundamental(pm), :gen, g, "bus")
 
-    inf = _PMs.ref(pm, nw, :gen, g, "inf")
-    
     gsc = _PMs.ref(pm, nw, :gen, g, "gsc")
     bsc = _PMs.ref(pm, nw, :gen, g, "bsc")
 
-    if iszero(inf) && nw ≠ fundamental
-        constraint_gen_current(pm, nw, g, bus, gsc, bsc)
-    end
-end
+    if nw ≠ fundamental(pm)
+        constraint_gen_current(pm, nw, g, i, gsc, bsc)
+end end
 ""
 function constraint_gen_current(pm::HarmonicPowerModel, n::Int, g, i, gsc, bsc)
-    vr = _PMs.var(pm, n, :vr, i)
-    vi = _PMs.var(pm, n, :vi, i)
+    vbr = _PMs.var(pm, n, :vbr, i)
+    vbi = _PMs.var(pm, n, :vbi, i)
 
     cgr = _PMs.var(pm, n, :cgr, g)
     cgi = _PMs.var(pm, n, :cgi, g)
 
-    JuMP.@constraint(pm.model, cgr == gsc*vr - bsc*vi)
-    JuMP.@constraint(pm.model, cgi == gsc*vi + bsc*vr)
+    JuMP.@constraint(pm.model, cgr == gsc * vbr - bsc * vbi)
+    JuMP.@constraint(pm.model, cgi == gsc * vbi + bsc * vbr)
 end
-""
-# contraint generator current rms limit ###########################################################
+
+## generator root-mean-square current limit ####################################
 ""
 function constraint_gen_current_rms_limit(pm::HarmonicPowerModel, g::Int)
-    gen = _PMs.ref(pm, fundamental(pm), :gen, g)
+    i_rms_max   = _PMs.ref(pm, fundamental(pm), :gen, g, "i_rms_max")
+    i_fund_magn = _PMs.ref(pm, fundamental(pm), :gen, g, "i_fund_magn")
 
-    c_rating = gen["c_rating"]
-
-    constraint_gen_current_rms_limit(pm, g, c_rating)
+    constraint_gen_current_rms_limit(pm, g, i_rms_max, i_fund_magn)
 end
-function constraint_gen_current_rms_limit(pm::HarmonicPowerModel, g, c_rating)
+function constraint_gen_current_rms_limit(pm::HarmonicPowerModel, g, i_rms_max, i_fund_magn)
     cgr =  [_PMs.var(pm, n, :cgr, g) for n in sorted_nw_ids(pm)]
     cgi =  [_PMs.var(pm, n, :cgi, g) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, sum(cgr.^2 + cgi.^2) <= c_rating^2)
+    JuMP.@constraint(pm.model, sum(cgr.^2 + cgi.^2) <= i_rms_max^2)
 end
 ""
-# contraint generator current rms limit in SOC #####################################################
-""
-function constraint_gen_current_rms_limit(pm::dHHCPowerModel, g::Int)
-    gen = _PMs.ref(pm, fundamental(pm), :gen, g)
-    
-    cm_fund = gen["cm"]
-    c_rating = gen["c_rating"]
-
-    constraint_gen_current_rms_limit(pm, g, c_rating, cm_fund)
-end
-""
-function constraint_gen_current_rms_limit(pm::dHHCPowerModel, g, c_rating, cm_fund)
+function constraint_gen_current_rms_limit(pm::dHHCPowerModel, g, i_rms_max, i_fund_magn)
     cgr =  [_PMs.var(pm, n, :cgr, g) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     cgi =  [_PMs.var(pm, n, :cgi, g) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund^2)./1000; vcat(cgr, cgi)./1000] in JuMP.SecondOrderCone())  # Fix the RHS scaling with extra parameter later
+    JuMP.@constraint(pm.model, [sqrt(i_rms_max^2 - i_fund_magn^2); vcat(cgr, cgi)] in JuMP.SecondOrderCone())
 end
 
+## generator fundamental active power limit ####################################
+""
+function constraint_gen_power_active_fundamental_limit(pm::HarmonicPowerModel, g::Int)
+    i           = _PMs.ref(pm, fundamental(pm), :gen, g, "bus")
+
+    p_fund_min  = _PMs.ref(pm, fundamental(pm), :gen, g, "p_fund_min")
+    p_fund_max  = _PMs.ref(pm, fundamental(pm), :gen, g, "p_fund_max")
+
+    constraint_gen_power_active_fundamental_limit(pm, g, i, p_fund_min, p_fund_max)
+end
+""
+function constraint_gen_power_active_fundamental_limit(pm::HarmonicPowerModel, g, i, p_fund_min, p_fund_max)
+    vbr = _PMs.var(pm, fundamental(pm), :vbr, i)
+    vbi = _PMs.var(pm, fundamental(pm), :vbi, i)
+
+    cgr = _PMs.var(pm, fundamental(pm), :cgr, g)
+    cgi = _PMs.var(pm, fundamental(pm), :cgi, g)
+
+    JuMP.@constraint(pm.model, p_fund_min <= vbr * crg  + vbi * cig)
+    JuMP.@constraint(pm.model,               vbr * crg  + vbi * cig <= p_fund_max)
+end
+
+## generator fundamental reactive power limit ##################################
+""
+function constraint_gen_power_reactive_fundamental_limit(pm::HarmonicPowerModel, g::Int)
+    i           = _PMs.ref(pm, fundamental(pm), :gen, g, "bus")
+
+    q_fund_min  = _PMs.ref(pm, fundamental(pm), :gen, g, "q_fund_min")
+    q_fund_max  = _PMs.ref(pm, fundamental(pm), :gen, g, "q_fund_max")
+
+    constraint_gen_power_reactive_fundamental_limit(pm, g, i, q_fund_min, q_fund_max)
+end
+""
+function constraint_gen_power_reactive_fundamental_limit(pm::HarmonicPowerModel, g, i, q_fund_min, q_fund_max)
+    vbr = _PMs.var(pm, fundamental(pm), :vbr, i)
+    vbi = _PMs.var(pm, fundamental(pm), :vbi, i)
+
+    cgr = _PMs.var(pm, fundamental(pm), :cgr, g)
+    cgi = _PMs.var(pm, fundamental(pm), :cgi, g)
+
+    JuMP.@constraint(pm.model, q_fund_min <= vbi * crg  - vbr * cig)
+    JuMP.@constraint(pm.model,               vbi * crg  - vbr * cig <= q_fund_max)
+end
 
 
 

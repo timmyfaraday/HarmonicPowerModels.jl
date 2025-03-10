@@ -16,20 +16,47 @@
 
 # util #########################################################################
 ""
+calc_xfmr_configuration(hdata::Dict{String,Any}, xdata::Dict{String,Any}) = 
+    haskey(xdata, "vg") ? [uppercase(xdata["vg"][n]) for n in 1:2] : ['Y', 'Y'] ;
+""
+calc_xfmr_grounding(hdata::Dict{String,Any}, xdata::Dict{String,Any}) = 
+    haskey(xdata, "gnd1") && haskey(xdata, "gnd2") ? [xdata["gnd1"], xdata["gnd2"]] : Bool[0, 0] ;
+""
+function calc_xfmr_shift_real(hdata::Dict{String,Any}, xdata::Dict{String,Any}, h::Real)
+    shift = haskey(xdata, "vg") ? parse(Int, xdata["vg"][3]) : 0 ;
+    if is_pos_sequence(h)
+        return cosd(-30.0 * shift)
+    elseif is_neg_sequence(h)
+        return cosd(30.0 * shift)
+    elseif is_zero_sequence(h)
+        return 1.0
+end end
+""
+function calc_xfmr_shift_imaginary(hdata::Dict{String,Any}, xdata::Dict{String,Any}, h::Real)
+    shift = haskey(xdata, "vg") ? parse(Int, xdata["vg"][3]) : 0 ;
+    if is_pos_sequence(h)
+        return sind(-30.0 * shift)
+    elseif is_neg_sequence(h)
+        return sind(30.0 * shift)
+    elseif is_zero_sequence(h)
+        return 0.0
+end end
+""
 # i_base_ka = s_base_mva / v_base_kv, see Power System Analysis, pg. 26
-calc_xfmr_current_base(hdata::Dict{String,Any}, bdata::Dict{String,Any}) =
+calc_xfmr_current_base(hdata::Dict{String,Any}, xdata::Dict{String,Any}) =
     [hdata["s_base_mva"] / hdata["nw"]["1"]["bus"][string(nb)]["v_base_kv"] 
-        for nb in [bdata["f_bus"], bdata["t_bus"]]]
+        for nb in [xdata["f_bus"], xdata["t_bus"]]]
 ""
 # i_rms_max = S_nom / s_base_mva / sqrt(3) / min(v_rms_max(f_bus), v_rms_max(t_bus))
-function calc_xfmr_current_rms_max(hdata::Dict{String,Any}, bdata::Dict{String,Any})
-    S_nom       = bdata["rate_a"] 
+function calc_xfmr_current_rms_max(hdata::Dict{String,Any}, xdata::Dict{String,Any})
+    S_nom       = xdata["rate_a"] 
     s_base_mva  = hdata["s_base_mva"]
-    v_rms_max   = [ hdata["nw"]["1"]["bus"][string(bdata["f_bus"])]["v_rms_max"],
-                    hdata["nw"]["1"]["bus"][string(bdata["t_bus"])]["v_rms_max"]]
+    v_rms_max   = [ hdata["nw"]["1"]["bus"][string(xdata["f_bus"])]["v_rms_max"],
+                    hdata["nw"]["1"]["bus"][string(xdata["t_bus"])]["v_rms_max"]]
      
     return S_nom / s_base_mva / sqrt(3) ./ v_rms_max
 end
+
 ""
 collect_xfmr_voltage_magnitude_limits(pm::HarmonicPowerModel, nw::Int) =
     Dict(x => Dict(i => ifelse( nw == fundamental(pm),
@@ -50,51 +77,51 @@ function add_xfmr_hdata!(hdata::Dict{String,Any},
                          fdata::Dict{String,Any}, 
                          xfmr_magn::Dict{String,Any})
 
-    for (nw, ntw) in hdata["nw"], (nb, xfmr) in ntw["xfmr"]
+    for (nw, ntw) in hdata["nw"], (nx, xfmr) in ntw["xfmr"]
         h       = parse(Int, nw)
-        bdata   = fdata["xfmr"][nb]
+        xdata   = fdata["xfmr"][nx]
         if nw == "1"
             xfmr = Dict("id"            => bdata["index"],
                         "nw"            => 2,
                         "bus"           => [bdata["f_bus"], bdata["t_bus"]],
                         "linear_magn"   => isempty(xfmr_magn),
-                        "cnf"           => Char[],
-                        "gnd"           => Bool[],
+                        "cnf"           => calc_xfmr_configuration(hdata, xdata),
+                        "gnd"           => calc_xfmr_grounding(hdata, xdata),
                         "Hᴵ"            => Int[],
                         "Hᴱ"            => Int[],
                         #-----------------------------------#
-                        "x_core"        => [x],
-                        "b_core"        => b,
-                        "g_core"        => g,
+                        "x_core"        => [xdata["xsc"]],
+                        "b_core"        => 0.0,
+                        "g_core"        => xdata["gsh"],
                         #-----------------------------------#
-                        "r_wnd"         => 1,
-                        "b_wnd"         => 0,
-                        "g_wnd"         => 0,
-                        "r_gnd"         => 0,
-                        "x_gnd"         => 0,
+                        "r_wnd"         => [xdata["r1"], xdata["r2"]],
+                        "b_wnd"         => 0.0,
+                        "g_wnd"         => 0.0,
+                        "r_gnd"         => [xdata["re1"], xdata["re2"]],
+                        "x_gnd"         => [xdata["xe1"], xdata["xe2"]],
                         #-----------------------------------#
-                        "tr"            => [1.0],
-                        "ti"            => [0.0],
+                        "tr"            => calc_xfmr_shift_real(hdata, xdata, h),
+                        "ti"            => calc_xfmr_shift_imaginary(hdata, xdata, h),
                         #-----------------------------------#
                         "cxmfr"         => nothing,
                         "cxmfi"         => nothing,
                         #-----------------------------------#
-                        "i_base_ka"     => calc_xfmr_current_base(hdata, bdata),
+                        "i_base_ka"     => calc_xfmr_current_base(hdata, xdata),
                         "i_fund_magn"   => [0.0, 0.0],
-                        "i_rms_max"     => calc_xfmr_current_rms_max(hdata, bdata))
+                        "i_rms_max"     => calc_xfmr_current_rms_max(hdata, xdata))
         else
-            xfmr = Dict("x_core"        => x,
-                        "b_core"        => b,
-                        "g_core"        => g,
+            xfmr = Dict("x_core"        => [xdata["xsc"]] .* h,
+                        "b_core"        => 0.0,
+                        "g_core"        => xdata["gsh"] / sqrt(h),
                         #-----------------------------------#
-                        "r_wnd"         => 1,
-                        "b_wnd"         => 0,
-                        "g_wnd"         => 0,
-                        "r_gnd"         => 0,
-                        "x_gnd"         => 0,
+                        "r_wnd"         => [xdata["r1"], xdata["r2"]] .* h,
+                        "b_wnd"         => 0.0,
+                        "g_wnd"         => 0.0,
+                        "r_gnd"         => [xdata["re1"], xdata["re2"]] .* sqrt(h),
+                        "x_gnd"         => [xdata["xe1"], xdata["xe2"]] .* h,
                         #-----------------------------------#
-                        "tr"            => [1.0],
-                        "ti"            => [0.0],
+                        "tr"            => calc_xfmr_shift_real(hdata, xdata, h),
+                        "ti"            => calc_xfmr_shift_imaginary(hdata, xdata, h),
                         #-----------------------------------#
                         "cxmfr"         => nothing,
                         "cxmfi"         => nothing)
@@ -445,8 +472,8 @@ function constraint_xfmr_core_magnetization(pm::HarmonicPowerModel, n::Int, x, b
     cmrx = _PMs.var(pm, n, :cmrx, x)
     cmix = _PMs.var(pm, n, :cmix, x)
 
-    JuMP.@constraint(pm.model, cmrx == b_core * exr) # to be checked
-    JuMP.@constraint(pm.model, cmix == b_core * exi)
+    JuMP.@constraint(pm.model, cmrx == -b_core * exi)
+    JuMP.@constraint(pm.model, cmix ==  b_core * exr)
 end
 ""
 function constraint_xfmr_core_magnetization(pm::HarmonicPowerModel, n::Int, x, cxmfr, cxmfi)
@@ -456,8 +483,8 @@ function constraint_xfmr_core_magnetization(pm::HarmonicPowerModel, n::Int, x, c
     ex      = reduce(vcat,[[_PMs.var(pm, nw, :exr, x), _PMs.var(pm, nw, :exi, x)] 
                             for nw in _PMs.ref(pm, n, :xfmr, x, "Hᴱ")])
 
-    sym_exr = Symbol("exc_a_", n, "_", x) # to be checked
-    sym_exi = Symbol("exc_b_", n, "_", x)
+    sym_exr = Symbol("exc_re_", n, "_", x)
+    sym_exi = Symbol("exc_im_", n, "_", x)
 
     JuMP.register(pm.model, sym_exr, length(ex), cxmfr; autodiff=true)
     JuMP.register(pm.model, sym_exi, length(ex), cxmfi; autodiff=true)

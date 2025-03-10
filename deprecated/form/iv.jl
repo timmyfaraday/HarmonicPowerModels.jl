@@ -58,11 +58,11 @@ end
 # end
 
 # generator
-""
-function variable_gen_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
-    variable_gen_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_gen_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-end
+# ""
+# function variable_gen_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+#     variable_gen_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+#     variable_gen_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+# end
 
 # load 
 ""

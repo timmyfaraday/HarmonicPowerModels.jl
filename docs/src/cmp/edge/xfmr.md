@@ -17,11 +17,11 @@ Currently, only two-winding xfmrs are included, however, the code is written is 
 | bus           | $i$                   | -     | Vector{Int}       | 1             | -         | unique index of the connected buses of the xfmr                       |
 | nw            | $N^{w}$               | -     | Int               | 1             | -         | number of windings of the xfmr                                        |
 | linear_magn   | -                     | -     | Bool              | 1             | true      | boolean indicating linear representation of magnitizing current       |
-| cnf           | -                     | -     | Vector{Char}      | 1             | -         | configuration of the xfmr windings                                    |
-| gnd           | -                     | -     | Vector{Bool}      | 1             | -         | grounding of the xfmr windings                                        |
+| cnf           | -                     | -     | Vector{Char}      | 1             | ['Y',...] | configuration of the xfmr windings                                    |
+| gnd           | -                     | -     | Vector{Bool}      | 1             | [0,...]   | grounding of the xfmr windings                                        |
 | Hᴵ            | -                     | -     | Vector{Int}       | 1             | []        | subset of harmonics with non-linear magnetizing current               |
 | Hᴱ            | -                     | -     | Vector{Int}       | 1             | []        | subset of harmonics with exc. voltages rel. for nl. magn. current     | 
-| x_core        | $x^{core}_{x,h}$      | pu    | Real              | H             | -         | core - series reactance of the xfmr                                   |
+| x_core        | $x^{core}_{x,h}$      | pu    | Vector{Real}      | H             | -         | core - series reactance of the xfmr                                   |
 | b_core        | $b^{core}_{x,h}$      | pu    | Real              | H             | 0         | core - shunt reactance of the xfmr                                    |
 | g_core        | $g^{core}_{x,h}$      | pu    | Real              | H             | -         | core - shunt resistance of the xfmr                                   |
 | tr            | $t^{re}_{x,h}$        | pu    | Real              | H             | -         | ? - real part of the phase shift of the xfmr                       |

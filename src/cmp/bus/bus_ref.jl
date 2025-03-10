@@ -29,15 +29,15 @@ function constraint_ref_voltage(pm::HarmonicPowerModel, i::Int; nw::Int=fundamen
 end
 ""
 function constraint_ref_voltage_fundamental(pm::HarmonicPowerModel, n::Int, i, v_fund_ref)
-    vr = _PMs.var(pm, n, :vr, i)
-    vi = _PMs.var(pm, n, :vi, i)
+    vbr = _PMs.var(pm, n, :vbr, i)
+    vbi = _PMs.var(pm, n, :vbi, i)
 
-    JuMP.@constraint(pm.model, vr == v_fund_ref)
-    JuMP.@constraint(pm.model, vi == 0.0)
+    JuMP.@constraint(pm.model, vbr == v_fund_ref)
+    JuMP.@constraint(pm.model, vbi == 0.0)
 end
 ""
 function constraint_ref_voltage_harmonic(pm::HarmonicPowerModel, n::Int, i, v_fund_ref)
-    vi = _PMs.var(pm, n, :vi, i)
+    vbi = _PMs.var(pm, n, :vbi, i)
 
-    JuMP.@constraint(pm.model, vi == 0.0)
+    JuMP.@constraint(pm.model, vbi == 0.0)
 end

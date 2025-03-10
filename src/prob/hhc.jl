@@ -13,33 +13,12 @@
 ################################################################################
 
 ""
-function solve_hhc(hdata, model_type::Type, optimizer; kwargs...)
-    # update hdata for chosen fairness principle
-    update_hdata_with_fairness_principle_data!(hdata, model_type, optimizer) 
-
-    # solve non-linear harmonic hosting capacity problem
-    return _PMs.solve_model(hdata, model_type, optimizer, build_hhc; 
-                                ref_extensions=[ref_add_filter!,
-                                                ref_add_xfmr!], 
-                                solution_processors=[ _HPM.sol_data_model!], 
+solve_hhc(hdata, model_type::Type, optimizer; kwargs...) = 
+    _PMs.solve_model(hdata, model_type, optimizer, build_hhc; 
+                                ref_extensions=[ref_add_xfmr!,
+                                                ref_add_filter!,
+                                                ref_add_hsrc!], 
                                 multinetwork=true, kwargs...)
-end
-""
-function solve_hhc(hdata, model_type::Type, hhc_optimizer, hpf_optimizer; kwargs...)
-    # solve fundamental harmonic power flow problem and update hdata
-    #update_hdata_with_fundamental_hpf_results!(hdata, dHHC_NLP, hpf_optimizer)
-
-    # update hdata for chosen fairness principle
-    update_hdata_with_fairness_principle_data!(hdata, dHHC_SOC, hhc_optimizer) 
-
-    # solve second order cone harmonic hosting capacity problem
-    return _PMs.solve_model(hdata, model_type, hhc_optimizer, build_hhc; 
-                                ref_extensions=[ref_add_filter!,
-                                                ref_add_xfmr!], 
-                                solution_processors=[ _HPM.sol_data_model!], 
-                                multinetwork=true, kwargs...)
-end
-
 ""
 function build_hhc(pm::HarmonicPowerModel)
     # variables 
@@ -58,7 +37,7 @@ function build_hhc(pm::HarmonicPowerModel)
         variable_xfmr_current(pm, nw=n, bounded=true)
 
         ## unit current variables
-        variable_filter_current(pm, nw=n, bounded=false)
+        # variable_filter_current(pm, nw=n, bounded=false)
         variable_gen_current(pm, nw=n, bounded=true)
         variable_hsrc_current(pm, nw=n, bounded=true)
     end
@@ -81,8 +60,8 @@ function build_hhc(pm::HarmonicPowerModel)
     for g in ids(pm, :gen)
         constraint_gen_current_rms_limit(pm, g)
 
-        _PMs.constraint_gen_active_bounds(pm, g, nw=fundamental(pm))   # CHECK IF NEEDED
-        _PMs.constraint_gen_reactive_bounds(pm, g, nw=fundamental(pm))    # CHECK IF NEEDED
+        constraint_gen_power_active_fundamental_limit(pm, g)
+        constraint_gen_power_reactive_fundamental_limit(pm, g)
     end
     ### xfmr 
     for x in ids(pm, :xfmr)
@@ -122,7 +101,7 @@ function build_hhc(pm::HarmonicPowerModel)
 
         ### harmonic source
         for s in _PMs.ids(pm, :source, nw=n)
-            constraint_hsrc_current(pm, s, nw = n)
+            constraint_hsrc_current(pm, s, nw=n)
         end
 
         ### xfmr

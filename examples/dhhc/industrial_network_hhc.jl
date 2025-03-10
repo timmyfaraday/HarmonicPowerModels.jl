@@ -55,11 +55,11 @@ data["principle"] = "absolute equality"
 
 # solve HHC problem -- NLP
 hdata_nlp_ae = HPM.replicate(data, H=H)
-results_hhc_nlp_ae = HPM.solve_hhc(hdata_nlp_ae, dHHC_NLP, solver_nlp)
+results_hhc_nlp_ae = HPM.solve_hhc(hdata_nlp_ae, HarmonicPowerModel, solver_nlp)
 
 # solve HHC problem -- SOC 
 hdata_soc_ae = HPM.replicate(data, H=H)
-results_hhc_soc_ae = HPM.solve_hhc(hdata_soc_ae, dHHC_SOC, solver_nlp, solver_nlp)
+results_hhc_soc_ae = HPM.solve_hhc(hdata_soc_ae, dHHCPowerModel, solver_nlp, solver_nlp)
 
 ## maximum efficiency (me) #####################################################
 data["principle"] = "maximum efficiency"

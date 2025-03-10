@@ -55,40 +55,40 @@ end
 function variable_bus_voltage_real(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     v_lim   = collect_bus_voltage_magnitude_limits(pm, nw)
 
-    vr      = _PMs.var(pm, nw)[:vr] = 
+    vbr     = _PMs.var(pm, nw)[:vbr] = 
                 JuMP.@variable( pm.model,
                                 [i in _PMs.ids(pm, nw, :bus)], 
-                                base_name="$(nw)_vr",
+                                base_name="$(nw)_vbr",
                                 start=v_lim)
 
     if bounded
         for i in _PMs.ids(pm, nw, :bus)
-            JuMP.set_lower_bound(vr[i], -v_lim[i])
-            JuMP.set_upper_bound(vr[i],  v_lim[i])
+            JuMP.set_lower_bound(vbr[i], -v_lim[i])
+            JuMP.set_upper_bound(vbr[i],  v_lim[i])
         end
     end
 
-    report && _PMs.sol_component_value(pm, nw, :bus, :vr, _PMs.ids(pm, nw, :bus), vr)
+    report && _PMs.sol_component_value(pm, nw, :bus, :vbr, _PMs.ids(pm, nw, :bus), vbr)
 end
 
 ""
 function variable_bus_voltage_imaginary(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     v_lim   = collect_bus_voltage_magnitude_limits(pm, nw)
 
-    vi      = _PMs.var(pm, nw)[:vi] = 
+    vbi     = _PMs.var(pm, nw)[:vbi] = 
                 JuMP.@variable( pm.model,
                                 [i in _PMs.ids(pm, nw, :bus)], 
-                                base_name="$(nw)_vi",
+                                base_name="$(nw)_vbi",
                                 start=0.0)
 
     if bounded
         for i in _PMs.ids(pm, nw, :bus)
-            JuMP.set_lower_bound(vi[i], -v_lim[i])
-            JuMP.set_upper_bound(vi[i],  v_lim[i])
+            JuMP.set_lower_bound(vbi[i], -v_lim[i])
+            JuMP.set_upper_bound(vbi[i],  v_lim[i])
         end
     end
 
-    report && _PMs.sol_component_value(pm, nw, :bus, :vi, _PMs.ids(pm, nw, :bus), vi)
+    report && _PMs.sol_component_value(pm, nw, :bus, :vbi, _PMs.ids(pm, nw, :bus), vbi)
 end
 
 # constraints ##################################################################
@@ -113,8 +113,8 @@ function constraint_bus_current_balance(pm::HarmonicPowerModel, i::Int; nw::Int=
 end
 ""
 function constraint_bus_current_balance(pm::HarmonicPowerModel, n::Int, i, bus_arcs, bus_arcs_xfmr, bus_filters, bus_gens, bus_loads, bus_gs, bus_bs, gen_bg)
-    vr = _PMs.var(pm, n, :vr, i)
-    vi = _PMs.var(pm, n, :vi, i)
+    vbr = _PMs.var(pm, n, :vbr, i)
+    vbi = _PMs.var(pm, n, :vbi, i)
 
     cr = _PMs.var(pm, n, :cr)
     ci = _PMs.var(pm, n, :ci)
@@ -162,17 +162,17 @@ function constraint_bus_voltage_ihd_limit(pm::HarmonicPowerModel, i::Int; nw::In
 end
 ""
 function constraint_bus_voltage_ihd_limit(pm::HarmonicPowerModel, n::Int, i, v_ihd_max, v_fund_magn)
-    vr = [_PMs.var(pm, 1, :vr, i), _PMs.var(pm, n, :vr, i)] 
-    vi = [_PMs.var(pm, 1, :vi, i), _PMs.var(pm, n, :vi, i)]
+    vbr = [_PMs.var(pm, 1, :vbr, i), _PMs.var(pm, n, :vbr, i)] 
+    vbi = [_PMs.var(pm, 1, :vbi, i), _PMs.var(pm, n, :vbi, i)]
 
-    JuMP.@constraint(pm.model, (vr[2]^2 + vi[2]^2) <= v_ihd_max^2 * (vr[1]^2 + vi[1]^2))
+    JuMP.@constraint(pm.model, (vbr[2]^2 + vbi[2]^2) <= v_ihd_max^2 * (vr[1]^2 + vi[1]^2))
 end
 ""
 function constraint_bus_voltage_ihd_limit(pm::dHHCPowerModel, n::Int, i, v_ihd_max, v_fund_magn)
-    vr = _PMs.var(pm, n, :vr, i)
-    vi = _PMs.var(pm, n, :vi, i)
+    vbr = _PMs.var(pm, n, :vbr, i)
+    vbi = _PMs.var(pm, n, :vbi, i)
 
-    JuMP.@constraint(pm.model, [v_ihd_max * v_fund_magn; vcat(vr, vi)] in JuMP.SecondOrderCone())
+    JuMP.@constraint(pm.model, [v_ihd_max * v_fund_magn; vcat(vbr, vbi)] in JuMP.SecondOrderCone())
 end
 
 ## root-mean-square voltage limit ##############################################
@@ -186,18 +186,18 @@ function constraint_bus_voltage_rms_limit(pm::HarmonicPowerModel, i::Int)
 end
 ""
 function constraint_bus_voltage_rms_limit(pm::HarmonicPowerModel, i, v_rms_min, v_rms_max, v_fund_magn)
-    vr = [_PMs.var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
-    vi = [_PMs.var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
+    vbr = [_PMs.var(pm, n, :vbr, i) for n in sorted_nw_ids(pm)]
+    vbi = [_PMs.var(pm, n, :vbi, i) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, v_rms_min^2 <= sum(vr.^2 + vi.^2)                )
-    JuMP.@constraint(pm.model,                sum(vr.^2 + vi.^2)  <= v_rms_max^2)
+    JuMP.@constraint(pm.model, v_rms_min^2 <= sum(vbr.^2 + vbi.^2)                )
+    JuMP.@constraint(pm.model,                sum(vbr.^2 + vbi.^2)  <= v_rms_max^2)
 end
 ""
 function constraint_bus_voltage_rms_limit(pm::dHHCPowerModel, i, v_rms_max, v_fund_magn)
-    vr = [_PMs.var(pm, n, :vr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
-    vi = [_PMs.var(pm, n, :vi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+    vbr = [_PMs.var(pm, n, :vbr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+    vbi = [_PMs.var(pm, n, :vbi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    JuMP.@constraint(pm.model, [sqrt(v_rms_max^2 - v_fund_magn^2); vcat(vr, vi)] in JuMP.SecondOrderCone())
+    JuMP.@constraint(pm.model, [sqrt(v_rms_max^2 - v_fund_magn^2); vcat(vbr, vbi)] in JuMP.SecondOrderCone())
 end
 
 ## total harmonic voltage distortion limit #####################################
@@ -210,15 +210,15 @@ function constraint_bus_voltage_thd_limit(pm::HarmonicPowerModel, i::Int)
 end
 ""
 function constraint_bus_voltage_thd_limit(pm::HarmonicPowerModel, i, v_thd_max, v_fund_magn)
-    vr = [_PMs.var(pm, n, :vr, i) for n in sorted_nw_ids(pm)]
-    vi = [_PMs.var(pm, n, :vi, i) for n in sorted_nw_ids(pm)]
+    vbr = [_PMs.var(pm, n, :vbr, i) for n in sorted_nw_ids(pm)]
+    vbi = [_PMs.var(pm, n, :vbi, i) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, sum(vr[2:end].^2 + vi[2:end].^2) <= v_thd_max^2 * (vr[1]^2 + vi[1]^2))
+    JuMP.@constraint(pm.model, sum(vr[2:end].^2 + vi[2:end].^2) <= v_thd_max^2 * (vbr[1]^2 + vbi[1]^2))
 end
 ""
-function constraint_bus_voltage_thd_limit(pm::HarmonicPowerModel, i, v_thd_max, v_fund_magn)
-    vr = [_PMs.var(pm, n, :vr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
-    vi = [_PMs.var(pm, n, :vi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+function constraint_bus_voltage_thd_limit(pm::dHHCPowerModel, i, v_thd_max, v_fund_magn)
+    vbr = [_PMs.var(pm, n, :vbr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+    vbi = [_PMs.var(pm, n, :vbi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    JuMP.@constraint(pm.model, [v_thd_max * v_fund_magn; vcat(vr, vi)] in JuMP.SecondOrderCone())
+    JuMP.@constraint(pm.model, [v_thd_max * v_fund_magn; vcat(vbr, vbi)] in JuMP.SecondOrderCone())
 end

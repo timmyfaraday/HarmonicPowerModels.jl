@@ -85,13 +85,14 @@ function init_admittance_matrix!(branch::NamedTuple, nh)
 
     # fill i, j, v for the relevant edges and units
     init_admittance_matrix_branch!(i, j, v, branch, nh)    
-    # init_admittance_matrix_xfmr...
+    # init_admittance_matrix_xfmr!...
     
     # create sparse matrix
     y       = sparse(i, j, v)
 
     # find idx for the relevant edges and units 
     fill_branch_idx!(branch, y)
+    # fill_xfmr_idx!...
 end
 ""
 function update_admittance_matrix!(y)

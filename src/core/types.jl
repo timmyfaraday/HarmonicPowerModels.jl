@@ -13,15 +13,9 @@
 ################################################################################
 
 ""
-mutable struct HarmonicPowerModel   <: _PMs.AbstractIVRModel    _PMs.@pm_fields end
-mutable struct dHHCPowerModel       <: HarmonicPowerModel       _PMs.@pm_fields end
+abstract type AbstractHarmonicModel <: _PMs.AbstractIVRModel end
+abstract type AbstractHHCModel      <: AbstractHarmonicModel end
 
-"""
-Deterministic Harmonic Hosting Capacity (NLP)
-"""
-mutable struct dHHC_NLP <: _PMs.AbstractIVRModel _PMs.@pm_fields end
-
-"""
-Deterministic Harmonic Hosting Capacity (SOC)
-"""
-mutable struct dHHC_SOC <: _PMs.AbstractIVRModel _PMs.@pm_fields end
+""
+mutable struct HarmonicPowerModel   <: AbstractHarmonicModel    _PMs.@pm_fields end
+mutable struct dHHCPowerModel       <: AbstractHHCModel         _PMs.@pm_fields end

@@ -10,7 +10,8 @@
 # v0.3.0 - init                                                                #
 ################################################################################
 
-# variable fairness principle ################################################
+# variables ####################################################################
+## fairness principle variables ################################################
 ""
 function variable_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     # maximum efficiency
@@ -25,13 +26,13 @@ function variable_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundam
 
     # maximin
     if pm.data["principle"] == "maximin"
-        cmh = _PMs.var(pm, nw)[:cmh] = JuMP.@variable(pm.model, base_name="$(nw)_cmh",
-                start = 0.0
-        )
+        cmh = _PMs.var(pm, nw)[:cmh] = 
+                JuMP.@variable( pm.model, 
+                                base_name="$(nw)_cmh",
+                                start=0.0)
 
         if bounded
             JuMP.set_lower_bound(cmh, 0.0)
-            # JuMP.set_upper_bound(cmd[d], c_rating)                            # @Hakan: dit is ook bij :cmd, van waar komt deze c rating, the fundamental component - wat als die er niet is?
         end
 
         report && (_PMs.sol(pm, nw, :fairness)[:cmh] = cmh)
@@ -39,9 +40,10 @@ function variable_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundam
 
     # Kalai-Smorodinsky bargaining
     if pm.data["principle"] == "Kalai-Smorodinsky bargaining"
-        fh =  _PMs.var(pm, nw)[:fh] = JuMP.@variable(pm.model, base_name="$(nw)_fh",
-                start = 0.0
-        )
+        fh  = _PMs.var(pm, nw)[:fh] = 
+                JuMP.@variable( pm.model, 
+                                base_name="$(nw)_fh",
+                                start=0.0)
 
         if bounded
             JuMP.set_lower_bound(fh, 0.0)
@@ -49,18 +51,18 @@ function variable_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundam
         end
 
         report && (_PMs.sol(pm, nw, :fairness)[:fh] = fh)
-    end
-end
+end end
 
-# constraint fairness principle ################################################
+# constraints ##################################################################
+## fairness principle constraints ##############################################
 ""
 function constraint_fairness_principle(pm::HarmonicPowerModel; nw::Int=fundamental(pm))
-    source_ids = sort(collect(_PMs.ids(pm, :source nw=nw)))
+    ids = sort(collect(_PMs.ids(pm, :hscr, nw=nw)))
 
-    constraint_fairness_principle(pm, nw, source_ids)
+    constraint_fairness_principle(pm, nw, ids)
 end
 ""
-function constraint_fairness_principle(pm::HarmonicPowerModel, n, source_ids)
+function constraint_fairness_principle(pm::HarmonicPowerModel, n, ids)
     # maximum efficiency
     if pm.data["principle"] == "maximum efficiency"
         # no additional constraints
@@ -68,10 +70,10 @@ function constraint_fairness_principle(pm::HarmonicPowerModel, n, source_ids)
 
     # absolute equality
     if pm.data["principle"] == "absolute equality"
-        csm = [_PMs.var(pm, n, :csm, s) for s in source_ids]
+        csm = [_PMs.var(pm, n, :csm, s) for s in ids]
 
-        for s in source_ids[2:end]
-            JuMP.@constraint(pm.model, csm[first(source_ids)] == csm[s]) ## to be CHECKED
+        for s in ids[2:end]
+            JuMP.@constraint(pm.model, csm[first(ids)] == csm[s])
         end 
     end
 
@@ -79,7 +81,7 @@ function constraint_fairness_principle(pm::HarmonicPowerModel, n, source_ids)
     if pm.data["principle"] == "maximin"
         cmh = _PMs.var(pm, n, :cmh)
 
-        for s in source_ids
+        for s in ids
             csm = _PMs.var(pm, n, :csm, s)
 
             JuMP.@constraint(pm.model, cmh <= csm)
@@ -90,7 +92,7 @@ function constraint_fairness_principle(pm::HarmonicPowerModel, n, source_ids)
     if pm.data["principle"] == "Kalai-Smorodinsky bargaining"
         fh = _PMs.var(pm, n, :fh)
 
-        for s in source_ids
+        for s in ids
             csm = _PMs.var(pm, n, :csm, s)
             csmax = _PMs.ref(pm, n, :source, s, "csmax")
 
@@ -99,12 +101,14 @@ function constraint_fairness_principle(pm::HarmonicPowerModel, n, source_ids)
     end
 end
 
-# objective harmonic power flow (hpf) ##############################################
+# objective ####################################################################
+## harmonic power flow objective ###############################################
 ""
 function objective_power_flow(pm::_PMs.AbstractIVRModel)
     JuMP.@objective(pm.model, Min, 0.0)
 end
-# objective harmonic optimal power flow (hopf) #####################################
+
+## voltage distortion minimization objective ###################################
 ""
 function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel) 
     bus_id = pm.data["bus_id"]
@@ -114,13 +118,14 @@ function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel)
 
     JuMP.@objective(pm.model, Min, sum(vr.^2 + vi.^2))
 end
-# objective harmonic hosting capacity (hhc) ########################################
+
+## harmonic hosting capacity objective #########################################
 ""
 function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
     # maximum efficiency
     if pm.data["principle"] == "maximum efficiency"
         csm = [_PMs.var(pm, n, :csm, s) for n in _PMs.nw_ids(pm) 
-                                        for l in _PMs.ids(pm, :source, nw=n) 
+                                        for s in _PMs.ids(pm, :hscr, nw=n) 
                                         if n ≠ fundamental(pm)]
     
         JuMP.@objective(pm.model, Max, sum(csm))
@@ -128,8 +133,8 @@ function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
 
     # absolute equality
     if pm.data["principle"] == "absolute equality"
-        csm = [_PMs.var(pm, n, :csm, l) for n in _PMs.nw_ids(pm) 
-                                        for l in _PMs.ids(pm, :source, nw=n) 
+        csm = [_PMs.var(pm, n, :csm, s) for n in _PMs.nw_ids(pm) 
+                                        for s in _PMs.ids(pm, :hscr, nw=n) 
                                         if n ≠ fundamental(pm)]
     
         JuMP.@objective(pm.model, Max, sum(csm)) 

@@ -11,28 +11,8 @@
 # v0.2.1 - reviewed TVA                                                        #
 ################################################################################
 
-# filter
-""
-function ref_add_filter!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    _PMs.apply_pm!(_ref_add_filter!, ref, data)
-end
-""
-function _ref_add_filter!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    if !haskey(ref, :filter)
-        ref[:filter] = Dict()
-        ref[:bus_filters] = Dict((i, []) for (i,bus) in ref[:bus])
-    else
-        ref[:filter] = Dict(f for f in ref[:filter] if f.second["bus"] in keys(ref[:bus]))
-
-        bus_filters = Dict((i, Int[]) for (i,bus) in ref[:bus])
-        for (i,filter) in ref[:filter]
-            push!(bus_filters[filter["bus"]], i)
-        end
-        ref[:bus_filters] = bus_filters
-    end
-end
-
-# xfmr
+# edges ########################################################################
+## xfmr ########################################################################
 ""
 function ref_add_xfmr!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     _PMs.apply_pm!(_ref_add_xfmr!, ref, data)
@@ -60,23 +40,46 @@ function _ref_add_xfmr!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
         ref[:bus_arcs_xfmr] = bus_arcs_xfmr
     end
 end
-# harmonic source
+
+# units ########################################################################
+## hscr ########################################################################
 ""
 function ref_add_hsrc!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
     _PMs.apply_pm!(_ref_add_hsrc!, ref, data)
 end
 ""
 function _ref_add_hsrc!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    if !haskey(ref, :source)
-        ref[:source] = Dict()
-        ref[:bus_sources] = Dict((i, []) for (i,bus) in ref[:bus])
+    if !haskey(ref, :hscr)
+        ref[:hscr] = Dict()
+        ref[:bus_hscr] = Dict((i, []) for (i,bus) in ref[:bus])
     else
-        ref[:source] = Dict(f for f in ref[:source] if f.second["bus"] in keys(ref[:bus]))
+        ref[:hscr] = Dict(f for f in ref[:hsrc] if f.second["bus"] in keys(ref[:bus]))
 
-        bus_sources = Dict((i, Int[]) for (i,bus) in ref[:bus])
-        for (i,source) in ref[:source]
-            push!(bus_sources[filter["source_bus"]], i)
+        bus_hscr = Dict((i, Int[]) for (i,bus) in ref[:bus])
+        for (i,hscr) in ref[:hscr]
+            push!(bus_hscr[filter["hsrc_bus"]], i)
         end
-        ref[:bus_sources] = bus_sources
-    end
+        ref[:bus_hscr] = bus_hscr
+end end
+
+## filter ###################################################################### 
+""
+function ref_add_filter!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    _PMs.apply_pm!(_ref_add_filter!, ref, data)
 end
+""
+function _ref_add_filter!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    if !haskey(ref, :filter)
+        ref[:filter] = Dict()
+        ref[:bus_filters] = Dict((i, []) for (i,bus) in ref[:bus])
+    else
+        ref[:filter] = Dict(f for f in ref[:filter] if f.second["bus"] in keys(ref[:bus]))
+
+        bus_filters = Dict((i, Int[]) for (i,bus) in ref[:bus])
+        for (i,filter) in ref[:filter]
+            push!(bus_filters[filter["bus"]], i)
+        end
+        ref[:bus_filters] = bus_filters
+end end
+
+
