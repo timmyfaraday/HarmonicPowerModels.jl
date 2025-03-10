@@ -10,48 +10,22 @@
 # v0.3.0 - init                                                                #
 ################################################################################
 
+# util #########################################################################
 ""
-init_branch_data(branch::Dict{String,Any}) = 
-   (idx_s_fr    = zeros(Int, length(branch)),
-    idx_s_to    = zeros(Int, length(branch)),
-    idx_sh_fr   = zeros(Int, length(branch)),
-    idx_sh_to   = zeros(Int, length(branch)),
-    fr          = Int[br["bus_fr"] for br in values(branch)],
-    to          = Int[br["bus_to"] for br in values(branch)],
-    r           = Float64[br["r"] for br in values(branch)],
-    x           = Float64[br["x"] for br in values(branch)],
-    b_fr        = Float64[br["b_fr"] for br in values(branch)],
-    g_fr        = Float64[br["g_fr"] for br in values(branch)],
-    b_to        = Float64[br["b_to"] for br in values(branch)],
-    g_to        = Float64[br["g_to"] for br in values(branch)])
-
+function add!(i::Vector{Int}, j::Vector{Int}, v::Vector{Complex}, I::Int, J::Int, V::Complex)
+    push!(i, I)
+    push!(j, J)
+    push!(v, V)
+end
 ""
-function init_admittance_matrix_branch!(i::Vector{Int}, j::Vector{Int}, v::Vector{Complex}, h::Float64, branch::NamedTuple)
-    for nb in 1:length(branch[:idx])
-        # 1) series admittance on-diagonal
-        push!(i, branch["fr"][nb])
-        push!(j, branch["fr"][nb])
-        push!(v, admittance_branch_series_ondiag(branch["r"][nb], branch["x"][nb], h))
-        push!(i, branch["to"][nb])
-        push!(j, branch["to"][nb])
-        push!(v, admittance_branch_series_ondiag(branch["r"][nb], branch["x"][nb], h))
-        # 2) series admittance off-diagonal
-        push!(i, branch["fr"][nb])
-        push!(j, branch["to"][nb])
-        push!(v, admittance_branch_series_offdiag(branch["r"][nb], branch["x"][nb], h))
-        push!(i, branch["to"][nb])
-        push!(j, branch["fr"][nb])
-        push!(v, admittance_branch_series_offdiag(branch["r"][nb], branch["x"][nb], h))
-        # 3) shunt admittance on-diagonal
-        push!(i, branch["fr"][nb])
-        push!(j, branch["fr"][nb])
-        push!(v, admittance_branch_shunt_ondiag(branch["b_fr"][nb], branch["g_fr"][nb], h))
-        push!(i, branch["to"][nb])
-        push!(j, branch["to"][nb])
-        push!(v, admittance_branch_shunt_ondiag(branch["b_fr"][nb], branch["g_to"][nb], h))
-    end
+function find_sparse_matrix_idx(A::_SPA.SparseMatrixCSC, i::Int, j::Int)
+    nzr     = nzrange(A,j)
+    rows    = view(rowvals(A),nzr)
+    return nzr[searchsortedfirst(rows,i)]
 end
 
+# cmp ##########################################################################
+## branch ######################################################################
 ""
 admittance_branch_series_ondiag(r::Float64, x::Float64, h::Float64) = 
     1 / (sqrt(h) * r + im * h * x)
@@ -63,43 +37,123 @@ admittance_branch_shunt_ondiag(b::Float64, g::Float64, h::Float64) =
    g / sqrt(h) + im * h * b
 
 ""
-function fill_branch_idx!(branch::NamedTuple, y::SparseMatrixCSC)
-    for nb in 1:length(branch[:idx])
+init_branch_data(branch::Dict{String,Any}) = 
+   (Nb          = length(branch),
+    idx_s_fr    = zeros(Int, length(branch)),
+    idx_s_to    = zeros(Int, length(branch)),
+    idx_sh_fr   = zeros(Int, length(branch)),
+    idx_sh_to   = zeros(Int, length(branch)),
+    fr          = Int[br["bus_fr"] for br in values(branch)],
+    to          = Int[br["bus_to"] for br in values(branch)],
+    r           = Float64[br["r"] for br in values(branch)],
+    x           = Float64[br["x"] for br in values(branch)],
+    b_fr        = Float64[br["b_fr"] for br in values(branch)],
+    g_fr        = Float64[br["g_fr"] for br in values(branch)],
+    b_to        = Float64[br["b_to"] for br in values(branch)],
+    g_to        = Float64[br["g_to"] for br in values(branch)])
+""
+function fill_branch_idx!(branch::NamedTuple, y::_SPA.SparseMatrixCSC)
+    for nb in 1:branch[:Nb]
         branch[:idx_s_fr][nb]   = find_sparse_matrix_idx(y, branch[:fr][nb], branch[:to][nb])
         branch[:idx_s_to][nb]   = find_sparse_matrix_idx(y, branch[:to][nb], branch[:fr][nb])
         branch[:idx_sh_fr][nb]  = find_sparse_matrix_idx(y, branch[:fr][nb], branch[:fr][nb])
         branch[:idx_sh_to][nb]  = find_sparse_matrix_idx(y, branch[:to][nb], branch[:to][nb])
 end end
 
+## xfmr ########################################################################
 ""
-function find_sparse_index(A,i,j)
-    nzr = nzrange(A,j)
-    rows = view(rowvals(A),nzr)
-    return nzr[searchsortedfirst(rows,i)]
-end
+admittance_xfmr_series_ondiag(r::Float64, x::Float64, h::Float64) = 
+    1 / (sqrt(h) * r + im * h * x)
+""
+admittance_xfmr_series_offdiag(r::Float64, x::Float64, h::Float64) =
+   -1 / (sqrt(h) * r + im * h * x)
+""
+admittance_xfmr_shunt_ondiag(b::Float64, g::Float64, h::Float64) = 
+   g / sqrt(h) + im * b / h
+""
+init_xfmr_data(xfmr::Dict{String,Any}) = 
+   (Nx          = length(xfmr),
+    idx_s_fr    = zeros(Int, length(xfmr)),
+    idx_s_to    = zeros(Int, length(xfmr)), 
+    idx_sh_to   = zeros(Int, length(xfmr)),
+    fr          = Int[xf["bus_fr"] for xf in values(xfmr)], 
+    to          = Int[xf["bus_to"] for xf in values(xfmr)],
+    r           = Float64[xf["r1"] + xf["r2"] for xf in values(xfmr)],
+    x           = Float64[xf["xsc"] for xf in values(xfmr)],
+    b           = zoeros(Float64, length(xfmr)),
+    g           = Float64[xf["g"] for xf in values(xfmr)])
+""
+function fill_xfmr_idx!(xfmr::NamedTuple, y::_SPA.SparseMatrixCSC)
+    for nx in 1:xfmr[:Nx]
+        xfmr[:idx_s_fr][nx]   = find_sparse_matrix_idx(y, xfmr[:fr][nx], xfmr[:to][nx])
+        xfmr[:idx_s_to][nx]   = find_sparse_matrix_idx(y, xfmr[:to][nx], xfmr[:fr][nx])
+        xfmr[:idx_sh_to][nx]  = find_sparse_matrix_idx(y, xfmr[:to][nx], xfmr[:to][nx])
+end end
 
+# init #########################################################################
 ""
-function init_admittance_matrix!(branch::NamedTuple, nh)
+function init_admittance_matrix!(branch::NamedTuple, xfmr::NamedTuple, nh::Float64)
     # init full matrix idxs i and j, and corresponding values v
     i, j, v = Int[], Int[], Complex[]
 
     # fill i, j, v for the relevant edges and units
-    init_admittance_matrix_branch!(i, j, v, branch, nh)    
-    # init_admittance_matrix_xfmr!...
+    for nb in 1:branch[:Nb]
+        fr = branch[:fr][nb]
+        to = branch[:to][nb]
+        add!(i, j, v, fr, fr, admittance_branch_series_ondiag(branch[:r][nb], branch[:x][nb], h))
+        add!(i, j, v, to, to, admittance_branch_series_ondiag(branch[:r][nb], branch[:x][nb], h))
+        add!(i, j, v, fr, to, admittance_branch_series_offdiag(branch[:r][nb], branch[:x][nb], h))
+        add!(i, j, v, to, fr, admittance_branch_series_offdiag(branch[:r][nb], branch[:x][nb], h))
+        add!(i, j, v, fr, fr, admittance_branch_shunt_ondiag(branch[:b_fr][nb], branch[:g_fr][nb], h))
+        add!(i, j, v, to, to, admittance_branch_shunt_ondiag(branch[:b_to][nb], branch[:g_to][nb], h))
+    end
+
+    for nx in 1:xfmr[:Nx]
+        fr = xfmr[:fr][nx]
+        to = xfmr[:to][nx]
+        add!(i, j, v, fr, fr, admittance_xfmr_series_ondiag(xfmr[:r][nx], xfmr[:x][nx], h))
+        add!(i, j, v, to, to, admittance_xfmr_series_ondiag(xfmr[:r][nx], xfmr[:x][nx], h))
+        add!(i, j, v, fr, to, admittance_xfmr_series_offdiag(xfmr[:r][nx], xfmr[:x][nx], h))
+        add!(i, j, v, to, fr, admittance_xfmr_series_offdiag(xfmr[:r][nx], xfmr[:x][nx], h))
+        add!(i, j, v, to, to, admittance_xfmr_shunt_ondiag(xfmr[:b][nx], xfmr[:g][nx], h))
+    end
     
     # create sparse matrix
     y       = sparse(i, j, v)
 
     # find idx for the relevant edges and units 
     fill_branch_idx!(branch, y)
-    # fill_xfmr_idx!...
+    fill_xfmr_idx!(xfmr, y)
 end
+
+# update #######################################################################
 ""
-function update_admittance_matrix!(y)
-    
+function update_admittance_matrix!(y::_SPA.SparseMatrixCSC, branch::NamedTuple, xfmr::NamedTuple, nh::Float64)
+    # reset the values of the sparse matrix
+    y.nzval .= zeros(Complex, length(y.nzval))
 
+    # fill the values of the sparse matrix related to the branches
+    for nb in 1:branch[:Nb]
+        y[branch[:idx_s_fr][nb]]    += admittance_branch_series_ondiag(branch[:r][nb], branch[:x][nb], nh)
+        y[branch[:idx_s_to][nb]]    += admittance_branch_series_ondiag(branch[:r][nb], branch[:x][nb], nh)
+        y[branch[:idx_s_fr][nb]]    += admittance_branch_series_offdiag(branch[:r][nb], branch[:x][nb], nh)
+        y[branch[:idx_s_to][nb]]    += admittance_branch_series_offdiag(branch[:r][nb], branch[:x][nb], nh)
+        y[branch[:idx_sh_fr][nb]]   += admittance_branch_shunt_ondiag(branch[:b_fr][nb], branch[:g_fr][nb], nh)
+        y[branch[:idx_sh_to][nb]]   += admittance_branch_shunt_ondiag(branch[:b_to][nb], branch[:g_to][nb], nh)
+    end
+
+    # fill the values of the sparse matrix related to the transformers
+    for nx in 1:xfmr[:Nx]
+        y[xfmr[:idx_s_fr][nx]]     += admittance_xfmr_series_ondiag(xfmr[:r][nx], xfmr[:x][nx], nh)
+        y[xfmr[:idx_s_to][nx]]     += admittance_xfmr_series_ondiag(xfmr[:r][nx], xfmr[:x][nx], nh)
+        y[xfmr[:idx_s_fr][nx]]     += admittance_xfmr_series_offdiag(xfmr[:r][nx], xfmr[:x][nx], nh)
+        y[xfmr[:idx_s_to][nx]]     += admittance_xfmr_series_offdiag(xfmr[:r][nx], xfmr[:x][nx], nh)
+        y[xfmr[:idx_sh_to][nx]]    += admittance_xfmr_shunt_ondiag(xfmr[:b][nx], xfmr[:g][nx], nh)
+    end
 end
 
+# main #########################################################################
+""
 function calculate_pos_seq_harmonic_impedance(fdata::Dict{String,Any}, 
                                               h::Vector{Float64}, 
                                               idn::Vector{Int})
@@ -108,9 +162,10 @@ function calculate_pos_seq_harmonic_impedance(fdata::Dict{String,Any},
 
     # init the necessary named tuples for the relevant edges and units
     branch  = init_branch_data(fdata["branch"])
+    xfmr    = init_xfmr_data(fdata["xfmr"])
 
     # init the admittance matrix and update the named tuples
-    y       = init_admittance_matrix!(branch, h[1])
+    y       = init_admittance_matrix!(branch, xfmr, h[1])
 
     # calculate the harmonic impedance for the relevant nodes
     for ni in idn
@@ -122,7 +177,7 @@ function calculate_pos_seq_harmonic_impedance(fdata::Dict{String,Any},
     # enumerate over the harmonics
     for nh in h[2:end]
         # update the admittance matrix
-        y       = update_admittance_matrix!(branch, nh)
+        y       = update_admittance_matrix!(y, branch, xfmr, nh)
         
         # calculate the harmonic impedance for the relevant nodes
         for ni in idn
@@ -132,151 +187,4 @@ function calculate_pos_seq_harmonic_impedance(fdata::Dict{String,Any},
     end end
 
     return z
-end
-
-
-function calculate_pos_seq_harmonic_impedance(data::Dict{String,Any}, 
-    freq::Vector,
-    idn::Vector)
-# get necessary parameters
-Nn = length(data["bus"])
-
-# init harmonic impedance dictionary
-Z = Dict(ni => Complex[] for ni in idn)
-
-# build admittance matrix
-Y = build_admittance_matrix(data)
-
-# enumerate of the required frequency
-for nf in freq
-global h = nf / 50.0
-
-Yh = eval.(Y)
-
-for ni in idn
-I = zeros(Complex, Nn)
-I[ni] = 1.0 + 0.0im
-
-push!(Z[ni], (Yh \ I)[ni])
-end end
-
-# return Z 
-return Z
-end
-
-# gen
-""
-function admittance_gen_shunt_ondiag(gen::Dict{String,Any})
-    r, x = gen["rsc"], gen["xsc"]
-
-    return :(1 / ($(r) * sqrt(h) + im * $(x) * h))
-end
-
-# xfmr
-""
-function admittance_xfmr_series_ondiag(xfmr::Dict{String,Any})
-    r1, r2, x = xfmr["r1"], xfmr["r2"], xfmr["xsc"]
-
-    return :(1 / (sqrt(h) * ($(r1) + $(r2)) + im * h * $(x)))
-end
-""
-function admittance_xfmr_series_offdiag(xfmr::Dict{String,Any})
-    r1, r2, x = xfmr["r1"], xfmr["r2"], xfmr["xsc"]
-
-    return :(-1 / (sqrt(h) * ($(r1) + $(r2)) + im * h * $(x)))
-end
-""
-function admittance_xfmr_shunt_ondiag_to(xfmr::Dict{String,Any})
-    g   = xfmr["gsh"]
-
-    return :($(g) / sqrt(h))
-end
-
-# admittance
-@eval function build_admittance_matrix(data::Dict{String,Any})
-    # init necessary parameters
-    Nn  = length(data["bus"])
-
-    # init admittance matrix 
-    Y = [:(0 * h) for ni in 1:Nn, nj in 1:Nn]
-
-    # add the branch admittances
-    for (nb, branch) in data["branch"]
-        push!(nf,I)
-        push!(nt,J)
-        
-        nf, nt = branch["f_bus"], branch["t_bus"]
-
-        # 1) series admittance on-diagonal
-        Y[nf,nf] = :($(Y[nf,nf]) + $(admittance_branch_series_ondiag(branch)))
-        Y[nt,nt] = :($(Y[nt,nt]) + $(admittance_branch_series_ondiag(branch)))
-
-        # 2) series admittance off-diagonal
-        Y[nf,nt] = :($(Y[nf,nt]) + $(admittance_branch_series_offdiag(branch)))
-        Y[nt,nf] = :($(Y[nt,nf]) + $(admittance_branch_series_offdiag(branch)))
-
-        # 3) shunt admittance on-diagonal
-        Y[nf,nf] = :($(Y[nf,nf]) + $(admittance_branch_shunt_ondiag_fr(branch)))
-        Y[nt,nt] = :($(Y[nt,nt]) + $(admittance_branch_shunt_ondiag_to(branch)))
-    end
-
-    # add the xfmr admittances
-    if haskey(data, "xfmr")
-        for (nx, xfmr) in data["xfmr"]
-            nf, nt = xfmr["f_bus"], xfmr["t_bus"]
-
-            # 1) series admittance on-diagonal
-            Y[nf,nf] = :($(Y[nf,nf]) + $(admittance_xfmr_series_ondiag(xfmr)))
-            Y[nt,nt] = :($(Y[nt,nt]) + $(admittance_xfmr_series_ondiag(xfmr)))
-
-            # 2) series admittance off-diagonal
-            Y[nf,nt] = :($(Y[nf,nt]) + $(admittance_xfmr_series_offdiag(xfmr)))
-            Y[nt,nf] = :($(Y[nt,nf]) + $(admittance_xfmr_series_offdiag(xfmr)))
-
-            # 3) shunt admittance on-diagonal
-            Y[nt,nt] = :($(Y[nt,nt]) + $(admittance_xfmr_shunt_ondiag_to(xfmr)))
-        end
-    end
-
-    # add the gen admittances
-    for (ng, gen) in data["gen"]
-        nn  = gen["gen_bus"]
-        
-        # 1) shunt admittance on-diagonal
-        Y[nn,nn] = :($(Y[nn,nn]) + $(admittance_gen_shunt_ondiag(gen)))
-    end
-
-    # return admittance matrix
-    return Y 
-end
-
-# impedance
-""
-function calculate_pos_seq_harmonic_impedance(data::Dict{String,Any}, 
-                                              freq::Vector,
-                                              idn::Vector)
-    # get necessary parameters
-    Nn = length(data["bus"])
-
-    # init harmonic impedance dictionary
-    Z = Dict(ni => Complex[] for ni in idn)
-
-    # build admittance matrix
-    Y = build_admittance_matrix(data)
-
-    # enumerate of the required frequency
-    for nf in freq
-        global h = nf / 50.0
-        
-        Yh = eval.(Y)
-
-        for ni in idn
-            I = zeros(Complex, Nn)
-            I[ni] = 1.0 + 0.0im
-
-            push!(Z[ni], (Yh \ I)[ni])
-    end end
-
-    # return Z 
-    return Z
 end

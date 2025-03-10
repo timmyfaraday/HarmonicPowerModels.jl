@@ -74,7 +74,7 @@ module HarmonicPowerModels
 
     ## util 
     include("util/ihd.jl")
-    # include("util/imp.jl") 
+    include("util/imp.jl") 
     include("util/ref.jl")
     include("util/thd.jl")
     include("util/xfmr_magn.jl")
@@ -87,5 +87,5 @@ module HarmonicPowerModels
     # export solve_hpf, solve_hopf
     export solve_hhc 
 
-    # # export calculate_pos_seq_harmonic_impedance
+    export calculate_pos_seq_harmonic_impedance
 end
