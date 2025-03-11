@@ -40,7 +40,7 @@ H = [1, 3]
 
 # COMPUTATION ##################################################################
 # solve HPF problem
-hdata   = build_hdata_from_matpower_file(data, H=H)
+hdata   = build_hdata_from_matpower_file(data, prob=:hpf, H=H)
 results = solve_hpf(hdata, PMs.IVRPowerModel, solver)
 
 # RESULTS ######################################################################

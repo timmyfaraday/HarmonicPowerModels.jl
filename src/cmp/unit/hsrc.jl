@@ -41,7 +41,7 @@ function add_hscr_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
             hscr["p_fund"]      = sdata["pd"]
             hscr["q_fund"]      = sdata["qd"]
             #-----------------------------------#
-            hscr["i_base_ka"]   = calc_hscr_current_base(hdata, ldata)
+            hscr["i_base_ka"]   = calc_hscr_current_base(hdata, sdata)
             hscr["csar"]        = calc_hsrc_current_angle_ref(hdata, sdata, h)
         else
             hscr["csar"]        = calc_hsrc_current_angle_ref(hdata, sdata, h)

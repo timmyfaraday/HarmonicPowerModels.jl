@@ -18,7 +18,7 @@ calc_hload_current_base(hdata::Dict{String,Any}, ldata::Dict{String,Any}) =
 function calc_hload_current_rms_max(hdata::Dict{String,Any}, ldata::Dict{String,Any})
     S_nom       = sqrt(ldata["pd"]^2 + ldata["qd"]^2) 
     s_base_mva  = hdata["s_base_mva"]
-    v_rms_max   = hdata["nw"]["1"]["bus"][string(ldata["bus"])]["v_rms_max"]
+    v_rms_max   = hdata["nw"]["1"]["bus"][string(ldata["load_bus"])]["v_rms_max"]
      
     return S_nom / s_base_mva / sqrt(3) ./ v_rms_max
 end
@@ -43,7 +43,7 @@ function add_hload_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
             hload["p_fund"]     = ldata["pd"]
             hload["q_fund"]     = ldata["qd"]
         else
-            hload["hcm"]        = ldata["nh_$nw"]
+            hload["hcm"]        = fdata["bus"][string(ldata["load_bus"])]["nh_$nw"]
 end end end
 
 # variables ####################################################################

@@ -13,17 +13,12 @@
 ################################################################################
 
 ""
-function solve_hpf(hdata, model_type::Type, optimizer; kwargs...)
-    return _PMs.solve_model(hdata, model_type, optimizer, build_hpf; 
-                                ref_extensions=[ref_add_xfmr!,
-                                                ref_add_filter!,
-                                                ref_add_hload!], 
-                                multinetwork=true, kwargs...)
-end
+solve_hpf(hdata, model_type::Type, optimizer; kwargs...) =
+    solve_model(hdata, model_type, optimizer, build_hpf;  
+                    multinetwork=true, kwargs...)
 
 ""
 function build_hpf(pm::HarmonicPowerModel)
-
     # variables
     for n in _PMs.nw_ids(pm)
         ## voltage variables

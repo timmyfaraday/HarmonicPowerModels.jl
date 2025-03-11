@@ -17,14 +17,18 @@ const cmp_list = ["bus", "branch", "xfmr", "hload", "hsrc", "gen"]
 
 # init #########################################################################
 ""
-init_hdata_cmp(fdata::Dict{String,Any}, cmp::String) = 
+init_hdata_cmp(fdata::Dict{String,Any}, cmp::String, prob::Symbol) = 
     if haskey(fdata, cmp)
         Dict{String,Any}(nc => Dict{String,Any}() for nc in keys(fdata[cmp]))
+    elseif cmp == "hload" && prob in [:hpf, :hopf] 
+        Dict{String,Any}(nl => Dict{String,Any}() for nl in keys(fdata["load"]))
+    elseif cmp == "hscr" && prob in [:hhc] 
+        Dict{String,Any}(nl => Dict{String,Any}() for nl in keys(fdata["load"]))
     else
         Dict{String,Any}()
     end
 ""
-function init_hdata(fdata::Dict{String,Any}, H::Vector{Int})
+function init_hdata(fdata::Dict{String,Any}, H::Vector{Int}, prob::Symbol)
     hdata = Dict{String,Any}(   "multinetwork"  => true,
                                 "name"          => fdata["name"], 
                                 "nw"            => Dict{String,Any}(),
@@ -32,7 +36,7 @@ function init_hdata(fdata::Dict{String,Any}, H::Vector{Int})
                                 "s_base_mva"    => fdata["baseMVA"])
 
     for h in H
-        hdata["nw"]["$h"] = Dict{String,Any}(cmp => init_hdata_cmp(fdata, cmp)
+        hdata["nw"]["$h"] = Dict{String,Any}(cmp => init_hdata_cmp(fdata, cmp, prob)
                                                 for cmp in cmp_list)
     end
     
@@ -43,8 +47,9 @@ end
 ""
 function build_hdata_from_matpower_file(fdata::Dict{String,Any}; 
                                         H::Vector{Int}=Int[1], 
+                                        prob::Symbol=:hpf,
                                         xfmr_magn::Dict{String,Any}=Dict{String,Any}())
-    hdata = init_hdata(fdata, H)
+    hdata = init_hdata(fdata, H, prob)
 
     add_bus_hdata!(hdata, fdata)
     add_ref_hdata!(hdata, fdata)
@@ -53,8 +58,8 @@ function build_hdata_from_matpower_file(fdata::Dict{String,Any};
     add_xfmr_hdata!(hdata, fdata, xfmr_magn)
 
     add_gen_hdata!(hdata, fdata)
-    add_hload_hdata!(hdata, fdata)
-    add_hscr_hdata!(hdata, fdata)
+    prob in [:hpf, :hopf]   && add_hload_hdata!(hdata, fdata) 
+    prob in [:hhc]          && add_hscr_hdata!(hdata, fdata)
 
     return hdata
 end
