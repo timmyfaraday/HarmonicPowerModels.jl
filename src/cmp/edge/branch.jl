@@ -18,14 +18,14 @@
 ""
 # i_base_ka = s_base_mva / v_base_kv, see Power System Analysis, pg. 26
 calc_branch_current_base(hdata::Dict{String,Any}, bdata::Dict{String,Any}) =
-    hdata["s_base_mva"] / hdata["nw"]["1"]["bus"][string(bdata["bus_fr"])]["v_base_kv"]
+    hdata["s_base_mva"] / hdata["nw"]["1"]["bus"][string(bdata["f_bus"])]["v_base_kv"]
 ""
 # i_rms_max = S_nom / s_base_mva / sqrt(3) / min(v_rms_max(bus_fr), v_rms_max(bus_to))
 function calc_branch_current_rms_max(hdata::Dict{String,Any}, bdata::Dict{String,Any})
     S_nom       = bdata["rate_a"] 
     s_base_mva  = hdata["s_base_mva"]
-    v_rms_max   = min(hdata["nw"]["1"]["bus"][string(bdata["bus_fr"])]["v_rms_max"],
-                      hdata["nw"]["1"]["bus"][string(bdata["bus_to"])]["v_rms_max"])
+    v_rms_max   = min(hdata["nw"]["1"]["bus"][string(bdata["f_bus"])]["v_rms_max"],
+                      hdata["nw"]["1"]["bus"][string(bdata["t_bus"])]["v_rms_max"])
      
     return S_nom / s_base_mva / sqrt(3) / v_rms_max
 end
@@ -41,27 +41,27 @@ function add_branch_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
         h       = parse(Int, nw)
         bdata   = fdata["branch"][nb]
         if nw == "1"
-            branch = Dict(  "id"            => bdata["index"],
-                            "bus_fr"        => bdata["f_bus"],
-                            "bus_to"        => bdata["bus_to"],
-                            #-----------------------------------#
-                            "r"             => bdata["br_r"],
-                            "x"             => bdata["br_x"],
-                            "g_fr"          => bdata["g_fr"],
-                            "b_fr"          => bdata["b_fr"],
-                            "g_to"          => bdata["g_fr"],
-                            "b_to"          => bdata["b_to"],
-                            #-----------------------------------#
-                            "i_base_ka"     => calc_branch_current_base(hdata, bdata),
-                            "i_fund_magn"   => [0.0, 0.0],
-                            "i_rms_max"     => calc_branch_current_rms_max(hdata, bdata))
+            branch["id"]            = bdata["index"]
+            branch["bus_fr"]        = bdata["f_bus"]
+            branch["bus_to"]        = bdata["t_bus"]
+            #-----------------------------------#
+            branch["r"]             = bdata["br_r"]
+            branch["x"]             = bdata["br_x"]
+            branch["g_fr"]          = bdata["g_fr"]
+            branch["b_fr"]          = bdata["b_fr"]
+            branch["g_to"]          = bdata["g_fr"]
+            branch["b_to"]          = bdata["b_to"]
+            #-----------------------------------#
+            branch["i_base_ka"]     = calc_branch_current_base(hdata, bdata)
+            branch["i_fund_magn"]   = [0.0, 0.0]
+            branch["i_rms_max"]     = calc_branch_current_rms_max(hdata, bdata)
         else
-            branch = Dict(  "r"             => bdata["br_r"] * sqrt(h),
-                            "x"             => bdata["br_x"] * h,
-                            "g_fr"          => bdata["g_fr"] / sqrt(h),
-                            "b_fr"          => bdata["b_fr"] / h,
-                            "g_to"          => bdata["g_fr"] / sqrt(h),
-                            "b_to"          => bdata["b_to"] / h)
+            branch["r"]             = bdata["br_r"] * sqrt(h)
+            branch["x"]             = bdata["br_x"] * h
+            branch["g_fr"]          = bdata["g_fr"] / sqrt(h)
+            branch["b_fr"]          = bdata["b_fr"] / h
+            branch["g_to"]          = bdata["g_fr"] / sqrt(h)
+            branch["b_to"]          = bdata["b_to"] / h
 end end end
 
 # variables ####################################################################

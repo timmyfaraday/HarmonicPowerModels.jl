@@ -13,12 +13,16 @@
 ################################################################################
 
 # component list ###############################################################
-const cmp_list = ["bus", "branch", "xfmr", "hsrc", "gen"]
+const cmp_list = ["bus", "branch", "xfmr", "hload", "hsrc", "gen"]
 
 # init #########################################################################
 ""
 init_hdata_cmp(fdata::Dict{String,Any}, cmp::String) = 
-    Dict{String,Any}(nc => Dict{String,Any} for nc in keys(fdata[cmp]))
+    if haskey(fdata, cmp)
+        Dict{String,Any}(nc => Dict{String,Any}() for nc in keys(fdata[cmp]))
+    else
+        Dict{String,Any}()
+    end
 ""
 function init_hdata(fdata::Dict{String,Any}, H::Vector{Int})
     hdata = Dict{String,Any}(   "multinetwork"  => true,
@@ -30,7 +34,10 @@ function init_hdata(fdata::Dict{String,Any}, H::Vector{Int})
     for h in H
         hdata["nw"]["$h"] = Dict{String,Any}(cmp => init_hdata_cmp(fdata, cmp)
                                                 for cmp in cmp_list)
-end end
+    end
+    
+    return hdata
+end
 
 # build from matpower file #####################################################
 ""
@@ -46,5 +53,8 @@ function build_hdata_from_matpower_file(fdata::Dict{String,Any};
     add_xfmr_hdata!(hdata, fdata, xfmr_magn)
 
     add_gen_hdata!(hdata, fdata)
+    add_hload_hdata!(hdata, fdata)
     add_hscr_hdata!(hdata, fdata)
+
+    return hdata
 end

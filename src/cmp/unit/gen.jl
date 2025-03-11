@@ -13,10 +13,10 @@
 # util #########################################################################
 ""
 calc_gen_admittance_real(hdata::Dict{String,Any}, gdata::Dict{String,Any}, h) = # to be reviewe by Hakan
-    (1 / (gdata["rx_ratio"] * sqrt(gdata["pmax"]^2 + gdata["qmax"]^2))) / sqrt(h)
+    (1 / (sqrt(gdata["pmax"]^2 + gdata["qmax"]^2))) / sqrt(h) # gdata["rx_ratio"] * 
 ""
 calc_gen_admittance_imaginary(hdata::Dict{String,Any}, gdata::Dict{String,Any}, h) = # to be reviewed by Hakan
-    (1 / (gdata["xr_ratio"] * sqrt(gdata["pmax"]^2 + gdata["qmax"]^2))) / h
+    (1 / (sqrt(gdata["pmax"]^2 + gdata["qmax"]^2))) / h # gdata["xr_ratio"] * 
 ""
 # i_base_ka = s_base_mva / v_base_kv, see Power System Analysis, pg. 26
 calc_gen_current_base(hdata::Dict{String,Any}, gdata::Dict{String,Any}) =
@@ -37,27 +37,27 @@ collect_gen_current_magnitude_limits(pm::HarmonicPowerModel, nw::Int) =
 
 # parameters ###################################################################
 ""
-function add_gen_hdata(hdata::Dict{String,Any}, fdata::Dict{String,Any})
+function add_gen_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
     for (nw, ntw) in hdata["nw"], (g, gen) in ntw["gen"]
         h       = parse(Int, nw)
         gdata   = fdata["gen"][g] 
         if nw == "1"
-            gen = Dict( "id"            => gdata["index"],
-                        "bus"           => gdata["gen_bus"],
-                        #-----------------------------------#
-                        "gsc"           => calc_gen_admittance_real(hdata, gdata, h),
-                        "bsc"           => calc_gen_admittance_imaginary(hdata, gdata, h),
-                        #-----------------------------------#
-                        "i_base_ka"     => calc_gen_current_base(hdata, gdata),
-                        "i_fund_magn"   => 0.0,
-                        "i_rms_max"     => calc_gen_current_rms_max(hdata, gdata),
-                        "p_fund_min"    => gdata["pmin"],
-                        "p_fund_max"    => gdata["pmax"],
-                        "q_fund_min"    => gdata["qmin"],
-                        "q_fund_max"    => gdata["qmax"])
+            gen["id"]           = gdata["index"]
+            gen["bus"]          = gdata["gen_bus"]
+            #-----------------------------------#
+            gen["gsc"]          = calc_gen_admittance_real(hdata, gdata, h)
+            gen["bsc"]          = calc_gen_admittance_imaginary(hdata, gdata, h)
+            #-----------------------------------#
+            gen["i_base_ka"]    = calc_gen_current_base(hdata, gdata)
+            gen["i_fund_magn"]  = 0.0
+            gen["i_rms_max"]    = calc_gen_current_rms_max(hdata, gdata)
+            gen["p_fund_min"]   = gdata["pmin"]
+            gen["p_fund_max"]   = gdata["pmax"]
+            gen["q_fund_min"]   = gdata["qmin"]
+            gen["q_fund_max"]   = gdata["qmax"]
         else
-            gen = Dict( "gsc"           => calc_gen_admittance_real(hdata, gdata, h),
-                        "bsc"           => calc_gen_admittance_imaginary(hdata, gdata, h))
+            gen["gsc"]          = calc_gen_admittance_real(hdata, gdata, h)
+            gen["bsc"]          = calc_gen_admittance_imaginary(hdata, gdata, h)
 end end end
 
 # variables ####################################################################

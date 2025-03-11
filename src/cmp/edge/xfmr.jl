@@ -81,50 +81,50 @@ function add_xfmr_hdata!(hdata::Dict{String,Any},
         h       = parse(Int, nw)
         xdata   = fdata["xfmr"][nx]
         if nw == "1"
-            xfmr = Dict("id"            => bdata["index"],
-                        "nw"            => 2,
-                        "bus"           => [bdata["f_bus"], bdata["t_bus"]],
-                        "linear_magn"   => isempty(xfmr_magn),
-                        "cnf"           => calc_xfmr_configuration(hdata, xdata),
-                        "gnd"           => calc_xfmr_grounding(hdata, xdata),
-                        "Hᴵ"            => Int[],
-                        "Hᴱ"            => Int[],
-                        #-----------------------------------#
-                        "x_core"        => [xdata["xsc"]],
-                        "b_core"        => 0.0,
-                        "g_core"        => xdata["gsh"],
-                        #-----------------------------------#
-                        "r_wnd"         => [xdata["r1"], xdata["r2"]],
-                        "b_wnd"         => 0.0,
-                        "g_wnd"         => 0.0,
-                        "r_gnd"         => [xdata["re1"], xdata["re2"]],
-                        "x_gnd"         => [xdata["xe1"], xdata["xe2"]],
-                        #-----------------------------------#
-                        "tr"            => calc_xfmr_shift_real(hdata, xdata, h),
-                        "ti"            => calc_xfmr_shift_imaginary(hdata, xdata, h),
-                        #-----------------------------------#
-                        "cxmfr"         => nothing,
-                        "cxmfi"         => nothing,
-                        #-----------------------------------#
-                        "i_base_ka"     => calc_xfmr_current_base(hdata, xdata),
-                        "i_fund_magn"   => [0.0, 0.0],
-                        "i_rms_max"     => calc_xfmr_current_rms_max(hdata, xdata))
+            xfmr["id"]          = bdata["index"]
+            xfmr["Nw"]          = 2
+            xfmr["bus"]         = [bdata["f_bus"], bdata["t_bus"]]
+            xfmr["linear_magn"] = isempty(xfmr_magn)
+            xfmr["cnf"]         = calc_xfmr_configuration(hdata, xdata)
+            xfmr["gnd"]         = calc_xfmr_grounding(hdata, xdata)
+            xfmr["Hᴵ"]          = Int[]
+            xfmr["Hᴱ"]          = Int[]
+            #-----------------------------------#
+            xfmr["x_core"]      = [xdata["xsc"]]
+            xfmr["b_core"]      = 0.0
+            xfmr["g_core"]      = xdata["gsh"]
+            #-----------------------------------#
+            xfmr["r_wnd"]       = [xdata["r1"], xdata["r2"]]
+            xfmr["b_wnd"]       = 0.0
+            xfmr["g_wnd"]       = 0.0
+            xfmr["r_gnd"]       = [xdata["re1"], xdata["re2"]]
+            xfmr["x_gnd"]       = [xdata["xe1"], xdata["xe2"]]
+            #-----------------------------------#
+            xfmr["tr"]          = calc_xfmr_shift_real(hdata, xdata, h)
+            xfmr["ti"]          = calc_xfmr_shift_imaginary(hdata, xdata, h)
+            #-----------------------------------#
+            xfmr["cxmfr"]       = nothing
+            xfmr["cxmfi"]       = nothing
+            #-----------------------------------#
+            xfmr["i_base_ka"]   = calc_xfmr_current_base(hdata, xdata)
+            xfmr["i_fund_magn"] = [0.0, 0.0]
+            xfmr["i_rms_max"]   = calc_xfmr_current_rms_max(hdata, xdata)
         else
-            xfmr = Dict("x_core"        => [xdata["xsc"]] .* h,
-                        "b_core"        => 0.0,
-                        "g_core"        => xdata["gsh"] / sqrt(h),
-                        #-----------------------------------#
-                        "r_wnd"         => [xdata["r1"], xdata["r2"]] .* h,
-                        "b_wnd"         => 0.0,
-                        "g_wnd"         => 0.0,
-                        "r_gnd"         => [xdata["re1"], xdata["re2"]] .* sqrt(h),
-                        "x_gnd"         => [xdata["xe1"], xdata["xe2"]] .* h,
-                        #-----------------------------------#
-                        "tr"            => calc_xfmr_shift_real(hdata, xdata, h),
-                        "ti"            => calc_xfmr_shift_imaginary(hdata, xdata, h),
-                        #-----------------------------------#
-                        "cxmfr"         => nothing,
-                        "cxmfi"         => nothing)
+            xfmr["x_core"]      = [xdata["xsc"]] .* h
+            xfmr["b_core"]      = 0.0
+            xfmr["g_core"]      = xdata["gsh"] / sqrt(h)
+            #-----------------------------------#
+            xfmr["r_wnd"]       = [xdata["r1"], xdata["r2"]] .* h
+            xfmr["b_wnd"]       = 0.0
+            xfmr["g_wnd"]       = 0.0
+            xfmr["r_gnd"]       = [xdata["re1"], xdata["re2"]] .* sqrt(h)
+            xfmr["x_gnd"]       = [xdata["xe1"], xdata["xe2"]] .* h
+            #-----------------------------------#
+            xfmr["tr"]          = calc_xfmr_shift_real(hdata, xdata, h)
+            xfmr["ti"]          = calc_xfmr_shift_imaginary(hdata, xdata, h)
+            #-----------------------------------#
+            xfmr["cxmfr"]       = nothing
+            xfmr["cxmfi"]       = nothing
     end end
     
     !isempty(xfmr_magn) ? sample_magnetizing_current(hdata, xfmr_magn) : ~ ;
@@ -505,7 +505,7 @@ function constraint_xfmr_winding_current_balance(pm::HarmonicPowerModel, x::Int;
     b   = _PMs.ref(pm, nw, :xfmr, x, "b_wnd")
     g   = _PMs.ref(pm, nw, :xfmr, x, "g_wnd")
 
-    for wnd in 1:_PMs.ref(pm, fundamental(pm), :xfmr, x, "nw")
+    for wnd in 1:_PMs.ref(pm, fundamental(pm), :xfmr, x, "Nw")
         constraint_xfmr_winding_current_balance(pm, nw, idx[wnd], cnf[wnd], r[wnd], b[wnd], g[wnd])
 end end
 ""
@@ -534,7 +534,7 @@ function constraint_xfmr_winding_voltage_drop(pm::HarmonicPowerModel, x::Int; nw
     r_gnd   = _PMs.ref(pm, nw, :xfmr, x, "r_gnd")
     x_gnd   = _PMs.ref(pm, nw, :xfmr, x, "x_gnd")
 
-    for wnd in 1:_PMs.ref(pm, fundamental(pm), :xmfr, nw, "nw")
+    for wnd in 1:_PMs.ref(pm, fundamental(pm), :xmfr, nw, "Nw")
         constraint_xfmr_winding_voltage_drop(pm, nw, idx[wnd], gnd[w], r_wnd[wnd], r_gnd[wnd], x_gnd[wnd])
 end end
 ""
@@ -567,7 +567,7 @@ function constraint_xfmr_winding_zero_seq_current_blocking(pm::HarmonicPowerMode
 
     gnd = _PMs.ref(pm, nw, :xfmr, x, "gnd")
 
-    for wnd in 1:_PMs.ref(pm, fundamental(pm), :xmfr, nw, "nw")
+    for wnd in 1:_PMs.ref(pm, fundamental(pm), :xmfr, nw, "Nw")
         constraint_xfmr_winding_zero_seq_current_blocking(pm, nw, idx[wnd], gnd[w])
     end
 end
@@ -590,7 +590,7 @@ function constraint_xfmr_winding_current_rms_limit(pm::HarmonicPowerModel, x::In
     i_rms_max   = _PMs.ref(pm, fundamental(pm), :xfmr, x, "i_rms_max")
     i_fund_magn = _PMs.ref(pm, fundamental(pm), :xfmr, x, "i_fund_magn")
 
-    for wnd in 1:_PMs.ref(pm, fundamental(pm), :xfmr, x, "nw")
+    for wnd in 1:_PMs.ref(pm, fundamental(pm), :xfmr, x, "Nw")
         constraint_xfmr_winding_current_rms_limit(pm, idx[wnd], i_rms_max[wnd], i_fund_magn[wnd])
 end end
 ""

@@ -15,14 +15,14 @@
 ""
 function solve_hpf(hdata, model_type::Type, optimizer; kwargs...)
     return _PMs.solve_model(hdata, model_type, optimizer, build_hpf; 
-                                ref_extensions=[ref_add_filter!,
-                                                ref_add_xfmr!], 
-                                solution_processors=[_HPM.sol_data_model!], 
+                                ref_extensions=[ref_add_xfmr!,
+                                                ref_add_filter!,
+                                                ref_add_hload!], 
                                 multinetwork=true, kwargs...)
 end
 
 ""
-function build_hpf(pm::_PMs.AbstractIVRModel)
+function build_hpf(pm::HarmonicPowerModel)
 
     # variables
     for n in _PMs.nw_ids(pm)
@@ -37,7 +37,7 @@ function build_hpf(pm::_PMs.AbstractIVRModel)
         ## unit current variables
         variable_filter_current(pm, nw=n, bounded=false)
         variable_gen_current(pm, nw=n, bounded=false)
-        variable_source_current(pm, nw=n, bounded=false)        
+        variable_hload_current(pm, nw=n, bounded=false)        
     end 
 
     # objective
@@ -81,9 +81,9 @@ function build_hpf(pm::_PMs.AbstractIVRModel)
             constraint_xfmr_winding_current_balance(pm, x, nw=n)
         end
 
-        ### harmonic unit
-        for s in _PMs.ids(pm, :source, nw=n)
-            constraint_source_power(pm, l, nw=n)
+        ### harmonic load
+        for l in _PMs.ids(pm, :hload, nw=n)
+            constraint_hload_power(pm, l, nw=n)
         end
     end
 end

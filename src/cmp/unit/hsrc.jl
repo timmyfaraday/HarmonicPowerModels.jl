@@ -11,6 +11,9 @@
 ################################################################################
 
 # util #########################################################################
+# i_base_ka = s_base_mva / v_base_kv, see Power System Analysis, pg. 26
+calc_hscr_current_base(hdata::Dict{String,Any}, sdata::Dict{String,Any}) =
+    hdata["s_base_mva"] / hdata["nw"]["1"]["bus"][string(sdata["load_bus"])]["v_base_kv"]
 ""
 calc_hsrc_current_angle_ref(hdata::Dict{String,Any}, sdata::Dict{String,Any}, h) =
     if haskey(hdata["nw"]["1"]["bus"][string(sdata["load_bus"])], "ref_angle")
@@ -32,16 +35,16 @@ function add_hscr_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
         h       = parse(Int, nw)
         sdata   = fdata["load"][s]
         if nw == "1"
-            hsrc = Dict("id"                => sdata["index"],
-                        "bus"               => sdata["load_bus"],
-                        #-----------------------------------#
-                        "pd"                => sdata["pd"],
-                        "qd"                => sdata["qd"],
-                        #-----------------------------------#
-                        "csar"              => calc_hsrc_current_angle_ref(hdata, sdata, h))
-
+            hscr["id"]          = sdata["index"]
+            hscr["bus"]         = sdata["load_bus"]
+            #-----------------------------------#
+            hscr["p_fund"]      = sdata["pd"]
+            hscr["q_fund"]      = sdata["qd"]
+            #-----------------------------------#
+            hscr["i_base_ka"]   = calc_hscr_current_base(hdata, ldata)
+            hscr["csar"]        = calc_hsrc_current_angle_ref(hdata, sdata, h)
         else
-            hscr = Dict("csar"              => calc_hsrc_current_angle_ref(hdata, sdata, h))
+            hscr["csar"]        = calc_hsrc_current_angle_ref(hdata, sdata, h)
 end end end
 
 # variables ####################################################################
@@ -72,7 +75,7 @@ function variable_hsrc_current_imaginary(pm::HarmonicPowerModel; nw::Int=fundame
                             base_name="$(nw)_csi",
                             start=0.0)
 
-    report && _PMs.sol_component_value(pm, nw, :source, :csi, _PMs.ids(pm, nw, :source), csi)
+    report && _PMs.sol_component_value(pm, nw, :hscr, :csi, _PMs.ids(pm, nw, :hscr), csi)
 end
 ""
 function variable_hsrc_current_magnitude(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
@@ -96,27 +99,27 @@ end
 ""
 function constraint_hsrc_current(pm::HarmonicPowerModel, s::Int; nw::Int=fundamental(pm))
     if nw == fundamental(pm)
-        i   = _PMs.ref(pm, nw, :hsrc, s, "bus")
+        i       = _PMs.ref(pm, nw, :hsrc, s, "bus")
         
-        pd  = _PMs.ref(pm, nw, :hsrc, s, "pd")
-        qd  = _PMs.ref(pm, nw, :hsrc, s, "qd")
+        p_fund  = _PMs.ref(pm, nw, :hsrc, s, "p_fund")
+        q_fund  = _PMs.ref(pm, nw, :hsrc, s, "q_fund")
 
-        constraint_hsrc_constant_power(pm, nw, s, i, pd, qd)
+        constraint_hsrc_constant_power(pm, nw, s, i, p_fund, q_fund)
     else
         csar = _PMs.ref(pm, nw, :hscr, s, "csar")
 
         constraint_hsrc_current_angle_ref(pm, nw, s, csar)
 end end
 ""
-function constraint_hsrc_constant_power(pm::HarmonicPowerModel, n::Int, s, i, pd, qd)
+function constraint_hsrc_constant_power(pm::HarmonicPowerModel, n::Int, s, i, p_fund, q_fund)
     vbr = _PMs.var(pm, n, :vbr, i)
     vbi = _PMs.var(pm, n, :vbi, i)
 
     csr = _PMs.var(pm, n, :csr, s)
     csi = _PMs.var(pm, n, :csi, s)
 
-    JuMP.@constraint(pm.model, pd == vr * csr  + vi * csi)
-    JuMP.@constraint(pm.model, qd == vi * csr  - vr * csi)
+    JuMP.@constraint(pm.model, p_fund == vbr * csr  + vbi * csi)
+    JuMP.@constraint(pm.model, q_fund == vbi * csr  - vbr * csi)
 end
 ""
 function constraint_hsrc_current_angle_ref(pm::HarmonicPowerModel, n::Int, s, csar)

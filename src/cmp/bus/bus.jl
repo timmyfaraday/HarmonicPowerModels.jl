@@ -30,19 +30,20 @@ collect_bus_voltage_magnitude_limits(pm::HarmonicPowerModel, nw::Int) =
 ""
 function add_bus_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
     for (nw, ntw) in hdata["nw"], (nb, bus) in ntw["bus"]
-        bdata = fdata["bus"][nb]
+        h       = parse(Int, nw)
+        bdata   = fdata["bus"][nb]
         if nw == "1"
-            bus = Dict( "id"            => bdata["index"],
-                        "std"           => bdata["std"],
-                        "type"          => bdata["type"],
-                        #-----------------------------------#
-                        "v_base_kv"     => bdata["base_kv"],
-                        "v_fund_magn"   => 1.0,
-                        "v_rms_min"     => bdata["vmin"],
-                        "v_rms_max"     => bdata["vmax"],
-                        "v_thd_max"     => voltage_thd_limits[bdata["std"]])
+            bus["id"]           = bdata["index"]
+            bus["std"]          = bdata["std"]
+            bus["type"]         = bdata["bus_type"]
+            #-----------------------------------#
+            bus["v_base_kv"]    = bdata["base_kv"]
+            bus["v_fund_magn"]  = 1.0
+            bus["v_rms_min"]    = bdata["vmin"]
+            bus["v_rms_max"]    = bdata["vmax"]
+            bus["v_thd_max"]    = voltage_thd_limits[bdata["std"]]
         else
-            bus = Dict( "v_ihd_max"     => voltage_ihd_limits[bdata["std"]])
+            bus["v_ihd_max"]    = voltage_ihd_limits[bdata["std"]][h]
 end end end
 
 # variables ####################################################################

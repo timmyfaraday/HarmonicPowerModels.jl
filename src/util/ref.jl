@@ -42,6 +42,26 @@ function _ref_add_xfmr!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
 end
 
 # units ########################################################################
+## hload #######################################################################
+""
+function ref_add_hload!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    _PMs.apply_pm!(_ref_add_hload!, ref, data)
+end
+""
+function _ref_add_hload!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
+    if !haskey(ref, :hload)
+        ref[:hload] = Dict()
+        ref[:bus_hload] = Dict((i, []) for (i,bus) in ref[:bus])
+    else
+        ref[:hload] = Dict(f for f in ref[:hload] if f.second["bus"] in keys(ref[:bus]))
+
+        bus_load = Dict((i, Int[]) for (i,bus) in ref[:bus])
+        for (i,hload) in ref[:hload]
+            push!(bus_hload[filter["hload_bus"]], i)
+        end
+        ref[:bus_hload] = bus_hload
+end end
+
 ## hscr ########################################################################
 ""
 function ref_add_hsrc!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})

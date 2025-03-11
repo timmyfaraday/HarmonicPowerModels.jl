@@ -14,7 +14,7 @@
 ""
 function add_ref_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
     for (nw, ntw) in hdata["nw"], (nb, bus) in ntw["bus"] 
-        if bus["type"] == 3
+        if nw == "1" && bus["type"] == 3
             bus["v_fund_ref"] = 1.0
 end end end
 

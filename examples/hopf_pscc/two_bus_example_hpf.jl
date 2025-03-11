@@ -40,8 +40,8 @@ H = [1, 3]
 
 # COMPUTATION ##################################################################
 # solve HPF problem
-hdata   = HPM.replicate(data, H=H)
-results = HarmonicPowerModels.solve_hpf(hdata, PMs.IVRPowerModel, solver)
+hdata   = build_hdata_from_matpower_file(data, H=H)
+results = solve_hpf(hdata, PMs.IVRPowerModel, solver)
 
 # RESULTS ######################################################################
 # TABLE: Bus results for two bus line case (per unit)
