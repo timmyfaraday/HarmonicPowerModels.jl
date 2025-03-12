@@ -8,6 +8,9 @@
 # from: Harmonic Optimal Power Flow with Transformer Excitation by F. Geth and #
 # T. Van Acker, pg. 7, § IV.A.                                                 #
 ################################################################################
+# Note that Table II contains a mistake, Qˡⁱʲ₃ ≠ 0.006, rather Qˡⁱʲ₃ ≠ 0.0,    #
+# respecting the reactive power balance for the third harmonic at bus 1.       # 
+################################################################################
 # Authors: Tom Van Acker, Frederik Geth                                        #
 ################################################################################
 # Changelog:                                                                   #
@@ -32,6 +35,9 @@ solver = Ipopt.Optimizer
 path = joinpath(HPM.BASE_DIR,"test/data/matpower/two_bus_example_hpf.m")
 data = PMs.parse_file(path)
 
+# set the ref bus to a clean bus
+data["bus"]["1"]["bus_type"] = 4
+
 # solve PF problem
 results_fund = PMs.solve_pf_iv(data, PMs.IVRPowerModel, solver)
 
@@ -49,17 +55,17 @@ results = solve_hpf(hdata, HarmonicPowerModel, solver)
 ## bus results
 Um(nh,nb)   = round(abs(results["solution"]["nw"]["$nh"]["bus"]["$nb"]["vbr"] +
                         results["solution"]["nw"]["$nh"]["bus"]["$nb"]["vbi"] * im), digits=3);
-Ua(nh,nb)   = round(atand(results["solution"]["nw"]["$nh"]["bus"]["$nb"]["vbr"],
-                          results["solution"]["nw"]["$nh"]["bus"]["$nb"]["vbi"]), digits=3);
+Ua(nh,nb)   = round(atand(results["solution"]["nw"]["$nh"]["bus"]["$nb"]["vbi"],
+                          results["solution"]["nw"]["$nh"]["bus"]["$nb"]["vbr"]), digits=3);
 RMS(nb)     = round(sqrt(sum(Um(nh,nb)^2 for nh in H)), digits=3);
 THD(nb)     = round(sqrt(sum(Um(nh,nb)^2 for nh in H if nh ≠ 1) / Um(1,nb)^2), digits=3);
 
 header  = (
             ["bus", "harmonic", "|Uᵢₕ|", "∠Uᵢₕ", "RMSᵢ", "THDᵢ"]
           );
-data    = vcat( hcat("i",   "h=1",  Um(1,1),    Ua(3,1),    RMS(1),     THD(1)),
+data    = vcat( hcat("i",   "h=1",  Um(1,1),    Ua(1,1),    RMS(1),     THD(1)),
                 hcat("",    "h=3",  Um(3,1),    Ua(3,1),    "",         ""),
-                hcat("j",   "h=1",  Um(1,2),    Ua(3,2),    RMS(2),     THD(2)),
+                hcat("j",   "h=1",  Um(1,2),    Ua(1,2),    RMS(2),     THD(2)),
                 hcat("",    "h=3",  Um(3,2),    Ua(3,2),    "",         ""));
 pretty_table(data, header=header)
 
@@ -96,19 +102,19 @@ data    = vcat( hcat("g",   "h=1",  Pg(1,1),    Qg(1,1),    Ig(1,1),    Igm(1,1)
 pretty_table(data, header=header)
 
 ## branch results
-Ib_fr(nh,nb)   = round(results["solution"]["nw"]["$nh"]["branch"]["$nb"]["cr_fr"] +
-                       results["solution"]["nw"]["$nh"]["branch"]["$nb"]["ci_fr"] * im, digits=3);
-Sb_fr(nh,nb)   = (results["solution"]["nw"]["$nh"]["bus"]["1"]["vr"] +
-                  results["solution"]["nw"]["$nh"]["bus"]["1"]["vi"] * im) * conj(Ib_fr(nh,nb));
+Ib_fr(nh,nb)   = round(results["solution"]["nw"]["$nh"]["branch"]["$nb"]["cbr_fr"] +
+                       results["solution"]["nw"]["$nh"]["branch"]["$nb"]["cbi_fr"] * im, digits=3);
+Sb_fr(nh,nb)   = (results["solution"]["nw"]["$nh"]["bus"]["1"]["vbr"] +
+                  results["solution"]["nw"]["$nh"]["bus"]["1"]["vbi"] * im) * conj(Ib_fr(nh,nb));
 Pb_fr(nh,nb)    = round(real(Sb_fr(nh,nb)), digits=3);
 Qb_fr(nh,nb)    = round(imag(Sb_fr(nh,nb)), digits=3);
-Ib_to(nh,nb)   = round(results["solution"]["nw"]["$nh"]["branch"]["$nb"]["cr_to"] +
-                       results["solution"]["nw"]["$nh"]["branch"]["$nb"]["ci_to"] * im, digits=3);
-Sb_to(nh,nb)   = (results["solution"]["nw"]["$nh"]["bus"]["2"]["vr"] +
-                  results["solution"]["nw"]["$nh"]["bus"]["2"]["vi"] * im) * conj(Ib_to(nh,nb));
+Ib_to(nh,nb)   = round(results["solution"]["nw"]["$nh"]["branch"]["$nb"]["cbr_to"] +
+                       results["solution"]["nw"]["$nh"]["branch"]["$nb"]["cbi_to"] * im, digits=3);
+Sb_to(nh,nb)   = (results["solution"]["nw"]["$nh"]["bus"]["2"]["vbr"] +
+                  results["solution"]["nw"]["$nh"]["bus"]["2"]["vbi"] * im) * conj(Ib_to(nh,nb));
 Pb_to(nh,nb)    = round(real(Sb_to(nh,nb)), digits=3);
 Qb_to(nh,nb)    = round(imag(Sb_to(nh,nb)), digits=3);
-Ploss(nh,nb)    = Pb_fr(nh,nb) - Pb_to(nh,nb)
+Ploss(nh,nb)    = Pb_fr(nh,nb) + Pb_to(nh,nb)
 
 header  = (
             ["line", "harmonic", "Pˡⁱʲₕ", "Qˡⁱʲₕ", "Iˡⁱʲₕ", "Pˡᵒˢˢₕ"]

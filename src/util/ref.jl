@@ -25,6 +25,9 @@ function ref_add_core!(ref::Dict{Symbol,Any})
         # reference buses
         nw_ref[:ref_buses] = Dict{Int,Any}(k => v for (k,v) in nf_ref[:bus] if v["type"] == 3)
 
+        # clean buses
+        nw_ref[:clean_buses] = Dict{Int,Any}(k => v for (k,v) in nf_ref[:bus] if v["type"] == 4)
+
         # branch 
         nw_ref[:arcs_branch_from]   = [(nb,br["bus"]...)            for (nb,br) in nf_ref[:branch]]
         nw_ref[:arcs_branch_to]     = [(nb,reverse(br["bus"])...)   for (nb,br) in nf_ref[:branch]]

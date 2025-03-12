@@ -53,6 +53,7 @@ function build_hdata_from_matpower_file(fdata::Dict{String,Any};
 
     add_bus_hdata!(hdata, fdata)
     add_ref_hdata!(hdata, fdata)
+    add_clean_hdata!(hdata, fdata)
 
     add_branch_hdata!(hdata, fdata)
     add_xfmr_hdata!(hdata, fdata, xfmr_magn)

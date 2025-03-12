@@ -40,12 +40,17 @@ function build_hpf(pm::HarmonicPowerModel)
     # constraint
     ## harmonic constraints
     for n in _PMs.nw_ids(pm)
-        ### reference node
+        ### reference bus
         for i in _PMs.ids(pm, :ref_buses, nw=n) 
             constraint_ref_voltage(pm, i, nw=n)
         end
 
-        ### node
+        ### clean bus 
+        for i in _PMs.ids(pm, :clean_buses, nw=n)
+            constraint_clean_voltage(pm, i, nw=n)
+        end
+
+        ### bus
         for i in _PMs.ids(pm, :bus, nw=n)
             constraint_bus_current_balance(pm, i, nw=n)
         end
