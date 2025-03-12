@@ -97,22 +97,26 @@ end
 ""
 function constraint_bus_current_balance(pm::HarmonicPowerModel, i::Int; nw::Int=fundamental(pm))
     bus_arcs_branch = _PMs.ref(pm, nw, :bus_arcs_branch, i)
-    bus_arcs_xfmr   = _PMs.ref(pm, nw, :bus_arcs_xfmr, i)
 
+    bus_wnds_xfmr   = _PMs.ref(pm, nw, :bus_wnds_xfmr, i)
+
+    bus_filter      = _PMs.ref(pm, nw, :bus_filter, i)
     bus_gen         = _PMs.ref(pm, nw, :bus_gen, i)
     bus_hload       = _PMs.ref(pm, nw, :bus_hload, i)
     bus_hsrc        = _PMs.ref(pm, nw, :bus_hsrc, i)
 
-    constraint_bus_current_balance(pm, nw, bus_arcs_branch, bus_arcs_xfmr, 
-                                           bus_gen, bus_hload, bus_hsrc)
+    constraint_bus_current_balance(pm, nw, bus_arcs_branch, bus_wnds_xfmr, 
+                                           bus_filter, bus_gen, bus_hload, bus_hsrc)
 end
 ""
-function constraint_bus_current_balance(pm::HarmonicPowerModel, n::Int, bus_arcs_branch, bus_arcs_xfmr, bus_gen, bus_hload, bus_hsrc)
+function constraint_bus_current_balance(pm::HarmonicPowerModel, n::Int, bus_arcs_branch, bus_wnds_xfmr, bus_filter, bus_gen, bus_hload, bus_hsrc)
     cbr = _PMs.var(pm, n, :cbr)
     cbi = _PMs.var(pm, n, :cbi)
     cxr = _PMs.var(pm, n, :cxr)
     cxi = _PMs.var(pm, n, :cxi)
 
+    cfr = _PMs.var(pm, n, :cfr)
+    cfi = _PMs.var(pm, n, :cfi)
     cgr = _PMs.var(pm, n, :cgr)
     cgi = _PMs.var(pm, n, :cgi)
     clr = _PMs.var(pm, n, :clr)
@@ -121,16 +125,18 @@ function constraint_bus_current_balance(pm::HarmonicPowerModel, n::Int, bus_arcs
     csi = _PMs.var(pm, n, :csi)
 
     JuMP.@constraint(pm.model,    sum(cbr[b] for b in bus_arcs_branch)
-                                + sum(cxr[x] for x in bus_arcs_xfmr)
+                                + sum(cxr[x] for x in bus_wnds_xfmr)
                                 ==
-                                  sum(cgr[g] for g in bus_gen) 
+                                  sum(cfr[f] for f in bus_filter)
+                                + sum(cgr[g] for g in bus_gen) 
                                 - sum(clr[l] for l in bus_hload)
                                 - sum(csr[s] for s in bus_hsrc))
 
     JuMP.@constraint(pm.model,    sum(cbi[b] for b in bus_arcs_branch)
-                                + sum(cxi[x] for x in bus_arcs_xfmr)
+                                + sum(cxi[x] for x in bus_wnds_xfmr)
                                 ==
-                                  sum(cgi[g] for g in bus_gen)
+                                  sum(cfi[f] for f in bus_filter)
+                                + sum(cgi[g] for g in bus_gen)
                                 - sum(cli[l] for l in bus_hload)
                                 - sum(csi[l] for s in bus_hsrc))
 end
@@ -150,7 +156,7 @@ function constraint_bus_voltage_ihd_limit(pm::HarmonicPowerModel, n::Int, i, v_i
     vbr = [_PMs.var(pm, 1, :vbr, i), _PMs.var(pm, n, :vbr, i)] 
     vbi = [_PMs.var(pm, 1, :vbi, i), _PMs.var(pm, n, :vbi, i)]
 
-    JuMP.@constraint(pm.model, (vbr[2]^2 + vbi[2]^2) <= v_ihd_max^2 * (vr[1]^2 + vi[1]^2))
+    JuMP.@constraint(pm.model, (vbr[2]^2 + vbi[2]^2) <= v_ihd_max^2 * (vbr[1]^2 + vbi[1]^2))
 end
 ""
 function constraint_bus_voltage_ihd_limit(pm::dHHCPowerModel, n::Int, i, v_ihd_max, v_fund_magn)

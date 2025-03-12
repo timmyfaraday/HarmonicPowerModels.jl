@@ -80,7 +80,7 @@ magn = Dict("Hᴱ"    => [1, 5],
 # COMPUTATION ##################################################################
 # solve HOPF problem w/o xfmr magnitization
 hdata_wo   = build_hdata_from_matpower_file(data, H=H, prob=:hopf, bus_id=6)
-results_wo = HPM.solve_hopf(hdata_wo, HarmonicPowerModel, solver)
+results_wo = solve_hopf(hdata_wo, HarmonicPowerModel, solver)
 
 # solve HOPF problem w. xfmr magnitization
 hdata_w = HPM.replicate(data, H=H, prob=:hopf, xfmr_magn=magn, bus_id=6)
