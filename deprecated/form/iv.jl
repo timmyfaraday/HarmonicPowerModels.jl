@@ -30,11 +30,11 @@
 # end
 
 # filter
-""
-function variable_filter_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
-    variable_filter_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_filter_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-end
+# ""
+# function variable_filter_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+#     variable_filter_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+#     variable_filter_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+# end
 
 # xfmr
 # ""
@@ -282,25 +282,25 @@ end
 # end
 
 # filter
-""
-function constraint_active_filter_current(pm::_PMs.AbstractIVRModel, f, i)
-    vr = [_PMs.var(pm, nw, :vr, i) for nw in sorted_nw_ids(pm)]
-    vi = [_PMs.var(pm, nw, :vi, i) for nw in sorted_nw_ids(pm)]
+# ""
+# function constraint_active_filter_current(pm::_PMs.AbstractIVRModel, f, i)
+#     vr = [_PMs.var(pm, nw, :vr, i) for nw in sorted_nw_ids(pm)]
+#     vi = [_PMs.var(pm, nw, :vi, i) for nw in sorted_nw_ids(pm)]
     
-    crf = [_PMs.var(pm, nw, :crf, f) for nw in sorted_nw_ids(pm)]
-    cif = [_PMs.var(pm, nw, :cif, f) for nw in sorted_nw_ids(pm)]
+#     crf = [_PMs.var(pm, nw, :crf, f) for nw in sorted_nw_ids(pm)]
+#     cif = [_PMs.var(pm, nw, :cif, f) for nw in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model,  vr[fundamental(pm)]*crf[fundamental(pm)] 
-                                + vi[fundamental(pm)]*cif[fundamental(pm)] 
-                                    == 
-                                0.0
-                    )
-    JuMP.@constraint(pm.model,  sum(vr[n]*crf[n] + vi[n]*cif[n] 
-                                        for n in 2:lastindex(vr)) 
-                                    == 
-                                0.0
-                    )
-end
+#     JuMP.@constraint(pm.model,  vr[fundamental(pm)]*crf[fundamental(pm)] 
+#                                 + vi[fundamental(pm)]*cif[fundamental(pm)] 
+#                                     == 
+#                                 0.0
+#                     )
+#     JuMP.@constraint(pm.model,  sum(vr[n]*crf[n] + vi[n]*cif[n] 
+#                                         for n in 2:lastindex(vr)) 
+#                                     == 
+#                                 0.0
+#                     )
+# end
 
 # generator
 ""

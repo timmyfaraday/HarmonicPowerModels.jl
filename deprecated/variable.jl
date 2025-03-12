@@ -165,38 +165,38 @@
 # end
 
 # filter
-""
-function variable_filter_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    crf = _PMs.var(pm, nw)[:crf] = JuMP.@variable(pm.model,
-            [f in _PMs.ids(pm, nw, :filter)], base_name="$(nw)_crf",
-            start=_PMs.comp_start_value(_PMs.ref(pm, nw, :filter, f), "crf_start", 0.0)
-    )
+# ""
+# function variable_filter_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+#     crf = _PMs.var(pm, nw)[:crf] = JuMP.@variable(pm.model,
+#             [f in _PMs.ids(pm, nw, :filter)], base_name="$(nw)_crf",
+#             start=_PMs.comp_start_value(_PMs.ref(pm, nw, :filter, f), "crf_start", 0.0)
+#     )
     
-    if bounded
-        for (f, filter) in _PMs.ref(pm, nw, :filter)
-            JuMP.set_lower_bound(crf[f], -filter["c_rating"])
-            JuMP.set_upper_bound(crf[f],  filter["c_rating"])
-        end
-    end
+#     if bounded
+#         for (f, filter) in _PMs.ref(pm, nw, :filter)
+#             JuMP.set_lower_bound(crf[f], -filter["c_rating"])
+#             JuMP.set_upper_bound(crf[f],  filter["c_rating"])
+#         end
+#     end
 
-    report && _PMs.sol_component_value(pm, nw, :filter, :crf, _PMs.ids(pm, nw, :filter), crf)
-end
-""
-function variable_filter_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    cif = _PMs.var(pm, nw)[:cif] = JuMP.@variable(pm.model,
-            [f in _PMs.ids(pm, nw, :filter)], base_name="$(nw)_cif",
-            start=_PMs.comp_start_value(_PMs.ref(pm, nw, :filter, f), "cif_start", 0.0)
-    )
+#     report && _PMs.sol_component_value(pm, nw, :filter, :crf, _PMs.ids(pm, nw, :filter), crf)
+# end
+# ""
+# function variable_filter_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+#     cif = _PMs.var(pm, nw)[:cif] = JuMP.@variable(pm.model,
+#             [f in _PMs.ids(pm, nw, :filter)], base_name="$(nw)_cif",
+#             start=_PMs.comp_start_value(_PMs.ref(pm, nw, :filter, f), "cif_start", 0.0)
+#     )
     
-    if bounded
-        for (f, filter) in _PMs.ref(pm, nw, :filter)
-            JuMP.set_lower_bound(cif[f], -filter["c_rating"])
-            JuMP.set_upper_bound(cif[f],  filter["c_rating"])
-        end
-    end
+#     if bounded
+#         for (f, filter) in _PMs.ref(pm, nw, :filter)
+#             JuMP.set_lower_bound(cif[f], -filter["c_rating"])
+#             JuMP.set_upper_bound(cif[f],  filter["c_rating"])
+#         end
+#     end
 
-    report && _PMs.sol_component_value(pm, nw, :filter, :cif, _PMs.ids(pm, nw, :filter), cif)
-end
+#     report && _PMs.sol_component_value(pm, nw, :filter, :cif, _PMs.ids(pm, nw, :filter), cif)
+# end
 
 # xfmr 
 # ""
@@ -279,106 +279,106 @@ end
 #     report && _PMs.sol_component_value(pm, nw, :xfmr, :eix, _PMs.ids(pm, nw, :xfmr), eix)
 # end
 
-""
-function variable_xfmr_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    crx = _PMs.var(pm, nw)[:crx] = JuMP.@variable(pm.model,
-            [(x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_crx",
-            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "crx_start", 0.0)
-    )
+# ""
+# function variable_xfmr_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+#     crx = _PMs.var(pm, nw)[:crx] = JuMP.@variable(pm.model,
+#             [(x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_crx",
+#             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "crx_start", 0.0)
+#     )
 
-    if bounded
-        for (x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)
-            xfmr = _PMs.ref(pm, nw, :xfmr, x)
-            JuMP.set_lower_bound(crx[(x,i,j)], -xfmr["c_rating"])
-            JuMP.set_upper_bound(crx[(x,i,j)],  xfmr["c_rating"])
-        end
-    end
+#     if bounded
+#         for (x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)
+#             xfmr = _PMs.ref(pm, nw, :xfmr, x)
+#             JuMP.set_lower_bound(crx[(x,i,j)], -xfmr["c_rating"])
+#             JuMP.set_upper_bound(crx[(x,i,j)],  xfmr["c_rating"])
+#         end
+#     end
 
-    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :crx_fr, :crx_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), crx)
-end
-""
-function variable_xfmr_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    cix = _PMs.var(pm, nw)[:cix] = JuMP.@variable(pm.model,
-            [(x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_cix",
-            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "cix_start", 0.0)
-    )
+#     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :crx_fr, :crx_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), crx)
+# end
+# ""
+# function variable_xfmr_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+#     cix = _PMs.var(pm, nw)[:cix] = JuMP.@variable(pm.model,
+#             [(x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_cix",
+#             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "cix_start", 0.0)
+#     )
 
-    if bounded
-        for (x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)
-            xfmr = _PMs.ref(pm, nw, :xfmr, x)
-            JuMP.set_lower_bound(cix[(x,i,j)], -xfmr["c_rating"])
-            JuMP.set_upper_bound(cix[(x,i,j)],  xfmr["c_rating"])
-        end
-    end
+#     if bounded
+#         for (x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)
+#             xfmr = _PMs.ref(pm, nw, :xfmr, x)
+#             JuMP.set_lower_bound(cix[(x,i,j)], -xfmr["c_rating"])
+#             JuMP.set_upper_bound(cix[(x,i,j)],  xfmr["c_rating"])
+#         end
+#     end
 
-    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :cix_fr, :cix_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), cix)
-end
-""
-function variable_xfmr_current_series_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    csrx = _PMs.var(pm, nw)[:csrx] = JuMP.@variable(pm.model,
-            [(x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_csrx",
-            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "csrx_start", 0.0)
-    )
+#     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :cix_fr, :cix_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), cix)
+# end
+# ""
+# function variable_xfmr_current_series_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+#     csrx = _PMs.var(pm, nw)[:csrx] = JuMP.@variable(pm.model,
+#             [(x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_csrx",
+#             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "csrx_start", 0.0)
+#     )
 
-    if bounded
-        for (x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)
-            xfmr = _PMs.ref(pm, nw, :xfmr, x)
-            JuMP.set_lower_bound(csrx[(x,i,j)], -xfmr["c_rating"])
-            JuMP.set_upper_bound(csrx[(x,i,j)],  xfmr["c_rating"])
-        end
-    end
+#     if bounded
+#         for (x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)
+#             xfmr = _PMs.ref(pm, nw, :xfmr, x)
+#             JuMP.set_lower_bound(csrx[(x,i,j)], -xfmr["c_rating"])
+#             JuMP.set_upper_bound(csrx[(x,i,j)],  xfmr["c_rating"])
+#         end
+#     end
 
-    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :csrx_fr, :csrx_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), csrx)
-end
-""
-function variable_xfmr_current_series_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    csix = _PMs.var(pm, nw)[:csix] = JuMP.@variable(pm.model,
-            [(x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_csix",
-            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "csix_start", 0.0)
-    )
+#     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :csrx_fr, :csrx_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), csrx)
+# end
+# ""
+# function variable_xfmr_current_series_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+#     csix = _PMs.var(pm, nw)[:csix] = JuMP.@variable(pm.model,
+#             [(x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)], base_name="$(nw)_csix",
+#             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "csix_start", 0.0)
+#     )
 
-    if bounded
-        for (x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)
-            xfmr = _PMs.ref(pm, nw, :xfmr, x)
-            JuMP.set_lower_bound(csix[(x,i,j)], -xfmr["c_rating"])
-            JuMP.set_upper_bound(csix[(x,i,j)],  xfmr["c_rating"])
-        end
-    end
+#     if bounded
+#         for (x,i,j) in _PMs.ref(pm, nw, :xfmr_arcs)
+#             xfmr = _PMs.ref(pm, nw, :xfmr, x)
+#             JuMP.set_lower_bound(csix[(x,i,j)], -xfmr["c_rating"])
+#             JuMP.set_upper_bound(csix[(x,i,j)],  xfmr["c_rating"])
+#         end
+#     end
 
-    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :csix_fr, :csix_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), csix)
-end
-""
-function variable_xfmr_current_magnetizing_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    cmrx = _PMs.var(pm, nw)[:cmrx] = JuMP.@variable(pm.model,
-            [x in _PMs.ids(pm, nw, :xfmr)], base_name="$(nw)_cmrx",
-            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "cmrx_start", 0.0)
-    )
+#     report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :csix_fr, :csix_to, _PMs.ref(pm, nw, :xfmr_arcs_from), _PMs.ref(pm, nw, :xfmr_arcs_to), csix)
+# end
+# ""
+# function variable_xfmr_current_magnetizing_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+#     cmrx = _PMs.var(pm, nw)[:cmrx] = JuMP.@variable(pm.model,
+#             [x in _PMs.ids(pm, nw, :xfmr)], base_name="$(nw)_cmrx",
+#             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "cmrx_start", 0.0)
+#     )
 
-    if bounded
-        for (x, xfmr) in _PMs.ref(pm, nw, :xfmr)
-            JuMP.set_lower_bound(cmrx[x], 0)
-            JuMP.set_upper_bound(cmrx[x], xfmr["c_rating"])
-        end
-    end
+#     if bounded
+#         for (x, xfmr) in _PMs.ref(pm, nw, :xfmr)
+#             JuMP.set_lower_bound(cmrx[x], 0)
+#             JuMP.set_upper_bound(cmrx[x], xfmr["c_rating"])
+#         end
+#     end
 
-    report && _PMs.sol_component_value(pm, nw, :xfmr, :cmrx, _PMs.ids(pm, nw, :xfmr), cmrx)
-end
-""
-function variable_xfmr_current_magnetizing_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    cmix = _PMs.var(pm, nw)[:cmix] = JuMP.@variable(pm.model,
-            [x in _PMs.ids(pm, nw, :xfmr)], base_name="$(nw)_cmix",
-            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "cmix_start", 0.0)
-    )
+#     report && _PMs.sol_component_value(pm, nw, :xfmr, :cmrx, _PMs.ids(pm, nw, :xfmr), cmrx)
+# end
+# ""
+# function variable_xfmr_current_magnetizing_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+#     cmix = _PMs.var(pm, nw)[:cmix] = JuMP.@variable(pm.model,
+#             [x in _PMs.ids(pm, nw, :xfmr)], base_name="$(nw)_cmix",
+#             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "cmix_start", 0.0)
+#     )
 
-    if bounded
-        for (x, xfmr) in _PMs.ref(pm, nw, :xfmr)
-            JuMP.set_lower_bound(cmix[x], 0)
-            JuMP.set_upper_bound(cmix[x], xfmr["c_rating"])
-        end
-    end
+#     if bounded
+#         for (x, xfmr) in _PMs.ref(pm, nw, :xfmr)
+#             JuMP.set_lower_bound(cmix[x], 0)
+#             JuMP.set_upper_bound(cmix[x], xfmr["c_rating"])
+#         end
+#     end
 
-    report && _PMs.sol_component_value(pm, nw, :xfmr, :cmix, _PMs.ids(pm, nw, :xfmr), cmix)
-end
+#     report && _PMs.sol_component_value(pm, nw, :xfmr, :cmix, _PMs.ids(pm, nw, :xfmr), cmix)
+# end
 
 # # generator 
 # ""

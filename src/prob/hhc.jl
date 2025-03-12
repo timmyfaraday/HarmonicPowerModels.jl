@@ -37,8 +37,9 @@ function build_hhc(pm::HarmonicPowerModel)
         variable_xfmr_current(pm, nw=n, bounded=true)
 
         ## unit current variables
-        # variable_filter_current(pm, nw=n, bounded=false)
+        variable_filter_current(pm, nw=n, bounded=false)
         variable_gen_current(pm, nw=n, bounded=true)
+        variable_hload_current(pm, nw=n, bounded=false)
         variable_hsrc_current(pm, nw=n, bounded=true)
     end
 

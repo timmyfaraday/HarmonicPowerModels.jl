@@ -29,6 +29,7 @@ function build_hpf(pm::HarmonicPowerModel)
         variable_xfmr_current(pm, nw=n, bounded=false)
 
         ## unit current variables
+        variable_filter_current(pm, nw=n, bounded=false)
         variable_gen_current(pm, nw=n, bounded=false)
         variable_hload_current(pm, nw=n, bounded=false)
         variable_hsrc_current(pm, nw=n, bounded=false)                          # empty variable
@@ -70,8 +71,9 @@ function build_hpf(pm::HarmonicPowerModel)
             constraint_xfmr_core_voltage_phase_shift(pm, x, nw=n)
             constraint_xfmr_core_current_balance(pm, x, nw=n)
             
-            constraint_xfmr_winding_config(pm, x, nw=n)
             constraint_xfmr_winding_current_balance(pm, x, nw=n)
+            constraint_xfmr_winding_voltage_drop(pm, x, nw=n)
+            constraint_xfmr_winding_zero_seq_current_blocking(pm, x, nw=n)
         end
 
         ### harmonic load

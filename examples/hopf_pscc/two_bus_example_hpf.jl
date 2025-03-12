@@ -7,7 +7,7 @@
 # Example considering harmonic power flow for a two-bus example network taken  # 
 # from: Harmonic Optimal Power Flow with Transformer Excitation by F. Geth and #
 # T. Van Acker, pg. 7, § IV.A.                                                 #
-################################################################################
+# ---------------------------------------------------------------------------- #   
 # Note that Table II contains a mistake, Qˡⁱʲ₃ ≠ 0.006, rather Qˡⁱʲ₃ ≠ 0.0,    #
 # respecting the reactive power balance for the third harmonic at bus 1.       # 
 ################################################################################

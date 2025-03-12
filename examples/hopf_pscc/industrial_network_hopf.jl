@@ -37,6 +37,9 @@ solver = Ipopt.Optimizer
 path = joinpath(HPM.BASE_DIR,"test/data/matpower/industrial_network_hopf.m")
 data = PowerModels.parse_file(path)
 
+# set the ref bus to a clean bus
+data["bus"]["0"]["bus_type"] = 4
+
 # define the set of considered harmonics
 H = [1, 3, 5, 7, 9, 13]
 
@@ -76,12 +79,12 @@ magn = Dict("Hᴱ"    => [1, 5],
 
 # COMPUTATION ##################################################################
 # solve HOPF problem w/o xfmr magnitization
-hdata_wo = HPM.replicate(data, H=H, bus_id=6)
-results_wo = HPM.solve_hopf(hdata_wo, PMs.IVRPowerModel, solver)
+hdata_wo   = build_hdata_from_matpower_file(data, H=H, prob=:hopf, bus_id=6)
+results_wo = HPM.solve_hopf(hdata_wo, HarmonicPowerModel, solver)
 
 # solve HOPF problem w. xfmr magnitization
-hdata_w = HPM.replicate(data, H=H, xfmr_magn=magn, bus_id=6)
-results_w = HPM.solve_hopf(hdata_wo, PMs.IVRPowerModel, solver)
+hdata_w = HPM.replicate(data, H=H, prob=:hopf, xfmr_magn=magn, bus_id=6)
+results_w = HPM.solve_hopf(hdata_w, HarmonicPowerModel, solver)
 
 # RESULTS ######################################################################
 

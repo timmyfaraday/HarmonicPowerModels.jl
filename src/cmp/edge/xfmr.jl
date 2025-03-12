@@ -59,10 +59,7 @@ end
 
 ""
 collect_xfmr_voltage_magnitude_limits(pm::HarmonicPowerModel, nw::Int) =
-    Dict(x => Dict(i => ifelse( nw == fundamental(pm),
-                                _PMs.ref(pm, nw, :bus, i, "v_rms_max"), 
-                                _PMs.ref(pm, nw, :bus, i, "v_ihd_max") * 
-                                fundamental_bus_voltage_multiplier(pm, i))
+    Dict(x => Dict(i => bus_voltage_magnitude_limit(pm, nw, i)
                     for i in _PMs.ref(pm, fundamental(pm), :xfmr, x, "bus"))
             for x in _PMs.ids(pm, nw, :xfmr))
 ""
@@ -81,9 +78,9 @@ function add_xfmr_hdata!(hdata::Dict{String,Any},
         h       = parse(Int, nw)
         xdata   = fdata["xfmr"][nx]
         if nw == "1"
-            xfmr["id"]          = bdata["index"]
+            xfmr["id"]          = xdata["index"]
             xfmr["Nw"]          = 2
-            xfmr["bus"]         = [bdata["f_bus"], bdata["t_bus"]]
+            xfmr["bus"]         = [xdata["f_bus"], xdata["t_bus"]]
             xfmr["linear_magn"] = isempty(xfmr_magn)
             xfmr["cnf"]         = calc_xfmr_configuration(hdata, xdata)
             xfmr["gnd"]         = calc_xfmr_grounding(hdata, xdata)

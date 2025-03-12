@@ -13,16 +13,11 @@
 ################################################################################
 
 ""
-function solve_hopf(hdata, model_type::Type, optimizer; kwargs...)
-    return _PMs.solve_model(hdata, model_type, optimizer, build_hopf; 
-                                ref_extensions=[ref_add_filter!,
-                                                ref_add_xfmr!], 
-                                solution_processors=[_HPM.sol_data_model!], 
-                                multinetwork=true, kwargs...)
-end
+solve_hopf(hdata, model_type::Type, optimizer; kwargs...) = 
+    solve_model(hdata, model_type, optimizer, build_hopf; multinetwork=true, kwargs...)
 
 ""
-function build_hopf(pm::_PMs.AbstractIVRModel)
+function build_hopf(pm::HarmonicPowerModel)
     # variables
     for n in _PMs.nw_ids(pm)
         ## voltage variables
@@ -35,8 +30,9 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
 
         ## unit current variables
         variable_filter_current(pm, nw=n, bounded=false)
-        variable_gen_current(pm, nw=n, bounded=false) 
-        variable_source_current(pm, nw=n, bounded=false)
+        variable_gen_current(pm, nw=n, bounded=false)
+        variable_hload_current(pm, nw=n, bounded=false)
+        variable_hsrc_current(pm, nw=n, bounded=false) 
     end 
 
     # objective
@@ -44,7 +40,7 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
 
     # constraint
     ## overall or fundamental constraints
-    ### node
+    ### bus
     for i in ids(pm, :bus)
         constraint_bus_voltage_rms_limit(pm, i)
         constraint_bus_voltage_thd_limit(pm, i)
@@ -59,24 +55,32 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
     end
     ### generator
     for g in ids(pm, :gen)
-        _PMs.constraint_gen_active_bounds(pm, g, nw=fundamental(pm))
-        _PMs.constraint_gen_reactive_bounds(pm, g, nw=fundamental(pm))
+        constraint_gen_current_rms_limit(pm, g)
+
+        constraint_gen_power_active_fundamental_limit(pm, g)
+        constraint_gen_power_reactive_fundamental_limit(pm, g)
     end
     ### xfmr 
     for x in ids(pm, :xfmr)
-        constraint_xfmr_current_rms_limit(pm, x)
+        constraint_xfmr_winding_current_rms_limit(pm, x)
     end
 
     ## harmonic constraints
     for n in _PMs.nw_ids(pm)
-        ### reference node
+        ### reference bus
         for i in _PMs.ids(pm, :ref_buses, nw=n) 
             constraint_ref_voltage(pm, i, nw=n)
         end
+        
+        ### clean bus 
+        for i in _PMs.ids(pm, :clean_buses, nw=n)
+            constraint_clean_voltage(pm, i, nw=n)
+        end
 
-        ### node
+        ### bus
         for i in _PMs.ids(pm, :bus, nw=n)
             constraint_bus_current_balance(pm, i, nw=n)
+
             constraint_bus_voltage_ihd_limit(pm, i, nw=n)
         end
 
@@ -88,11 +92,6 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
             constraint_branch_voltage_drop(pm, b, nw=n)
         end
 
-        ### harmonic load
-        for s in _PMs.ids(pm, :source, nw=n)
-            constraint_hsrc_power(pm, s, nw=n)
-        end   
-    
         ### xfmr
         for x in _PMs.ids(pm, :xfmr, nw=n)
             constraint_xfmr_core_magnetization(pm, x, nw=n)
@@ -104,5 +103,10 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
             constraint_xfmr_winding_voltage_drop(pm, x, nw=n)
             constraint_xfmr_winding_zero_seq_current_blocking(pm, x, nw=n)
         end     
+
+        ### harmonic load
+        for l in _PMs.ids(pm, :hload, nw=n)
+            constraint_hload_power(pm, l, nw=n)
+        end
     end
 end

@@ -113,10 +113,10 @@ end
 function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel) 
     bus_id = pm.data["bus_id"]
 
-    vr = [_PMs.var(pm, n, :vr, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
-    vi = [_PMs.var(pm, n, :vi, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
+    vbr = [_PMs.var(pm, n, :vbr, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
+    vbi = [_PMs.var(pm, n, :vbi, bus_id) for n in _PMs.nw_ids(pm) if n ≠ 1]
 
-    JuMP.@objective(pm.model, Min, sum(vr.^2 + vi.^2))
+    JuMP.@objective(pm.model, Min, sum(vbr.^2 + vbi.^2))
 end
 
 ## harmonic hosting capacity objective #########################################

@@ -163,8 +163,8 @@ end
 ## root-mean-square voltage limit ##############################################
 ""
 function constraint_bus_voltage_rms_limit(pm::HarmonicPowerModel, i::Int)
-    v_min_rms   = _PMs.ref(pm, fundamental(pm), :bus, i, "v_rms_min")
-    v_max_rms   = _PMs.ref(pm, fundamental(pm), :bus, i, "v_rms_max")
+    v_rms_min   = _PMs.ref(pm, fundamental(pm), :bus, i, "v_rms_min")
+    v_rms_max   = _PMs.ref(pm, fundamental(pm), :bus, i, "v_rms_max")
     v_fund_magn = _PMs.ref(pm, fundamental(pm), :bus, i, "v_fund_magn")
 
     constraint_bus_voltage_rms_limit(pm, i, v_rms_min, v_rms_max, v_fund_magn)
@@ -198,7 +198,7 @@ function constraint_bus_voltage_thd_limit(pm::HarmonicPowerModel, i, v_thd_max, 
     vbr = [_PMs.var(pm, n, :vbr, i) for n in sorted_nw_ids(pm)]
     vbi = [_PMs.var(pm, n, :vbi, i) for n in sorted_nw_ids(pm)]
 
-    JuMP.@constraint(pm.model, sum(vr[2:end].^2 + vi[2:end].^2) <= v_thd_max^2 * (vbr[1]^2 + vbi[1]^2))
+    JuMP.@constraint(pm.model, sum(vbr[2:end].^2 + vbi[2:end].^2) <= v_thd_max^2 * (vbr[1]^2 + vbi[1]^2))
 end
 ""
 function constraint_bus_voltage_thd_limit(pm::dHHCPowerModel, i, v_thd_max, v_fund_magn)

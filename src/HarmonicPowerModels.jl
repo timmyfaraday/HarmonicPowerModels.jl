@@ -70,12 +70,13 @@ module HarmonicPowerModels
     include("cmp/edge/branch.jl")
     include("cmp/edge/xfmr.jl")
     ## cmp - unit
+    include("cmp/unit/filter.jl")
     include("cmp/unit/gen.jl")
     include("cmp/unit/hload.jl")
     include("cmp/unit/hsrc.jl")
 
     ## prob
-    # include("prob/hopf.jl")
+    include("prob/hopf.jl")
     include("prob/hpf.jl")
     include("prob/hhc.jl")
 
@@ -91,7 +92,7 @@ module HarmonicPowerModels
     export HarmonicPowerModel, dHHCPowerModel
 
     export build_hdata_from_matpower_file
-    export solve_hpf, solve_hhc # , solve_hopf
+    export solve_hpf, solve_hopf, solve_hhc
 
     export calculate_pos_seq_harmonic_impedance
 end

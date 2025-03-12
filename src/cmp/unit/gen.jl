@@ -169,8 +169,8 @@ function constraint_gen_power_active_fundamental_limit(pm::HarmonicPowerModel, g
     cgr = _PMs.var(pm, fundamental(pm), :cgr, g)
     cgi = _PMs.var(pm, fundamental(pm), :cgi, g)
 
-    JuMP.@constraint(pm.model, p_fund_min <= vbr * crg  + vbi * cig)
-    JuMP.@constraint(pm.model,               vbr * crg  + vbi * cig <= p_fund_max)
+    JuMP.@constraint(pm.model, p_fund_min <= vbr * cgr  + vbi * cgi)
+    JuMP.@constraint(pm.model,               vbr * cgr  + vbi * cgi <= p_fund_max)
 end
 
 ## generator fundamental reactive power limit ##################################
@@ -191,8 +191,8 @@ function constraint_gen_power_reactive_fundamental_limit(pm::HarmonicPowerModel,
     cgr = _PMs.var(pm, fundamental(pm), :cgr, g)
     cgi = _PMs.var(pm, fundamental(pm), :cgi, g)
 
-    JuMP.@constraint(pm.model, q_fund_min <= vbi * crg  - vbr * cig)
-    JuMP.@constraint(pm.model,               vbi * crg  - vbr * cig <= q_fund_max)
+    JuMP.@constraint(pm.model, q_fund_min <= vbi * cgr  - vbr * cgi)
+    JuMP.@constraint(pm.model,               vbi * cgr  - vbr * cgi <= q_fund_max)
 end
 
 

@@ -50,6 +50,13 @@ function ref_add_core!(ref::Dict{Symbol,Any})
         end
         nw_ref[:bus_arcs_xfmr] = bus_arcs_xfmr
 
+        # filter
+        bus_filter = Dict((i, Int[]) for (i,bus) in nw_ref[:bus])
+        for (f,filter) in nw_ref[:filter]
+            push!(bus_filter[nf_ref[:filter][f]["bus"]], f)
+        end
+        nw_ref[:bus_filter] = bus_filter
+        
         # gen
         bus_gen = Dict((i, Int[]) for (i,bus) in nw_ref[:bus])
         for (g,gen) in nw_ref[:gen]
