@@ -27,6 +27,8 @@ module HarmonicPowerModels
     import SignalDecomposition
     import Interpolations
     import SparseArrays
+
+    import Memento
     
     # pkg constants 
     const _HPM = HarmonicPowerModels
@@ -39,6 +41,8 @@ module HarmonicPowerModels
     const _SDC = SignalDecomposition
     const _INT = Interpolations
     const _SPA = SparseArrays
+
+    const _MEM = Memento
 
     # const 
     const freq = 50.0
@@ -56,6 +60,7 @@ module HarmonicPowerModels
     include("core/types.jl")
     include("core/data.jl")
     include("core/objective.jl")
+    include("core/solution.jl")
 
     ## cmp - bus
     include("cmp/bus/bus.jl")

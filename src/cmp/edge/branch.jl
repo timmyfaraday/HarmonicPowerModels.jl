@@ -42,8 +42,7 @@ function add_branch_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
         bdata   = fdata["branch"][nb]
         if nw == "1"
             branch["id"]            = bdata["index"]
-            branch["bus_fr"]        = bdata["f_bus"]
-            branch["bus_to"]        = bdata["t_bus"]
+            branch["bus"]           = [bdata["f_bus"], bdata["t_bus"]]
             #-----------------------------------#
             branch["r"]             = bdata["br_r"]
             branch["x"]             = bdata["br_x"]
@@ -79,18 +78,18 @@ function variable_branch_current_real(pm::_PMs.AbstractPowerModel; nw::Int=funda
 
     cbr     = _PMs.var(pm, nw)[:cbr] = 
                 JuMP.@variable( pm.model,
-                                [(b,i,j) in _PMs.ref(pm, nw, :arcs)], 
+                                [(b,i,j) in _PMs.ref(pm, nw, :arcs_branch)], 
                                 base_name="$(nw)_cbr",
                                 start=0.0)
 
     if bounded
-        for (b,i,j) in _PMs.ref(pm, nw, :arcs)
+        for (b,i,j) in _PMs.ref(pm, nw, :arcs_branch)
             JuMP.set_lower_bound(cr[(b,i,j)], -c_lim[b])
             JuMP.set_upper_bound(cr[(b,i,j)],  c_lim[b])
         end
     end
 
-    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :branch, :cbr_fr, :cbr_to, _PMs.ref(pm, nw, :arcs_from), _PMs.ref(pm, nw, :arcs_to), cbr)
+    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :branch, :cbr_fr, :cbr_to, _PMs.ref(pm, nw, :arcs_branch_from), _PMs.ref(pm, nw, :arcs_branch_to), cbr)
 end
 ""
 function variable_branch_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
@@ -98,18 +97,18 @@ function variable_branch_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=
 
     cbi     = _PMs.var(pm, nw)[:cbi] = 
                 JuMP.@variable( pm.model,
-                                [(b,i,j) in _PMs.ref(pm, nw, :arcs)], 
-                                base_name="$(nw)_ci",
+                                [(b,i,j) in _PMs.ref(pm, nw, :arcs_branch)], 
+                                base_name="$(nw)_cbi",
                                 start=0.0)
 
     if bounded
-        for (b,i,j) in _PMs.ref(pm, nw, :arcs)
+        for (b,i,j) in _PMs.ref(pm, nw, :arcs_branch)
             JuMP.set_lower_bound(ci[(b,i,j)], -c_lim[b])
             JuMP.set_upper_bound(ci[(b,i,j)],  c_lim[b])
         end
     end
 
-    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :branch, :cbi_fr, :cbi_to, _PMs.ref(pm, nw, :arcs_from), _PMs.ref(pm, nw, :arcs_to), cbi)
+    report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :branch, :cbi_fr, :cbi_to, _PMs.ref(pm, nw, :arcs_branch_from), _PMs.ref(pm, nw, :arcs_branch_to), cbi)
 end
 ""
 function variable_branch_series_current_real(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
@@ -154,30 +153,26 @@ end
 ## branch current constraint ###################################################
 ""
 function constraint_branch_current_from(pm::HarmonicPowerModel, i::Int; nw::Int=fundamental(pm))
-    branch  = _PMs.ref(pm, nw, :branch, i)
+    idx     = (i, _PMs.ref(pm, fundamental(pm), :branch, i, "bus")...)
 
-    idx     = (i, branch["bus_fr"], branch["bus_to"])
-
-    g       = branch["g_fr"]
-    b       = branch["b_fr"]
+    g       = _PMs.ref(pm, nw, :branch, i, "g_fr")
+    b       = _PMs.ref(pm, nw, :branch, i, "b_fr")
 
     constraint_branch_current(pm, nw, idx, g, b, 1)
 end
 ""
 function constraint_branch_current_to(pm::HarmonicPowerModel, i::Int; nw::Int=fundamental(pm))
-    branch  = _PMs.ref(pm, nw, :branch, i)
-    
-    idx     = (i, branch["bus_to"], branch["bus_fr"])
+    idx     = (i, reverse(_PMs.ref(pm, fundamental(pm), :branch, i, "bus"))...)
 
-    g       = branch["g_to"]
-    b       = branch["b_to"]
+    g       = _PMs.ref(pm, nw, :branch, i, "g_to")
+    b       = _PMs.ref(pm, nw, :branch, i, "b_to")
 
     constraint_branch_current(pm, nw, idx, g, b, -1)
 end
 ""
 function constraint_branch_current(pm::HarmonicPowerModel, n::Int, idx, g, b, sign)
-    vr      = _PMs.var(pm, n, :vr, idx[2])
-    vi      = _PMs.var(pm, n, :vi, idx[2])
+    vbr     = _PMs.var(pm, n, :vbr, idx[2])
+    vbi     = _PMs.var(pm, n, :vbi, idx[2])
 
     cbsr    = _PMs.var(pm, n, :cbsr, idx[1]) * sign
     cbsi    = _PMs.var(pm, n, :cbsi, idx[1]) * sign
@@ -185,44 +180,42 @@ function constraint_branch_current(pm::HarmonicPowerModel, n::Int, idx, g, b, si
     cbr     = _PMs.var(pm, n, :cbr, idx)
     cbi     = _PMs.var(pm, n, :cbi, idx)
 
-    JuMP.@constraint(pm.model, cbr == cbsr + g * vr - b * vi)
-    JuMP.@constraint(pm.model, cbi == cbsi + g * vi + b * vr)
+    JuMP.@constraint(pm.model, cbr == cbsr + g * vbr - b * vbi)
+    JuMP.@constraint(pm.model, cbi == cbsi + g * vbi + b * vbr)
 end
 ## voltage drop constraint #####################################################
 ""
 function constraint_branch_voltage_drop(pm::HarmonicPowerModel, i::Int; nw::Int=fundamental(pm))
-    branch  = _PMs.ref(pm, nw, :branch, i)
+    idx     = (i, _PMs.ref(pm, fundamental(pm), :branch, i, "bus")...)
 
-    idx     = (i, branch["bus_fr"], branch["bus_to"])
+    r       = _PMs.ref(pm, nw, :branch, i, "r")
+    x       = _PMs.ref(pm, nw, :branch, i, "x")
 
-    r       = branch["r"]
-    x       = branch["x"]
-
-    constraint_voltage_drop(pm, nw, i, idx, r, x)
+    constraint_branch_voltage_drop(pm, nw, idx, r, x)
 end
 ""
 function constraint_branch_voltage_drop(pm::HarmonicPowerModel, n::Int, idx, r, x)
     cbsr    = _PMs.var(pm, n, :cbsr, idx[1])
     cbsi    = _PMs.var(pm, n, :cbsi, idx[1])
     
-    vr_fr   = _PMs.var(pm, n, :vr, idx[2])
-    vi_fr   = _PMs.var(pm, n, :vi, idx[2])
+    vbr_fr  = _PMs.var(pm, n, :vbr, idx[2])
+    vbi_fr  = _PMs.var(pm, n, :vbi, idx[2])
 
-    vr_to   = _PMs.var(pm, n, :vr, idx[3])
-    vi_to   = _PMs.var(pm, n, :vi, idx[3])
+    vbr_to  = _PMs.var(pm, n, :vbr, idx[3])
+    vbi_to  = _PMs.var(pm, n, :vbi, idx[3])
 
-    JuMP.@constraint(pm.model, vr_to == vr_fr - r * cbsr + x * cbsi)
-    JuMP.@constraint(pm.model, vi_to == vi_fr - r * cbsi - x * cbsr)
+    JuMP.@constraint(pm.model, vbr_to == vbr_fr - r * cbsr + x * cbsi)
+    JuMP.@constraint(pm.model, vbi_to == vbi_fr - r * cbsi - x * cbsr)
 end
 ## root-mean-square current limit ##############################################
 ""
 function constraint_branch_current_rms_limit(pm::HarmonicPowerModel, i::Int)
     branch      = _PMs.ref(pm, fundamental(pm), :branch, i)
-    idx_fr      = (i, branch["bus_fr"], branch["bus_to"])
-    idx_to      = (i, branch["bus_to"], branch["bus_fr"])
+    idx_fr      = (i, _PMs.ref(pm, fundamental(pm), :branch, i, "bus")...)
+    idx_to      = (i, reverse(_PMs.ref(pm, fundamental(pm), :branch, i, "bus"))...)
 
-    i_rms_max   = branch["i_rms_max"]
-    i_fund_magn = branch["i_fund_magn"]
+    i_rms_max   = _PMs.ref(pm, fundamental(pm), :branch, i, "i_rms_max")
+    i_fund_magn = _PMs.ref(pm, fundamental(pm), :branch, i, "i_fund_magn")
 
     constraint_branch_current_rms_limit(pm, idx_fr, idx_to, i_rms_max, i_fund_magn)
 end

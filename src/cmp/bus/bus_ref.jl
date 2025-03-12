@@ -22,7 +22,7 @@ end end end
 ## reference bus voltage constraint ############################################
 ""
 function constraint_ref_voltage(pm::HarmonicPowerModel, i::Int; nw::Int=fundamental(pm))
-    v_fund_ref  = _PMs.ref(pm, nw, :bus, i, "v_fund_ref")
+    v_fund_ref  = _PMs.ref(pm, fundamental(pm), :bus, i, "v_fund_ref")
 
     nw == fundamental(pm) && constraint_ref_voltage_fundamental(pm, nw, i, v_fund_ref)
     nw ≠  fundamental(pm) && constraint_ref_voltage_harmonic(pm, nw, i, v_fund_ref)

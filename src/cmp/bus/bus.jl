@@ -14,17 +14,17 @@
 ""
 fundamental_bus_voltage_multiplier(pm::HarmonicPowerModel, i) = 
     _PMs.ref(pm, fundamental(pm), :bus, i, "v_rms_max")
+""
 fundamental_bus_voltage_multiplier(pm::dHHCPowerModel, i) = 
     _PMs.ref(pm, fundamental(pm), :bus, i, "v_fund_magn")
-
+""
+bus_voltage_magnitude_limit(pm::HarmonicPowerModel, nw, i) = 
+    nw == fundamental(pm) ? _PMs.ref(pm, nw, :bus, i, "v_rms_max") :
+                            _PMs.ref(pm, nw, :bus, i, "v_ihd_max") *
+                            fundamental_bus_voltage_multiplier(pm, i)
 ""
 collect_bus_voltage_magnitude_limits(pm::HarmonicPowerModel, nw::Int) =
-    Dict(i => ifelse(   nw == fundamental(pm),
-                        _PMs.ref(pm, nw, :bus, i, "v_rms_max"), 
-                        _PMs.ref(pm, nw, :bus, i, "v_ihd_max") * 
-                        fundamental_bus_voltage_multiplier(pm, i)
-                    ) 
-            for i in _PMs.ids(pm, nw, :bus))
+    Dict(i => bus_voltage_magnitude_limit(pm, nw, i) for i in _PMs.ids(pm, nw, :bus))
 
 # parameters ###################################################################
 ""
@@ -60,7 +60,7 @@ function variable_bus_voltage_real(pm::HarmonicPowerModel; nw::Int=fundamental(p
                 JuMP.@variable( pm.model,
                                 [i in _PMs.ids(pm, nw, :bus)], 
                                 base_name="$(nw)_vbr",
-                                start=v_lim)
+                                start=v_lim[i])
 
     if bounded
         for i in _PMs.ids(pm, nw, :bus)
@@ -96,59 +96,43 @@ end
 ## Kirchhoff's current law #####################################################
 ""
 function constraint_bus_current_balance(pm::HarmonicPowerModel, i::Int; nw::Int=fundamental(pm))
-    bus_arcs      = _PMs.ref(pm, nw, :bus_arcs, i)
-    bus_arcs_xfmr = _PMs.ref(pm, nw, :bus_arcs_xfmr, i)
+    bus_arcs_branch = _PMs.ref(pm, nw, :bus_arcs_branch, i)
+    bus_arcs_xfmr   = _PMs.ref(pm, nw, :bus_arcs_xfmr, i)
 
-    bus_filters   = _PMs.ref(pm, nw, :bus_filters, i)
-    bus_gens      = _PMs.ref(pm, nw, :bus_gens, i)
-    bus_loads     = _PMs.ref(pm, nw, :bus_loads, i)
-    bus_shunts    = _PMs.ref(pm, nw, :bus_shunts, i)
+    bus_gen         = _PMs.ref(pm, nw, :bus_gen, i)
+    bus_hload       = _PMs.ref(pm, nw, :bus_hload, i)
+    bus_hsrc        = _PMs.ref(pm, nw, :bus_hsrc, i)
 
-    bus_gs  = Dict(k => _PMs.ref(pm, nw, :shunt, k, "gs") for k in bus_shunts)
-    bus_bs  = Dict(k => _PMs.ref(pm, nw, :shunt, k, "bs") for k in bus_shunts)
-    gen_bg  = Dict(k => _PMs.ref(pm, nw, :gen, k, "bg") for k in bus_gens)
-
-    constraint_bus_current_balance(pm, nw, i,   bus_arcs, bus_arcs_xfmr, 
-                                            bus_filters, bus_gens, bus_loads, 
-                                            bus_gs, bus_bs, gen_bg)
+    constraint_bus_current_balance(pm, nw, bus_arcs_branch, bus_arcs_xfmr, 
+                                           bus_gen, bus_hload, bus_hsrc)
 end
 ""
-function constraint_bus_current_balance(pm::HarmonicPowerModel, n::Int, i, bus_arcs, bus_arcs_xfmr, bus_filters, bus_gens, bus_loads, bus_gs, bus_bs, gen_bg)
-    vbr = _PMs.var(pm, n, :vbr, i)
-    vbi = _PMs.var(pm, n, :vbi, i)
+function constraint_bus_current_balance(pm::HarmonicPowerModel, n::Int, bus_arcs_branch, bus_arcs_xfmr, bus_gen, bus_hload, bus_hsrc)
+    cbr = _PMs.var(pm, n, :cbr)
+    cbi = _PMs.var(pm, n, :cbi)
+    cxr = _PMs.var(pm, n, :cxr)
+    cxi = _PMs.var(pm, n, :cxi)
 
-    cr = _PMs.var(pm, n, :cr)
-    ci = _PMs.var(pm, n, :ci)
-    crx = _PMs.var(pm, n, :crx)
-    cix = _PMs.var(pm, n, :cix)
+    cgr = _PMs.var(pm, n, :cgr)
+    cgi = _PMs.var(pm, n, :cgi)
+    clr = _PMs.var(pm, n, :clr)
+    cli = _PMs.var(pm, n, :cli)
+    csr = _PMs.var(pm, n, :csr)
+    csi = _PMs.var(pm, n, :csi)
 
-    crf = _PMs.var(pm, n, :crf)
-    cif = _PMs.var(pm, n, :cif)
-    # crg = _PMs.var(pm, n, :crg)
-    # cig = _PMs.var(pm, n, :cig)
-    crd = _PMs.var(pm, n, :crd)
-    cid = _PMs.var(pm, n, :cid)
-
-    JuMP.@constraint(pm.model,  sum(cr[a] for a in bus_arcs)
-                                + sum(crx[t] for t in bus_arcs_xfmr)
+    JuMP.@constraint(pm.model,    sum(cbr[b] for b in bus_arcs_branch)
+                                + sum(cxr[x] for x in bus_arcs_xfmr)
                                 ==
-                                sum(crf[f] for f in bus_filters)
-                                #+ sum(crg[g] for g in bus_gens) # remove later for generators + add sum(gs for gs in values(gen_gs))*vr .....
-                                - sum(crd[d] for d in bus_loads)
-                                - sum(gs for gs in values(bus_gs))*vr 
-                                + sum(bs for bs in values(bus_bs))*vi
-                                + sum(bg for bg in values(gen_bg))*vi
-                                )
-    JuMP.@constraint(pm.model,  sum(ci[a] for a in bus_arcs)
-                                + sum(cix[t] for t in bus_arcs_xfmr)
+                                  sum(cgr[g] for g in bus_gen) 
+                                - sum(clr[l] for l in bus_hload)
+                                - sum(csr[s] for s in bus_hsrc))
+
+    JuMP.@constraint(pm.model,    sum(cbi[b] for b in bus_arcs_branch)
+                                + sum(cxi[x] for x in bus_arcs_xfmr)
                                 ==
-                                sum(cif[f] for f in bus_filters)
-                                # + sum(cig[g] for g in bus_gens) # check later for generators
-                                - sum(cid[d] for d in bus_loads)
-                                - sum(gs for gs in values(bus_gs))*vi 
-                                - sum(bs for bs in values(bus_bs))*vr
-                                - sum(bg for bg in values(gen_bg))*vr
-                                )
+                                  sum(cgi[g] for g in bus_gen)
+                                - sum(cli[l] for l in bus_hload)
+                                - sum(csi[l] for s in bus_hsrc))
 end
 
 ## individual harmonic voltage distortion limit ################################

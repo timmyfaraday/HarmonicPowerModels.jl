@@ -14,8 +14,7 @@
 
 ""
 solve_hpf(hdata, model_type::Type, optimizer; kwargs...) =
-    solve_model(hdata, model_type, optimizer, build_hpf;  
-                    multinetwork=true, kwargs...)
+    solve_model(hdata, model_type, optimizer, build_hpf; multinetwork=true, kwargs...)
 
 ""
 function build_hpf(pm::HarmonicPowerModel)
@@ -30,21 +29,15 @@ function build_hpf(pm::HarmonicPowerModel)
         variable_xfmr_current(pm, nw=n, bounded=false)
 
         ## unit current variables
-        variable_filter_current(pm, nw=n, bounded=false)
         variable_gen_current(pm, nw=n, bounded=false)
-        variable_hload_current(pm, nw=n, bounded=false)        
+        variable_hload_current(pm, nw=n, bounded=false)
+        variable_hsrc_current(pm, nw=n, bounded=false)                          # empty variable
     end 
 
     # objective
     objective_power_flow(pm)
 
     # constraint
-    ## overall or fundamental constraints
-    ### filter
-    for f in ids(pm, :filter)
-        constraint_active_filter(pm, f, nw=fundamental(pm))
-    end
-
     ## harmonic constraints
     for n in _PMs.nw_ids(pm)
         ### reference node

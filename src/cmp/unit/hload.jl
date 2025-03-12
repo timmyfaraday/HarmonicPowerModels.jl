@@ -23,10 +23,13 @@ function calc_hload_current_rms_max(hdata::Dict{String,Any}, ldata::Dict{String,
     return S_nom / s_base_mva / sqrt(3) ./ v_rms_max
 end
 ""
+hload_current_magnitude_limit(pm::HarmonicPowerModel, nw::Int, l) = 
+    nw == fundamental(pm) ? _PMs.ref(pm, fundamental(pm), :hload, l, "i_rms_max") :
+                            _PMs.ref(pm, fundamental(pm), :hload, l, "i_rms_max") *
+                            _PMs.ref(pm, nw, :hload, l, "hcm")
+""
 collect_hload_current_magnitude_limits(pm::HarmonicPowerModel, nw::Int) = 
-    Dict(l =>   _PMs.ref(pm, fundamental(pm), :hload, l, "i_rms_max") * 
-                _PMs.ref(pm, nw, :hload, l, "hcm")
-            for l in _PMs.ids(pm, nw, :hload))
+    Dict(l => hload_current_magnitude_limit(pm, nw, l) for l in _PMs.ids(pm, nw, :hload))
 
 # parameters ###################################################################
 ""
@@ -104,7 +107,7 @@ function constraint_hload_power(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fun
     else
         hcm = _PMs.ref(pm, nw, :hload, l, "hcm")
         
-        constraint_load_constant_current(pm, nw, l, hcm)
+        constraint_hload_constant_current(pm, nw, l, hcm)
     end
 end
 ""

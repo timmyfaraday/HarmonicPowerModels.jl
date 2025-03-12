@@ -4,7 +4,7 @@
 # Optimization with Power Harmonics.                                           #
 # See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
 ################################################################################
-# Authors: Tom Van Acker, Frederik Geth, Hakan Ergun                           #
+# Authors: Tom Van Acker                                                       #
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
@@ -22,7 +22,7 @@ init_hdata_cmp(fdata::Dict{String,Any}, cmp::String, prob::Symbol) =
         Dict{String,Any}(nc => Dict{String,Any}() for nc in keys(fdata[cmp]))
     elseif cmp == "hload" && prob in [:hpf, :hopf] 
         Dict{String,Any}(nl => Dict{String,Any}() for nl in keys(fdata["load"]))
-    elseif cmp == "hscr" && prob in [:hhc] 
+    elseif cmp == "hsrc" && prob in [:hhc] 
         Dict{String,Any}(nl => Dict{String,Any}() for nl in keys(fdata["load"]))
     else
         Dict{String,Any}()
@@ -59,7 +59,7 @@ function build_hdata_from_matpower_file(fdata::Dict{String,Any};
 
     add_gen_hdata!(hdata, fdata)
     prob in [:hpf, :hopf]   && add_hload_hdata!(hdata, fdata) 
-    prob in [:hhc]          && add_hscr_hdata!(hdata, fdata)
+    prob in [:hhc]          && add_hsrc_hdata!(hdata, fdata)
 
     return hdata
 end

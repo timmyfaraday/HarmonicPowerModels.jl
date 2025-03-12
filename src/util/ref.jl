@@ -4,102 +4,68 @@
 # Optimization with Power Harmonics.                                           #
 # See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
 ################################################################################
-# Authors: Tom Van Acker, Frederik Geth                                        #
+# Authors: Tom Van Acker                                                       #
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
 # v0.2.1 - reviewed TVA                                                        #
+# v0.3.0 - adapted for extended graph representation                           #
 ################################################################################
 
-# edges ########################################################################
-## xfmr ########################################################################
 ""
-function ref_add_xfmr!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    _PMs.apply_pm!(_ref_add_xfmr!, ref, data)
-end
-""
-function _ref_add_xfmr!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    if !haskey(ref, :xfmr)
-        ref[:xfmr] = Dict()
-        ref[:xfmr_arcs_from] = Dict()
-        ref[:xfmr_arcs_to] = Dict()
-        ref[:xfmr_arcs] = Dict()
-        ref[:bus_arcs_xfmr] = Dict((i, []) for (i,bus) in ref[:bus])
-    else
-        ref[:xfmr] = Dict(x for x in ref[:xfmr] if  x.second["f_bus"] in keys(ref[:bus]) &&
-                                                    x.second["t_bus"] in keys(ref[:bus]))
-        
-        ref[:xfmr_arcs_from] = [(x,xfmr["f_bus"],xfmr["t_bus"]) for (x,xfmr) in ref[:xfmr]]
-        ref[:xfmr_arcs_to]   = [(x,xfmr["t_bus"],xfmr["f_bus"]) for (x,xfmr) in ref[:xfmr]]
-        ref[:xfmr_arcs] = [ref[:xfmr_arcs_from]; ref[:xfmr_arcs_to]]
+function ref_add_core!(ref::Dict{Symbol,Any})
+    # get the fundamental network ref 
+    nf_ref = ref[:it][_PMs.pm_it_sym][:nw][1]
 
-        bus_arcs_xfmr = Dict((i, []) for (i,bus) in ref[:bus])
-        for (x,i,j) in ref[:xfmr_arcs]
+    # enumerate over all harmonic network refs 
+    for (nw, nw_ref) in ref[:it][_PMs.pm_it_sym][:nw]
+        # conductor ids
+        nw_ref[:conductor_ids] = 1:1
+        
+        # reference buses
+        nw_ref[:ref_buses] = Dict{Int,Any}(k => v for (k,v) in nf_ref[:bus] if v["type"] == 3)
+
+        # branch 
+        nw_ref[:arcs_branch_from]   = [(nb,br["bus"]...)            for (nb,br) in nf_ref[:branch]]
+        nw_ref[:arcs_branch_to]     = [(nb,reverse(br["bus"])...)   for (nb,br) in nf_ref[:branch]]
+        nw_ref[:arcs_branch]        = [nw_ref[:arcs_branch_from]; nw_ref[:arcs_branch_to]]        
+        
+        bus_arcs_branch = Dict((i, []) for (i,bus) in nw_ref[:bus])
+        for (b,i,j) in nw_ref[:arcs_branch]
+            push!(bus_arcs_branch[i], (b,i,j))
+        end
+        nw_ref[:bus_arcs_branch] = bus_arcs_branch
+
+        # xfmr 
+        nw_ref[:arcs_xfmr_from]     = [(nx,xf["bus"]...)            for (nx,xf) in nf_ref[:xfmr]]
+        nw_ref[:arcs_xfmr_to]       = [(nx,reverse(xf["bus"])...)   for (nx,xf) in nf_ref[:xfmr]]
+        nw_ref[:arcs_xfmr]          = [nw_ref[:arcs_xfmr_from]; nw_ref[:arcs_xfmr_to]]
+
+        bus_arcs_xfmr = Dict((i, []) for (i,bus) in nw_ref[:bus])
+        for (x,i,j) in nw_ref[:arcs_xfmr]
             push!(bus_arcs_xfmr[i], (x,i,j))
         end
-        ref[:bus_arcs_xfmr] = bus_arcs_xfmr
+        nw_ref[:bus_arcs_xfmr] = bus_arcs_xfmr
+
+        # gen
+        bus_gen = Dict((i, Int[]) for (i,bus) in nw_ref[:bus])
+        for (g,gen) in nw_ref[:gen]
+            push!(bus_gen[nf_ref[:gen][g]["bus"]], g)
+        end
+        nw_ref[:bus_gen] = bus_gen
+
+        # hload
+        bus_hload = Dict((i, Int[]) for (i,bus) in nw_ref[:bus])
+        for (l,hload) in nw_ref[:hload]
+            push!(bus_hload[nf_ref[:hload][l]["bus"]], l)
+        end
+        nw_ref[:bus_hload] = bus_hload
+
+        # hsrc
+        bus_hsrc = Dict((i, Int[]) for (i,bus) in nw_ref[:bus])
+        for (s,hsrc) in nw_ref[:hsrc]
+            push!(bus_hsrc[nf_ref[:hsrc][s]["bus"]], s)
+        end
+        nw_ref[:bus_hsrc] = bus_hsrc
     end
 end
-
-# units ########################################################################
-## hload #######################################################################
-""
-function ref_add_hload!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    _PMs.apply_pm!(_ref_add_hload!, ref, data)
-end
-""
-function _ref_add_hload!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    if !haskey(ref, :hload)
-        ref[:hload] = Dict()
-        ref[:bus_hload] = Dict((i, []) for (i,bus) in ref[:bus])
-    else
-        ref[:hload] = Dict(f for f in ref[:hload] if f.second["bus"] in keys(ref[:bus]))
-
-        bus_load = Dict((i, Int[]) for (i,bus) in ref[:bus])
-        for (i,hload) in ref[:hload]
-            push!(bus_hload[filter["hload_bus"]], i)
-        end
-        ref[:bus_hload] = bus_hload
-end end
-
-## hscr ########################################################################
-""
-function ref_add_hsrc!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    _PMs.apply_pm!(_ref_add_hsrc!, ref, data)
-end
-""
-function _ref_add_hsrc!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    if !haskey(ref, :hscr)
-        ref[:hscr] = Dict()
-        ref[:bus_hscr] = Dict((i, []) for (i,bus) in ref[:bus])
-    else
-        ref[:hscr] = Dict(f for f in ref[:hsrc] if f.second["bus"] in keys(ref[:bus]))
-
-        bus_hscr = Dict((i, Int[]) for (i,bus) in ref[:bus])
-        for (i,hscr) in ref[:hscr]
-            push!(bus_hscr[filter["hsrc_bus"]], i)
-        end
-        ref[:bus_hscr] = bus_hscr
-end end
-
-## filter ###################################################################### 
-""
-function ref_add_filter!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    _PMs.apply_pm!(_ref_add_filter!, ref, data)
-end
-""
-function _ref_add_filter!(ref::Dict{Symbol,<:Any}, data::Dict{String,<:Any})
-    if !haskey(ref, :filter)
-        ref[:filter] = Dict()
-        ref[:bus_filters] = Dict((i, []) for (i,bus) in ref[:bus])
-    else
-        ref[:filter] = Dict(f for f in ref[:filter] if f.second["bus"] in keys(ref[:bus]))
-
-        bus_filters = Dict((i, Int[]) for (i,bus) in ref[:bus])
-        for (i,filter) in ref[:filter]
-            push!(bus_filters[filter["bus"]], i)
-        end
-        ref[:bus_filters] = bus_filters
-end end
-
-

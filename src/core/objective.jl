@@ -57,7 +57,7 @@ end end
 ## fairness principle constraints ##############################################
 ""
 function constraint_fairness_principle(pm::HarmonicPowerModel; nw::Int=fundamental(pm))
-    ids = sort(collect(_PMs.ids(pm, :hscr, nw=nw)))
+    ids = sort(collect(_PMs.ids(pm, :hsrc, nw=nw)))
 
     constraint_fairness_principle(pm, nw, ids)
 end
@@ -125,7 +125,7 @@ function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
     # maximum efficiency
     if pm.data["principle"] == "maximum efficiency"
         csm = [_PMs.var(pm, n, :csm, s) for n in _PMs.nw_ids(pm) 
-                                        for s in _PMs.ids(pm, :hscr, nw=n) 
+                                        for s in _PMs.ids(pm, :hsrc, nw=n) 
                                         if n ≠ fundamental(pm)]
     
         JuMP.@objective(pm.model, Max, sum(csm))
@@ -134,7 +134,7 @@ function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
     # absolute equality
     if pm.data["principle"] == "absolute equality"
         csm = [_PMs.var(pm, n, :csm, s) for n in _PMs.nw_ids(pm) 
-                                        for s in _PMs.ids(pm, :hscr, nw=n) 
+                                        for s in _PMs.ids(pm, :hsrc, nw=n) 
                                         if n ≠ fundamental(pm)]
     
         JuMP.@objective(pm.model, Max, sum(csm)) 

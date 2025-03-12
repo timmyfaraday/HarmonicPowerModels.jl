@@ -40,17 +40,17 @@ H = [1, 3]
 
 # COMPUTATION ##################################################################
 # solve HPF problem
-hdata   = build_hdata_from_matpower_file(data, prob=:hpf, H=H)
-results = solve_hpf(hdata, PMs.IVRPowerModel, solver)
+hdata   = build_hdata_from_matpower_file(data, H=H, prob=:hpf)
+results = solve_hpf(hdata, HarmonicPowerModel, solver)
 
 # RESULTS ######################################################################
 # TABLE: Bus results for two bus line case (per unit)
 
 ## bus results
-Um(nh,nb)   = round(abs(results["solution"]["nw"]["$nh"]["bus"]["$nb"]["vr"] +
-                        results["solution"]["nw"]["$nh"]["bus"]["$nb"]["vi"] * im), digits=3);
-Ua(nh,nb)   = round(atand(results["solution"]["nw"]["$nh"]["bus"]["$nb"]["vr"],
-                          results["solution"]["nw"]["$nh"]["bus"]["$nb"]["vi"]), digits=3);
+Um(nh,nb)   = round(abs(results["solution"]["nw"]["$nh"]["bus"]["$nb"]["vbr"] +
+                        results["solution"]["nw"]["$nh"]["bus"]["$nb"]["vbi"] * im), digits=3);
+Ua(nh,nb)   = round(atand(results["solution"]["nw"]["$nh"]["bus"]["$nb"]["vbr"],
+                          results["solution"]["nw"]["$nh"]["bus"]["$nb"]["vbi"]), digits=3);
 RMS(nb)     = round(sqrt(sum(Um(nh,nb)^2 for nh in H)), digits=3);
 THD(nb)     = round(sqrt(sum(Um(nh,nb)^2 for nh in H if nh ≠ 1) / Um(1,nb)^2), digits=3);
 
@@ -64,10 +64,10 @@ data    = vcat( hcat("i",   "h=1",  Um(1,1),    Ua(3,1),    RMS(1),     THD(1)),
 pretty_table(data, header=header)
 
 ## load results 
-Id(nh,nl)   = round(results["solution"]["nw"]["$nh"]["load"]["$nl"]["crd"] +
-                    results["solution"]["nw"]["$nh"]["load"]["$nl"]["cid"] * im, digits=3);
-Sd(nh,nl)   = (results["solution"]["nw"]["$nh"]["bus"]["2"]["vr"] +
-               results["solution"]["nw"]["$nh"]["bus"]["2"]["vi"] * im) * conj(Id(nh,nl));
+Id(nh,nl)   = round(results["solution"]["nw"]["$nh"]["hload"]["$nl"]["clr"] +
+                    results["solution"]["nw"]["$nh"]["hload"]["$nl"]["cli"] * im, digits=3);
+Sd(nh,nl)   = (results["solution"]["nw"]["$nh"]["bus"]["2"]["vbr"] +
+               results["solution"]["nw"]["$nh"]["bus"]["2"]["vbi"] * im) * conj(Id(nh,nl));
 Pd(nh,nl)   = round(real(Sd(nh,nl)), digits=3);
 Qd(nh,nl)   = round(imag(Sd(nh,nl)), digits=3);
 Idm(nh,nl)  = round(abs(Id(nh,nl)), digits=3);
@@ -80,10 +80,10 @@ data    = vcat( hcat("d",   "h=1",  Pd(1,1),    Qd(1,1),    Id(1,1),    Idm(1,1)
 pretty_table(data, header=header)
 
 ## generator results
-Ig(nh,ng)   = round(results["solution"]["nw"]["$nh"]["gen"]["$ng"]["crg"] +
-                    results["solution"]["nw"]["$nh"]["gen"]["$ng"]["cig"] * im, digits=3);
-Sg(nh,ng)   = (results["solution"]["nw"]["$nh"]["bus"]["1"]["vr"] +
-               results["solution"]["nw"]["$nh"]["bus"]["1"]["vi"] * im) * conj(Ig(nh,ng));
+Ig(nh,ng)   = round(results["solution"]["nw"]["$nh"]["gen"]["$ng"]["cgr"] +
+                    results["solution"]["nw"]["$nh"]["gen"]["$ng"]["cgi"] * im, digits=3);
+Sg(nh,ng)   = (results["solution"]["nw"]["$nh"]["bus"]["1"]["vbr"] +
+               results["solution"]["nw"]["$nh"]["bus"]["1"]["vbi"] * im) * conj(Ig(nh,ng));
 Pg(nh,ng)   = round(real(Sg(nh,ng)), digits=3);
 Qg(nh,ng)   = round(imag(Sg(nh,ng)), digits=3);
 Igm(nh,ng)  = round(abs(Ig(nh,ng)), digits=3);
