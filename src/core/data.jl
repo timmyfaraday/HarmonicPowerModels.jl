@@ -13,7 +13,7 @@
 ################################################################################
 
 # component list ###############################################################
-const cmp_list = ["bus", "branch", "xfmr", "filter", "gen", "hload", "hsrc"]
+const cmp_list = ["bus", "branch", "xfmr", "filter", "gen", "hload", "hsrc", "shunt"]
 
 # init #########################################################################
 ""
@@ -64,6 +64,7 @@ function build_hdata_from_matpower_file(fdata::Dict{String,Any};
     add_gen_hdata!(hdata, fdata)
     prob in [:hpf, :hopf]   && add_hload_hdata!(hdata, fdata) 
     prob in [:hhc]          && add_hsrc_hdata!(hdata, fdata)
+    add_shunt_hdata!(hdata, fdata)
 
     return hdata
 end

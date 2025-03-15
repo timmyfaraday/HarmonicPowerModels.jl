@@ -32,24 +32,41 @@ const HPM = HarmonicPowerModels
 solver = Ipopt.Optimizer
 
 # read-in data
-path = joinpath(HPM.BASE_DIR,"test/data/matpower/two_bus_example_hpf.m")
+path = joinpath(HPM.BASE_DIR,"test/data/matpower/two_bus_example_hopf.m")
 data = PMs.parse_file(path)
 
 # set the ref bus to a clean bus
 data["bus"]["1"]["bus_type"] = 4
 
-# solve PF problem
-results_fund = PMs.solve_pf_iv(data, PMs.IVRPowerModel, solver)
-
 # define the set of considered harmonics
-H = [1, 3]
+H = [1, 2, 3]
 
 # COMPUTATION ##################################################################
 # solve HPF problem
-hdata   = build_hdata_from_matpower_file(data, H=H, prob=:hpf)
-results = solve_hpf(hdata, HarmonicPowerModel, solver)
+hdata       = build_hdata_from_matpower_file(data, H=H, prob=:hpf)
+results     = solve_hpf(hdata, HarmonicPowerModel, solver)
 
 # RESULTS PROCESSING ###########################################################
+## TABLE V: Case 1 - Bus voltages [pu/°], 3rd and 9th harmonic are zero.
+Um(nh,nb)   = round(abs(results_wo["solution"]["nw"]["$nh"]["bus"]["$nb"]["vbr"] +
+                        results_wo["solution"]["nw"]["$nh"]["bus"]["$nb"]["vbi"] * im), digits=3);
+Ua(nh,nb)   = round(atand(results_wo["solution"]["nw"]["$nh"]["bus"]["$nb"]["vbi"],
+                          results_wo["solution"]["nw"]["$nh"]["bus"]["$nb"]["vbr"]), digits=3);
+THD(nb)     = round(sqrt(sum(Um(nh,nb)^2 for nh in H if nh ≠ 1) / Um(1,nb)^2), digits=3);
+header  = (
+            ["i", "|Uᵢ₁|", "∠Uᵢ₁", "|Uᵢ₅|", "∠Uᵢ₅", "|Uᵢ₇|", "∠Uᵢ₇", "|Uᵢ₁₃|", "∠Uᵢ₁₃", "THDᵢ"]
+          );
+data    = vcat( hcat("1", Um(1,1), Ua(1,1), Um(5,1), Ua(5,1), Um(7,1), Ua(7,1), Um(13,1), Ua(13,1), THD(1)),
+                hcat("2", Um(1,2), Ua(1,2), Um(5,2), Ua(5,2), Um(7,2), Ua(7,2), Um(13,2), Ua(13,2), THD(2)),
+                hcat("3", Um(1,3), Ua(1,3), Um(5,3), Ua(5,3), Um(7,3), Ua(7,3), Um(13,3), Ua(13,3), THD(3)),
+                hcat("4", Um(1,4), Ua(1,4), Um(5,4), Ua(5,4), Um(7,4), Ua(7,4), Um(13,4), Ua(13,4), THD(4)),
+                hcat("5", Um(1,5), Ua(1,5), Um(5,5), Ua(5,5), Um(7,5), Ua(7,5), Um(13,5), Ua(13,5), THD(5)),
+                hcat("6", Um(1,6), Ua(1,6), Um(5,6), Ua(5,6), Um(7,6), Ua(7,6), Um(13,6), Ua(13,6), THD(6)),
+                hcat("7", Um(1,7), Ua(1,7), Um(5,7), Ua(5,7), Um(7,7), Ua(7,7), Um(13,7), Ua(13,7), THD(7)),
+                hcat("8", Um(1,8), Ua(1,8), Um(5,8), Ua(5,8), Um(7,8), Ua(7,8), Um(13,8), Ua(13,8), THD(8)));
+pretty_table(data, header=header)
+
+
 # TABLE II: Bus results for two bus line case (per unit)
 Um(nh,nb)   = round(abs(results["solution"]["nw"]["$nh"]["bus"]["$nb"]["vbr"] +
                         results["solution"]["nw"]["$nh"]["bus"]["$nb"]["vbi"] * im), digits=3);
@@ -115,3 +132,9 @@ pretty_table(data_b, header=header_b)
 pretty_table(data_l, header=header_l)
 pretty_table(data_g, header=header_g)
 pretty_table(data_br, header=header_br)
+
+# COMPUTATION ##################################################################
+# solve HPF problem
+hdata       = build_hdata_from_matpower_file(data, H=H, prob=:hpf)
+results_wo  = solve_hpf(hdata, HarmonicPowerModel, solver)
+

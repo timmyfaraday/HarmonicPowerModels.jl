@@ -45,8 +45,8 @@ function add_gen_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
             gen["id"]           = gdata["index"]
             gen["bus"]          = gdata["gen_bus"]
             #-----------------------------------#
-            gen["gsc"]          = calc_gen_admittance_real(hdata, gdata, h)
             gen["bsc"]          = calc_gen_admittance_imaginary(hdata, gdata, h)
+            gen["gsc"]          = calc_gen_admittance_real(hdata, gdata, h)
             #-----------------------------------#
             gen["i_base_ka"]    = calc_gen_current_base(hdata, gdata)
             gen["i_fund_magn"]  = 0.0
@@ -62,7 +62,7 @@ end end end
 
 # variables ####################################################################
 ""
-function variable_gen_current(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_gen_current(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_gen_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_gen_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end

@@ -25,10 +25,6 @@ mpc.gen = [
     1       0.0     0.0     9.00    -9.00   1.05    100.0   1       10.00   -10.0;
 ];
 
-mpc.gencost = [
-	2	 0.0	 0.0	 3	   0.110000	   5.000000	   0.000000;
-];
-
 %% branch data
 %   f_bus	t_bus	r	    x	    b	    rateA	rateB	rateC	ratio	angle	status	angmin	angmax
 mpc.branch = [ 

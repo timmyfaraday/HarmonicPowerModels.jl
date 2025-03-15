@@ -75,7 +75,6 @@ function sample_magnetizing_current(hdata::Dict{String,<:Any}, xfmr_magn::Dict{S
         # fill the xfmr data structure, enumerating over all harmonics 
         for (nw,ntw) in hdata["nw"]
             # shortcut for the xfmr data
-            bus  = ntw["bus"]["$(ntw["xfmr"]["$nx"]["f_bus"])"]
             xfrm = ntw["xfmr"]["$nx"]                                           # note xfrm ≠ xfmr
 
             # set general data

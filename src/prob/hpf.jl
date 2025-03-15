@@ -33,6 +33,7 @@ function build_hpf(pm::HarmonicPowerModel)
         variable_gen_current(pm, nw=n, bounded=false)
         variable_hload_current(pm, nw=n, bounded=false)
         variable_hsrc_current(pm, nw=n, bounded=false)                          # empty variable
+        variable_shunt_current(pm, nw=n, bounded=false)
     end 
 
     # objective
@@ -79,6 +80,11 @@ function build_hpf(pm::HarmonicPowerModel)
         ### harmonic load
         for l in _PMs.ids(pm, :hload, nw=n)
             constraint_hload_power(pm, l, nw=n)
+        end
+
+        ### shunt
+        for s in _PMs.ids(pm, :shunt, nw=n)
+            constraint_shunt_current(pm, s, nw=n)
         end
     end
 end

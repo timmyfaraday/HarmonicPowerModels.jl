@@ -74,6 +74,7 @@ module HarmonicPowerModels
     include("cmp/unit/gen.jl")
     include("cmp/unit/hload.jl")
     include("cmp/unit/hsrc.jl")
+    include("cmp/unit/shunt.jl")
 
     ## prob
     include("prob/hopf.jl")

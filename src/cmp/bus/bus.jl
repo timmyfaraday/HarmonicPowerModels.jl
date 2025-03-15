@@ -104,12 +104,13 @@ function constraint_bus_current_balance(pm::HarmonicPowerModel, i::Int; nw::Int=
     bus_gen         = _PMs.ref(pm, nw, :bus_gen, i)
     bus_hload       = _PMs.ref(pm, nw, :bus_hload, i)
     bus_hsrc        = _PMs.ref(pm, nw, :bus_hsrc, i)
+    bus_shunt       = _PMs.ref(pm, nw, :bus_shunt, i)
 
     constraint_bus_current_balance(pm, nw, bus_arcs_branch, bus_wnds_xfmr, 
-                                           bus_filter, bus_gen, bus_hload, bus_hsrc)
+                                           bus_filter, bus_gen, bus_hload, bus_hsrc, bus_shunt)
 end
 ""
-function constraint_bus_current_balance(pm::HarmonicPowerModel, n::Int, bus_arcs_branch, bus_wnds_xfmr, bus_filter, bus_gen, bus_hload, bus_hsrc)
+function constraint_bus_current_balance(pm::HarmonicPowerModel, n::Int, bus_arcs_branch, bus_wnds_xfmr, bus_filter, bus_gen, bus_hload, bus_hsrc, bus_shunt)
     cbr = _PMs.var(pm, n, :cbr)
     cbi = _PMs.var(pm, n, :cbi)
     cxr = _PMs.var(pm, n, :cxr)
@@ -121,6 +122,8 @@ function constraint_bus_current_balance(pm::HarmonicPowerModel, n::Int, bus_arcs
     cgi = _PMs.var(pm, n, :cgi)
     clr = _PMs.var(pm, n, :clr)
     cli = _PMs.var(pm, n, :cli)
+    crr = _PMs.var(pm, n, :crr)
+    cri = _PMs.var(pm, n, :cri)
     csr = _PMs.var(pm, n, :csr)
     csi = _PMs.var(pm, n, :csi)
 
@@ -130,15 +133,17 @@ function constraint_bus_current_balance(pm::HarmonicPowerModel, n::Int, bus_arcs
                                   sum(cfr[f] for f in bus_filter)
                                 + sum(cgr[g] for g in bus_gen) 
                                 - sum(clr[l] for l in bus_hload)
-                                - sum(csr[s] for s in bus_hsrc))
+                                - sum(crr[r] for r in bus_hsrc)
+                                - sum(csr[s] for s in bus_shunt))
 
     JuMP.@constraint(pm.model,    sum(cbi[b] for b in bus_arcs_branch)
                                 + sum(cxi[x] for x in bus_wnds_xfmr)
                                 ==
                                   sum(cfi[f] for f in bus_filter)
-                                + sum(cgi[g] for g in bus_gen)
+                                - sum(cgi[g] for g in bus_gen)
                                 - sum(cli[l] for l in bus_hload)
-                                - sum(csi[l] for s in bus_hsrc))
+                                - sum(cri[r] for r in bus_hsrc)
+                                - sum(csi[s] for s in bus_shunt))
 end
 
 ## individual harmonic voltage distortion limit ################################
