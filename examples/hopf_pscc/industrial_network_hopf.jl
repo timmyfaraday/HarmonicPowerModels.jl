@@ -70,7 +70,7 @@ magn = Dict("Hᴱ"    => [1, 5],
                                         "Vbase" => 10000)))
 
 # COMPUTATION ##################################################################
-hdata         = build_hdata_from_matpower_file(data, H=H, prob=:hopf, bus_id=6) # , xfmr_magn=magn
+hdata         = build_hdata_from_matpower_file(data, H=H, xfmr_magn=magn, prob=:hopf, bus_id=6)
 results_hpf   = solve_hpf(hdata, HarmonicPowerModel, solver)
 
 # RESULTS ######################################################################

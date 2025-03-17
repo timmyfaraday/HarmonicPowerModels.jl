@@ -140,7 +140,7 @@ function constraint_bus_current_balance(pm::HarmonicPowerModel, n::Int, bus_arcs
                                 + sum(cxi[x] for x in bus_wnds_xfmr)
                                 ==
                                   sum(cfi[f] for f in bus_filter)
-                                - sum(cgi[g] for g in bus_gen)
+                                + sum(cgi[g] for g in bus_gen)
                                 - sum(cli[l] for l in bus_hload)
                                 - sum(cri[r] for r in bus_hsrc)
                                 - sum(csi[s] for s in bus_shunt))
