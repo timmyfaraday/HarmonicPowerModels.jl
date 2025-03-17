@@ -24,6 +24,7 @@
 using HarmonicPowerModels, PowerModels
 using Ipopt
 using Dierckx
+using PrettyTables
 
 # pkg const
 const PMs = PowerModels
@@ -70,8 +71,16 @@ magn = Dict("Hᴱ"    => [1, 5],
                                         "Vbase" => 10000)))
 
 # COMPUTATION ##################################################################
-hdata         = build_hdata_from_matpower_file(data, H=H, xfmr_magn=magn, prob=:hopf, bus_id=6)
-results_hpf   = solve_hpf(hdata, HarmonicPowerModel, solver)
+## hpf w. magnetizing current
+hdata_w         = build_hdata_from_matpower_file(data, H=H, xfmr_magn=magn, prob=:hopf, bus_id=6)
+results_hpf     = solve_hpf(hdata_w, HarmonicPowerModel, solver)
+
+## hopf w. magnetizing current
+results_hopf_w  = solve_hopf(hdata_w, HarmonicPowerModel, solver)
+
+## hopf w/o magnetizing current
+hdata_wo        = build_hdata_from_matpower_file(data, H=H, prob=:hopf, bus_id=6)
+results_hopf_wo = solve_hopf(hdata_wo, HarmonicPowerModel, solver)
 
 # RESULTS ######################################################################
 ## TABLE V: Case 1 - Bus voltages [pu/°], 3rd and 9th harmonic are zero.
