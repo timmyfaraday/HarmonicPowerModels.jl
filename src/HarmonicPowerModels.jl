@@ -66,6 +66,7 @@ module HarmonicPowerModels
     include("cmp/bus/bus.jl")
     include("cmp/bus/bus_ref.jl")
     include("cmp/bus/bus_clean.jl")
+    include("cmp/bus/bus_fixed.jl")
     ## cmp - edge 
     include("cmp/edge/branch.jl")
     include("cmp/edge/xfmr.jl")

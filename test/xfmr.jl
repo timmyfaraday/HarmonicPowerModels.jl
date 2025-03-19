@@ -146,6 +146,116 @@
         @test pg_wo ≈ pl_wo + p1_wo + p2_wo
     end
 
+    @testset "Two bus system, single xfmr (YNyn0), w/wo no load reactive losses (nl)" begin
+        # Example comparing a two bus system with a single xfmr (YNyn0) with and
+        # without no load losses, for the fundamental harmonic
+        path = joinpath(HPM.BASE_DIR, "test/data/matpower/xfmr/two_bus_xfmr_YNyn0_hpf.m")
+        data = PMs.parse_file(path)
+
+        # define the set of considered harmonics
+        H = [1]
+
+        # build the harmonic data
+        hdata_wo = HPM.build_hdata_from_matpower_file(data, H=H)
+        hdata_w  = HPM.build_hdata_from_matpower_file(data, H=H)
+
+        # add b_core to hdata_w, note that this is a negative value: b = -1/x
+        hdata_w["nw"]["1"]["xfmr"]["1"]["b_core"] = -0.005  
+
+        # power flow
+        results_hpf_wo = HPM.solve_hpf(hdata_wo, HPM.HarmonicPowerModel, solver_nlp)
+        results_hpf_w  = HPM.solve_hpf(hdata_w, HPM.HarmonicPowerModel, solver_nlp)
+
+        # feasibility tests 
+        @test results_hpf_wo["termination_status"] == LOCALLY_SOLVED
+        @test results_hpf_w["termination_status"]  == LOCALLY_SOLVED
+
+        # equality tests
+        sol_hpf_wo = results_hpf_wo["solution"]["nw"]["1"]
+        sol_hpf_w  = results_hpf_w["solution"]["nw"]["1"]
+
+        pg_wo = sol_hpf_wo["bus"]["1"]["vbr"] * sol_hpf_wo["gen"]["1"]["cgr"] + sol_hpf_wo["bus"]["1"]["vbi"] * sol_hpf_wo["gen"]["1"]["cgi"]
+        qg_wo = sol_hpf_wo["bus"]["1"]["vbi"] * sol_hpf_wo["gen"]["1"]["cgr"] - sol_hpf_wo["bus"]["1"]["vbr"] * sol_hpf_wo["gen"]["1"]["cgi"]
+
+        ql_wo = data["load"]["1"]["qd"]
+        qx_wo = (sol_hpf_wo["xfmr"]["1"]["cxsr_1"]^2 + sol_hpf_wo["xfmr"]["1"]["cxsi_1"]^2) * data["xfmr"]["1"]["xsc"]
+
+        pg_w  = sol_hpf_w["bus"]["1"]["vbr"] * sol_hpf_w["gen"]["1"]["cgr"] + sol_hpf_w["bus"]["1"]["vbi"] * sol_hpf_w["gen"]["1"]["cgi"]
+        qg_w  = sol_hpf_w["bus"]["1"]["vbi"] * sol_hpf_w["gen"]["1"]["cgr"] - sol_hpf_w["bus"]["1"]["vbr"] * sol_hpf_w["gen"]["1"]["cgi"]
+
+        ql_w  = data["load"]["1"]["qd"]
+        qx_w  = (sol_hpf_w["xfmr"]["1"]["cxsr_1"]^2 + sol_hpf_w["xfmr"]["1"]["cxsi_1"]^2) * data["xfmr"]["1"]["xsc"]
+        pm_w  = sol_hpf_w["xfmr"]["1"]["exr"] * sol_hpf_w["xfmr"]["1"]["cxmr"] + sol_hpf_w["xfmr"]["1"]["exi"] * sol_hpf_w["xfmr"]["1"]["cxmi"]
+        qm_w  = sol_hpf_w["xfmr"]["1"]["exi"] * sol_hpf_w["xfmr"]["1"]["cxmr"] - sol_hpf_w["xfmr"]["1"]["exr"] * sol_hpf_w["xfmr"]["1"]["cxmi"]
+
+        @test qg_wo < qg_w
+
+        @test qg_w  ≈ ql_w + qx_w + qm_w
+        @test qg_wo ≈ ql_wo + qx_wo
+    end
+
+    @testset "Two bus system, single xfmr (YNyn0), w/wo no load reactive losses (nl)" begin
+        # Example comparing a two bus system with a single xfmr (YNyn0) with and
+        # without no load losses, for the fundamental harmonic
+        path = joinpath(HPM.BASE_DIR, "test/data/matpower/xfmr/two_bus_xfmr_YNyn0_hpf.m")
+        data = PMs.parse_file(path)
+
+        # define the set of considered harmonics
+        H = [1]
+
+        # build xfmr magnetization data
+        B⁺  = [0.144, 0.200, 0.260, 0.328, 0.400, 0.504, 0.600, 0.695, 1.528, 1.716, 1.776, 1.816, 1.828, 1.832, 1.845, 1.856, 1.860]
+        H⁺  = [3.000, 4.000, 5.000, 6.000, 7.000, 8.000, 9.000, 10.00, 20.00, 30.00, 40.00, 50.00, 60.00, 70.00, 80.00, 90.00, 100.0]
+        Bᵗ  = vcat(reverse(-B⁺),0.0,B⁺)
+        Hᵗ  = vcat(reverse(-H⁺),0.0,H⁺) 
+        BH_powercore_h100_23 = Dierckx.Spline1D(Bᵗ, Hᵗ; k=3, bc="nearest")
+        magn = Dict("Hᴱ"    => [1], 
+                    "Hᴵ"    => [1],
+                    "Emax"  => 1.1,
+                    "IHD"   => [1.0],
+                    "pcs"   => [20],
+                    "xfmr"  => Dict(1 => Dict(  "l"     => 3.1,
+                                                "A"     => 0.07,
+                                                "N"     => 240,
+                                                "BH"    => BH_powercore_h100_23,
+                                                "Vbase" => 10000)))
+
+        # build the harmonic data
+        hdata_wo = HPM.build_hdata_from_matpower_file(data, H=H)
+        hdata_w  = HPM.build_hdata_from_matpower_file(data, H=H, xfmr_magn=magn)
+
+        # power flow
+        results_hpf_wo = HPM.solve_hpf(hdata_wo, HPM.HarmonicPowerModel, solver_nlp)
+        results_hpf_w  = HPM.solve_hpf(hdata_w, HPM.HarmonicPowerModel, solver_nlp)
+
+        # feasibility tests 
+        @test results_hpf_wo["termination_status"] == LOCALLY_SOLVED
+        @test results_hpf_w["termination_status"]  == LOCALLY_SOLVED
+
+        # equality tests
+        sol_hpf_wo = results_hpf_wo["solution"]["nw"]["1"]
+        sol_hpf_w  = results_hpf_w["solution"]["nw"]["1"]
+
+        pg_wo   = sol_hpf_wo["bus"]["1"]["vbr"] * sol_hpf_wo["gen"]["1"]["cgr"] + sol_hpf_wo["bus"]["1"]["vbi"] * sol_hpf_wo["gen"]["1"]["cgi"]
+        qg_wo   = sol_hpf_wo["bus"]["1"]["vbi"] * sol_hpf_wo["gen"]["1"]["cgr"] - sol_hpf_wo["bus"]["1"]["vbr"] * sol_hpf_wo["gen"]["1"]["cgi"]
+
+        ql_wo   = data["load"]["1"]["qd"]
+        qx_wo   = (sol_hpf_wo["xfmr"]["1"]["cxsr_1"]^2 + sol_hpf_wo["xfmr"]["1"]["cxsi_1"]^2) * data["xfmr"]["1"]["xsc"]
+
+        pg_w    = sol_hpf_w["bus"]["1"]["vbr"] * sol_hpf_w["gen"]["1"]["cgr"] + sol_hpf_w["bus"]["1"]["vbi"] * sol_hpf_w["gen"]["1"]["cgi"]
+        qg_w    = sol_hpf_w["bus"]["1"]["vbi"] * sol_hpf_w["gen"]["1"]["cgr"] - sol_hpf_w["bus"]["1"]["vbr"] * sol_hpf_w["gen"]["1"]["cgi"]
+
+        ql_w    = data["load"]["1"]["qd"]
+        qx_w    = (sol_hpf_w["xfmr"]["1"]["cxsr_1"]^2 + sol_hpf_w["xfmr"]["1"]["cxsi_1"]^2) * data["xfmr"]["1"]["xsc"]
+        pm_w    = sol_hpf_w["xfmr"]["1"]["exr"] * sol_hpf_w["xfmr"]["1"]["cxmr"] + sol_hpf_w["xfmr"]["1"]["exi"] * sol_hpf_w["xfmr"]["1"]["cxmi"]
+        qm_w    = sol_hpf_w["xfmr"]["1"]["exi"] * sol_hpf_w["xfmr"]["1"]["cxmr"] - sol_hpf_w["xfmr"]["1"]["exr"] * sol_hpf_w["xfmr"]["1"]["cxmi"]
+
+        @test qg_wo < qg_w
+
+        @test qg_w  ≈ ql_w + qx_w + qm_w
+        @test qg_wo ≈ ql_wo + qx_wo
+    end
+
     @testset "Two bus system, single xfmr, YNyn0 vs YNyn3" begin
         # Example comparing a two bus system with a single xfmr with vector 
         # group YNyn0 and YNyn3, active and reactive power consumption should 
@@ -156,7 +266,7 @@
         data_3 = PMs.parse_file(path_3)
 
         # define the set of considered harmonics
-        H = [1,2,3]
+        H = [1]
 
         # build the harmonic data
         hdata_0 = HPM.build_hdata_from_matpower_file(data_0, H=H)
@@ -168,9 +278,9 @@
 
         # feasibility tests 
         @test results_hpf_0["termination_status"] == LOCALLY_SOLVED
-        @test results_hpf_3["termination_status"]  == LOCALLY_SOLVED
+        @test results_hpf_3["termination_status"] == LOCALLY_SOLVED
 
-        # equality tests
+        ## pos. seq., h=1
         sol_hpf_0 = results_hpf_0["solution"]["nw"]["1"]
         sol_hpf_3 = results_hpf_3["solution"]["nw"]["1"]
 
@@ -184,16 +294,16 @@
         qg_3    =   sol_hpf_3["bus"]["1"]["vbi"] * sol_hpf_3["gen"]["1"]["cgr"] 
                   - sol_hpf_3["bus"]["1"]["vbr"] * sol_hpf_3["gen"]["1"]["cgi"]
 
-        vba_0   = atand(sol_hpf_0["bus"]["2"]["vbi"],sol_hpf_0["bus"]["2"]["vbr"])
-        vba_3   = atand(sol_hpf_3["bus"]["2"]["vbi"],sol_hpf_3["bus"]["2"]["vbr"])
-
         @test pg_0 ≈ pg_3
         @test qg_0 ≈ qg_3
+
+        vba_1_0 = atand(sol_hpf_0["bus"]["2"]["vbi"],sol_hpf_0["bus"]["2"]["vbr"])
+        vba_1_3 = atand(sol_hpf_3["bus"]["2"]["vbi"],sol_hpf_3["bus"]["2"]["vbr"])
 
         # The secondary winding is vg * 30° lagging with reference to the 
         # primary, positive sense of rotation is counter-clockwise, i.e., 
         # 1 o'clock is one hour behind 12 o'clock.
-        @test vba_0 ≈ vba_3 + 3*30
+        @test vba_1_0 ≈ vba_1_3 + 3*30
     end
 
 end

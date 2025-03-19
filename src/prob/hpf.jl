@@ -52,6 +52,11 @@ function build_hpf(pm::HarmonicPowerModel)
             constraint_clean_voltage(pm, i, nw=n)
         end
 
+        ### clean bus 
+        for i in _PMs.ids(pm, :fixed_buses, nw=n)
+            constraint_fixed_voltage(pm, i, nw=n)
+        end
+
         ### bus
         for i in _PMs.ids(pm, :bus, nw=n)
             constraint_bus_current_balance(pm, i, nw=n)

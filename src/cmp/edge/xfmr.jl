@@ -29,7 +29,7 @@ function calc_xfmr_shift_real(hdata::Dict{String,Any}, xdata::Dict{String,Any}, 
     elseif is_neg_sequence(h)
         return cosd(-30.0 * shift)
     elseif is_zero_sequence(h)
-        return 1.0
+        return cosd(0.0)
 end end
 ""
 function calc_xfmr_shift_imaginary(hdata::Dict{String,Any}, xdata::Dict{String,Any}, h::Real)
@@ -39,7 +39,7 @@ function calc_xfmr_shift_imaginary(hdata::Dict{String,Any}, xdata::Dict{String,A
     elseif is_neg_sequence(h)
         return sind(-30.0 * shift)
     elseif is_zero_sequence(h)
-        return 0.0
+        return sind(0.0)
 end end
 ""
 # i_base_ka = s_base_mva / v_base_kv, see Power System Analysis, pg. 26
@@ -409,7 +409,7 @@ function constraint_xfmr_core_current_balance(pm::HarmonicPowerModel, x::Int; nw
 end
 """
 first principles: conj(tₓᵢⱼ) * iₓᵢⱼ + iₓⱼᵢ = 0
-conj(tₓᵢⱼₕ) * (iˢₓᵢⱼₕ - iᵐₓₕ - eₓₕ) + iₓⱼᵢₕ = 0
+conj(tₓᵢⱼₕ) * (iˢₓᵢⱼₕ - iᵐₓₕ - gˢʰₓₕ * eₓₕ) + iₓⱼᵢₕ = 0
 (tʳₓᵢⱼₕ - j tⁱₓᵢⱼₕ) * (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ + j (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ)) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
 tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) + j tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) - j tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) - j² tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
 tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) + j tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) - j tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) + tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
@@ -516,8 +516,8 @@ function constraint_xfmr_core_magnetization(pm::HarmonicPowerModel, n::Int, x, c
     JuMP.register(pm.model, sym_exr, length(ex), cxmfr; autodiff=true)
     JuMP.register(pm.model, sym_exi, length(ex), cxmfi; autodiff=true)
 
-    JuMP.add_nonlinear_constraint(pm.model, :($(cxmr) == $(sym_exr)($(ex...))))
-    JuMP.add_nonlinear_constraint(pm.model, :($(cxmi) == $(sym_exi)($(ex...))))
+    JuMP.add_nonlinear_constraint(pm.model, :($(cxmr) + $(sym_exr)($(ex...)) == 0))
+    JuMP.add_nonlinear_constraint(pm.model, :($(cxmi) + $(sym_exi)($(ex...)) == 0))
 end
 
 ## winding constraints #########################################################
