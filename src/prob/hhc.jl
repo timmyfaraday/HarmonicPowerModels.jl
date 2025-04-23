@@ -58,7 +58,7 @@ function build_hhc(pm::HarmonicPowerModel)
     end
     ### xfmr 
     for x in ids(pm, :xfmr)
-        constraint_xfmr_current_rms_limit(pm, x)
+        constraint_xfmr_winding_current_rms_limit(pm, x)
     end
     
     ### filter

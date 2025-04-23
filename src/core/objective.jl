@@ -70,10 +70,10 @@ function constraint_fairness_principle(pm::HarmonicPowerModel, n, ids)
 
     # absolute equality
     if pm.data["hhc_principle"] == "absolute equality"
-        csm = [_PMs.var(pm, n, :csm, s) for s in ids]
+        crm = [_PMs.var(pm, n, :crm, r) for r in ids]
 
         for s in ids[2:end]
-            JuMP.@constraint(pm.model, csm[first(ids)] == csm[s])
+            JuMP.@constraint(pm.model, crm[first(ids)] == crm[r])
         end 
     end
 
@@ -81,10 +81,10 @@ function constraint_fairness_principle(pm::HarmonicPowerModel, n, ids)
     if pm.data["hhc_principle"] == "maximin"
         cmh = _PMs.var(pm, n, :cmh)
 
-        for s in ids
-            csm = _PMs.var(pm, n, :csm, s)
+        for r in ids
+            crm = _PMs.var(pm, n, :csm, r)
 
-            JuMP.@constraint(pm.model, cmh <= csm)
+            JuMP.@constraint(pm.model, cmh <= crm)
         end 
     end
 
@@ -93,10 +93,10 @@ function constraint_fairness_principle(pm::HarmonicPowerModel, n, ids)
         fh = _PMs.var(pm, n, :fh)
 
         for s in ids
-            csm = _PMs.var(pm, n, :chsm, s)
-            csmax = _PMs.ref(pm, n, :hsrc, s, "csmax")
+            crm = _PMs.var(pm, n, :crm, r)
+            crmax = _PMs.ref(pm, n, :hsrc, r, "crmax")
 
-            JuMP.@constraint(pm.model, chsm == fh * csmax)
+            JuMP.@constraint(pm.model, crm == fh * crmax)
         end 
     end
 end
@@ -124,20 +124,20 @@ end
 function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
     # maximum efficiency
     if pm.data["hhc_principle"] == "maximum efficiency"
-        chsm = [_PMs.var(pm, n, :chsm, s) for n in _PMs.nw_ids(pm) 
-                                        for s in _PMs.ids(pm, :hsrc, nw=n) 
+        crm = [_PMs.var(pm, n, :crm, r) for n in _PMs.nw_ids(pm) 
+                                        for r in _PMs.ids(pm, :hsrc, nw=n) 
                                         if n ≠ fundamental(pm)]
     
-        JuMP.@objective(pm.model, Max, sum(chsm))
+        JuMP.@objective(pm.model, Max, sum(crm))
     end
 
     # absolute equality
     if pm.data["hhc_principle"] == "absolute equality"
-        chsm = [_PMs.var(pm, n, :chsm, s) for n in _PMs.nw_ids(pm) 
-                                        for s in _PMs.ids(pm, :hsrc, nw=n) 
+        crm = [_PMs.var(pm, n, :crm, r) for n in _PMs.nw_ids(pm) 
+                                        for r in _PMs.ids(pm, :hsrc, nw=n) 
                                         if n ≠ fundamental(pm)]
     
-        JuMP.@objective(pm.model, Max, sum(chsm)) 
+        JuMP.@objective(pm.model, Max, sum(crm)) 
     end
 
     # maximin
