@@ -53,14 +53,14 @@ Fairness principles for - $\forall u,v \in U, h \in H$:
 #### Maximum efficiency principle
 ```math
 \begin{align}
-     max \sum_{u \in \mathcal{U}^{h}}{\sum_{h \in \mathcal{H}\{1\}} I^{mag}_{u,h} 
+     max \sum_{u \in \mathcal{U}^{h}} {\sum_{h \in \mathcal{H}\{1\}}} I^{mag}_{u,h} 
 \end{align}
 ```
 
 #### Absolute equality principle
 ```math
 \begin{align}
-     max \sum_{u \in \mathcal{U}^{h}}{\sum_{h \in \mathcal{H}\{1\}} I^{mag}_{u,h}  \\
+     max \sum_{u \in \mathcal{U}^{h}}{\sum_{h \in \mathcal{H}\{1\}}} I^{mag}_{u,h}  \\
      I^{mag}_{u,h} = I^{mag}_{v,h} 
 \end{align}
 ```
@@ -68,7 +68,7 @@ Fairness principles for - $\forall u,v \in U, h \in H$:
 #### Maximin principle
 ```math
 \begin{align}
-     max {\sum_{h \in \mathcal{H}\{1}} I^{mag}_{h} \\
+     max \sum_{h \in \mathcal{H}\{1\}} I^{mag}_{h} \\
      I^{mag}_{h} \leq I^{mag}_{u,h} 
 \end{align}
 ```
@@ -77,7 +77,7 @@ Fairness principles for - $\forall u,v \in U, h \in H$:
 #### Kalai-Smorodinsky bargaining
 ```math
 \begin{align}
-     max {\sum_{h \in \mathcal{H}\{1}} f_{h} \\
+     max \sum_{h \in \mathcal{H}\{1\}} f_{h} \\
      I^{mag}_{u,h} = f_{h} \cdot $\hat{I}^{max}_{u,h}$ \\
      0 \leq f_{h} \leq 1 
 \end{align}
