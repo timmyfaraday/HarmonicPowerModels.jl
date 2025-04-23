@@ -78,7 +78,7 @@ Fairness principles for - $\forall u,v \in U, h \in H$:
 ```math
 \begin{align}
      max \sum_{h \in \mathcal{H} \backslash \{1\}} f_{h} \\
-     I^{mag}_{u,h} = f_{h} \cdot $\hat{I}^{max}_{u,h}$ \\
+     I^{mag}_{u,h} = f_{h} \cdot \hat{I}^{max}_{u,h} \\
      0 \leq f_{h} \leq 1 
 \end{align}
 ```
