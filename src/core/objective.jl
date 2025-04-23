@@ -15,17 +15,17 @@
 ""
 function variable_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     # maximum efficiency
-    if pm.data["principle"] == "maximum efficiency"
+    if pm.data["hhc_principle"] == "maximum efficiency"
         # no additional variables
     end
 
     # absolute equality
-    if pm.data["principle"] == "absolute equality"
+    if pm.data["hhc_principle"] == "absolute equality"
         # no additional variables 
     end
 
     # maximin
-    if pm.data["principle"] == "maximin"
+    if pm.data["hhc_principle"] == "maximin"
         cmh = _PMs.var(pm, nw)[:cmh] = 
                 JuMP.@variable( pm.model, 
                                 base_name="$(nw)_cmh",
@@ -39,7 +39,7 @@ function variable_fairness_principle(pm::_PMs.AbstractPowerModel; nw::Int=fundam
     end
 
     # Kalai-Smorodinsky bargaining
-    if pm.data["principle"] == "Kalai-Smorodinsky bargaining"
+    if pm.data["hhc_principle"] == "Kalai-Smorodinsky bargaining"
         fh  = _PMs.var(pm, nw)[:fh] = 
                 JuMP.@variable( pm.model, 
                                 base_name="$(nw)_fh",
@@ -64,12 +64,12 @@ end
 ""
 function constraint_fairness_principle(pm::HarmonicPowerModel, n, ids)
     # maximum efficiency
-    if pm.data["principle"] == "maximum efficiency"
+    if pm.data["hhc_principle"] == "maximum efficiency"
         # no additional constraints
     end
 
     # absolute equality
-    if pm.data["principle"] == "absolute equality"
+    if pm.data["hhc_principle"] == "absolute equality"
         csm = [_PMs.var(pm, n, :csm, s) for s in ids]
 
         for s in ids[2:end]
@@ -78,7 +78,7 @@ function constraint_fairness_principle(pm::HarmonicPowerModel, n, ids)
     end
 
     # maximin
-    if pm.data["principle"] == "maximin"
+    if pm.data["hhc_principle"] == "maximin"
         cmh = _PMs.var(pm, n, :cmh)
 
         for s in ids
@@ -89,14 +89,14 @@ function constraint_fairness_principle(pm::HarmonicPowerModel, n, ids)
     end
 
     # Kalai-Smorodinsky bargaining
-    if pm.data["principle"] == "Kalai-Smorodinsky bargaining"
+    if pm.data["hhc_principle"] == "Kalai-Smorodinsky bargaining"
         fh = _PMs.var(pm, n, :fh)
 
         for s in ids
-            csm = _PMs.var(pm, n, :csm, s)
-            csmax = _PMs.ref(pm, n, :source, s, "csmax")
+            csm = _PMs.var(pm, n, :chsm, s)
+            csmax = _PMs.ref(pm, n, :hsrc, s, "csmax")
 
-            JuMP.@constraint(pm.model, csm == fh * csmax)
+            JuMP.@constraint(pm.model, chsm == fh * csmax)
         end 
     end
 end
@@ -123,25 +123,25 @@ end
 ""
 function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
     # maximum efficiency
-    if pm.data["principle"] == "maximum efficiency"
-        csm = [_PMs.var(pm, n, :csm, s) for n in _PMs.nw_ids(pm) 
+    if pm.data["hhc_principle"] == "maximum efficiency"
+        chsm = [_PMs.var(pm, n, :chsm, s) for n in _PMs.nw_ids(pm) 
                                         for s in _PMs.ids(pm, :hsrc, nw=n) 
                                         if n ≠ fundamental(pm)]
     
-        JuMP.@objective(pm.model, Max, sum(csm))
+        JuMP.@objective(pm.model, Max, sum(chsm))
     end
 
     # absolute equality
-    if pm.data["principle"] == "absolute equality"
-        csm = [_PMs.var(pm, n, :csm, s) for n in _PMs.nw_ids(pm) 
+    if pm.data["hhc_principle"] == "absolute equality"
+        chsm = [_PMs.var(pm, n, :chsm, s) for n in _PMs.nw_ids(pm) 
                                         for s in _PMs.ids(pm, :hsrc, nw=n) 
                                         if n ≠ fundamental(pm)]
     
-        JuMP.@objective(pm.model, Max, sum(csm)) 
+        JuMP.@objective(pm.model, Max, sum(chsm)) 
     end
 
     # maximin
-    if pm.data["principle"] == "maximin"
+    if pm.data["hhc_principle"] == "maximin"
         cmh = [_PMs.var(pm, n, :cmh) for n in _PMs.nw_ids(pm)
                                      if n ≠ fundamental(pm)]
 
@@ -149,7 +149,7 @@ function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
     end
 
     # Kalai-Smorodinsky bargaining
-    if pm.data["principle"] == "Kalai-Smorodinsky bargaining"
+    if pm.data["hhc_principle"] == "Kalai-Smorodinsky bargaining"
         fh = [_PMs.var(pm, n, :fh) for n in _PMs.nw_ids(pm)
                                    if n ≠ fundamental(pm)]
 

@@ -54,7 +54,8 @@ H = [1, 3, 5, 7]
 data["principle"] = "absolute equality"
 
 # solve HHC problem -- NLP
-hdata_nlp_ae = HPM.replicate(data, H=H)
+# hdata_nlp_ae = HPM.replicate(data, H=H)
+hdata_nlp_ae = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc)
 results_hhc_nlp_ae = HPM.solve_hhc(hdata_nlp_ae, HarmonicPowerModel, solver_nlp)
 
 # solve HHC problem -- SOC 

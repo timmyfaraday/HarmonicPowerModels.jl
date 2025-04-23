@@ -12,7 +12,7 @@
 
 # util #########################################################################
 ""
-calc_gen_admittance_real(hdata::Dict{String,Any}, gdata::Dict{String,Any}, h) = # to be reviewe by Hakan
+calc_gen_admittance_real(hdata::Dict{String,Any}, gdata::Dict{String,Any}, h) = # to be reviewed by Hakan
     (1 / (sqrt(gdata["pmax"]^2 + gdata["qmax"]^2))) / sqrt(h) # gdata["rx_ratio"] * 
 ""
 calc_gen_admittance_imaginary(hdata::Dict{String,Any}, gdata::Dict{String,Any}, h) = # to be reviewed by Hakan

@@ -14,7 +14,7 @@
 
 ""
 solve_hhc(hdata, model_type::Type, optimizer; kwargs...) = 
-    _PMs.solve_model(hdata, model_type, optimizer, build_hhc; multinetwork=true, kwargs...)
+    solve_model(hdata, model_type, optimizer, build_hhc; multinetwork=true, kwargs...)
 
 ""
 function build_hhc(pm::HarmonicPowerModel)

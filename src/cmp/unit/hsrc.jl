@@ -42,9 +42,9 @@ function add_hsrc_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
             hsrc["q_fund"]      = rdata["qd"]
             #-----------------------------------#
             hsrc["i_base_ka"]   = calc_hsrc_current_base(hdata, rdata)
-            hsrc["crar"]        = calc_hsrc_current_angle_ref(hdata, rdata, h)
+            hsrc["chsar"]        = calc_hsrc_current_angle_ref(hdata, rdata, h)
         else
-            hsrc["crar"]        = calc_hsrc_current_angle_ref(hdata, rdata, h)
+            hsrc["chsar"]        = calc_hsrc_current_angle_ref(hdata, rdata, h)
 end end end
 
 # variables ####################################################################
@@ -59,39 +59,39 @@ function variable_hsrc_current(pm::HarmonicPowerModel; nw::Int=fundamental(pm), 
 end
 ""
 function variable_hsrc_current_real(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    crr = _PMs.var(pm, nw)[:crr] = 
+    chsr = _PMs.var(pm, nw)[:chsr] = 
         JuMP.@variable( pm.model, 
                         [r in _PMs.ids(pm, nw, :hsrc)], 
-                        base_name="$(nw)_crr",
+                        base_name="$(nw)_chsr",
                         start=0.0)
 
-    report && _PMs.sol_component_value(pm, nw, :hsrc, :crr, _PMs.ids(pm, nw, :hsrc), crr)
+    report && _PMs.sol_component_value(pm, nw, :hsrc, :chsr, _PMs.ids(pm, nw, :hsrc), chsr)
 end
 ""
 function variable_hsrc_current_imaginary(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    cri = _PMs.var(pm, nw)[:cri] = 
+    chsi = _PMs.var(pm, nw)[:chsi] = 
             JuMP.@variable( pm.model,
                             [r in _PMs.ids(pm, nw, :hsrc)], 
-                            base_name="$(nw)_cri",
+                            base_name="$(nw)_chsi",
                             start=0.0)
 
-    report && _PMs.sol_component_value(pm, nw, :hsrc, :cri, _PMs.ids(pm, nw, :hsrc), cri)
+    report && _PMs.sol_component_value(pm, nw, :hsrc, :chsi, _PMs.ids(pm, nw, :hsrc), chsi)
 end
 ""
 function variable_hsrc_current_magnitude(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    crm = _PMs.var(pm, nw)[:crm] = 
+    chsm = _PMs.var(pm, nw)[:chsm] = 
         JuMP.@variable( pm.model,
                         [r in _PMs.ids(pm, nw, :hsrc)], 
-                        base_name="$(nw)_crm",
+                        base_name="$(nw)_chsm",
                         start=0.0)
 
     for r in _PMs.ids(pm, nw, :hsrc)
         if bounded
-            JuMP.set_lower_bound(crm[r], 0.0)
+            JuMP.set_lower_bound(chsm[r], 0.0)
         end
     end
 
-    report && _PMs.sol_component_value(pm, nw, :hsrc, :crm, _PMs.ids(pm, nw, :hsrc), crm)
+    report && _PMs.sol_component_value(pm, nw, :hsrc, :chsm, _PMs.ids(pm, nw, :hsrc), chsm)
 end
 
 # constraints ##################################################################
@@ -106,27 +106,27 @@ function constraint_hsrc_current(pm::HarmonicPowerModel, r::Int; nw::Int=fundame
 
         constraint_hsrc_constant_power(pm, nw, r, i, p_fund, q_fund)
     else
-        csar = _PMs.ref(pm, nw, :hsrc, r, "crar")
+        chsar = _PMs.ref(pm, nw, :hsrc, r, "chsar")
 
-        constraint_hsrc_current_angle_ref(pm, nw, r, crar)
+        constraint_hsrc_current_angle_ref(pm, nw, r, chsar)
 end end
 ""
 function constraint_hsrc_constant_power(pm::HarmonicPowerModel, n::Int, r, i, p_fund, q_fund)
     vbr = _PMs.var(pm, n, :vbr, i)
     vbi = _PMs.var(pm, n, :vbi, i)
 
-    crr = _PMs.var(pm, n, :crr, r)
-    cri = _PMs.var(pm, n, :cri, r)
+    chsr = _PMs.var(pm, n, :chsr, r)
+    chsi = _PMs.var(pm, n, :chsi, r)
 
-    JuMP.@constraint(pm.model, p_fund == vbr * crr  + vbi * cri)
-    JuMP.@constraint(pm.model, q_fund == vbi * crr  - vbr * cri)
+    JuMP.@constraint(pm.model, p_fund == vbr * chsr  + vbi * chsi)
+    JuMP.@constraint(pm.model, q_fund == vbi * chsr  - vbr * chsi)
 end
 ""
-function constraint_hsrc_current_angle_ref(pm::HarmonicPowerModel, n::Int, r, crar)
-    crr = _PMs.var(pm, n, :crr, r)
-    cri = _PMs.var(pm, n, :cri, r)
-    crm = _PMs.var(pm, n, :crm, r)
+function constraint_hsrc_current_angle_ref(pm::HarmonicPowerModel, n::Int, r, chsar)
+    chsr = _PMs.var(pm, n, :chsr, r)
+    chsi = _PMs.var(pm, n, :chsi, r)
+    chsm = _PMs.var(pm, n, :chsm, r)
 
-    JuMP.@constraint(pm.model, crm * sind(crar) == cri)
-    JuMP.@constraint(pm.model, crm * cosd(crar) == crr)
+    JuMP.@constraint(pm.model, chsm * sind(chsar) == chsi)
+    JuMP.@constraint(pm.model, chsm * cosd(chsar) == chsr)
 end

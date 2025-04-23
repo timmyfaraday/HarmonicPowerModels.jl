@@ -28,13 +28,14 @@ init_hdata_cmp(fdata::Dict{String,Any}, cmp::String, prob::Symbol) =
         Dict{String,Any}()
     end
 ""
-function init_hdata(fdata::Dict{String,Any}, H::Vector{Int}, prob::Symbol, bus_id)
+function init_hdata(fdata::Dict{String,Any}, H::Vector{Int}, prob::Symbol, bus_id, hhc_principle::String)  
     hdata = Dict{String,Any}(   "multinetwork"  => true,
                                 "name"          => fdata["name"], 
                                 "nw"            => Dict{String,Any}(),
                                 "per_unit"      => fdata["per_unit"],
                                 "s_base_mva"    => fdata["baseMVA"],
-                                "bus_id"        => bus_id)
+                                "bus_id"        => bus_id,
+                                "hhc_principle" => hhc_principle)
 
     for h in H
         hdata["nw"]["$h"] = Dict{String,Any}(cmp => init_hdata_cmp(fdata, cmp, prob)
@@ -47,11 +48,12 @@ end
 # build from matpower file #####################################################
 ""
 function build_hdata_from_matpower_file(fdata::Dict{String,Any}; 
-                                        H::Vector{Int}=Int[1], 
+                                        H::Vector{Int64}=Int[1], 
                                         prob::Symbol=:hpf,
                                         bus_id::Int=1,
-                                        xfmr_magn::Dict{String,Any}=Dict{String,Any}())
-    hdata = init_hdata(fdata, H, prob, bus_id)
+                                        xfmr_magn::Dict{String,Any}=Dict{String,Any}(),
+                                        hhc_principle::String="maximum efficiency")
+    hdata = init_hdata(fdata, H, prob, bus_id, hhc_principle)
 
     add_bus_hdata!(hdata, fdata)
     add_ref_hdata!(hdata, fdata)

@@ -84,8 +84,8 @@ function variable_branch_current_real(pm::_PMs.AbstractPowerModel; nw::Int=funda
 
     if bounded
         for (b,i,j) in _PMs.ref(pm, nw, :arcs_branch)
-            JuMP.set_lower_bound(cr[(b,i,j)], -c_lim[b])
-            JuMP.set_upper_bound(cr[(b,i,j)],  c_lim[b])
+            JuMP.set_lower_bound(cbr[(b,i,j)], -c_lim[b])
+            JuMP.set_upper_bound(cbr[(b,i,j)],  c_lim[b])
         end
     end
 
@@ -103,8 +103,8 @@ function variable_branch_current_imaginary(pm::_PMs.AbstractPowerModel; nw::Int=
 
     if bounded
         for (b,i,j) in _PMs.ref(pm, nw, :arcs_branch)
-            JuMP.set_lower_bound(ci[(b,i,j)], -c_lim[b])
-            JuMP.set_upper_bound(ci[(b,i,j)],  c_lim[b])
+            JuMP.set_lower_bound(cbi[(b,i,j)], -c_lim[b])
+            JuMP.set_upper_bound(cbi[(b,i,j)],  c_lim[b])
         end
     end
 
