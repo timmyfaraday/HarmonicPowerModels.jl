@@ -53,7 +53,7 @@ Fairness principles for - $\forall u,v \in U, h \in H$:
 #### Maximum efficiency principle
 ```math
 \begin{align}
-     max \sum_{u \in \mathcal{U}^{h}} {\sum_{h \in \mathcal{H}\{1\}}} I^{mag}_{u,h} 
+     max \sum_{u \in \mathcal{U}^{h}} {\sum_{h \in \mathcal{H} \backslash \{1\}}} I^{mag}_{u,h} 
 \end{align}
 ```
 
