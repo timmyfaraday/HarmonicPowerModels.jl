@@ -35,7 +35,7 @@ Additional remarks:
 Linking harmonic current injection and fundamental frequency power injection - $\forall u \in T^{b,U}, h=1\$: 
 ```math
 \begin{align}
-P_{u,h} = v^{Re}_{i} \cdot I^{re}_{u,h} + v^{Im}_{i} \cdot I^{Im}_{u,h}
+P_{u,h} = v^{Re}_{i} \cdot I^{re}_{u,h} + v^{Im}_{i} \cdot I^{Im}_{u,h} \\
 Q_{u,h} = v^{Im}_{i} \cdot I^{re}_{u,h} - v^{Re}_{i} \cdot I^{Im}_{u,h}
 \end{align}
 ```
@@ -43,7 +43,7 @@ Q_{u,h} = v^{Im}_{i} \cdot I^{re}_{u,h} - v^{Re}_{i} \cdot I^{Im}_{u,h}
 Linking harmonic current angle at fundamental frequency using power factor - $\forall u \in T^{b,U}, h=1\$: 
 ```math
 \begin{align}
-I^{re}_{u,h} = I^{mag}_{u,h} \cdot cos(\theta_{u,h})
+I^{re}_{u,h} = I^{mag}_{u,h} \cdot cos(\theta_{u,h}) \\
 I^{im}_{u,h} = I^{mag}_{u,h} \cdot cos(\theta_{u,h})
 \end{align}
 ```
@@ -53,14 +53,14 @@ Fairness principles for - $\forall u,v \in U, h \in H$:
 #### Maximum efficiency principle
 ```math
 \begin{align}
-     max sum_{u \in \mathcal{U}^{h}}{sum_{h \in \mathcal{H}\{1}} I^{mag}_{u,h} 
+     max \sum_{u \in \mathcal{U}^{h}}{\sum_{h \in \mathcal{H}\{1\}} I^{mag}_{u,h} 
 \end{align}
 ```
 
 #### Absolute equality principle
 ```math
 \begin{align}
-     max sum_{u \in \mathcal{U}^{h}}{sum_{h \in \mathcal{H}\{1}} I^{mag}_{u,h} 
+     max \sum_{u \in \mathcal{U}^{h}}{\sum_{h \in \mathcal{H}\{1\}} I^{mag}_{u,h}  \\
      I^{mag}_{u,h} = I^{mag}_{v,h} 
 \end{align}
 ```
@@ -68,7 +68,7 @@ Fairness principles for - $\forall u,v \in U, h \in H$:
 #### Maximin principle
 ```math
 \begin{align}
-     max {sum_{h \in \mathcal{H}\{1}} I^{mag}_{h} 
+     max {\sum_{h \in \mathcal{H}\{1}} I^{mag}_{h} \\
      I^{mag}_{h} \leq I^{mag}_{u,h} 
 \end{align}
 ```
@@ -77,8 +77,8 @@ Fairness principles for - $\forall u,v \in U, h \in H$:
 #### Kalai-Smorodinsky bargaining
 ```math
 \begin{align}
-     max {sum_{h \in \mathcal{H}\{1}} f_{h} 
-     I^{mag}_{u,h} = f_{h} \cdot $\hat{I}^{max}_{u,h}$ 
+     max {\sum_{h \in \mathcal{H}\{1}} f_{h} \\
+     I^{mag}_{u,h} = f_{h} \cdot $\hat{I}^{max}_{u,h}$ \\
      0 \leq f_{h} \leq 1 
 \end{align}
 ```
