@@ -23,11 +23,10 @@ calc_branch_current_base(hdata::Dict{String,Any}, bdata::Dict{String,Any}) =
 # i_rms_max = S_nom / s_base_mva / sqrt(3) / min(v_rms_max(bus_fr), v_rms_max(bus_to))
 function calc_branch_current_rms_max(hdata::Dict{String,Any}, bdata::Dict{String,Any})
     S_nom       = bdata["rate_a"] 
-    s_base_mva  = hdata["s_base_mva"]
     v_rms_max   = min(hdata["nw"]["1"]["bus"][string(bdata["f_bus"])]["v_rms_max"],
                       hdata["nw"]["1"]["bus"][string(bdata["t_bus"])]["v_rms_max"])
      
-    return S_nom / s_base_mva / sqrt(3) / v_rms_max
+    return S_nom / (sqrt(3) * v_rms_max)
 end
 ""
 collect_branch_current_magnitude_limits(pm::_PMs.AbstractPowerModel, nw::Int) = 
@@ -152,7 +151,7 @@ end
 # constraints ##################################################################
 ## branch current constraint ###################################################
 ""
-function constraint_branch_current_from(pm::HarmonicPowerModel, i::Int; nw::Int=fundamental(pm))
+function constraint_branch_current_from(pm::AbstractHarmonicModel, i::Int; nw::Int=fundamental(pm))
     idx     = (i, _PMs.ref(pm, fundamental(pm), :branch, i, "bus")...)
 
     g       = _PMs.ref(pm, nw, :branch, i, "g_fr")
@@ -161,7 +160,7 @@ function constraint_branch_current_from(pm::HarmonicPowerModel, i::Int; nw::Int=
     constraint_branch_current(pm, nw, idx, g, b, 1)
 end
 ""
-function constraint_branch_current_to(pm::HarmonicPowerModel, i::Int; nw::Int=fundamental(pm))
+function constraint_branch_current_to(pm::AbstractHarmonicModel, i::Int; nw::Int=fundamental(pm))
     idx     = (i, reverse(_PMs.ref(pm, fundamental(pm), :branch, i, "bus"))...)
 
     g       = _PMs.ref(pm, nw, :branch, i, "g_to")
@@ -170,7 +169,7 @@ function constraint_branch_current_to(pm::HarmonicPowerModel, i::Int; nw::Int=fu
     constraint_branch_current(pm, nw, idx, g, b, -1)
 end
 ""
-function constraint_branch_current(pm::HarmonicPowerModel, n::Int, idx, g, b, sign)
+function constraint_branch_current(pm::AbstractHarmonicModel, n::Int, idx, g, b, sign)
     vbr     = _PMs.var(pm, n, :vbr, idx[2])
     vbi     = _PMs.var(pm, n, :vbi, idx[2])
 
@@ -185,7 +184,7 @@ function constraint_branch_current(pm::HarmonicPowerModel, n::Int, idx, g, b, si
 end
 ## voltage drop constraint #####################################################
 ""
-function constraint_branch_voltage_drop(pm::HarmonicPowerModel, i::Int; nw::Int=fundamental(pm))
+function constraint_branch_voltage_drop(pm::AbstractHarmonicModel, i::Int; nw::Int=fundamental(pm))
     idx     = (i, _PMs.ref(pm, fundamental(pm), :branch, i, "bus")...)
 
     r       = _PMs.ref(pm, nw, :branch, i, "r")
@@ -194,7 +193,7 @@ function constraint_branch_voltage_drop(pm::HarmonicPowerModel, i::Int; nw::Int=
     constraint_branch_voltage_drop(pm, nw, idx, r, x)
 end
 ""
-function constraint_branch_voltage_drop(pm::HarmonicPowerModel, n::Int, idx, r, x)
+function constraint_branch_voltage_drop(pm::AbstractHarmonicModel, n::Int, idx, r, x)
     cbsr    = _PMs.var(pm, n, :cbsr, idx[1])
     cbsi    = _PMs.var(pm, n, :cbsi, idx[1])
     
@@ -209,7 +208,7 @@ function constraint_branch_voltage_drop(pm::HarmonicPowerModel, n::Int, idx, r, 
 end
 ## root-mean-square current limit ##############################################
 ""
-function constraint_branch_current_rms_limit(pm::HarmonicPowerModel, i::Int)
+function constraint_branch_current_rms_limit(pm::AbstractHarmonicModel, i::Int)
     branch      = _PMs.ref(pm, fundamental(pm), :branch, i)
     idx_fr      = (i, _PMs.ref(pm, fundamental(pm), :branch, i, "bus")...)
     idx_to      = (i, reverse(_PMs.ref(pm, fundamental(pm), :branch, i, "bus"))...)

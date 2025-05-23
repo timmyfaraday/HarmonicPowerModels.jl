@@ -56,13 +56,13 @@ end end
 # constraints ##################################################################
 ## fairness principle constraints ##############################################
 ""
-function constraint_fairness_principle(pm::HarmonicPowerModel; nw::Int=fundamental(pm))
+function constraint_fairness_principle(pm::AbstractHarmonicModel; nw::Int=fundamental(pm))
     ids = sort(collect(_PMs.ids(pm, :hsrc, nw=nw)))
 
     constraint_fairness_principle(pm, nw, ids)
 end
 ""
-function constraint_fairness_principle(pm::HarmonicPowerModel, n, ids)
+function constraint_fairness_principle(pm::AbstractHarmonicModel, n, ids)
     # maximum efficiency
     if pm.data["hhc_principle"] == "maximum efficiency"
         # no additional constraints
@@ -72,7 +72,7 @@ function constraint_fairness_principle(pm::HarmonicPowerModel, n, ids)
     if pm.data["hhc_principle"] == "absolute equality"
         crm = [_PMs.var(pm, n, :crm, r) for r in ids]
 
-        for s in ids[2:end]
+        for r in ids[2:end]
             JuMP.@constraint(pm.model, crm[first(ids)] == crm[r])
         end 
     end
@@ -80,10 +80,8 @@ function constraint_fairness_principle(pm::HarmonicPowerModel, n, ids)
     # maximin
     if pm.data["hhc_principle"] == "maximin"
         cmh = _PMs.var(pm, n, :cmh)
-
         for r in ids
-            crm = _PMs.var(pm, n, :csm, r)
-
+            crm = _PMs.var(pm, n, :crm, r)
             JuMP.@constraint(pm.model, cmh <= crm)
         end 
     end
@@ -92,7 +90,7 @@ function constraint_fairness_principle(pm::HarmonicPowerModel, n, ids)
     if pm.data["hhc_principle"] == "Kalai-Smorodinsky bargaining"
         fh = _PMs.var(pm, n, :fh)
 
-        for s in ids
+        for r in ids
             crm = _PMs.var(pm, n, :crm, r)
             crmax = _PMs.ref(pm, n, :hsrc, r, "crmax")
 

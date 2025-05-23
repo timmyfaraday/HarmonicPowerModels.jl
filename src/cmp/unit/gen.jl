@@ -13,10 +13,10 @@
 # util #########################################################################
 ""
 calc_gen_admittance_real(hdata::Dict{String,Any}, gdata::Dict{String,Any}, h) = # to be reviewed by Hakan
-    (1 / (sqrt(gdata["pmax"]^2 + gdata["qmax"]^2))) / sqrt(h) # gdata["rx_ratio"] * 
+    sqrt( (1 + gdata["xr_ratio"]^2) / (gdata["pmax"]^2 + gdata["qmax"]^2)) / sqrt(h) # gdata["rx_ratio"] * 
 ""
 calc_gen_admittance_imaginary(hdata::Dict{String,Any}, gdata::Dict{String,Any}, h) = # to be reviewed by Hakan
-    (1 / (sqrt(gdata["pmax"]^2 + gdata["qmax"]^2))) / h # gdata["xr_ratio"] * 
+    sqrt( (1 + 1/gdata["xr_ratio"]^2) / (gdata["pmax"]^2 + gdata["qmax"]^2))/ h # gdata["xr_ratio"] * 
 ""
 # i_base_ka = s_base_mva / v_base_kv, see Power System Analysis, pg. 26
 calc_gen_current_base(hdata::Dict{String,Any}, gdata::Dict{String,Any}) =
@@ -25,13 +25,12 @@ calc_gen_current_base(hdata::Dict{String,Any}, gdata::Dict{String,Any}) =
 # i_rms_max = S_nom / s_base_mva / sqrt(3) / v_rms_max(bus)
 function calc_gen_current_rms_max(hdata::Dict{String,Any}, gdata::Dict{String,Any})
     S_nom       = sqrt(gdata["pmax"]^2 + gdata["qmax"]^2) 
-    s_base_mva  = hdata["s_base_mva"]
     v_rms_max   = hdata["nw"]["1"]["bus"][string(gdata["gen_bus"])]["v_rms_max"]
      
-    return S_nom / s_base_mva / sqrt(3) ./ v_rms_max
+    return S_nom / (sqrt(3) * v_rms_max)
 end
 ""
-collect_gen_current_magnitude_limits(pm::HarmonicPowerModel, nw::Int) = 
+collect_gen_current_magnitude_limits(pm::AbstractHarmonicModel, nw::Int) = 
     Dict(g => _PMs.ref(pm, fundamental(pm), :gen, g, "i_rms_max")
             for g in _PMs.ids(pm, nw, :gen))
 
@@ -62,12 +61,12 @@ end end end
 
 # variables ####################################################################
 ""
-function variable_gen_current(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_gen_current(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_gen_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_gen_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 ""
-function variable_gen_current_real(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_gen_current_real(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     c_lim   = collect_gen_current_magnitude_limits(pm, nw)
 
     cgr = _PMs.var(pm, nw)[:cgr] = 
@@ -86,7 +85,7 @@ function variable_gen_current_real(pm::HarmonicPowerModel; nw::Int=fundamental(p
     report && _PMs.sol_component_value(pm, nw, :gen, :cgr, _PMs.ids(pm, nw, :gen), cgr)
 end
 ""
-function variable_gen_current_imaginary(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_gen_current_imaginary(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     c_lim   = collect_gen_current_magnitude_limits(pm, nw)
     
     cgi = _PMs.var(pm, nw)[:cgi] = 
@@ -108,7 +107,7 @@ end
 # constraints ##################################################################
 ## generator current constraint ################################################
 ""
-function constraint_gen_current(pm::HarmonicPowerModel, g::Int; nw::Int=fundamental(pm))
+function constraint_gen_current(pm::AbstractHarmonicModel, g::Int; nw::Int=fundamental(pm))
     i   = _PMs.ref(pm, fundamental(pm), :gen, g, "bus")
 
     gsc = _PMs.ref(pm, nw, :gen, g, "gsc")
@@ -118,7 +117,7 @@ function constraint_gen_current(pm::HarmonicPowerModel, g::Int; nw::Int=fundamen
         constraint_gen_current(pm, nw, g, i, gsc, bsc)
 end end
 ""
-function constraint_gen_current(pm::HarmonicPowerModel, n::Int, g, i, gsc, bsc)
+function constraint_gen_current(pm::AbstractHarmonicModel, n::Int, g, i, gsc, bsc)
     vbr = _PMs.var(pm, n, :vbr, i)
     vbi = _PMs.var(pm, n, :vbi, i)
 
@@ -131,7 +130,7 @@ end
 
 ## generator root-mean-square current limit ####################################
 ""
-function constraint_gen_current_rms_limit(pm::HarmonicPowerModel, g::Int)
+function constraint_gen_current_rms_limit(pm::AbstractHarmonicModel, g::Int)
     i_rms_max   = _PMs.ref(pm, fundamental(pm), :gen, g, "i_rms_max")
     i_fund_magn = _PMs.ref(pm, fundamental(pm), :gen, g, "i_fund_magn")
 
@@ -153,7 +152,7 @@ end
 
 ## generator fundamental active power limit ####################################
 ""
-function constraint_gen_power_active_fundamental_limit(pm::HarmonicPowerModel, g::Int)
+function constraint_gen_power_active_fundamental_limit(pm::AbstractHarmonicModel, g::Int)
     i           = _PMs.ref(pm, fundamental(pm), :gen, g, "bus")
 
     p_fund_min  = _PMs.ref(pm, fundamental(pm), :gen, g, "p_fund_min")
@@ -162,7 +161,7 @@ function constraint_gen_power_active_fundamental_limit(pm::HarmonicPowerModel, g
     constraint_gen_power_active_fundamental_limit(pm, g, i, p_fund_min, p_fund_max)
 end
 ""
-function constraint_gen_power_active_fundamental_limit(pm::HarmonicPowerModel, g, i, p_fund_min, p_fund_max)
+function constraint_gen_power_active_fundamental_limit(pm::AbstractHarmonicModel, g, i, p_fund_min, p_fund_max)
     vbr = _PMs.var(pm, fundamental(pm), :vbr, i)
     vbi = _PMs.var(pm, fundamental(pm), :vbi, i)
 
@@ -175,7 +174,7 @@ end
 
 ## generator fundamental reactive power limit ##################################
 ""
-function constraint_gen_power_reactive_fundamental_limit(pm::HarmonicPowerModel, g::Int)
+function constraint_gen_power_reactive_fundamental_limit(pm::AbstractHarmonicModel, g::Int)
     i           = _PMs.ref(pm, fundamental(pm), :gen, g, "bus")
 
     q_fund_min  = _PMs.ref(pm, fundamental(pm), :gen, g, "q_fund_min")
@@ -184,7 +183,7 @@ function constraint_gen_power_reactive_fundamental_limit(pm::HarmonicPowerModel,
     constraint_gen_power_reactive_fundamental_limit(pm, g, i, q_fund_min, q_fund_max)
 end
 ""
-function constraint_gen_power_reactive_fundamental_limit(pm::HarmonicPowerModel, g, i, q_fund_min, q_fund_max)
+function constraint_gen_power_reactive_fundamental_limit(pm::AbstractHarmonicModel, g, i, q_fund_min, q_fund_max)
     vbr = _PMs.var(pm, fundamental(pm), :vbr, i)
     vbi = _PMs.var(pm, fundamental(pm), :vbi, i)
 

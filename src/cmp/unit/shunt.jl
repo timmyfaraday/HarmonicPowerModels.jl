@@ -28,12 +28,12 @@ function add_shunt_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
 end end end
 # variable #####################################################################
 ""
-function variable_shunt_current(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_shunt_current(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_shunt_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_shunt_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 ""
-function variable_shunt_current_real(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_shunt_current_real(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     csr = _PMs.var(pm, nw)[:csr] = 
             JuMP.@variable( pm.model,
                             [s in _PMs.ids(pm, nw, :shunt)], 
@@ -43,7 +43,7 @@ function variable_shunt_current_real(pm::HarmonicPowerModel; nw::Int=fundamental
     report && _PMs.sol_component_value(pm, nw, :shunt, :csr, _PMs.ids(pm, nw, :shunt), csr)
 end
 ""
-function variable_shunt_current_imaginary(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_shunt_current_imaginary(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     csi = _PMs.var(pm, nw)[:csi] = 
             JuMP.@variable( pm.model,
                             [s in _PMs.ids(pm, nw, :shunt)], 
@@ -55,7 +55,7 @@ end
 
 # constraints ##################################################################
 ""
-function constraint_shunt_current(pm::HarmonicPowerModel, s::Int; nw::Int=fundamental(pm))
+function constraint_shunt_current(pm::AbstractHarmonicModel, s::Int; nw::Int=fundamental(pm))
     i   = _PMs.ref(pm, fundamental(pm), :shunt, s, "bus")
 
     g   = _PMs.ref(pm, nw, :shunt, s, "g")
@@ -65,7 +65,7 @@ function constraint_shunt_current(pm::HarmonicPowerModel, s::Int; nw::Int=fundam
         constraint_shunt_current(pm, nw, s, i, g, b)
 end end
 ""
-function constraint_shunt_current(pm::HarmonicPowerModel, n::Int, s, i, g, b)
+function constraint_shunt_current(pm::AbstractHarmonicModel, n::Int, s, i, g, b)
     vbr = _PMs.var(pm, n, :vbr, i)
     vbi = _PMs.var(pm, n, :vbi, i)
 

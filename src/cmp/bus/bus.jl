@@ -18,12 +18,12 @@ fundamental_bus_voltage_multiplier(pm::HarmonicPowerModel, i) =
 fundamental_bus_voltage_multiplier(pm::dHHCPowerModel, i) = 
     _PMs.ref(pm, fundamental(pm), :bus, i, "v_fund_magn")
 ""
-bus_voltage_magnitude_limit(pm::HarmonicPowerModel, nw, i) = 
+bus_voltage_magnitude_limit(pm::AbstractHarmonicModel, nw, i) = 
     nw == fundamental(pm) ? _PMs.ref(pm, nw, :bus, i, "v_rms_max") :
                             _PMs.ref(pm, nw, :bus, i, "v_ihd_max") *
                             fundamental_bus_voltage_multiplier(pm, i)
 ""
-collect_bus_voltage_magnitude_limits(pm::HarmonicPowerModel, nw::Int) =
+collect_bus_voltage_magnitude_limits(pm::AbstractHarmonicModel, nw::Int) =
     Dict(i => bus_voltage_magnitude_limit(pm, nw, i) for i in _PMs.ids(pm, nw, :bus))
 
 # parameters ###################################################################
@@ -48,12 +48,12 @@ end end end
 
 # variables ####################################################################
 ""
-function variable_bus_voltage(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_bus_voltage(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_bus_voltage_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_bus_voltage_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 ""
-function variable_bus_voltage_real(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_bus_voltage_real(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     v_lim   = collect_bus_voltage_magnitude_limits(pm, nw)
 
     vbr     = _PMs.var(pm, nw)[:vbr] = 
@@ -73,7 +73,7 @@ function variable_bus_voltage_real(pm::HarmonicPowerModel; nw::Int=fundamental(p
 end
 
 ""
-function variable_bus_voltage_imaginary(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_bus_voltage_imaginary(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     v_lim   = collect_bus_voltage_magnitude_limits(pm, nw)
 
     vbi     = _PMs.var(pm, nw)[:vbi] = 
@@ -95,7 +95,7 @@ end
 # constraints ##################################################################
 ## Kirchhoff's current law #####################################################
 ""
-function constraint_bus_current_balance(pm::HarmonicPowerModel, i::Int; nw::Int=fundamental(pm))
+function constraint_bus_current_balance(pm::AbstractHarmonicModel, i::Int; nw::Int=fundamental(pm))
     bus_arcs_branch = _PMs.ref(pm, nw, :bus_arcs_branch, i)
 
     bus_wnds_xfmr   = _PMs.ref(pm, nw, :bus_wnds_xfmr, i)
@@ -110,7 +110,7 @@ function constraint_bus_current_balance(pm::HarmonicPowerModel, i::Int; nw::Int=
                                            bus_filter, bus_gen, bus_hload, bus_hsrc, bus_shunt)
 end
 ""
-function constraint_bus_current_balance(pm::HarmonicPowerModel, n::Int, bus_arcs_branch, bus_wnds_xfmr, bus_filter, bus_gen, bus_hload, bus_hsrc, bus_shunt)
+function constraint_bus_current_balance(pm::AbstractHarmonicModel, n::Int, bus_arcs_branch, bus_wnds_xfmr, bus_filter, bus_gen, bus_hload, bus_hsrc, bus_shunt)
     cbr = _PMs.var(pm, n, :cbr)
     cbi = _PMs.var(pm, n, :cbi)
     cxr = _PMs.var(pm, n, :cxr)
@@ -148,10 +148,12 @@ end
 
 ## individual harmonic voltage distortion limit ################################
 ""
-function constraint_bus_voltage_ihd_limit(pm::HarmonicPowerModel, i::Int; nw::Int=fundamental(pm))
+function constraint_bus_voltage_ihd_limit(pm::AbstractHarmonicModel, i::Int; nw::Int=fundamental(pm))
     if nw ≠ fundamental(pm)
         v_ihd_max   = _PMs.ref(pm, nw, :bus, i, "v_ihd_max")
         v_fund_magn = _PMs.ref(pm, fundamental(pm), :bus, i, "v_fund_magn")
+
+        println(v_fund_magn)
 
         constraint_bus_voltage_ihd_limit(pm, nw, i, v_ihd_max, v_fund_magn)
     end
@@ -173,7 +175,7 @@ end
 
 ## root-mean-square voltage limit ##############################################
 ""
-function constraint_bus_voltage_rms_limit(pm::HarmonicPowerModel, i::Int)
+function constraint_bus_voltage_rms_limit(pm::AbstractHarmonicModel, i::Int)
     v_rms_min   = _PMs.ref(pm, fundamental(pm), :bus, i, "v_rms_min")
     v_rms_max   = _PMs.ref(pm, fundamental(pm), :bus, i, "v_rms_max")
     v_fund_magn = _PMs.ref(pm, fundamental(pm), :bus, i, "v_fund_magn")
@@ -189,16 +191,18 @@ function constraint_bus_voltage_rms_limit(pm::HarmonicPowerModel, i, v_rms_min, 
     JuMP.@constraint(pm.model,                sum(vbr.^2 + vbi.^2)  <= v_rms_max^2)
 end
 ""
-function constraint_bus_voltage_rms_limit(pm::dHHCPowerModel, i, v_rms_max, v_fund_magn)
+function constraint_bus_voltage_rms_limit(pm::dHHCPowerModel, i, v_rms_min, v_rms_max, v_fund_magn)
     vbr = [_PMs.var(pm, n, :vbr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     vbi = [_PMs.var(pm, n, :vbi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+
+    println(v_fund_magn, v_rms_max^2 - v_fund_magn^2)
 
     JuMP.@constraint(pm.model, [sqrt(v_rms_max^2 - v_fund_magn^2); vcat(vbr, vbi)] in JuMP.SecondOrderCone())
 end
 
 ## total harmonic voltage distortion limit #####################################
 ""
-function constraint_bus_voltage_thd_limit(pm::HarmonicPowerModel, i::Int)
+function constraint_bus_voltage_thd_limit(pm::AbstractHarmonicModel, i::Int)
     v_thd_max   = _PMs.ref(pm, fundamental(pm), :bus, i, "v_thd_max")
     v_fund_magn = _PMs.ref(pm, fundamental(pm), :bus, i, "v_fund_magn")
    

@@ -17,18 +17,17 @@ calc_hload_current_base(hdata::Dict{String,Any}, ldata::Dict{String,Any}) =
 # i_rms_max = S_nom / s_base_mva / sqrt(3) / v_rms_max(bus)
 function calc_hload_current_rms_max(hdata::Dict{String,Any}, ldata::Dict{String,Any})
     S_nom       = sqrt(ldata["pd"]^2 + ldata["qd"]^2) 
-    s_base_mva  = hdata["s_base_mva"]
     v_rms_max   = hdata["nw"]["1"]["bus"][string(ldata["load_bus"])]["v_rms_max"]
      
-    return S_nom / s_base_mva / sqrt(3) ./ v_rms_max
+    return S_nom / (sqrt(3) * v_rms_max)
 end
 ""
-hload_current_magnitude_limit(pm::HarmonicPowerModel, nw::Int, l) = 
+hload_current_magnitude_limit(pm::AbstractHarmonicModel, nw::Int, l) = 
     nw == fundamental(pm) ? _PMs.ref(pm, fundamental(pm), :hload, l, "i_rms_max") :
                             _PMs.ref(pm, fundamental(pm), :hload, l, "i_rms_max") *
                             _PMs.ref(pm, nw, :hload, l, "hcm")
 ""
-collect_hload_current_magnitude_limits(pm::HarmonicPowerModel, nw::Int) = 
+collect_hload_current_magnitude_limits(pm::AbstractHarmonicModel, nw::Int) = 
     Dict(l => hload_current_magnitude_limit(pm, nw, l) for l in _PMs.ids(pm, nw, :hload))
 
 # parameters ###################################################################
@@ -51,12 +50,12 @@ end end end
 
 # variables ####################################################################
 ""
-function variable_hload_current(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_hload_current(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_hload_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_hload_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 ""
-function variable_hload_current_real(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_hload_current_real(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     c_lim   = collect_hload_current_magnitude_limits(pm, nw)
     
     clr = _PMs.var(pm, nw)[:clr] = 
@@ -75,7 +74,7 @@ function variable_hload_current_real(pm::HarmonicPowerModel; nw::Int=fundamental
     report && _PMs.sol_component_value(pm, nw, :hload, :clr, _PMs.ids(pm, nw, :hload), clr)
 end
 ""
-function variable_hload_current_imaginary(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_hload_current_imaginary(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     c_lim   = collect_hload_current_magnitude_limits(pm, nw)
     
     cli = _PMs.var(pm, nw)[:cli] = 
@@ -111,7 +110,7 @@ function constraint_hload_power(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fun
     end
 end
 ""
-function constraint_hload_constant_power(pm::HarmonicPowerModel, n::Int, l, i, p_fund, q_fund)
+function constraint_hload_constant_power(pm::AbstractHarmonicModel, n::Int, l, i, p_fund, q_fund)
     vbr = _PMs.var(pm, n, :vbr, i)
     vbi = _PMs.var(pm, n, :vbi, i)
 

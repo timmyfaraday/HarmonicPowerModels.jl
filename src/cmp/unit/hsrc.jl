@@ -42,14 +42,14 @@ function add_hsrc_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
             hsrc["q_fund"]      = rdata["qd"]
             #-----------------------------------#
             hsrc["i_base_ka"]   = calc_hsrc_current_base(hdata, rdata)
-            hsrc["chsar"]        = calc_hsrc_current_angle_ref(hdata, rdata, h)
+            hsrc["crar"]       = calc_hsrc_current_angle_ref(hdata, rdata, h)
         else
             hsrc["crar"]        = calc_hsrc_current_angle_ref(hdata, rdata, h)
 end end end
 
 # variables ####################################################################
 ""
-function variable_hsrc_current(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_hsrc_current(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_hsrc_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_hsrc_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     
@@ -58,7 +58,7 @@ function variable_hsrc_current(pm::HarmonicPowerModel; nw::Int=fundamental(pm), 
     end
 end
 ""
-function variable_hsrc_current_real(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_hsrc_current_real(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     crr = _PMs.var(pm, nw)[:crr] = 
         JuMP.@variable( pm.model, 
                         [r in _PMs.ids(pm, nw, :hsrc)], 
@@ -68,7 +68,7 @@ function variable_hsrc_current_real(pm::HarmonicPowerModel; nw::Int=fundamental(
     report && _PMs.sol_component_value(pm, nw, :hsrc, :crr, _PMs.ids(pm, nw, :hsrc), crr)
 end
 ""
-function variable_hsrc_current_imaginary(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_hsrc_current_imaginary(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     cri = _PMs.var(pm, nw)[:cri] = 
             JuMP.@variable( pm.model,
                             [r in _PMs.ids(pm, nw, :hsrc)], 
@@ -78,7 +78,7 @@ function variable_hsrc_current_imaginary(pm::HarmonicPowerModel; nw::Int=fundame
     report && _PMs.sol_component_value(pm, nw, :hsrc, :cri, _PMs.ids(pm, nw, :hsrc), cri)
 end
 ""
-function variable_hsrc_current_magnitude(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_hsrc_current_magnitude(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     crm = _PMs.var(pm, nw)[:crm] = 
         JuMP.@variable( pm.model,
                         [r in _PMs.ids(pm, nw, :hsrc)], 
@@ -97,7 +97,7 @@ end
 # constraints ##################################################################
 ## hsrc current constraint #####################################################
 ""
-function constraint_hsrc_current(pm::HarmonicPowerModel, r::Int; nw::Int=fundamental(pm))
+function constraint_hsrc_current(pm::AbstractHarmonicModel, r::Int; nw::Int=fundamental(pm))
     if nw == fundamental(pm)
         i       = _PMs.ref(pm, nw, :hsrc, r, "bus")
         
@@ -111,7 +111,7 @@ function constraint_hsrc_current(pm::HarmonicPowerModel, r::Int; nw::Int=fundame
         constraint_hsrc_current_angle_ref(pm, nw, r, crar)
 end end
 ""
-function constraint_hsrc_constant_power(pm::HarmonicPowerModel, n::Int, r, i, p_fund, q_fund)
+function constraint_hsrc_constant_power(pm::AbstractHarmonicModel, n::Int, r, i, p_fund, q_fund)
     vbr = _PMs.var(pm, n, :vbr, i)
     vbi = _PMs.var(pm, n, :vbi, i)
 
@@ -122,7 +122,7 @@ function constraint_hsrc_constant_power(pm::HarmonicPowerModel, n::Int, r, i, p_
     JuMP.@constraint(pm.model, q_fund == vbi * crr  - vbr * cri)
 end
 ""
-function constraint_hsrc_current_angle_ref(pm::HarmonicPowerModel, n::Int, r, chsar)
+function constraint_hsrc_current_angle_ref(pm::AbstractHarmonicModel, n::Int, r, crar)
     crr = _PMs.var(pm, n, :crr, r)
     cri = _PMs.var(pm, n, :cri, r)
     crm = _PMs.var(pm, n, :crm, r)

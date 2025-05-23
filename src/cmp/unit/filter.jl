@@ -25,7 +25,7 @@ function calc_filter_current_rms_max(hdata::Dict{String,Any}, idata::Dict{String
     return S_nom / s_base_mva / sqrt(3) ./ v_rms_max
 end
 ""
-collect_filter_current_magnitude_limits(pm::HarmonicPowerModel, nw::Int) = 
+collect_filter_current_magnitude_limits(pm::AbstractHarmonicModel, nw::Int) = 
     Dict(f => _PMs.ref(pm, fundamental(pm), :filter, f, "i_rms_max")
             for f in _PMs.ids(pm, nw, :filter))
 
@@ -120,7 +120,7 @@ end
 
 ## filter root-mean-square current limit ####################################
 ""
-function constraint_filter_current_rms_limit(pm::HarmonicPowerModel, f::Int)
+function constraint_filter_current_rms_limit(pm::AbstractHarmonicModel, f::Int)
     i_rms_max   = _PMs.ref(pm, fundamental(pm), :filter, f, "i_rms_max")
 
     constraint_filter_current_rms_limit(pm, f, i_rms_max)

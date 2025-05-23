@@ -50,6 +50,10 @@ mpc.filter = [
 mpc.gen = [
     1       0.0     0.0     999.00  -999.00 1.05    100.0   1       999.00  0;
 ];
+%column_names%  inf     gsc     bsc     xr_ratio
+mpc.gen_imp = [
+                1       0.0     0.0     30.0;
+]
 
 %% transformer data
 %column_names%  f_bus   t_bus   xsc     gsh     r1      r2      vg      gnd1    gnd2    re1     xe1     re2         xe2         rate_a

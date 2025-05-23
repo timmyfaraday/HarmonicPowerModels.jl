@@ -34,7 +34,7 @@ function constraint_fixed_voltage(pm::HarmonicPowerModel, i::Int; nw::Int=fundam
         constraint_fixed_voltage_harmonic(pm, nw, i, v_harm_ref)
 end end
 ""
-function constraint_fixed_voltage_fundamental(pm::HarmonicPowerModel, n::Int, i, v_fund_ref)
+function constraint_fixed_voltage_fundamental(pm::AbstractHarmonicModel, n::Int, i, v_fund_ref)
     vbr = _PMs.var(pm, n, :vbr, i)
     vbi = _PMs.var(pm, n, :vbi, i)
 
@@ -42,7 +42,7 @@ function constraint_fixed_voltage_fundamental(pm::HarmonicPowerModel, n::Int, i,
     JuMP.@constraint(pm.model, vbi == 0.0)
 end
 ""
-function constraint_fixed_voltage_harmonic(pm::HarmonicPowerModel, n::Int, i, v_harm_ref)
+function constraint_fixed_voltage_harmonic(pm::AbstractHarmonicModel, n::Int, i, v_harm_ref)
     vbr = _PMs.var(pm, n, :vbr, i)
     vbi = _PMs.var(pm, n, :vbi, i)
 

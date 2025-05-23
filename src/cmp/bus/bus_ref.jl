@@ -21,14 +21,14 @@ end end end
 # constraints ##################################################################
 ## reference bus voltage constraint ############################################
 ""
-function constraint_ref_voltage(pm::HarmonicPowerModel, i::Int; nw::Int=fundamental(pm))
+function constraint_ref_voltage(pm::AbstractHarmonicModel, i::Int; nw::Int=fundamental(pm))
     v_fund_ref  = _PMs.ref(pm, fundamental(pm), :bus, i, "v_fund_ref")
 
     nw == fundamental(pm) && constraint_ref_voltage_fundamental(pm, nw, i, v_fund_ref)
     nw ≠  fundamental(pm) && constraint_ref_voltage_harmonic(pm, nw, i, v_fund_ref)
 end
 ""
-function constraint_ref_voltage_fundamental(pm::HarmonicPowerModel, n::Int, i, v_fund_ref)
+function constraint_ref_voltage_fundamental(pm::AbstractHarmonicModel, n::Int, i, v_fund_ref)
     vbr = _PMs.var(pm, n, :vbr, i)
     vbi = _PMs.var(pm, n, :vbi, i)
 
@@ -36,7 +36,7 @@ function constraint_ref_voltage_fundamental(pm::HarmonicPowerModel, n::Int, i, v
     JuMP.@constraint(pm.model, vbi == 0.0)
 end
 ""
-function constraint_ref_voltage_harmonic(pm::HarmonicPowerModel, n::Int, i, v_fund_ref)
+function constraint_ref_voltage_harmonic(pm::AbstractHarmonicModel, n::Int, i, v_fund_ref)
     vbi = _PMs.var(pm, n, :vbi, i)
 
     JuMP.@constraint(pm.model, vbi == 0.0)

@@ -87,6 +87,7 @@ module HarmonicPowerModels
     include("util/imp.jl") 
     include("util/ref.jl")
     include("util/thd.jl")
+    include("util/init.jl")
     include("util/xfmr_magn.jl")
 
     # export

@@ -58,12 +58,12 @@ function calc_xfmr_current_rms_max(hdata::Dict{String,Any}, xdata::Dict{String,A
 end
 
 ""
-collect_xfmr_voltage_magnitude_limits(pm::HarmonicPowerModel, nw::Int) =
+collect_xfmr_voltage_magnitude_limits(pm::AbstractHarmonicModel, nw::Int) =
     Dict(x => Dict(i => bus_voltage_magnitude_limit(pm, nw, i)
                     for i in _PMs.ref(pm, fundamental(pm), :xfmr, x, "bus"))
             for x in _PMs.ids(pm, nw, :xfmr))
 ""
-collect_xfmr_current_magnitude_limits(pm::HarmonicPowerModel, nw::Int) = 
+collect_xfmr_current_magnitude_limits(pm::AbstractHarmonicModel, nw::Int) = 
     Dict(x => Dict(i => _PMs.ref(pm, fundamental(pm), :xfmr, x, "i_rms_max")[ni]
             for (ni,i) in enumerate(_PMs.ref(pm, fundamental(pm), :xfmr, x, "bus")))
             for x in _PMs.ids(pm, nw, :xfmr))
@@ -129,7 +129,7 @@ end
 
 # variables ####################################################################
 ""
-function variable_xfmr_voltage(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_xfmr_voltage(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_xfmr_voltage_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_xfmr_voltage_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     
@@ -137,7 +137,7 @@ function variable_xfmr_voltage(pm::HarmonicPowerModel; nw::Int=fundamental(pm), 
     variable_xfmr_voltage_excitation_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 ""
-function variable_xfmr_voltage_real(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_xfmr_voltage_real(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     v_lim   = collect_xfmr_voltage_magnitude_limits(pm, nw)
 
     vxr     = _PMs.var(pm, nw)[:vxr] =
@@ -161,7 +161,7 @@ function variable_xfmr_voltage_real(pm::HarmonicPowerModel; nw::Int=fundamental(
     # report && _PMs.sol_component_value(pm, nw, :xfmr, :vxr, _PMs.ref(pm, nw, :wnds_xfmr), vxr)
 end
 ""
-function variable_xfmr_voltage_imaginary(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_xfmr_voltage_imaginary(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     v_lim   = collect_xfmr_voltage_magnitude_limits(pm, nw)
 
     vxi     = _PMs.var(pm, nw)[:vxi] = 
@@ -185,7 +185,7 @@ function variable_xfmr_voltage_imaginary(pm::HarmonicPowerModel; nw::Int=fundame
     # report && _PMs.sol_component_value(pm, nw, :xfmr, :vxi, _PMs.ref(pm, nw, :wnds_xfmr), vxi)
 end
 ""
-function variable_xfmr_voltage_excitation_real(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_xfmr_voltage_excitation_real(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     v_lim   = collect_xfmr_voltage_magnitude_limits(pm, nw)
 
     exr     = _PMs.var(pm, nw)[:exr] = 
@@ -203,7 +203,7 @@ function variable_xfmr_voltage_excitation_real(pm::HarmonicPowerModel; nw::Int=f
 
     report && _PMs.sol_component_value(pm, nw, :xfmr, :exr, _PMs.ids(pm, nw, :xfmr), exr)
 end
-function variable_xfmr_voltage_excitation_imaginary(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_xfmr_voltage_excitation_imaginary(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     v_lim   = collect_xfmr_voltage_magnitude_limits(pm, nw)
 
     exi     = _PMs.var(pm, nw)[:exi] = 
@@ -223,7 +223,7 @@ function variable_xfmr_voltage_excitation_imaginary(pm::HarmonicPowerModel; nw::
 end
 
 ""
-function variable_xfmr_current(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+function variable_xfmr_current(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
     variable_xfmr_current_real(pm, nw=nw, bounded=bounded, report=report; kwargs...)
     variable_xfmr_current_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 
@@ -234,7 +234,7 @@ function variable_xfmr_current(pm::HarmonicPowerModel; nw::Int=fundamental(pm), 
     variable_xfmr_current_magnetizing_imaginary(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 ""
-function variable_xfmr_current_real(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_xfmr_current_real(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     c_lim   = collect_xfmr_current_magnitude_limits(pm, nw)
     
     cxr     = _PMs.var(pm, nw)[:cxr] = 
@@ -258,7 +258,7 @@ function variable_xfmr_current_real(pm::HarmonicPowerModel; nw::Int=fundamental(
     # report && _PMs.sol_component_value(pm, nw, :xfmr, :cxr, _PMs.ref(pm, nw, :wnds_xfmr), cxr)
 end
 ""
-function variable_xfmr_current_imaginary(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_xfmr_current_imaginary(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     c_lim   = collect_xfmr_current_magnitude_limits(pm, nw)
     
     cxi     = _PMs.var(pm, nw)[:cxi] = 
@@ -282,7 +282,7 @@ function variable_xfmr_current_imaginary(pm::HarmonicPowerModel; nw::Int=fundame
     # report && _PMs.sol_component_value(pm, nw, :xfmr, :cxi, _PMs.ref(pm, nw, :wnds_xfmr), cxi)
 end
 ""
-function variable_xfmr_current_series_real(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_xfmr_current_series_real(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     c_lim   = collect_xfmr_current_magnitude_limits(pm, nw)
     
     cxsr    = _PMs.var(pm, nw)[:cxsr] = 
@@ -306,7 +306,7 @@ function variable_xfmr_current_series_real(pm::HarmonicPowerModel; nw::Int=funda
     # report && _PMs.sol_component_value(pm, nw, :xfmr, :cxsr, _PMs.ref(pm, nw, :wnds_xfmr), cxsr)
 end
 ""
-function variable_xfmr_current_series_imaginary(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_xfmr_current_series_imaginary(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     c_lim   = collect_xfmr_current_magnitude_limits(pm, nw)
     
     cxsi    = _PMs.var(pm, nw)[:cxsi] = 
@@ -330,7 +330,7 @@ function variable_xfmr_current_series_imaginary(pm::HarmonicPowerModel; nw::Int=
     # report && _PMs.sol_component_value(pm, nw, :xfmr, :cxsi, _PMs.ref(pm, nw, :wnds_xfmr), cxsi)
 end
 ""
-function variable_xfmr_current_magnetizing_real(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_xfmr_current_magnetizing_real(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     c_lim   = collect_xfmr_current_magnitude_limits(pm, nw)
     
     cxmr    = _PMs.var(pm, nw)[:cxmr] = 
@@ -349,7 +349,7 @@ function variable_xfmr_current_magnetizing_real(pm::HarmonicPowerModel; nw::Int=
     report && _PMs.sol_component_value(pm, nw, :xfmr, :cxmr, _PMs.ids(pm, nw, :xfmr), cxmr)
 end
 ""
-function variable_xfmr_current_magnetizing_imaginary(pm::HarmonicPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+function variable_xfmr_current_magnetizing_imaginary(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     c_lim   = collect_xfmr_current_magnitude_limits(pm, nw)
     
     cxmi    = _PMs.var(pm, nw)[:cxmi] = 
@@ -372,7 +372,7 @@ end
 ## core constraints ############################################################
 ### core voltage drop constraint ###############################################
 ""
-function constraint_xfmr_core_voltage_drop(pm::HarmonicPowerModel, x::Int; nw::Int=fundamental(pm))
+function constraint_xfmr_core_voltage_drop(pm::AbstractHarmonicModel, x::Int; nw::Int=fundamental(pm))
     idx     = (x, _PMs.ref(pm, fundamental(pm), :xfmr, x, "bus")[1])
     
     x_core  = _PMs.ref(pm, nw, :xfmr, x, "x_core")[1]
@@ -380,7 +380,7 @@ function constraint_xfmr_core_voltage_drop(pm::HarmonicPowerModel, x::Int; nw::I
     constraint_xfmr_core_voltage_drop(pm, nw, idx, x_core)
 end
 ""
-function constraint_xfmr_core_voltage_drop(pm::HarmonicPowerModel, n::Int, idx, x_core)
+function constraint_xfmr_core_voltage_drop(pm::AbstractHarmonicModel, n::Int, idx, x_core)
     exr     = _PMs.var(pm, n, :exr, idx[1])
     exi     = _PMs.var(pm, n, :exi, idx[1])
 
@@ -396,7 +396,7 @@ end
 
 ### core current balance constraint ############################################
 ""
-function constraint_xfmr_core_current_balance(pm::HarmonicPowerModel, x::Int; nw::Int=fundamental(pm))
+function constraint_xfmr_core_current_balance(pm::AbstractHarmonicModel, x::Int; nw::Int=fundamental(pm))
     idx_fr  = (x, _PMs.ref(pm, fundamental(pm), :xfmr, x, "bus")[1])
     idx_to  = (x, _PMs.ref(pm, fundamental(pm), :xfmr, x, "bus")[2])
     
@@ -417,7 +417,7 @@ tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓ�
 Re: tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) + tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) + iˢ⁻ʳₓⱼᵢₕ = 0
 Im: tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) - tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) + iˢ⁻ⁱₓⱼᵢₕ = 0
 """
-function constraint_xfmr_core_current_balance(pm::HarmonicPowerModel, n::Int, x, idx_fr, idx_to, tr, ti, g_core)
+function constraint_xfmr_core_current_balance(pm::AbstractHarmonicModel, n::Int, x, idx_fr, idx_to, tr, ti, g_core)
     cxsr_fr = _PMs.var(pm, n, :cxsr, idx_fr)
     cxsi_fr = _PMs.var(pm, n, :cxsi, idx_fr)
 
@@ -444,7 +444,7 @@ end
 
 ### core voltage phase shift constraint ########################################
 "" 
-function constraint_xfmr_core_voltage_phase_shift(pm::HarmonicPowerModel, x::Int; nw::Int=fundamental(pm))
+function constraint_xfmr_core_voltage_phase_shift(pm::AbstractHarmonicModel, x::Int; nw::Int=fundamental(pm))
     idx = (x, _PMs.ref(pm, fundamental(pm), :xfmr, x, "bus")[2])
     
     tr  = _PMs.ref(pm, nw, :xfmr, x, "tr")
@@ -462,7 +462,7 @@ eʳₓₕ + j eⁱₓₕ = tʳₓᵢⱼₕ vʳₓⱼᵢₕ + j tʳₓᵢⱼₕ v
 Re: eʳₓₕ = tʳₓᵢⱼₕ vʳₓⱼᵢₕ - tⁱₓᵢⱼₕ vⁱₓⱼᵢₕ
 Im: eⁱₓₕ = tʳₓᵢⱼₕ vⁱₓⱼᵢₕ + tⁱₓᵢⱼₕ vʳₓⱼᵢₕ
 """
-function constraint_xfmr_core_voltage_phase_shift(pm::HarmonicPowerModel, n::Int, idx, tr, ti)
+function constraint_xfmr_core_voltage_phase_shift(pm::AbstractHarmonicModel, n::Int, idx, tr, ti)
     exr = _PMs.var(pm, n, :exr, idx[1])
     exi = _PMs.var(pm, n, :exi, idx[1])
 
@@ -475,7 +475,7 @@ end
 
 ### core magnitization constraint ############################################## 
 ""
-function constraint_xfmr_core_magnetization(pm::HarmonicPowerModel, x::Int; nw::Int=fundamental(pm))
+function constraint_xfmr_core_magnetization(pm::AbstractHarmonicModel, x::Int; nw::Int=fundamental(pm))
     if _PMs.ref(pm, fundamental(pm), :xfmr, x, "linear_magn")
         b_core  = _PMs.ref(pm, nw, :xfmr, x, "b_core")
 
@@ -492,7 +492,7 @@ function constraint_xfmr_core_magnetization(pm::HarmonicPowerModel, x::Int; nw::
             constraint_xfmr_core_magnetization(pm, nw, x, cxmfr, cxmfi)
 end end end
 ""
-function constraint_xfmr_core_magnetization(pm::HarmonicPowerModel, n::Int, x, b_core)
+function constraint_xfmr_core_magnetization(pm::AbstractHarmonicModel, n::Int, x, b_core)
     exr = _PMs.var(pm, n, :exr, x)
     exi = _PMs.var(pm, n, :exi, x)
 
@@ -503,7 +503,7 @@ function constraint_xfmr_core_magnetization(pm::HarmonicPowerModel, n::Int, x, b
     JuMP.@constraint(pm.model, cxmi ==  b_core * exr)
 end
 ""
-function constraint_xfmr_core_magnetization(pm::HarmonicPowerModel, n::Int, x, cxmfr, cxmfi)
+function constraint_xfmr_core_magnetization(pm::AbstractHarmonicModel, n::Int, x, cxmfr, cxmfi)
     cxmr    = _PMs.var(pm, n, :cxmr, x)
     cxmi    = _PMs.var(pm, n, :cxmi, x)
 
@@ -523,7 +523,7 @@ end
 ## winding constraints #########################################################
 ### winding current balance constraint #########################################
 ""
-function constraint_xfmr_winding_current_balance(pm::HarmonicPowerModel, x::Int; nw::Int=fundamental(pm))
+function constraint_xfmr_winding_current_balance(pm::AbstractHarmonicModel, x::Int; nw::Int=fundamental(pm))
     idx = [wnd for wnd in _PMs.ref(pm, fundamental(pm), :wnds_xfmr) if wnd[1] == x]
 
     cnf = _PMs.ref(pm, fundamental(pm), :xfmr, x, "cnf")
@@ -543,7 +543,7 @@ function constraint_xfmr_winding_current_balance(pm::HarmonicPowerModel, x::Int;
         constraint_xfmr_winding_current_balance(pm, nw, idx[wnd], b[wnd], g[wnd])
 end end
 ""
-function constraint_xfmr_winding_current_balance(pm::HarmonicPowerModel, n::Int, idx, b_wnd, g_wnd)
+function constraint_xfmr_winding_current_balance(pm::AbstractHarmonicModel, n::Int, idx, b_wnd, g_wnd)
     vxr     = _PMs.var(pm, n, :vxr, idx)
     vxi     = _PMs.var(pm, n, :vxi, idx)
     
@@ -559,7 +559,7 @@ end
 
 ### winding voltage drop constraint ############################################
 ""
-function constraint_xfmr_winding_voltage_drop(pm::HarmonicPowerModel, x::Int; nw::Int=fundamental(pm))
+function constraint_xfmr_winding_voltage_drop(pm::AbstractHarmonicModel, x::Int; nw::Int=fundamental(pm))
     idx = [wnd for wnd in _PMs.ref(pm, fundamental(pm), :wnds_xfmr) if wnd[1] == x]
 
     gnd     = _PMs.ref(pm, fundamental(pm), :xfmr, x, "gnd")
@@ -572,7 +572,7 @@ function constraint_xfmr_winding_voltage_drop(pm::HarmonicPowerModel, x::Int; nw
         constraint_xfmr_winding_voltage_drop(pm, nw, idx[wnd], gnd[wnd], r_wnd[wnd], r_gnd[wnd], x_gnd[wnd])
 end end
 ""
-function constraint_xfmr_winding_voltage_drop(pm::HarmonicPowerModel, n::Int, idx, gnd, r_wnd, r_gnd, x_gnd)
+function constraint_xfmr_winding_voltage_drop(pm::AbstractHarmonicModel, n::Int, idx, gnd, r_wnd, r_gnd, x_gnd)
     vbr = _PMs.var(pm, n, :vbr, idx[2])
     vbi = _PMs.var(pm, n, :vbi, idx[2])
 
@@ -596,7 +596,7 @@ end end
 
 ### winding zero sequence current blocking constraint ##########################
 ""
-function constraint_xfmr_winding_zero_seq_current_blocking(pm::HarmonicPowerModel, x::Int; nw::Int=fundamental(pm))
+function constraint_xfmr_winding_zero_seq_current_blocking(pm::AbstractHarmonicModel, x::Int; nw::Int=fundamental(pm))
     idx = [wnd for wnd in _PMs.ref(pm, fundamental(pm), :wnds_xfmr) if wnd[1] == x]
 
     gnd = _PMs.ref(pm, fundamental(pm), :xfmr, x, "gnd")
@@ -606,7 +606,7 @@ function constraint_xfmr_winding_zero_seq_current_blocking(pm::HarmonicPowerMode
     end
 end
 ""
-function constraint_xfmr_winding_zero_seq_current_blocking(pm::HarmonicPowerModel, n::Int, idx, gnd)
+function constraint_xfmr_winding_zero_seq_current_blocking(pm::AbstractHarmonicModel, n::Int, idx, gnd)
     cxr = _PMs.var(pm, n, :cxr, idx)
     cxi = _PMs.var(pm, n, :cxi, idx)
 
@@ -618,7 +618,7 @@ end end
 
 ### winding root-mean-square current limit #####################################
 ""
-function constraint_xfmr_winding_current_rms_limit(pm::HarmonicPowerModel, x::Int)
+function constraint_xfmr_winding_current_rms_limit(pm::AbstractHarmonicModel, x::Int)
     idx = [wnd for wnd in _PMs.ref(pm, fundamental(pm), :wnds_xfmr) if wnd[1] == x]
 
     i_rms_max   = _PMs.ref(pm, fundamental(pm), :xfmr, x, "i_rms_max")

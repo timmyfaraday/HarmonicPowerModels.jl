@@ -13,8 +13,11 @@
 ################################################################################
 
 ""
-solve_hhc(hdata, model_type::Type, optimizer; kwargs...) = 
-    solve_model(hdata, model_type, optimizer, build_hhc; multinetwork=true, kwargs...)
+function solve_hhc(hdata, model_type::Type, optimizer; kwargs...)
+    update_hdata_with_fundamental_hpf_results!(hdata, HarmonicPowerModel, optimizer)
+    
+    return solve_model(hdata, model_type, optimizer, build_hhc; multinetwork=true, kwargs...)
+end
 
 ""
 function build_hhc(pm::HarmonicPowerModel)
@@ -23,22 +26,8 @@ function build_hhc(pm::HarmonicPowerModel)
         ## fairness variable
         if n ≠ fundamental(pm)
             variable_fairness_principle(pm, nw=n, bounded=true)
-        end 
-
-        ## voltage variables 
-        variable_bus_voltage(pm, nw=n, bounded=true)
-        variable_xfmr_voltage(pm, nw=n, bounded=true)
-
-        ## edge current variables
-        variable_branch_current(pm, nw=n, bounded=true)
-        variable_xfmr_current(pm, nw=n, bounded=true)
-
-        ## unit current variables
-        variable_filter_current(pm, nw=n, bounded=false)
-        variable_gen_current(pm, nw=n, bounded=true)
-        variable_hload_current(pm, nw=n, bounded=false)                         # empty variable
-        variable_hsrc_current(pm, nw=n, bounded=true)
-        variable_shunt_current(pm, nw=n, bounded=false)
+        end
+        add_hhc_variables(pm, n) 
     end
 
     # objective 
@@ -56,6 +45,7 @@ function build_hhc(pm::HarmonicPowerModel)
     for b in ids(pm, :branch)
         constraint_branch_current_rms_limit(pm, b)
     end
+    
     ### xfmr 
     for x in ids(pm, :xfmr)
         constraint_xfmr_winding_current_rms_limit(pm, x)
@@ -69,7 +59,6 @@ function build_hhc(pm::HarmonicPowerModel)
     ### generator
     for g in ids(pm, :gen)
         constraint_gen_current_rms_limit(pm, g)
-
         constraint_gen_power_active_fundamental_limit(pm, g)
         constraint_gen_power_reactive_fundamental_limit(pm, g)
     end
@@ -81,32 +70,30 @@ function build_hhc(pm::HarmonicPowerModel)
             constraint_fairness_principle(pm, nw=n)
         end
 
-        ### reference bus
+        # ### reference bus
         for i in _PMs.ids(pm, :ref_buses, nw=n)
             constraint_ref_voltage(pm, i, nw=n)
         end
         
-        ### clean bus 
+        # ### clean bus 
         for i in _PMs.ids(pm, :clean_buses, nw=n)
             constraint_clean_voltage(pm, i, nw=n)
         end
 
-        ### bus
+        # ### bus
         for i in _PMs.ids(pm, :bus, nw=n)
             constraint_bus_current_balance(pm, i, nw=n)
-
             constraint_bus_voltage_ihd_limit(pm, i, nw=n)
         end
 
-        ### branch
+        # ### branch
         for b in _PMs.ids(pm, :branch, nw=n)
             constraint_branch_current_from(pm, b, nw=n)
             constraint_branch_current_to(pm, b, nw=n)
-
             constraint_branch_voltage_drop(pm, b, nw=n)
         end
 
-        ### xfmr
+        # ### xfmr
         for x in _PMs.ids(pm, :xfmr, nw=n)
             constraint_xfmr_core_magnetization(pm, x, nw=n)
             constraint_xfmr_core_voltage_drop(pm, x, nw=n)
@@ -119,13 +106,18 @@ function build_hhc(pm::HarmonicPowerModel)
         end
 
         ### generator
-        for g in _PMs.ids(pm, :gen, nw=n)
-            constraint_gen_current(pm, g, nw=n)
-        end
+        # for g in _PMs.ids(pm, :gen, nw=n)
+        #     constraint_gen_current(pm, g, nw=n)
+        # end
 
         ### harmonic source
-        for r in _PMs.ids(pm, :source, nw=n)
+        for r in _PMs.ids(pm, :hsrc, nw=n)
             constraint_hsrc_current(pm, r, nw=n)
+        end
+
+        ### harmonic load
+        for l in _PMs.ids(pm, :hload, nw=n)
+            constraint_hload_power(pm, l, nw=n)
         end
 
         ### shunt
@@ -146,21 +138,7 @@ function build_hhc(pm::dHHCPowerModel)
         if n ≠ fundamental(pm)
             variable_fairness_principle(pm, nw=n, bounded=true)
         end 
-
-        ## voltage variables 
-        variable_bus_voltage(pm, nw=n, bounded = true)
-        variable_xfmr_voltage(pm, nw=n, bounded = true)
-
-        ## edge current variables
-        variable_branch_current(pm, nw=n, bounded=true)
-        variable_xfmr_current(pm, nw=n, bounded=true)
-
-        ## node current variables
-        variable_filter_current(pm, nw=n, bounded=true)
-        variable_gen_current(pm, nw=n, bounded=true)
-        variable_hload_current(pm, nw=n, bounded=false)                         # empty variable
-        variable_hsrc_current(pm, nw=n, bounded=true)
-        variable_shunt_current(pm, nw=n, bounded=false)
+        add_hhc_variables(pm, n)    
     end end
 
     # objective 
@@ -176,11 +154,11 @@ function build_hhc(pm::dHHCPowerModel)
 
     ### branch
     for b in ids(pm, :branch)
-        constraint_current_rms_limit(pm, b)
+        constraint_branch_current_rms_limit(pm, b)
     end
     ### xfmr 
     for x in ids(pm, :xfmr)
-        constraint_xfmr_current_rms_limit(pm, x)
+        constraint_xfmr_winding_current_rms_limit(pm, x)
     end
 
     ### filter
@@ -216,10 +194,9 @@ function build_hhc(pm::dHHCPowerModel)
 
         ### branch
         for b in _PMs.ids(pm, :branch, nw=n)
-            constraint_current_from(pm, b, nw=n)
-            constraint_current_to(pm, b, nw=n)
-
-            constraint_voltage_drop(pm, b, nw=n)
+            constraint_branch_current_from(pm, b, nw=n)
+            constraint_branch_current_to(pm, b, nw=n)
+            constraint_branch_voltage_drop(pm, b, nw=n)
         end
 
         ### xfmr
@@ -240,8 +217,13 @@ function build_hhc(pm::dHHCPowerModel)
         end
 
         ### harmonic source
-        for r in _PMs.ids(pm, :source, nw=n)
+        for r in _PMs.ids(pm, :hsrc, nw=n)
             constraint_hsrc_current(pm, r, nw = n)
+        end
+
+        ### harmonic load
+        for l in _PMs.ids(pm, :hload, nw=n)
+            constraint_hload_power(pm, l, nw=n)
         end
 
         ### shunt 
@@ -249,3 +231,21 @@ function build_hhc(pm::dHHCPowerModel)
             constraint_shunt_current(pm, s, nw=n)
         end
 end end end
+
+""
+function add_hhc_variables(pm, n)
+    ## voltage variables 
+    variable_bus_voltage(pm, nw=n, bounded=false)
+    variable_xfmr_voltage(pm, nw=n, bounded=false)
+
+    ## edge current variables
+    variable_branch_current(pm, nw=n, bounded=false)
+    variable_xfmr_current(pm, nw=n, bounded=false)
+
+    ## unit current variables
+    variable_filter_current(pm, nw=n, bounded=false)
+    variable_gen_current(pm, nw=n, bounded=false)
+    variable_hload_current(pm, nw=n, bounded=false)                         # empty variable
+    variable_hsrc_current(pm, nw=n, bounded=false)
+    variable_shunt_current(pm, nw=n, bounded=false)
+end

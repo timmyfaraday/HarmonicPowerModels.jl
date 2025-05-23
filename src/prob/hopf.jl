@@ -37,37 +37,37 @@ function build_hopf(pm::HarmonicPowerModel)
     end 
 
     # objective
-    objective_voltage_distortion_minimization(pm)
+    #objective_voltage_distortion_minimization(pm)
+      objective_power_flow(pm)
 
     # constraint
     ## overall or fundamental constraints
-    ### bus
-    for i in ids(pm, :bus)
-        constraint_bus_voltage_rms_limit(pm, i)
-        constraint_bus_voltage_thd_limit(pm, i)
-    end
+    # ### bus
+    # for i in ids(pm, :bus)
+    #     constraint_bus_voltage_rms_limit(pm, i)
+    #     constraint_bus_voltage_thd_limit(pm, i)
+    # end
     
-    ### branch 
-    for b in ids(pm, :branch)
-        constraint_branch_current_rms_limit(pm, b)
-    end
-    ### xfmr 
-    for x in ids(pm, :xfmr)
-        constraint_xfmr_winding_current_rms_limit(pm, x)
-    end
+    # ### branch 
+    # for b in ids(pm, :branch)
+    #     constraint_branch_current_rms_limit(pm, b)
+    # end
+    # ### xfmr 
+    # for x in ids(pm, :xfmr)
+    #     constraint_xfmr_winding_current_rms_limit(pm, x)
+    # end
 
-    ### filter
-    for f in ids(pm, :filter)
-        constraint_filter_current(pm, f)
-        constraint_filter_current_rms_limit(pm, f)
-    end
-    ### generator
-    for g in ids(pm, :gen)
-        constraint_gen_current_rms_limit(pm, g)
-
-        constraint_gen_power_active_fundamental_limit(pm, g)
-        constraint_gen_power_reactive_fundamental_limit(pm, g)
-    end
+    # ### filter
+    # for f in ids(pm, :filter)
+    #     constraint_filter_current(pm, f)
+    #     constraint_filter_current_rms_limit(pm, f)
+    # end
+    # ### generator
+    # for g in ids(pm, :gen)
+    #     constraint_gen_current_rms_limit(pm, g)
+    #     constraint_gen_power_active_fundamental_limit(pm, g)
+    #     constraint_gen_power_reactive_fundamental_limit(pm, g)
+    # end
 
     ## harmonic constraints
     for n in _PMs.nw_ids(pm)
@@ -84,15 +84,14 @@ function build_hopf(pm::HarmonicPowerModel)
         ### bus
         for i in _PMs.ids(pm, :bus, nw=n)
             constraint_bus_current_balance(pm, i, nw=n)
-            
-            constraint_bus_voltage_ihd_limit(pm, i, nw=n)
+            # constraint_bus_voltage_ihd_limit(pm, i, nw=n)
         end
 
         ### branch
         for b in _PMs.ids(pm, :branch, nw=n)
             constraint_branch_current_from(pm, b, nw=n)
             constraint_branch_current_to(pm, b, nw=n)
-            
+
             constraint_branch_voltage_drop(pm, b, nw=n)
         end
 
@@ -106,7 +105,12 @@ function build_hopf(pm::HarmonicPowerModel)
             constraint_xfmr_winding_current_balance(pm, x, nw=n)
             constraint_xfmr_winding_voltage_drop(pm, x, nw=n)
             constraint_xfmr_winding_zero_seq_current_blocking(pm, x, nw=n)
-        end     
+        end 
+        
+        # ### generator
+        # for g in _PMs.ids(pm, :gen, nw=n)
+        #     constraint_gen_current(pm, g, nw=n)
+        # end
 
         ### harmonic load
         for l in _PMs.ids(pm, :hload, nw=n)

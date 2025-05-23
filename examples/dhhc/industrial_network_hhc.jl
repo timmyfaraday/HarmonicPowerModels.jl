@@ -49,70 +49,68 @@ data = PMs.parse_file(path)
 # define the set of considered harmonics
 H = [1, 3, 5, 7]
 
+
 # COMPUTATION ##################################################################
-## absolute equality (ae) ######################################################
-data["principle"] = "absolute equality"
+# absolute equality (ae) ######################################################
 
 # solve HHC problem -- NLP
-# hdata_nlp_ae = HPM.replicate(data, H=H)
-hdata_nlp_ae = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc)
+hdata_nlp_ae = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "absolute equality")
 results_hhc_nlp_ae = HPM.solve_hhc(hdata_nlp_ae, HarmonicPowerModel, solver_nlp)
-
-# solve HHC problem -- SOC 
-hdata_soc_ae = HPM.replicate(data, H=H)
-results_hhc_soc_ae = HPM.solve_hhc(hdata_soc_ae, dHHCPowerModel, solver_nlp, solver_nlp)
+# solve HHC problem -- SOC
+hdata_soc_ae = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "absolute equality")
+results_hhc_soc_ae = HPM.solve_hhc(hdata_soc_ae, dHHCPowerModel, solver_nlp)
 
 ## maximum efficiency (me) #####################################################
-data["principle"] = "maximum efficiency"
 
 # solve HHC problem -- NLP
-hdata_nlp_me = HPM.replicate(data, H=H)
-results_hhc_nlp_me = HPM.solve_hhc(hdata_nlp_me, dHHC_NLP, solver_nlp)
+hdata_nlp_me = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "maximum efficiency")
+results_hhc_nlp_me = HPM.solve_hhc(hdata_nlp_me, HarmonicPowerModel, solver_nlp)
 
 # solve HHC problem -- SOC 
-hdata_soc_me = HPM.replicate(data, H=H)
-results_hhc_soc_me = HPM.solve_hhc(hdata_soc_me, dHHC_SOC, solver_nlp, solver_nlp)
+hdata_soc_me = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "maximum efficiency")
+results_hhc_soc_me = HPM.solve_hhc(hdata_soc_me, dHHCPowerModel, solver_nlp)
 
 ## maximin (mm) ################################################################
-data["principle"] = "maximin"
 
 # solve HHC problem -- NLP
-hdata_nlp_mm = HPM.replicate(data, H=H)
-results_hhc_nlp_mm = HPM.solve_hhc(hdata_nlp_mm, dHHC_NLP, solver_nlp)
+hdata_nlp_mm = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "maximin")
+results_hhc_nlp_mm = HPM.solve_hhc(hdata_nlp_mm, HarmonicPowerModel, solver_nlp)
 
 # solve HHC problem -- SOC 
-hdata_soc_mm = HPM.replicate(data, H=H)
-results_hhc_soc_mm = HPM.solve_hhc(hdata_soc_mm, dHHC_SOC, solver_nlp, solver_nlp)
+hdata_soc_mm = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "maximin")
+results_hhc_soc_mm = HPM.solve_hhc(hdata_soc_mm, dHHCPowerModel, solver_nlp)
 
 ## Kalai-Smorodinsky bargaining (ks) ###########################################
-data["principle"] = "Kalai-Smorodinsky bargaining"
+# # Calculate impedance
+# Zh = calculate_pos_seq_harmonic_impedance(data, collect(50:50.0:H[end] * 50.0), collect(1:length(data["bus"])))
 
-# solve HHC problem -- NLP
-hdata_nlp_ks = HPM.replicate(data, H=H)
-results_hhc_nlp_ks = HPM.solve_hhc(hdata_nlp_ks, dHHC_NLP, solver_nlp)
+# # solve HHC problem -- NLP
+# hdata_nlp_ks = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "Kalai-Smorodinsky bargaining")
+# HPM.calculate_maximum_harmonic_source_current_injection!(hdata_nlp_ks, Zh)
+# results_hhc_nlp_ks = HPM.solve_hhc(hdata_nlp_ks, HarmonicPowerModel, solver_nlp)
 
-# solve HHC problem -- SOC 
-hdata_soc_ks = HPM.replicate(data, H=H)
-results_hhc_soc_ks = HPM.solve_hhc(hdata_soc_ks, dHHC_SOC, solver_nlp, solver_nlp)
+# # solve HHC problem -- SOC 
+# hdata_soc_ks = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, Zh)
+# results_hhc_soc_ks = HPM.solve_hhc(hdata_soc_ks, dHHCPowerModel, solver_nlp)
 
 # RESULTS ######################################################################
 # TABLE: Harmonic current injection from the non-linear model with the 
 # Kalai-Smorodinsky bargaining fairness objective 
 
-Im(nh,nl) = round(results_hhc_nlp_ks["solution"]["nw"]["$nh"]["load"]["$nl"]["cmd"], digits=7);
-Ia(nh,nl) = round(atand(results_hhc_nlp_ks["solution"]["nw"]["$nh"]["load"]["$nl"]["cid"],
-                        results_hhc_nlp_ks["solution"]["nw"]["$nh"]["load"]["$nl"]["crd"]), digits=2);
+# Im(nh,nl) = round(results_hhc_nlp_ks["solution"]["nw"]["$nh"]["load"]["$nl"]["cmd"], digits=7);
+# Ia(nh,nl) = round(atand(results_hhc_nlp_ks["solution"]["nw"]["$nh"]["load"]["$nl"]["cid"],
+#                         results_hhc_nlp_ks["solution"]["nw"]["$nh"]["load"]["$nl"]["crd"]), digits=2);
 
-header  = (
-            ["", "h=3", "h=3", "h=5", "h=5", "h=7", "h=7"],
-            ["unit", "|Ī| [pu]", "∠Ī [°]", "|Ī| [pu]", "∠Ī [°]", "|Ī| [pu]", "∠Ī [°]"]
-          );
-data    = vcat( hcat("u₁", [Im(3,1), Ia(3,1), Im(5,1), Ia(5,1), Im(7,1), Ia(7,1)]'),
-                hcat("u₂", [Im(3,2), Ia(3,2), Im(5,2), Ia(5,2), Im(7,2), Ia(7,2)]'),
-                hcat("u₃", [Im(3,3), Ia(3,3), Im(5,3), Ia(5,3), Im(7,3), Ia(7,3)]'),
-                hcat("u₄", [Im(3,4), Ia(3,4), Im(5,4), Ia(5,4), Im(7,4), Ia(7,4)]'));
+# header  = (
+#             ["", "h=3", "h=3", "h=5", "h=5", "h=7", "h=7"],
+#             ["unit", "|Ī| [pu]", "∠Ī [°]", "|Ī| [pu]", "∠Ī [°]", "|Ī| [pu]", "∠Ī [°]"]
+#           );
+# data    = vcat( hcat("u₁", [Im(3,1), Ia(3,1), Im(5,1), Ia(5,1), Im(7,1), Ia(7,1)]'),
+#                 hcat("u₂", [Im(3,2), Ia(3,2), Im(5,2), Ia(5,2), Im(7,2), Ia(7,2)]'),
+#                 hcat("u₃", [Im(3,3), Ia(3,3), Im(5,3), Ia(5,3), Im(7,3), Ia(7,3)]'),
+#                 hcat("u₄", [Im(3,4), Ia(3,4), Im(5,4), Ia(5,4), Im(7,4), Ia(7,4)]'));
 
-pretty_table(data, header=header)
+# pretty_table(data, header=header)
 
 # FIGURE: The bus and excitation voltage phasors throughout the industrial
 # power system for (a) zero, (b) negative, and (c) positive sequence,
@@ -141,13 +139,14 @@ pretty_table(data, header=header)
 header  = (
             ["obj.", "mod.", "obj. value", "solve time [s]"]
           );
-data    = vcat( ["abs. eq." "nl" results_hhc_nlp_ae["objective"] results_hhc_nlp_ae["solve_time"]],
+table_data    = vcat( ["abs. eq." "nl" results_hhc_nlp_ae["objective"] results_hhc_nlp_ae["solve_time"]],
                 ["abs. eq." "soc" results_hhc_soc_ae["objective"] results_hhc_soc_ae["solve_time"]],
                 ["max. eff." "nl" results_hhc_nlp_me["objective"] results_hhc_nlp_me["solve_time"]],
                 ["max. eff." "soc" results_hhc_soc_me["objective"] results_hhc_soc_me["solve_time"]],
                 ["maximin" "nl" results_hhc_nlp_mm["objective"] results_hhc_nlp_mm["solve_time"]],
                 ["maximin" "soc" results_hhc_soc_mm["objective"] results_hhc_soc_mm["solve_time"]],
-                ["KS barg." "nl" results_hhc_nlp_ks["objective"] results_hhc_nlp_ks["solve_time"]],
-                ["KS barg." "soc" results_hhc_soc_ks["objective"] results_hhc_soc_ks["solve_time"]]);
+                #["KS barg." "nl" results_hhc_nlp_ks["objective"] results_hhc_nlp_ks["solve_time"]],
+                #["KS barg." "soc" results_hhc_soc_ks["objective"] results_hhc_soc_ks["solve_time"]]
+                )
 
-pretty_table(data, header=header)
+pretty_table(table_data, header=header)
