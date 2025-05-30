@@ -41,15 +41,15 @@ function build_hhc(pm::HarmonicPowerModel)
         constraint_bus_voltage_thd_limit(pm, i)
     end
 
-    ### branch
-    for b in ids(pm, :branch)
-        constraint_branch_current_rms_limit(pm, b)
-    end
+    # ### branch
+    # for b in ids(pm, :branch)
+    #     constraint_branch_current_rms_limit(pm, b)
+    # end
     
     ### xfmr 
-    for x in ids(pm, :xfmr)
-        constraint_xfmr_winding_current_rms_limit(pm, x)
-    end
+    # for x in ids(pm, :xfmr)
+    #     constraint_xfmr_winding_current_rms_limit(pm, x)
+    # end
     
     ### filter
     for f in ids(pm, :filter)
@@ -106,9 +106,9 @@ function build_hhc(pm::HarmonicPowerModel)
         end
 
         ### generator
-        # for g in _PMs.ids(pm, :gen, nw=n)
-        #     constraint_gen_current(pm, g, nw=n)
-        # end
+        for g in _PMs.ids(pm, :gen, nw=n)
+            constraint_gen_current(pm, g, nw=n)
+        end
 
         ### harmonic source
         for r in _PMs.ids(pm, :hsrc, nw=n)

@@ -82,6 +82,11 @@ function build_hpf(pm::HarmonicPowerModel)
             constraint_xfmr_winding_zero_seq_current_blocking(pm, x, nw=n)
         end
 
+        ### generator
+        for g in _PMs.ids(pm, :gen, nw=n)
+            constraint_gen_current(pm, g, nw=n)
+        end
+
         ### harmonic load
         for l in _PMs.ids(pm, :hload, nw=n)
             constraint_hload_power(pm, l, nw=n)

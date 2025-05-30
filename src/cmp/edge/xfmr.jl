@@ -144,7 +144,7 @@ function variable_xfmr_voltage_real(pm::AbstractHarmonicModel; nw::Int=fundament
                 JuMP.@variable( pm.model, 
                                 [(x,i) in _PMs.ref(pm, nw, :wnds_xfmr)], 
                                 base_name="$(nw)_vxr",
-                                start=v_lim[x][i])
+                                start=0.0) # WHY?  start=v_lim[x][i])
 
     if bounded
         for (x,i) in _PMs.ref(pm, nw, :wnds_xfmr)
@@ -192,7 +192,8 @@ function variable_xfmr_voltage_excitation_real(pm::AbstractHarmonicModel; nw::In
                 JuMP.@variable( pm.model,
                                 [x in _PMs.ids(pm, nw, :xfmr)], 
                                 base_name="$(nw)_exr",
-                                start = maximum(values(v_lim[x])))  
+                                start=0.0) # WHY?  start = maximum(values(v_lim[x]))) 
+                                 
 
     if bounded
         for x in _PMs.ids(pm, nw, :xfmr)

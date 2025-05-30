@@ -57,7 +57,7 @@ function add_branch_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
             branch["r"]             = bdata["br_r"] * sqrt(h)
             branch["x"]             = bdata["br_x"] * h
             branch["g_fr"]          = bdata["g_fr"] / sqrt(h)
-            branch["b_fr"]          = bdata["b_fr"] * h^(sign(bdata["b_fr"]))
+            branch["b_fr"]          = bdata["b_fr"] * h^(sign(bdata["b_fr"]))   ### WHY SIGN FUNCTION?
             branch["g_to"]          = bdata["g_fr"] / sqrt(h)
             branch["b_to"]          = bdata["b_to"] * h^(sign(bdata["b_to"]))
 end end end
