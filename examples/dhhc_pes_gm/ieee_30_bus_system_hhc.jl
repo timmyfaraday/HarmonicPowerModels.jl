@@ -246,7 +246,7 @@ plot(setdiff(H,1), [[hdata_ind_519["nw"]["$nh"]["bus"]["$nb"]["i_ihd"] for nh in
         legend=:outerright,
         linestyle=[:dot :dot :dot :solid :solid :solid],  
         marker=[:square :square :square :diamond :diamond :diamond],  
-        markersize=5,
+        markersize=2,
         size=(1200,266),
         xlabel="harmonic \$h\$ [-]",
         xlim=(0,51),
@@ -286,3 +286,351 @@ plot!(setdiff(H,1), [[vm(results_ind_519["solution"]["nw"]["$nh"]["bus"]["$nb"])
         ylim=(1e-5,1e0),
         yminorgrid=true)
 savefig("examples/dhhc_pes_gm/results/harmonic_voltage_bus_$nb.png")
+
+
+######### IHD IND
+
+nb = 4
+# plot harmonic current
+ p_indhv=plot(setdiff(H,1), [[hdata_ind_519["nw"]["$nh"]["bus"]["$nb"]["i_ihd"] for nh in setdiff(H,1)],
+                    [hdata_ind_iec["nw"]["$nh"]["bus"]["$nb"]["i_ihd"] for nh in setdiff(H,1)],
+                    [results_ind_hhc["solution"]["nw"]["$nh"]["load"]["$nl"]["cmd"] for nh in setdiff(H,1)]
+                    # [hdata_cap_iec["nw"]["$nh"]["bus"]["$nb"]["i_ihd"] for nh in setdiff(H,1)],
+                    # [results_cap_hhc["solution"]["nw"]["$nh"]["load"]["$nl"]["cmd"] for nh in setdiff(H,1)]
+                   ],
+        bottom_margin=10mm,
+        color=[:blue :orange :green],
+        fontfamily="Computer Modern",
+        label=["IEEE519" "IEC61000" "HHC"],
+        left_margin=10mm,
+        legend=:outerright,
+        linestyle=[:dot :dot :dot],  
+        marker=[:square :square :square],  
+        markersize=2,
+        size=(1200,266),
+        xlabel="harmonic \$h\$ [-]",
+        xlim=(0,51),
+        yaxis=:log10,
+        ylabel="current \$|𝗜^{ihd}_{h}|\$ [pu]",
+        ylim=(1e-5,1e-1),
+        guidefontsize=16,
+        tickfontsize=14,
+        legendfontsize=16,
+        linewidth = 3,
+        yminorgrid=true)
+savefig(p_indhv, "ihd_ind_hv.pdf")
+
+nb = 17
+# plot harmonic current
+p_indmv= plot(setdiff(H,1), [[hdata_ind_519["nw"]["$nh"]["bus"]["$nb"]["i_ihd"] for nh in setdiff(H,1)],
+                    [hdata_ind_iec["nw"]["$nh"]["bus"]["$nb"]["i_ihd"] for nh in setdiff(H,1)],
+                    [results_ind_hhc["solution"]["nw"]["$nh"]["load"]["$nl"]["cmd"] for nh in setdiff(H,1)]
+                    # [hdata_cap_iec["nw"]["$nh"]["bus"]["$nb"]["i_ihd"] for nh in setdiff(H,1)],
+                    # [results_cap_hhc["solution"]["nw"]["$nh"]["load"]["$nl"]["cmd"] for nh in setdiff(H,1)]
+                   ],
+         bottom_margin=10mm,
+        color=[:blue :orange :green],
+        fontfamily="Computer Modern",
+        label=["IEEE519" "IEC61000" "HHC"],
+        left_margin=10mm,
+        legend=:outerright,
+        linestyle=[:dot :dot :dot],  
+        marker=[:square :square :square],  
+        markersize=2,
+        size=(1200,266),
+        xlabel="harmonic \$h\$ [-]",
+        xlim=(0,51),
+        yaxis=:log10,
+        ylabel="current \$|𝗜^{ihd}_{h}|\$ [pu]",
+        ylim=(1e-5,1e-1),
+        guidefontsize=16,
+        tickfontsize=14,
+        legendfontsize=16,
+        linewidth = 3,
+        yminorgrid=true)
+savefig(p_indmv, "ihd_ind_mv.pdf")
+
+
+# plot harmonic voltage
+nb = 4
+vm(result) = abs(result["vr"] + im * result["vi"])
+lim = data["bus"]["$nb"]["base_kv"] <= 69.0 ? 0.03 : 0.015 ;
+pv_ind_hv = plot([0,50],[lim,lim],color=:black,label="harmonic voltage limit",linewidth=3)
+plot!(setdiff(H,1), [[vm(results_ind_519["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
+                     [vm(results_ind_iec["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
+                     [vm(results_ind_hhc["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)]
+                    #  [vm(results_cap_519["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
+                    #  [vm(results_cap_iec["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
+                    #  [vm(results_cap_hhc["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)]
+                    ],
+         bottom_margin=10mm,
+        color=[:blue :orange :green],
+        fontfamily="Computer Modern",
+        label=["IEEE519" "IEC61000" "HHC"],
+        left_margin=10mm,
+        legend=:outerright,
+        linestyle=[:dot :dot :dot],  
+        marker=[:square :square :square],  
+        markersize=2,
+        size=(1200,266),
+        xlabel="harmonic \$h\$ [-]",
+        xlim=(0,51),
+        yaxis=:log10,
+        ylabel="voltage \$|𝗨^{ihd}_{h}|\$ [pu]",
+        ylim=(1e-5,1e-1),
+        guidefontsize=16,
+        tickfontsize=14,
+        legendfontsize=16,
+        linewidth = 3,
+        yminorgrid=true)
+savefig(pv_ind_hv, "v_ind_hv.pdf")
+
+
+# plot harmonic voltage
+nb = 17
+vm(result) = abs(result["vr"] + im * result["vi"])
+lim = data["bus"]["$nb"]["base_kv"] <= 69.0 ? 0.03 : 0.015 ;
+pv_ind_mv = plot([0,50],[lim,lim],color=:black,label="harmonic voltage limit",linewidth=3)
+plot!(setdiff(H,1), [[vm(results_ind_519["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
+                     [vm(results_ind_iec["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
+                     [vm(results_ind_hhc["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)]
+                    #  [vm(results_cap_519["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
+                    #  [vm(results_cap_iec["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
+                    #  [vm(results_cap_hhc["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)]
+                    ],
+         bottom_margin=10mm,
+        color=[:blue :orange :green],
+        fontfamily="Computer Modern",
+        label=["IEEE519" "IEC61000" "HHC"],
+        left_margin=10mm,
+        legend=:outerright,
+        linestyle=[:dot :dot :dot],  
+        marker=[:square :square :square],  
+        markersize=2,
+        size=(1200,266),
+        xlabel="harmonic \$h\$ [-]",
+        xlim=(0,51),
+        yaxis=:log10,
+        ylabel="voltage \$|𝗨^{ihd}_{h}|\$ [pu]",
+        ylim=(1e-5,1e-1),
+        guidefontsize=16,
+        tickfontsize=14,
+        legendfontsize=16,
+        linewidth = 3,
+        yminorgrid=true)
+savefig(pv_ind_mv, "v_ind_mv.pdf")
+
+
+
+
+######### IHD CAP
+
+nb = 4
+# plot harmonic current
+ p_caphv = plot(setdiff(H,1), [[hdata_ind_519["nw"]["$nh"]["bus"]["$nb"]["i_ihd"] for nh in setdiff(H,1)],
+                    [hdata_cap_iec["nw"]["$nh"]["bus"]["$nb"]["i_ihd"] for nh in setdiff(H,1)],
+                    [results_cap_hhc["solution"]["nw"]["$nh"]["load"]["$nl"]["cmd"] for nh in setdiff(H,1)]
+                    # [hdata_cap_iec["nw"]["$nh"]["bus"]["$nb"]["i_ihd"] for nh in setdiff(H,1)],
+                    # [results_cap_hhc["solution"]["nw"]["$nh"]["load"]["$nl"]["cmd"] for nh in setdiff(H,1)]
+                   ],
+        bottom_margin=10mm,
+        color=[:blue :orange :green],
+        fontfamily="Computer Modern",
+        label=["IEEE519" "IEC61000" "HHC"],
+        left_margin=10mm,
+        legend=:outerright,
+        linestyle=[:dot :dot :dot],  
+        marker=[:square :square :square],  
+        markersize=2,
+        size=(1200,266),
+        xlabel="harmonic \$h\$ [-]",
+        xlim=(0,51),
+        yaxis=:log10,
+        ylabel="current \$|𝗜^{ihd}_{h}|\$ [pu]",
+        ylim=(1e-5,1e-1),
+        guidefontsize=16,
+        tickfontsize=14,
+        legendfontsize=16,
+        linewidth = 3,
+        yminorgrid=true)
+savefig(p_caphv, "ihd_cap_hv.pdf")
+
+nb = 17
+# plot harmonic current
+p_capmv= plot(setdiff(H,1), [[hdata_ind_519["nw"]["$nh"]["bus"]["$nb"]["i_ihd"] for nh in setdiff(H,1)],
+                    [hdata_cap_iec["nw"]["$nh"]["bus"]["$nb"]["i_ihd"] for nh in setdiff(H,1)],
+                    [results_cap_hhc["solution"]["nw"]["$nh"]["load"]["$nl"]["cmd"] for nh in setdiff(H,1)]
+                    # [hdata_cap_iec["nw"]["$nh"]["bus"]["$nb"]["i_ihd"] for nh in setdiff(H,1)],
+                    # [results_cap_hhc["solution"]["nw"]["$nh"]["load"]["$nl"]["cmd"] for nh in setdiff(H,1)]
+                   ],
+         bottom_margin=10mm,
+        color=[:blue :orange :green],
+        fontfamily="Computer Modern",
+        label=["IEEE519" "IEC61000" "HHC"],
+        left_margin=10mm,
+        legend=:outerright,
+        linestyle=[:dot :dot :dot],  
+        marker=[:square :square :square],  
+        markersize=2,
+        size=(1200,266),
+        xlabel="harmonic \$h\$ [-]",
+        xlim=(0,51),
+        yaxis=:log10,
+        ylabel="current \$|𝗜^{ihd}_{h}|\$ [pu]",
+        ylim=(1e-5,1e-1),
+        guidefontsize=16,
+        tickfontsize=14,
+        legendfontsize=16,
+        linewidth = 3,
+        yminorgrid=true)
+savefig(p_capmv, "ihd_cap_mv.pdf")
+
+
+
+# plot harmonic voltage
+nb = 4
+vm(result) = abs(result["vr"] + im * result["vi"])
+lim = data["bus"]["$nb"]["base_kv"] <= 69.0 ? 0.03 : 0.015 ;
+pv_cap_hv = plot([0,50],[lim,lim],color=:black,label="harmonic voltage limit",linewidth=3)
+plot!(setdiff(H,1), [
+                     [vm(results_cap_519["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
+                     [vm(results_cap_iec["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
+                     [vm(results_cap_hhc["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)]
+                    ],
+         bottom_margin=10mm,
+        color=[:blue :orange :green],
+        fontfamily="Computer Modern",
+        label=["IEEE519" "IEC61000" "HHC"],
+        left_margin=10mm,
+        legend=:outerright,
+        linestyle=[:dot :dot :dot],  
+        marker=[:square :square :square],  
+        markersize=2,
+        size=(1200,266),
+        xlabel="harmonic \$h\$ [-]",
+        xlim=(0,51),
+        yaxis=:log10,
+        ylabel="voltage \$|𝗨^{ihd}_{h}|\$ [pu]",
+        ylim=(1e-5,1e-0),
+        guidefontsize=16,
+        tickfontsize=14,
+        legendfontsize=16,
+        linewidth = 3,
+        yminorgrid=true)
+savefig(pv_cap_hv, "v_cap_hv.pdf")
+
+
+# plot harmonic voltage
+nb = 17
+vm(result) = abs(result["vr"] + im * result["vi"])
+lim = data["bus"]["$nb"]["base_kv"] <= 69.0 ? 0.03 : 0.015 ;
+pv_cap_mv = plot([0,50],[lim,lim],color=:black,label="harmonic voltage limit",linewidth=3)
+plot!(setdiff(H,1), [
+                     [vm(results_cap_519["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
+                     [vm(results_cap_iec["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)],
+                     [vm(results_cap_hhc["solution"]["nw"]["$nh"]["bus"]["$nb"]) for nh in setdiff(H,1)]
+                    ],
+         bottom_margin=10mm,
+        color=[:blue :orange :green],
+        fontfamily="Computer Modern",
+        label=["IEEE519" "IEC61000" "HHC"],
+        left_margin=10mm,
+        legend=:outerright,
+        linestyle=[:dot :dot :dot],  
+        marker=[:square :square :square],  
+        markersize=2,
+        size=(1200,266),
+        xlabel="harmonic \$h\$ [-]",
+        xlim=(0,51),
+        yaxis=:log10,
+        ylabel="voltage \$|𝗨^{ihd}_{h}|\$ [pu]",
+        ylim=(1e-5,1e-0),
+        guidefontsize=16,
+        tickfontsize=14,
+        legendfontsize=16,
+        linewidth = 3,
+        yminorgrid=true)
+savefig(pv_cap_mv, "v_cap_mv.pdf")
+
+
+nb = 4
+nb_1 = 17
+# plot harmonic impedance
+p1 = plot(f ./ 50, [abs.(Zh_ind[nb])],
+        fontfamily="Computer Modern",
+        label="HV node",
+        legend=:bottomright,
+        color = RGB(0,102/255,51/255),
+        linestyle=:solid,
+        xlabel="harmonic \$h\$ [-]",
+        yaxis=:log10,
+        ylabel="impedance \$Z_{h}\$ [pu]",
+        ylim=(1e-2,1e1),
+        linewidth = 4,
+        guidefontsize=16,
+        tickfontsize=14,
+        legendfontsize=16,
+        yminorgrid=true)
+
+
+
+
+plot!(p1, f ./ 50, [abs.(Zh_ind[nb_1])],
+    fontfamily="Computer Modern",
+    label="MV node",
+    legend=:bottomright,
+        color = RGB(0,102/255,51/255),
+    linestyle=:dot,
+    xlabel="harmonic \$h\$ [-]",
+    yaxis=:log10,
+    ylabel="impedance \$Z_{h}\$ [pu]",
+    ylim=(1e-2,1e1),
+    linewidth = 4,
+    guidefontsize=16,
+    tickfontsize=14,
+    legendfontsize=16,
+    yminorgrid=true)
+
+
+savefig(p1, "zh_ind.pdf")
+
+
+
+nb = 4
+nb_1 = 17
+# plot harmonic impedance
+p2 = plot(f ./ 50, [abs.(Zh_cap[nb])],
+        fontfamily="Computer Modern",
+        label="HV node",
+        legend=:bottomright,
+        color = RGB(0,102/255,51/255),
+        linestyle=:solid,
+        xlabel="harmonic \$h\$ [-]",
+        yaxis=:log10,
+        ylabel="impedance \$Z_{h}\$ [pu]",
+        ylim=(1e-2,1e1),
+        linewidth = 4,
+        guidefontsize=16,
+        tickfontsize=14,
+        legendfontsize=16,
+        yminorgrid=true)
+
+
+plot!(p2, f ./ 50, [abs.(Zh_cap[nb_1])],
+    fontfamily="Computer Modern",
+    label="MV node",
+    legend=:bottomright,
+        color = RGB(0,102/255,51/255),
+    linestyle=:dot,
+    xlabel="harmonic \$h\$ [-]",
+    yaxis=:log10,
+    ylabel="impedance \$Z_{h}\$ [pu]",
+    ylim=(1e-2,1e1),
+    linewidth = 4,
+    guidefontsize=16,
+    tickfontsize=14,
+    legendfontsize=16,
+    yminorgrid=true)
+
+
+savefig(p2, "zh_cap.pdf")
