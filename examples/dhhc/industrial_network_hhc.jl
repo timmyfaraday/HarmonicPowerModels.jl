@@ -52,6 +52,7 @@ data = PMs.parse_file(path)
 # define the set of considered harmonics
 H = [1, 3, 5, 7]
 
+# TODO: Check the hsrc constraint -> casues convergence to infeasible point in OPF.....
 
 # COMPUTATION ##################################################################
 # absolute equality (ae) ######################################################
