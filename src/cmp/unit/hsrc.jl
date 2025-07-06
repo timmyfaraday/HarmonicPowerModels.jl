@@ -42,7 +42,7 @@ function add_hsrc_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
             hsrc["q_fund"]      = rdata["qd"]
             #-----------------------------------#
             hsrc["i_base_ka"]   = calc_hsrc_current_base(hdata, rdata)
-            hsrc["crar"]       = calc_hsrc_current_angle_ref(hdata, rdata, h)
+            hsrc["crar"]        = calc_hsrc_current_angle_ref(hdata, rdata, h)
         else
             hsrc["crar"]        = calc_hsrc_current_angle_ref(hdata, rdata, h)
 end end end

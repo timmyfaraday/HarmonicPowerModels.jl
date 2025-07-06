@@ -26,8 +26,10 @@ calc_gen_current_base(hdata::Dict{String,Any}, gdata::Dict{String,Any}) =
 function calc_gen_current_rms_max(hdata::Dict{String,Any}, gdata::Dict{String,Any})
     S_nom       = sqrt(gdata["pmax"]^2 + gdata["qmax"]^2) 
     v_rms_max   = hdata["nw"]["1"]["bus"][string(gdata["gen_bus"])]["v_rms_max"]
+    v_rms_min   = hdata["nw"]["1"]["bus"][string(gdata["gen_bus"])]["v_rms_min"]
      
-    return S_nom / (sqrt(3) * v_rms_max)
+    # return S_nom / (sqrt(3) * v_rms_max)
+    return S_nom / (sqrt(3) * v_rms_min)
 end
 ""
 collect_gen_current_magnitude_limits(pm::AbstractHarmonicModel, nw::Int) = 
@@ -48,7 +50,7 @@ function add_gen_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
             gen["gsc"]          = calc_gen_admittance_real(hdata, gdata, h)
             #-----------------------------------#
             gen["i_base_ka"]    = calc_gen_current_base(hdata, gdata)
-            gen["i_fund_magn"]  = 0.0
+            gen["i_fund_magn"]  = 0.0 # this value is written from fundamental OPF initialization, see init.jl
             gen["i_rms_max"]    = calc_gen_current_rms_max(hdata, gdata)
             gen["p_fund_min"]   = gdata["pmin"]
             gen["p_fund_max"]   = gdata["pmax"]

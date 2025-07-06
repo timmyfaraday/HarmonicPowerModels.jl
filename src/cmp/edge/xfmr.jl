@@ -47,14 +47,22 @@ calc_xfmr_current_base(hdata::Dict{String,Any}, xdata::Dict{String,Any}) =
     [hdata["s_base_mva"] / hdata["nw"]["1"]["bus"][string(nb)]["v_base_kv"] 
         for nb in [xdata["f_bus"], xdata["t_bus"]]]
 ""
-# i_rms_max = S_nom / s_base_mva / sqrt(3) / min(v_rms_max(f_bus), v_rms_max(t_bus))
+# i_rms_max = S_nom / s_base_mva / sqrt(3) / min(v_rms_min(f_bus), v_rms_min(t_bus))
 function calc_xfmr_current_rms_max(hdata::Dict{String,Any}, xdata::Dict{String,Any})
     S_nom       = xdata["rate_a"] 
     s_base_mva  = hdata["s_base_mva"]
     v_rms_max   = [ hdata["nw"]["1"]["bus"][string(xdata["f_bus"])]["v_rms_max"],
                     hdata["nw"]["1"]["bus"][string(xdata["t_bus"])]["v_rms_max"]]
+
+
+
+    v_rms_min   = [ hdata["nw"]["1"]["bus"][string(xdata["f_bus"])]["v_rms_min"],
+                    hdata["nw"]["1"]["bus"][string(xdata["t_bus"])]["v_rms_min"]]
+
+    println(S_nom)
+    # return S_nom / s_base_mva / sqrt(3) ./ v_rms_max
      
-    return S_nom / s_base_mva / sqrt(3) ./ v_rms_max
+    return S_nom / s_base_mva / sqrt(3) ./ v_rms_min
 end
 
 ""
@@ -104,7 +112,7 @@ function add_xfmr_hdata!(hdata::Dict{String,Any},
             xfmr["cxmfi"]       = nothing
             #-----------------------------------#
             xfmr["i_base_ka"]   = calc_xfmr_current_base(hdata, xdata)
-            xfmr["i_fund_magn"] = [0.0, 0.0]
+            xfmr["i_fund_magn"] = [0.0, 0.0] # this value is written from fundamental OPF initialization, see init.jl
             xfmr["i_rms_max"]   = calc_xfmr_current_rms_max(hdata, xdata)
         else
             xfmr["x_core"]      = [xdata["xsc"]] .* h
@@ -168,7 +176,7 @@ function variable_xfmr_voltage_imaginary(pm::AbstractHarmonicModel; nw::Int=fund
                 JuMP.@variable( pm.model,
                                 [(x,i) in _PMs.ref(pm, nw, :wnds_xfmr)], 
                                 base_name="$(nw)_vxi",
-                                start=0.0)
+                                start=0.0) # WHY?  start=v_lim[x][i])
 
     if bounded
         for (x,i) in _PMs.ref(pm, nw, :wnds_xfmr)

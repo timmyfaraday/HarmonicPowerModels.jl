@@ -18,8 +18,11 @@ calc_hload_current_base(hdata::Dict{String,Any}, ldata::Dict{String,Any}) =
 function calc_hload_current_rms_max(hdata::Dict{String,Any}, ldata::Dict{String,Any})
     S_nom       = sqrt(ldata["pd"]^2 + ldata["qd"]^2) 
     v_rms_max   = hdata["nw"]["1"]["bus"][string(ldata["load_bus"])]["v_rms_max"]
+
+    v_rms_min   = hdata["nw"]["1"]["bus"][string(ldata["load_bus"])]["v_rms_min"]
      
-    return S_nom / (sqrt(3) * v_rms_max)
+    # return S_nom / (sqrt(3) * v_rms_max)
+    return S_nom / (sqrt(3) * v_rms_min)
 end
 ""
 hload_current_magnitude_limit(pm::AbstractHarmonicModel, nw::Int, l) = 

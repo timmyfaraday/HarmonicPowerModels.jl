@@ -18,7 +18,7 @@ function update_hdata_with_fundamental_hpf_results!(hdata, model_type::Type, opt
         end
     end
 
-    # solve hpf problem for the fundamental harmonic only
+    # solve hopf problem for the fundamental harmonic only to get a feasible starting point
     hpf_results = solve_hopf(hpf_data, HarmonicPowerModel, optimizer)
 
     # update hdata with the results of the hpf problem
@@ -31,6 +31,7 @@ function update_hdata_with_fundamental_hpf_results!(hdata, model_type::Type, opt
                                 + hpf_results["solution"]["nw"]["1"]["branch"][b]["cbi_fr"]^2)
         branch["cm_to"] = sqrt( hpf_results["solution"]["nw"]["1"]["branch"][b]["cbr_to"]^2 
                                 + hpf_results["solution"]["nw"]["1"]["branch"][b]["cbi_to"]^2)
+        branch["i_fund_magn"] = [branch["cm_fr"], branch["cm_to"]]
     end
     for (x, xfmr) in hdata["nw"]["1"]["xfmr"]
         w1_idx = xfmr["bus"][1]
@@ -39,6 +40,12 @@ function update_hdata_with_fundamental_hpf_results!(hdata, model_type::Type, opt
                                 + hpf_results["solution"]["nw"]["1"]["xfmr"][x]["cxi_"*"$w1_idx"]^2)
         xfmr["ctm_to"] = sqrt(  hpf_results["solution"]["nw"]["1"]["xfmr"][x]["cxr_"*"$w2_idx"]^2 
                                 + hpf_results["solution"]["nw"]["1"]["xfmr"][x]["cxi_"*"$w2_idx"]^2)
+        xfmr["i_fund_magn"] = [xfmr["ctm_fr"], xfmr["ctm_to"]]
+    end
+
+    for (g, gen) in hdata["nw"]["1"]["gen"]
+        gen["i_fund_magn"] =  sqrt( hpf_results["solution"]["nw"]["1"]["gen"][g]["cgr"]^2 
+                                  + hpf_results["solution"]["nw"]["1"]["gen"][g]["cgi"]^2)
     end
 end
 

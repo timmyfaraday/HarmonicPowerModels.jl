@@ -21,8 +21,11 @@ function calc_filter_current_rms_max(hdata::Dict{String,Any}, idata::Dict{String
     S_nom       = idata["rate_a"] 
     s_base_mva  = hdata["s_base_mva"]
     v_rms_max   = hdata["nw"]["1"]["bus"][string(idata["bus"])]["v_rms_max"]
+
+    v_rms_min   = hdata["nw"]["1"]["bus"][string(gdata["bus"])]["v_rms_min"]
      
-    return S_nom / s_base_mva / sqrt(3) ./ v_rms_max
+    # return S_nom / s_base_mva / sqrt(3) ./ v_rms_max
+    return S_nom / s_base_mva / sqrt(3) ./ v_rms_min
 end
 ""
 collect_filter_current_magnitude_limits(pm::AbstractHarmonicModel, nw::Int) = 

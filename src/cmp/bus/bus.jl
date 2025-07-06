@@ -153,7 +153,7 @@ function constraint_bus_voltage_ihd_limit(pm::AbstractHarmonicModel, i::Int; nw:
         v_ihd_max   = _PMs.ref(pm, nw, :bus, i, "v_ihd_max")
         v_fund_magn = _PMs.ref(pm, fundamental(pm), :bus, i, "v_fund_magn")
 
-        println(v_fund_magn)
+        println(i, ": ", v_fund_magn)
 
         constraint_bus_voltage_ihd_limit(pm, nw, i, v_ihd_max, v_fund_magn)
     end
@@ -194,8 +194,6 @@ end
 function constraint_bus_voltage_rms_limit(pm::dHHCPowerModel, i, v_rms_min, v_rms_max, v_fund_magn)
     vbr = [_PMs.var(pm, n, :vbr, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     vbi = [_PMs.var(pm, n, :vbi, i) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
-
-    println(v_fund_magn, v_rms_max^2 - v_fund_magn^2)
 
     JuMP.@constraint(pm.model, [sqrt(v_rms_max^2 - v_fund_magn^2); vcat(vbr, vbi)] in JuMP.SecondOrderCone())
 end

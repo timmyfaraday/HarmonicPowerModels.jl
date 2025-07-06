@@ -13,10 +13,10 @@
 ################################################################################
 
 ""
-function solve_hhc(hdata, model_type::Type, optimizer; kwargs...)
+function solve_hhc(hdata, model_type::Type, optimizer; optimizer_soc = optimizer, kwargs...)
     update_hdata_with_fundamental_hpf_results!(hdata, HarmonicPowerModel, optimizer)
     
-    return solve_model(hdata, model_type, optimizer, build_hhc; multinetwork=true, kwargs...)
+    return solve_model(hdata, model_type, optimizer_soc, build_hhc; multinetwork=true, kwargs...)
 end
 
 ""
@@ -41,15 +41,15 @@ function build_hhc(pm::HarmonicPowerModel)
         constraint_bus_voltage_thd_limit(pm, i)
     end
 
-    # ### branch
-    # for b in ids(pm, :branch)
-    #     constraint_branch_current_rms_limit(pm, b)
-    # end
+    ### branch
+    for b in ids(pm, :branch)
+        constraint_branch_current_rms_limit(pm, b)
+    end
     
-    ### xfmr 
-    # for x in ids(pm, :xfmr)
-    #     constraint_xfmr_winding_current_rms_limit(pm, x)
-    # end
+    ## xfmr 
+    for x in ids(pm, :xfmr)
+        constraint_xfmr_winding_current_rms_limit(pm, x)
+    end
     
     ### filter
     for f in ids(pm, :filter)

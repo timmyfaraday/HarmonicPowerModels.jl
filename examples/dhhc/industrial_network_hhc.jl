@@ -34,6 +34,8 @@
 using HarmonicPowerModels, PowerModels
 using Ipopt 
 using PrettyTables
+using Clarabel
+using Gurobi
 
 # pkg cte
 const PMs = PowerModels
@@ -41,6 +43,7 @@ const HPM = HarmonicPowerModels
 
 # set the solver
 solver_nlp = Ipopt.Optimizer
+solver_soc = Clarabel.Optimizer
 
 # read-in data 
 path = joinpath(HPM.BASE_DIR,"test/data/matpower/industrial_network_hhc.m")
@@ -56,9 +59,21 @@ H = [1, 3, 5, 7]
 # solve HHC problem -- NLP
 hdata_nlp_ae = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "absolute equality")
 results_hhc_nlp_ae = HPM.solve_hhc(hdata_nlp_ae, HarmonicPowerModel, solver_nlp)
+
+
+  # hpf_data = deepcopy(hdata_nlp_ae)
+  # for n in keys(hpf_data["nw"])
+  #     if n ≠ "1"
+  #         delete!(hpf_data, n)
+  #     end
+  # end
+
+  # # solve hpf problem for the fundamental harmonic only
+  # hpf_results = solve_hopf(hpf_data, HarmonicPowerModel, solver_nlp)
+
 # solve HHC problem -- SOC
 hdata_soc_ae = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "absolute equality")
-results_hhc_soc_ae = HPM.solve_hhc(hdata_soc_ae, dHHCPowerModel, solver_nlp)
+results_hhc_soc_ae = HPM.solve_hhc(hdata_soc_ae, dHHCPowerModel, solver_nlp; optimizer_soc = solver_soc)
 
 ## maximum efficiency (me) #####################################################
 
@@ -68,7 +83,7 @@ results_hhc_nlp_me = HPM.solve_hhc(hdata_nlp_me, HarmonicPowerModel, solver_nlp)
 
 # solve HHC problem -- SOC 
 hdata_soc_me = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "maximum efficiency")
-results_hhc_soc_me = HPM.solve_hhc(hdata_soc_me, dHHCPowerModel, solver_nlp)
+results_hhc_soc_me = HPM.solve_hhc(hdata_soc_me, dHHCPowerModel, solver_nlp; optimizer_soc = solver_soc)
 
 ## maximin (mm) ################################################################
 
@@ -78,7 +93,7 @@ results_hhc_nlp_mm = HPM.solve_hhc(hdata_nlp_mm, HarmonicPowerModel, solver_nlp)
 
 # solve HHC problem -- SOC 
 hdata_soc_mm = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "maximin")
-results_hhc_soc_mm = HPM.solve_hhc(hdata_soc_mm, dHHCPowerModel, solver_nlp)
+results_hhc_soc_mm = HPM.solve_hhc(hdata_soc_mm, dHHCPowerModel, solver_nlp; optimizer_soc = solver_soc)
 
 ## Kalai-Smorodinsky bargaining (ks) ###########################################
 # # Calculate impedance

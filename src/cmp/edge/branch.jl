@@ -25,8 +25,12 @@ function calc_branch_current_rms_max(hdata::Dict{String,Any}, bdata::Dict{String
     S_nom       = bdata["rate_a"] 
     v_rms_max   = min(hdata["nw"]["1"]["bus"][string(bdata["f_bus"])]["v_rms_max"],
                       hdata["nw"]["1"]["bus"][string(bdata["t_bus"])]["v_rms_max"])
+    
+    v_rms_min   = min(hdata["nw"]["1"]["bus"][string(bdata["f_bus"])]["v_rms_min"],
+                      hdata["nw"]["1"]["bus"][string(bdata["t_bus"])]["v_rms_min"])
      
-    return S_nom / (sqrt(3) * v_rms_max)
+    #return S_nom / (sqrt(3) * v_rms_max)
+    return S_nom / (sqrt(3) * v_rms_min)
 end
 ""
 collect_branch_current_magnitude_limits(pm::_PMs.AbstractPowerModel, nw::Int) = 
@@ -51,7 +55,7 @@ function add_branch_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
             branch["b_to"]          = bdata["b_to"]
             #-----------------------------------#
             branch["i_base_ka"]     = calc_branch_current_base(hdata, bdata)
-            branch["i_fund_magn"]   = [0.0, 0.0]
+            branch["i_fund_magn"]   = [0.0, 0.0] # this value is written from fundamental OPF initialization, see init.jl
             branch["i_rms_max"]     = calc_branch_current_rms_max(hdata, bdata)
         else
             branch["r"]             = bdata["br_r"] * sqrt(h)
@@ -237,6 +241,6 @@ function constraint_branch_current_rms_limit(pm::dHHCPowerModel, idx_fr, idx_to,
     cbr_to  = [_PMs.var(pm, n, :cbr, idx_to) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     cbi_to  = [_PMs.var(pm, n, :cbi, idx_to) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    JuMP.@constraint(pm.model, [sqrt(i_rms_max^2 - i_fund_magn[1]^2); vcat(cbr_to, cbi_fr)] in JuMP.SecondOrderCone())
+    JuMP.@constraint(pm.model, [sqrt(i_rms_max^2 - i_fund_magn[1]^2); vcat(cbr_fr, cbi_fr)] in JuMP.SecondOrderCone())
     JuMP.@constraint(pm.model, [sqrt(i_rms_max^2 - i_fund_magn[2]^2); vcat(cbr_to, cbi_to)] in JuMP.SecondOrderCone())
 end
