@@ -61,15 +61,20 @@ hdata_nlp_ae = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_prin
 results_hhc_nlp_ae = HPM.solve_hhc(hdata_nlp_ae, HarmonicPowerModel, solver_nlp)
 
 
-  # hpf_data = deepcopy(hdata_nlp_ae)
-  # for n in keys(hpf_data["nw"])
-  #     if n ≠ "1"
-  #         delete!(hpf_data, n)
-  #     end
-  # end
+  hpf_data = deepcopy(hdata_nlp_ae)
+  for n in keys(hpf_data["nw"])
+      if n ≠ "1"
+          delete!(hpf_data, n)
+      end
+  end
 
-  # # solve hpf problem for the fundamental harmonic only
-  # hpf_results = solve_hopf(hpf_data, HarmonicPowerModel, solver_nlp)
+  # solve hpf problem for the fundamental harmonic only
+  hpf_results = solve_hopf(hpf_data, HarmonicPowerModel, solver_nlp)
+
+for (b, bus) in results_hhc_nlp_ae["solution"]["nw"]["1"]["bus"]
+   println(b, " " ,sqrt(bus["vbr"]^2 + bus["vbi"]^2))
+   println(b, " " ,sqrt(hpf_results["solution"]["nw"]["1"]["bus"][b]["vbr"]^2 + hpf_results["solution"]["nw"]["1"]["bus"][b]["vbi"]^2))
+end
 
 # solve HHC problem -- SOC
 hdata_soc_ae = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "absolute equality")

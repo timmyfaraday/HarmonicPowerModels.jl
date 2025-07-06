@@ -153,8 +153,6 @@ function constraint_bus_voltage_ihd_limit(pm::AbstractHarmonicModel, i::Int; nw:
         v_ihd_max   = _PMs.ref(pm, nw, :bus, i, "v_ihd_max")
         v_fund_magn = _PMs.ref(pm, fundamental(pm), :bus, i, "v_fund_magn")
 
-        println(i, ": ", v_fund_magn)
-
         constraint_bus_voltage_ihd_limit(pm, nw, i, v_ihd_max, v_fund_magn)
     end
 end

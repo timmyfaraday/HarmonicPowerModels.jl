@@ -21,19 +21,19 @@ function build_hopf(pm::HarmonicPowerModel)
     # variables
     for n in _PMs.nw_ids(pm)
         ## voltage variables
-        variable_bus_voltage(pm, nw=n, bounded=false)
-        variable_xfmr_voltage(pm, nw=n, bounded=false)
+        variable_bus_voltage(pm, nw=n, bounded=true)
+        variable_xfmr_voltage(pm, nw=n, bounded=true)
         
         ## edge current variables 
-        variable_branch_current(pm, nw=n, bounded=false)
-        variable_xfmr_current(pm, nw=n, bounded=false)
+        variable_branch_current(pm, nw=n, bounded=true)
+        variable_xfmr_current(pm, nw=n, bounded=true)
 
         ## unit current variables
-        variable_filter_current(pm, nw=n, bounded=false)
-        variable_gen_current(pm, nw=n, bounded=false)
-        variable_hload_current(pm, nw=n, bounded=false)
-        variable_hsrc_current(pm, nw=n, bounded=false)                          # empty variable
-        variable_shunt_current(pm, nw=n, bounded=false)
+        variable_filter_current(pm, nw=n, bounded=true)
+        variable_gen_current(pm, nw=n, bounded=true)
+        variable_hload_current(pm, nw=n, bounded=true)
+        variable_hsrc_current(pm, nw=n, bounded=true)                          # empty variable
+        variable_shunt_current(pm, nw=n, bounded=true)
     end 
 
     # objective
@@ -91,7 +91,6 @@ function build_hopf(pm::HarmonicPowerModel)
         for b in _PMs.ids(pm, :branch, nw=n)
             constraint_branch_current_from(pm, b, nw=n)
             constraint_branch_current_to(pm, b, nw=n)
-
             constraint_branch_voltage_drop(pm, b, nw=n)
         end
 
@@ -115,6 +114,11 @@ function build_hopf(pm::HarmonicPowerModel)
         ### harmonic load
         for l in _PMs.ids(pm, :hload, nw=n)
             constraint_hload_power(pm, l, nw=n)
+        end
+
+        ### harmonic source
+        for r in _PMs.ids(pm, :hsrc, nw=n)
+            constraint_hsrc_current(pm, r, nw=n)
         end
 
         ### shunt

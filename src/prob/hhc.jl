@@ -102,7 +102,7 @@ function build_hhc(pm::HarmonicPowerModel)
             
             constraint_xfmr_winding_current_balance(pm, x, nw=n)
             constraint_xfmr_winding_voltage_drop(pm, x, nw=n)
-            constraint_xfmr_winding_zero_seq_current_blocking(pm, x, nw=n)
+            constraint_xfmr_winding_zero_seq_current_blocking(pm, x, nw=n) # check this constraint!
         end
 
         ### generator
@@ -135,9 +135,7 @@ function build_hhc(pm::dHHCPowerModel)
     # variables 
     for n in _PMs.nw_ids(pm) if n ≠ fundamental(pm)
         ## fairness variable 
-        if n ≠ fundamental(pm)
-            variable_fairness_principle(pm, nw=n, bounded=true)
-        end 
+        variable_fairness_principle(pm, nw=n, bounded=true)
         add_hhc_variables(pm, n)    
     end end
 
@@ -208,7 +206,7 @@ function build_hhc(pm::dHHCPowerModel)
             
             constraint_xfmr_winding_current_balance(pm, x, nw=n)
             constraint_xfmr_winding_voltage_drop(pm, x, nw=n)
-            constraint_xfmr_winding_zero_seq_current_blocking(pm, x, nw=n)
+            constraint_xfmr_winding_zero_seq_current_blocking(pm, x, nw=n) # check this constraint!
         end
 
         ### generator
@@ -235,17 +233,17 @@ end end end
 ""
 function add_hhc_variables(pm, n)
     ## voltage variables 
-    variable_bus_voltage(pm, nw=n, bounded=false)
-    variable_xfmr_voltage(pm, nw=n, bounded=false)
+    variable_bus_voltage(pm, nw=n, bounded=true)
+    variable_xfmr_voltage(pm, nw=n, bounded=true)
 
     ## edge current variables
-    variable_branch_current(pm, nw=n, bounded=false)
-    variable_xfmr_current(pm, nw=n, bounded=false)
+    variable_branch_current(pm, nw=n, bounded=true)
+    variable_xfmr_current(pm, nw=n, bounded=true)
 
     ## unit current variables
-    variable_filter_current(pm, nw=n, bounded=false)
-    variable_gen_current(pm, nw=n, bounded=false)
-    variable_hload_current(pm, nw=n, bounded=false)                         # empty variable
-    variable_hsrc_current(pm, nw=n, bounded=false)
-    variable_shunt_current(pm, nw=n, bounded=false)
+    variable_filter_current(pm, nw=n, bounded=true)
+    variable_gen_current(pm, nw=n, bounded=true)
+    variable_hload_current(pm, nw=n, bounded=true)                         # empty variable
+    variable_hsrc_current(pm, nw=n, bounded=true)
+    variable_shunt_current(pm, nw=n, bounded=true)
 end
