@@ -648,5 +648,6 @@ function constraint_xfmr_winding_current_rms_limit(pm::dHHCPowerModel, idx, i_rm
     cxr =  [_PMs.var(pm, n, :cxr, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     cxi =  [_PMs.var(pm, n, :cxi, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
+    println(idx)
     JuMP.@constraint(pm.model, [sqrt(i_rms_max^2 - i_fund_magn^2); vcat(cxr, cxi)] in JuMP.SecondOrderCone())
 end
