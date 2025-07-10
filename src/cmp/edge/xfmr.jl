@@ -53,18 +53,11 @@ function calc_xfmr_current_rms_max(hdata::Dict{String,Any}, xdata::Dict{String,A
     s_base_mva  = hdata["s_base_mva"]
     v_rms_max   = [ hdata["nw"]["1"]["bus"][string(xdata["f_bus"])]["v_rms_max"],
                     hdata["nw"]["1"]["bus"][string(xdata["t_bus"])]["v_rms_max"]]
+    v_rms_min   = [min(hdata["nw"]["1"]["bus"][string(xdata["f_bus"])]["v_rms_min"],
+                    hdata["nw"]["1"]["bus"][string(xdata["t_bus"])]["v_rms_min"])]
 
-
-
-    v_rms_min   = [ hdata["nw"]["1"]["bus"][string(xdata["f_bus"])]["v_rms_min"],
-                    hdata["nw"]["1"]["bus"][string(xdata["t_bus"])]["v_rms_min"]]
-
-    println(S_nom)
-    # return S_nom / s_base_mva / sqrt(3) ./ v_rms_max
-     
-    return S_nom / s_base_mva / sqrt(3) ./ v_rms_min
+    return S_nom / s_base_mva / sqrt(3) ./ v_rms_max
 end
-
 ""
 collect_xfmr_voltage_magnitude_limits(pm::AbstractHarmonicModel, nw::Int) =
     Dict(x => Dict(i => bus_voltage_magnitude_limit(pm, nw, i)
@@ -112,7 +105,7 @@ function add_xfmr_hdata!(hdata::Dict{String,Any},
             xfmr["cxmfi"]       = nothing
             #-----------------------------------#
             xfmr["i_base_ka"]   = calc_xfmr_current_base(hdata, xdata)
-            xfmr["i_fund_magn"] = [0.0, 0.0] # this value is written from fundamental OPF initialization, see init.jl
+            xfmr["i_fund_magn"] = [0.0 0.0] # this value is written from fundamental OPF initialization, see init.jl
             xfmr["i_rms_max"]   = calc_xfmr_current_rms_max(hdata, xdata)
         else
             xfmr["x_core"]      = [xdata["xsc"]] .* h
@@ -634,8 +627,10 @@ function constraint_xfmr_winding_current_rms_limit(pm::AbstractHarmonicModel, x:
     i_fund_magn = _PMs.ref(pm, fundamental(pm), :xfmr, x, "i_fund_magn")
 
     for wnd in 1:_PMs.ref(pm, fundamental(pm), :xfmr, x, "Nw")
+        println(idx, " ", wnd, " ", idx[wnd], " " ,i_rms_max[wnd], " ", i_fund_magn[wnd])
         constraint_xfmr_winding_current_rms_limit(pm, idx[wnd], i_rms_max[wnd], i_fund_magn[wnd])
-end end
+    end 
+end
 ""
 function constraint_xfmr_winding_current_rms_limit(pm::HarmonicPowerModel, idx, i_rms_max, i_fund_magn)
     cxr =  [_PMs.var(pm, n, :cxr, idx) for n in sorted_nw_ids(pm)]
@@ -648,6 +643,6 @@ function constraint_xfmr_winding_current_rms_limit(pm::dHHCPowerModel, idx, i_rm
     cxr =  [_PMs.var(pm, n, :cxr, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     cxi =  [_PMs.var(pm, n, :cxi, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    println(idx)
+    println(idx, " " ,i_fund_magn)
     JuMP.@constraint(pm.model, [sqrt(i_rms_max^2 - i_fund_magn^2); vcat(cxr, cxi)] in JuMP.SecondOrderCone())
 end

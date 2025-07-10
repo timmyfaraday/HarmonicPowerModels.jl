@@ -112,7 +112,7 @@ function build_hhc(pm::HarmonicPowerModel)
             constraint_gen_current(pm, g, nw=n)
         end
 
-        ### harmonic source
+        ## harmonic source
         for r in _PMs.ids(pm, :hsrc, nw=n)
             constraint_hsrc_current(pm, r, nw=n)
         end

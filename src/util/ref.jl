@@ -42,7 +42,7 @@ function ref_add_core!(ref::Dict{Symbol,Any})
         end
         nw_ref[:bus_arcs_branch] = bus_arcs_branch
 
-        # xfmr 
+        # xfmr
         nw_ref[:wnds_xfmr] = [(nx,ni) for (nx,xf) in nf_ref[:xfmr] for ni in xf["bus"]]
         nw_ref[:wnds_xfmr_from] = [(nx,xf["bus"]...) for (nx,xf) in nf_ref[:xfmr]]
         nw_ref[:wnds_xfmr_to] = [(nx,reverse(xf["bus"])...) for (nx,xf) in nf_ref[:xfmr]]

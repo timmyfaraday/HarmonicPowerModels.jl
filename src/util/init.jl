@@ -40,7 +40,8 @@ function update_hdata_with_fundamental_hpf_results!(hdata, model_type::Type, opt
                                 + hpf_results["solution"]["nw"]["1"]["xfmr"][x]["cxi_"*"$w1_idx"]^2)
         xfmr["ctm_to"] = sqrt(  hpf_results["solution"]["nw"]["1"]["xfmr"][x]["cxr_"*"$w2_idx"]^2 
                                 + hpf_results["solution"]["nw"]["1"]["xfmr"][x]["cxi_"*"$w2_idx"]^2)
-        xfmr["i_fund_magn"] = floor.([xfmr["ctm_fr"], xfmr["ctm_to"]], digits = digits)
+        xfmr["i_fund_magn"] = floor.([xfmr["ctm_fr"], xfmr["ctm_to"]], digits = 3)
+        # println(xfmr["i_fund_magn"])
     end
 
     for (g, gen) in hdata["nw"]["1"]["gen"]
