@@ -19,7 +19,7 @@ function update_hdata_with_fundamental_hpf_results!(hdata, model_type::Type, opt
     end
 
     # solve hopf problem for the fundamental harmonic only to get a feasible starting point
-    hpf_results = solve_hopf(hpf_data, HarmonicPowerModel, optimizer)
+    hpf_results = solve_hpf(hpf_data, HarmonicPowerModel, optimizer)
 
     # update hdata with the results of the hpf problem
     for (i, bus) in hdata["nw"]["1"]["bus"]

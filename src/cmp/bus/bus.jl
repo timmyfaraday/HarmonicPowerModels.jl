@@ -60,7 +60,7 @@ function variable_bus_voltage_real(pm::AbstractHarmonicModel; nw::Int=fundamenta
                 JuMP.@variable( pm.model,
                                 [i in _PMs.ids(pm, nw, :bus)], 
                                 base_name="$(nw)_vbr",
-                                start=0.0) #start=v_lim[i]) # WHY START AT VLIM
+                                start=1.0)
 
     if bounded
         for i in _PMs.ids(pm, nw, :bus)

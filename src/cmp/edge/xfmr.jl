@@ -145,7 +145,7 @@ function variable_xfmr_voltage_real(pm::AbstractHarmonicModel; nw::Int=fundament
                 JuMP.@variable( pm.model, 
                                 [(x,i) in _PMs.ref(pm, nw, :wnds_xfmr)], 
                                 base_name="$(nw)_vxr",
-                                start=0.0) # WHY?  start=v_lim[x][i])
+                                start=1.0)
 
     if bounded
         for (x,i) in _PMs.ref(pm, nw, :wnds_xfmr)
@@ -156,11 +156,7 @@ function variable_xfmr_voltage_real(pm::AbstractHarmonicModel; nw::Int=fundament
 
     for (x,i) in _PMs.ref(pm, nw, :wnds_xfmr)
         _IMs.sol(pm, _PMs.pm_it_sym, nw, :xfmr, x)[Symbol("vxr_$i")] = vxr[(x,i)]
-    end
-
-    # report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :vxr_fr, :vxr_to, _PMs.ref(pm, nw, :wnds_xfmr_from), _PMs.ref(pm, nw, :wnds_xfmr_to), vxr)
-    # report && _PMs.sol_component_value(pm, nw, :xfmr, :vxr, _PMs.ref(pm, nw, :wnds_xfmr), vxr)
-end
+end end
 ""
 function variable_xfmr_voltage_imaginary(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     v_lim   = collect_xfmr_voltage_magnitude_limits(pm, nw)
@@ -169,7 +165,7 @@ function variable_xfmr_voltage_imaginary(pm::AbstractHarmonicModel; nw::Int=fund
                 JuMP.@variable( pm.model,
                                 [(x,i) in _PMs.ref(pm, nw, :wnds_xfmr)], 
                                 base_name="$(nw)_vxi",
-                                start=0.0) # WHY?  start=v_lim[x][i])
+                                start=0.0)
 
     if bounded
         for (x,i) in _PMs.ref(pm, nw, :wnds_xfmr)
@@ -180,11 +176,7 @@ function variable_xfmr_voltage_imaginary(pm::AbstractHarmonicModel; nw::Int=fund
 
     for (x,i) in _PMs.ref(pm, nw, :wnds_xfmr)
         _IMs.sol(pm, _PMs.pm_it_sym, nw, :xfmr, x)[Symbol("vxi_$i")] = vxi[(x,i)]
-    end
-
-    # report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :vxi_fr, :vxi_to, _PMs.ref(pm, nw, :wnds_xfmr_from), _PMs.ref(pm, nw, :wnds_xfmr_to), vxi)
-    # report && _PMs.sol_component_value(pm, nw, :xfmr, :vxi, _PMs.ref(pm, nw, :wnds_xfmr), vxi)
-end
+end end
 ""
 function variable_xfmr_voltage_excitation_real(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     v_lim   = collect_xfmr_voltage_magnitude_limits(pm, nw)
@@ -193,7 +185,7 @@ function variable_xfmr_voltage_excitation_real(pm::AbstractHarmonicModel; nw::In
                 JuMP.@variable( pm.model,
                                 [x in _PMs.ids(pm, nw, :xfmr)], 
                                 base_name="$(nw)_exr",
-                                start=0.0) # WHY?  start = maximum(values(v_lim[x]))) 
+                                start=1.0)
                                  
 
     if bounded
@@ -302,11 +294,7 @@ function variable_xfmr_current_series_real(pm::AbstractHarmonicModel; nw::Int=fu
 
     for (x,i) in _PMs.ref(pm, nw, :wnds_xfmr)
         _IMs.sol(pm, _PMs.pm_it_sym, nw, :xfmr, x)[Symbol("cxsr_$i")] = cxsr[(x,i)]
-    end
-
-    # report && _IMs.sol_component_value_edge(pm, _PMs.pm_it_sym, nw, :xfmr, :cxsr_fr, :cxsr_to, _PMs.ref(pm, nw, :wnds_xfmr_from), _PMs.ref(pm, nw, :wnds_xfmr_to), cxsr)
-    # report && _PMs.sol_component_value(pm, nw, :xfmr, :cxsr, _PMs.ref(pm, nw, :wnds_xfmr), cxsr)
-end
+end end
 ""
 function variable_xfmr_current_series_imaginary(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     c_lim   = collect_xfmr_current_magnitude_limits(pm, nw)
@@ -368,6 +356,46 @@ function variable_xfmr_current_magnetizing_imaginary(pm::AbstractHarmonicModel; 
     end
 
     report && _PMs.sol_component_value(pm, nw, :xfmr, :cxmi, _PMs.ids(pm, nw, :xfmr), cxmi)
+end
+
+""
+function variable_xfmr_power(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+    variable_xfmr_power_active(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_xfmr_power_reactive(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+end
+""
+function variable_xfmr_power_active(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+    px = Dict()
+    for (x,i) in _PMs.ref(pm, nw, :wnds_xfmr)
+        vbr = _PMs.var(pm, nw, :vbr, i)
+        vbi = _PMs.var(pm, nw, :vbi, i)
+        cxr = _PMs.var(pm, nw, :cxr, (x,i))
+        cxi = _PMs.var(pm, nw, :cxi, (x,i))
+        
+        px[(x,i)] = vbr * cxr  + vbi * cxi
+    end
+    _PMs.var(pm, nw)[:px] = px
+    
+    for (x,i) in _PMs.ref(pm, nw, :wnds_xfmr)
+        _IMs.sol(pm, _PMs.pm_it_sym, nw, :xfmr, x)[Symbol("px_$i")] = px[(x,i)]
+    end
+end
+""
+function variable_xfmr_power_reactive(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+    qx = Dict()
+    for (x,i) in _PMs.ref(pm, nw, :wnds_xfmr)
+        vbr = _PMs.var(pm, nw, :vbr, i)
+        vbi = _PMs.var(pm, nw, :vbi, i)
+        cxr = _PMs.var(pm, nw, :cxr, (x,i))
+        cxi = _PMs.var(pm, nw, :cxi, (x,i))
+        
+        qx[(x,i)] = vbi * cxr  - vbr * cxi
+    end
+    _PMs.var(pm, nw)[:qx] = qx
+    
+    for (x,i) in _PMs.ref(pm, nw, :wnds_xfmr)
+        _IMs.sol(pm, _PMs.pm_it_sym, nw, :xfmr, x)[Symbol("qx_$i")] = qx[(x,i)]
+    end
 end
 
 # constraints ##################################################################
@@ -643,6 +671,6 @@ function constraint_xfmr_winding_current_rms_limit(pm::dHHCPowerModel, idx, i_rm
     cxr =  [_PMs.var(pm, n, :cxr, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     cxi =  [_PMs.var(pm, n, :cxi, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    println(idx, " " ,i_fund_magn)
+    # println(idx, " " ,i_fund_magn)
     JuMP.@constraint(pm.model, [sqrt(i_rms_max^2 - i_fund_magn^2); vcat(cxr, cxi)] in JuMP.SecondOrderCone())
 end

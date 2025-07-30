@@ -86,6 +86,12 @@ function variable_gen_current_real(pm::AbstractHarmonicModel; nw::Int=fundamenta
 
     report && _PMs.sol_component_value(pm, nw, :gen, :cgr, _PMs.ids(pm, nw, :gen), cgr)
 end
+
+""
+function variable_gen_power(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+    variable_gen_power_active(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_gen_power_reactive(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+end
 ""
 function variable_gen_current_imaginary(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     c_lim   = collect_gen_current_magnitude_limits(pm, nw)
@@ -104,6 +110,42 @@ function variable_gen_current_imaginary(pm::AbstractHarmonicModel; nw::Int=funda
     end
 
     report && _PMs.sol_component_value(pm, nw, :gen, :cgi, _PMs.ids(pm, nw, :gen), cgi)
+end
+""
+function variable_gen_power_active(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+    pg = Dict()
+
+    for (g,~) in _PMs.ref(pm, nw, :gen)
+        i   = _PMs.ref(pm, fundamental(pm), :gen, g, "bus")
+
+        vbr = _PMs.var(pm, nw, :vbr, i)
+        vbi = _PMs.var(pm, nw, :vbi, i)
+        cgr = _PMs.var(pm, nw, :cgr, g)
+        cgi = _PMs.var(pm, nw, :cgi, g)
+        
+        pg[g] = JuMP.@expression(pm.model, vbr * cgr + vbi * cgi)
+    end
+
+    _PMs.var(pm, nw)[:pg] = pg
+    
+    report && _PMs.sol_component_value(pm, nw, :gen, :pg, _PMs.ids(pm, nw, :gen), pg)
+end
+""
+function variable_gen_power_reactive(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+    qg = Dict()
+    for (g,gen) in _PMs.ref(pm, nw, :gen)
+        i   = _PMs.ref(pm, fundamental(pm), :gen, g, "bus")
+
+        vbr = _PMs.var(pm, nw, :vbr, i)
+        vbi = _PMs.var(pm, nw, :vbi, i)
+        cgr = _PMs.var(pm, nw, :cgr, g)
+        cgi = _PMs.var(pm, nw, :cgi, g)
+        
+        qg[g] = JuMP.@expression(pm.model, vbi * cgr - vbr * cgi)
+    end
+    _PMs.var(pm, nw)[:qg] = qg
+
+    report && _PMs.sol_component_value(pm, nw, :gen, :qg, _PMs.ids(pm, nw, :gen), qg)
 end
 
 # constraints ##################################################################

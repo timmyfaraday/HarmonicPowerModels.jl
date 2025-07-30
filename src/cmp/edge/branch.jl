@@ -152,6 +152,54 @@ function variable_branch_series_current_imaginary(pm::_PMs.AbstractPowerModel; n
     report && _PMs.sol_component_value(pm, nw, :branch, :cbsi_fr, _PMs.ids(pm, nw, :branch), cbsi)
 end
 
+""
+function variable_branch_power(pm::_PMs.AbstractIVRModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+    variable_branch_power_active(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_branch_power_reactive(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+end
+""
+function variable_branch_power_active(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+    pb = Dict()
+    for (b,i,j) in _PMs.ref(pm, nw, :arcs_branch)
+        vbr_fr = _PMs.var(pm, nw, :vbr, i)
+        vbi_fr = _PMs.var(pm, nw, :vbi, i)
+        cbr_fr = _PMs.var(pm, nw, :cbr, (b,i,j))
+        cbi_fr = _PMs.var(pm, nw, :cbi, (b,i,j))
+
+        vbr_to = _PMs.var(pm, nw, :vbr, j)
+        vbi_to = _PMs.var(pm, nw, :vbi, j)
+        cbr_to = _PMs.var(pm, nw, :cbr, (b,j,i))
+        cbi_to = _PMs.var(pm, nw, :cbi, (b,j,i))
+        
+        pb[(b,i,j)] = vbr_fr * cbr_fr  + vbi_fr * cbi_fr
+        pb[(b,j,i)] = vbr_to * cbr_to  + vbi_to * cbi_to
+    end
+    _PMs.var(pm, nw)[:pb] = pb
+    
+    report && _PMs.sol_component_value_edge(pm, nw, :branch, :pb_fr, :pb_to, _PMs.ref(pm, nw, :arcs_branch_from), _PMs.ref(pm, nw, :arcs_branch_to), pb)
+end
+""
+function variable_branch_power_reactive(pm::_PMs.AbstractPowerModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
+    qb = Dict()
+    for (b,i,j) in _PMs.ref(pm, nw, :arcs_branch)
+        vbr_fr = _PMs.var(pm, nw, :vbr, i)
+        vbi_fr = _PMs.var(pm, nw, :vbi, i)
+        cbr_fr = _PMs.var(pm, nw, :cbr, (b,i,j))
+        cbi_fr = _PMs.var(pm, nw, :cbi, (b,i,j))
+
+        vbr_to = _PMs.var(pm, nw, :vbr, j)
+        vbi_to = _PMs.var(pm, nw, :vbi, j)
+        cbr_to = _PMs.var(pm, nw, :cbr, (b,j,i))
+        cbi_to = _PMs.var(pm, nw, :cbi, (b,j,i))
+        
+        qb[(b,i,j)] = vbi_fr * cbr_fr  - vbr_fr * cbi_fr
+        qb[(b,j,i)] = vbi_to * cbr_to  - vbr_to * cbi_to
+    end
+    _PMs.var(pm, nw)[:qb] = qb
+    
+    report && _PMs.sol_component_value_edge(pm, nw, :branch, :qb_fr, :qb_to, _PMs.ref(pm, nw, :arcs_branch_from), _PMs.ref(pm, nw, :arcs_branch_to), qb)
+end
+
 # constraints ##################################################################
 ## branch current constraint ###################################################
 ""

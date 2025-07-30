@@ -14,7 +14,10 @@
 
 ""
 solve_hpf(hdata, model_type::Type, optimizer; kwargs...) =
-    solve_model(hdata, model_type, optimizer, build_hpf; multinetwork=true, kwargs...)
+    solve_model(hdata, model_type, optimizer, build_hpf; 
+                    solution_processors=[_HPM.sol_data_model!], 
+                    multinetwork=true, 
+                    kwargs...)
 
 ""
 function build_hpf(pm::HarmonicPowerModel)
@@ -34,6 +37,13 @@ function build_hpf(pm::HarmonicPowerModel)
         variable_hload_current(pm, nw=n, bounded=false)
         variable_hsrc_current(pm, nw=n, bounded=false)                          # empty variable
         variable_shunt_current(pm, nw=n, bounded=false)
+
+        # edge power variables
+        variable_branch_power(pm, nw=n, bounded=false)
+        variable_xfmr_power(pm, nw=n, bounded=false)
+
+        # unit power variables
+        variable_gen_power(pm, nw=n, bounded=false)
     end 
 
     # objective

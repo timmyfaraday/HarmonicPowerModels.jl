@@ -35,7 +35,6 @@ using HarmonicPowerModels, PowerModels
 using Ipopt 
 using PrettyTables
 using Clarabel
-using Gurobi
 
 # pkg cte
 const PMs = PowerModels

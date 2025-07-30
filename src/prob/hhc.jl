@@ -15,6 +15,7 @@
 ""
 function solve_hhc(hdata, model_type::Type, optimizer; optimizer_soc = optimizer, kwargs...)
     if model_type == dHHCPowerModel
+        println("hi")
         update_hdata_with_fundamental_hpf_results!(hdata, HarmonicPowerModel, optimizer) # only needeed for SOC model
     end
     
@@ -50,7 +51,7 @@ function build_hhc(pm::HarmonicPowerModel)
     
     ## xfmr 
     for x in ids(pm, :xfmr)
-        #constraint_xfmr_winding_current_rms_limit(pm, x)
+        constraint_xfmr_winding_current_rms_limit(pm, x)
     end
     
     ### filter
@@ -158,7 +159,7 @@ function build_hhc(pm::dHHCPowerModel)
     end
     ### xfmr 
     for x in ids(pm, :xfmr)
-        #constraint_xfmr_winding_current_rms_limit(pm, x)
+        constraint_xfmr_winding_current_rms_limit(pm, x)
     end
 
     ### filter
