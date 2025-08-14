@@ -32,21 +32,23 @@
 # INPUT ########################################################################
 # using pkgs
 using HarmonicPowerModels, PowerModels
-using Ipopt 
+using MadNLP, Clarabel
 using PrettyTables
-using Clarabel
 
 # pkg cte
 const PMs = PowerModels
 const HPM = HarmonicPowerModels
 
 # set the solver
-solver_nlp = Ipopt.Optimizer
+solver_nlp = MadNLP.Optimizer
 solver_soc = Clarabel.Optimizer
 
 # read-in data 
 path = joinpath(HPM.BASE_DIR,"test/data/matpower/industrial_network_hhc.m")
 data = PMs.parse_file(path)
+
+# set the ref bus to a clean bus
+data["bus"]["1"]["bus_type"] = 4
 
 # define the set of considered harmonics
 H = [1, 3, 5, 7]
@@ -55,38 +57,23 @@ H = [1, 3, 5, 7]
 
 # COMPUTATION ##################################################################
 # absolute equality (ae) ######################################################
-
-# solve HHC problem -- NLP
-hdata_nlp_ae = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "absolute equality")
-results_hhc_nlp_ae = HPM.solve_hhc(hdata_nlp_ae, HarmonicPowerModel, solver_nlp)
-
-# solve HHC problem -- SOC
-hdata_soc_ae = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "absolute equality")
-results_hhc_soc_ae = HPM.solve_hhc(hdata_soc_ae, dHHCPowerModel, solver_nlp; optimizer_soc = solver_soc)
+hdata_ae = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "absolute equality")
+results_ae_nlp = HPM.solve_hhc(hdata_ae, HarmonicPowerModel, solver_nlp)
+results_ae_soc = HPM.solve_hhc(hdata_ae, dHHCPowerModel, solver_nlp; optimizer_soc = solver_soc)
 
 ## maximum efficiency (me) #####################################################
-
-# solve HHC problem -- NLP
-hdata_nlp_me = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "maximum efficiency")
-results_hhc_nlp_me = HPM.solve_hhc(hdata_nlp_me, HarmonicPowerModel, solver_nlp)
-
-# solve HHC problem -- SOC 
-hdata_soc_me = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "maximum efficiency")
-results_hhc_soc_me = HPM.solve_hhc(hdata_soc_me, dHHCPowerModel, solver_nlp; optimizer_soc = solver_soc)
+hdata_me = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "maximum efficiency")
+results_me_nlp = HPM.solve_hhc(hdata_me, HarmonicPowerModel, solver_nlp)
+results_me_soc = HPM.solve_hhc(hdata_me, dHHCPowerModel, solver_nlp; optimizer_soc = solver_soc)
 
 ## maximin (mm) ################################################################
-
-# solve HHC problem -- NLP
-hdata_nlp_mm = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "maximin")
-results_hhc_nlp_mm = HPM.solve_hhc(hdata_nlp_mm, HarmonicPowerModel, solver_nlp)
-
-# solve HHC problem -- SOC 
-hdata_soc_mm = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "maximin")
-results_hhc_soc_mm = HPM.solve_hhc(hdata_soc_mm, dHHCPowerModel, solver_nlp; optimizer_soc = solver_soc)
+hdata_mm = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "maximin")
+results_mm_nlp = HPM.solve_hhc(hdata_mm, HarmonicPowerModel, solver_nlp)
+results_mm_soc = HPM.solve_hhc(hdata_mm, dHHCPowerModel, solver_nlp; optimizer_soc = solver_soc)
 
 ## Kalai-Smorodinsky bargaining (ks) ###########################################
-# # Calculate impedance
-# Zh = calculate_pos_seq_harmonic_impedance(data, collect(50:50.0:H[end] * 50.0), collect(1:length(data["bus"])))
+# Calculate impedance
+Zh = calculate_pos_seq_harmonic_impedance(data, collect(1.0:0.2:50.0), collect(1:9))
 
 # # solve HHC problem -- NLP
 # hdata_nlp_ks = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "Kalai-Smorodinsky bargaining")
@@ -154,20 +141,3 @@ table_data    = vcat( ["abs. eq." "nl" results_hhc_nlp_ae["objective"] results_h
                 )
 
 pretty_table(table_data, header=header)
-
-
-
-#   hpf_data = deepcopy(hdata_nlp_ae)
-#   for n in keys(hpf_data["nw"])
-#       if n ≠ "1"
-#           delete!(hpf_data, n)
-#       end
-#   end
-
-#   # solve hpf problem for the fundamental harmonic only
-#   hpf_results = solve_hopf(hpf_data, HarmonicPowerModel, solver_nlp)
-
-# for (b, bus) in results_hhc_nlp_ae["solution"]["nw"]["1"]["bus"]
-#    println(b, " " ,sqrt(bus["vbr"]^2 + bus["vbi"]^2))
-#    println(b, " " ,sqrt(hpf_results["solution"]["nw"]["1"]["bus"][b]["vbr"]^2 + hpf_results["solution"]["nw"]["1"]["bus"][b]["vbi"]^2))
-# end

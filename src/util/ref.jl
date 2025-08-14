@@ -81,7 +81,7 @@ function ref_add_core!(ref::Dict{Symbol,Any})
         end
         nw_ref[:bus_hsrc] = bus_hsrc
 
-        # hsrc
+        # shunt
         bus_shunt = Dict((i, Int[]) for (i,bus) in nw_ref[:bus])
         for (s,shunt) in nw_ref[:shunt]
             push!(bus_shunt[nf_ref[:shunt][s]["bus"]], s)

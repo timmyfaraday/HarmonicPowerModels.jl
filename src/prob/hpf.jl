@@ -35,7 +35,7 @@ function build_hpf(pm::HarmonicPowerModel)
         variable_filter_current(pm, nw=n, bounded=false)
         variable_gen_current(pm, nw=n, bounded=false)
         variable_hload_current(pm, nw=n, bounded=false)
-        variable_hsrc_current(pm, nw=n, bounded=false)                          # empty variable
+        variable_hsrc_current(pm, nw=n, bounded=false)                          # normally empty, except for init dHHCPowerModel
         variable_shunt_current(pm, nw=n, bounded=false)
 
         # edge power variables
@@ -99,7 +99,12 @@ function build_hpf(pm::HarmonicPowerModel)
 
         ### harmonic load
         for l in _PMs.ids(pm, :hload, nw=n)
-            constraint_hload_power(pm, l, nw=n)
+            constraint_hload_current(pm, l, nw=n)
+        end
+
+        ### harmonic source - normally empty, except for init dHHCPowerModel
+        for r in _PMs.ids(pm, :hsrc, nw=n)
+            constraint_hsrc_current(pm, r, nw=n)
         end
 
         ### shunt

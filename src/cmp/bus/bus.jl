@@ -60,7 +60,7 @@ function variable_bus_voltage_real(pm::AbstractHarmonicModel; nw::Int=fundamenta
                 JuMP.@variable( pm.model,
                                 [i in _PMs.ids(pm, nw, :bus)], 
                                 base_name="$(nw)_vbr",
-                                start=1.0)
+                                start=(nw==fundamental(pm)) ? 1.0 : 0.0)
 
     if bounded
         for i in _PMs.ids(pm, nw, :bus)
@@ -80,7 +80,7 @@ function variable_bus_voltage_imaginary(pm::AbstractHarmonicModel; nw::Int=funda
                 JuMP.@variable( pm.model,
                                 [i in _PMs.ids(pm, nw, :bus)], 
                                 base_name="$(nw)_vbi",
-                                start=0.0)
+                                start=(nw==fundamental(pm)) ? 1.0 : 0.0)
 
     if bounded
         for i in _PMs.ids(pm, nw, :bus)

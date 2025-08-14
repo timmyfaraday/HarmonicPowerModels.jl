@@ -14,24 +14,6 @@
 # i_base_ka = s_base_mva / v_base_kv, see Power System Analysis, pg. 26
 calc_hload_current_base(hdata::Dict{String,Any}, ldata::Dict{String,Any}) =
     hdata["s_base_mva"] / hdata["nw"]["1"]["bus"][string(ldata["load_bus"])]["v_base_kv"]
-# i_rms_max = S_nom / s_base_mva / sqrt(3) / v_rms_max(bus)
-function calc_hload_current_rms_max(hdata::Dict{String,Any}, ldata::Dict{String,Any})
-    S_nom       = sqrt(ldata["pd"]^2 + ldata["qd"]^2) 
-    v_rms_max   = hdata["nw"]["1"]["bus"][string(ldata["load_bus"])]["v_rms_max"]
-
-    v_rms_min   = hdata["nw"]["1"]["bus"][string(ldata["load_bus"])]["v_rms_min"]
-     
-    # return S_nom / (sqrt(3) * v_rms_max)
-    return S_nom / (sqrt(3) * v_rms_min)
-end
-""
-hload_current_magnitude_limit(pm::AbstractHarmonicModel, nw::Int, l) = 
-    nw == fundamental(pm) ? _PMs.ref(pm, fundamental(pm), :hload, l, "i_rms_max") :
-                            _PMs.ref(pm, fundamental(pm), :hload, l, "i_rms_max") *
-                            _PMs.ref(pm, nw, :hload, l, "hcm")
-""
-collect_hload_current_magnitude_limits(pm::AbstractHarmonicModel, nw::Int) = 
-    Dict(l => hload_current_magnitude_limit(pm, nw, l) for l in _PMs.ids(pm, nw, :hload))
 
 # parameters ###################################################################
 ""
@@ -43,10 +25,10 @@ function add_hload_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
             hload["id"]         = ldata["index"]
             hload["bus"]        = ldata["load_bus"]
             #-----------------------------------#
-            hload["i_base_ka"]  = calc_hload_current_base(hdata, ldata)
-            hload["i_rms_max"]  = calc_hload_current_rms_max(hdata, ldata)
             hload["p_fund"]     = ldata["pd"]
             hload["q_fund"]     = ldata["qd"]
+            #-----------------------------------#
+            hload["i_base_ka"]  = calc_hload_current_base(hdata, ldata)
         else
             hload["hcm"]        = fdata["bus"][string(ldata["load_bus"])]["nh_$nw"]
 end end end
@@ -59,46 +41,28 @@ function variable_hload_current(pm::AbstractHarmonicModel; nw::Int=fundamental(p
 end
 ""
 function variable_hload_current_real(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    c_lim   = collect_hload_current_magnitude_limits(pm, nw)
-    
     clr = _PMs.var(pm, nw)[:clr] = 
-        JuMP.@variable( pm.model, 
-                        [l in _PMs.ids(pm, nw, :hload)], 
-                        base_name="$(nw)_clr",
-                        start=0.0)
-
-    for l in _PMs.ids(pm, nw, :hload)
-        if bounded
-            JuMP.set_lower_bound(clr[l], -c_lim[l])
-            JuMP.set_upper_bound(clr[l],  c_lim[l])
-        end
-    end
+            JuMP.@variable( pm.model, 
+                            [l in _PMs.ids(pm, nw, :hload)], 
+                            base_name="$(nw)_clr",
+                            start=0.0)
 
     report && _PMs.sol_component_value(pm, nw, :hload, :clr, _PMs.ids(pm, nw, :hload), clr)
 end
 ""
 function variable_hload_current_imaginary(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
-    c_lim   = collect_hload_current_magnitude_limits(pm, nw)
-    
     cli = _PMs.var(pm, nw)[:cli] = 
             JuMP.@variable( pm.model,
                             [l in _PMs.ids(pm, nw, :hload)], 
                             base_name="$(nw)_cli",
                             start=0.0)
 
-    for l in _PMs.ids(pm, nw, :hload)
-        if bounded
-            JuMP.set_lower_bound(cli[l], -c_lim[l])
-            JuMP.set_upper_bound(cli[l],  c_lim[l])
-        end
-    end
-
     report && _PMs.sol_component_value(pm, nw, :hload, :cli, _PMs.ids(pm, nw, :hload), cli)
 end
 
 # constraints ##################################################################
 ""
-function constraint_hload_power(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fundamental(pm))
+function constraint_hload_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fundamental(pm))
     if nw == fundamental(pm)
         i       = _PMs.ref(pm, nw, :hload, l, "bus")
         
@@ -120,8 +84,8 @@ function constraint_hload_constant_power(pm::AbstractHarmonicModel, n::Int, l, i
     clr = _PMs.var(pm, n, :clr, l)
     cli = _PMs.var(pm, n, :cli, l)
 
-    JuMP.@constraint(pm.model, p_fund == vbr * clr  + vbi * cli)
-    JuMP.@constraint(pm.model, q_fund == vbi * clr  - vbr * cli)
+    JuMP.@constraint(pm.model, p_fund == vbr * clr + vbi * cli)
+    JuMP.@constraint(pm.model, q_fund == vbi * clr - vbr * cli)
 end
 ""
 function constraint_hload_constant_current(pm::_PMs.AbstractIVRModel, n::Int, l, hcm)

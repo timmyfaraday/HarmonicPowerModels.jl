@@ -55,7 +55,7 @@ function add_branch_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
             branch["b_to"]          = bdata["b_to"]
             #-----------------------------------#
             branch["i_base_ka"]     = calc_branch_current_base(hdata, bdata)
-            branch["i_fund_magn"]   = [0.0, 0.0] # this value is written from fundamental OPF initialization, see init.jl
+            branch["i_fund_magn"]   = [0.0, 0.0]
             branch["i_rms_max"]     = calc_branch_current_rms_max(hdata, bdata)
         else
             branch["r"]             = bdata["br_r"] * sqrt(h)

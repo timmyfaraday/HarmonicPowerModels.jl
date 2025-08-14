@@ -118,8 +118,8 @@ function constraint_hsrc_constant_power(pm::AbstractHarmonicModel, n::Int, r, i,
     crr = _PMs.var(pm, n, :crr, r)
     cri = _PMs.var(pm, n, :cri, r)
 
-    JuMP.@constraint(pm.model, p_fund == vbr * crr  + vbi * cri)
-    JuMP.@constraint(pm.model, q_fund == vbi * crr  - vbr * cri)
+    JuMP.@constraint(pm.model, p_fund == vbr * crr + vbi * cri)
+    JuMP.@constraint(pm.model, q_fund == vbi * crr - vbr * cri)
 end
 ""
 function constraint_hsrc_current_angle_ref(pm::AbstractHarmonicModel, n::Int, r, crar)

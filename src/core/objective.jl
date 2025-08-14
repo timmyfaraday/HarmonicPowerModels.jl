@@ -72,9 +72,9 @@ function constraint_fairness_principle(pm::AbstractHarmonicModel, n, ids)
     if pm.data["hhc_principle"] == "absolute equality"
         crm = [_PMs.var(pm, n, :crm, r) for r in ids]
 
-        # for r in ids[2:end]
-        #     JuMP.@constraint(pm.model, crm[first(ids)] == crm[r])
-        # end 
+        for r in ids[2:end]
+            JuMP.@constraint(pm.model, crm[first(ids)] == crm[r])
+        end 
     end
 
     # maximin

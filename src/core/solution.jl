@@ -41,14 +41,23 @@ function _sol_data_model_ivr!(solution::Dict)
             if haskey(branch, "qb_fr") && haskey(branch, "qb_to")
                 branch["qb_loss"] = branch["qb_fr"] + branch["qb_to"]
             end
-        end
-    end
+            if haskey(branch, "cbr_fr") && haskey(branch, "cbi_fr")
+                branch["cbm_fr"] = hypot(branch["cbr_fr"], branch["cbi_fr"])
+            end
+            if haskey(branch, "cbr_to") && haskey(branch, "cbi_to")
+                branch["cbm_to"] = hypot(branch["cbr_to"], branch["cbi_to"])
+    end end end
 
     if haskey(solution, "xfmr")
         for (x, xfmr) in solution["xfmr"]
             # power loss
             xfmr["px_loss"] = sum(xfmr[nk] for nk in keys(xfmr) if startswith(nk, "px_"); init=0.0)
             xfmr["qx_loss"] = sum(xfmr[nk] for nk in keys(xfmr) if startswith(nk, "qx_"); init=0.0)
+            # current magnitude
+            for nk in keys(xfmr) if startswith(nk, "cxr_")
+                nb = nk[5:end]
+                xfmr["cxm_$nb"] = hypot(xfmr["cxr_$nb"], xfmr["cxi_$nb"])
+            end end
             # excitation voltage
             if haskey(xfmr, "exr") && haskey(xfmr, "exi")
                 xfmr["exm"] = hypot(xfmr["exr"], xfmr["exi"])

@@ -145,7 +145,7 @@ function variable_xfmr_voltage_real(pm::AbstractHarmonicModel; nw::Int=fundament
                 JuMP.@variable( pm.model, 
                                 [(x,i) in _PMs.ref(pm, nw, :wnds_xfmr)], 
                                 base_name="$(nw)_vxr",
-                                start=1.0)
+                                start=(nw==fundamental(pm)) ? 1.0 : 0.0)
 
     if bounded
         for (x,i) in _PMs.ref(pm, nw, :wnds_xfmr)
@@ -185,7 +185,7 @@ function variable_xfmr_voltage_excitation_real(pm::AbstractHarmonicModel; nw::In
                 JuMP.@variable( pm.model,
                                 [x in _PMs.ids(pm, nw, :xfmr)], 
                                 base_name="$(nw)_exr",
-                                start=1.0)
+                                start=(nw==fundamental(pm)) ? 1.0 : 0.0)
                                  
 
     if bounded
@@ -655,7 +655,6 @@ function constraint_xfmr_winding_current_rms_limit(pm::AbstractHarmonicModel, x:
     i_fund_magn = _PMs.ref(pm, fundamental(pm), :xfmr, x, "i_fund_magn")
 
     for wnd in 1:_PMs.ref(pm, fundamental(pm), :xfmr, x, "Nw")
-        println(idx, " ", wnd, " ", idx[wnd], " " ,i_rms_max[wnd], " ", i_fund_magn[wnd])
         constraint_xfmr_winding_current_rms_limit(pm, idx[wnd], i_rms_max[wnd], i_fund_magn[wnd])
     end 
 end
@@ -671,6 +670,5 @@ function constraint_xfmr_winding_current_rms_limit(pm::dHHCPowerModel, idx, i_rm
     cxr =  [_PMs.var(pm, n, :cxr, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
     cxi =  [_PMs.var(pm, n, :cxi, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
-    # println(idx, " " ,i_fund_magn)
     JuMP.@constraint(pm.model, [sqrt(i_rms_max^2 - i_fund_magn^2); vcat(cxr, cxi)] in JuMP.SecondOrderCone())
 end

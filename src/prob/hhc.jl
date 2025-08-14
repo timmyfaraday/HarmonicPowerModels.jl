@@ -15,11 +15,38 @@
 ""
 function solve_hhc(hdata, model_type::Type, optimizer; optimizer_soc = optimizer, kwargs...)
     if model_type == dHHCPowerModel
-        println("hi")
-        update_hdata_with_fundamental_hpf_results!(hdata, HarmonicPowerModel, optimizer) # only needeed for SOC model
+        update_hdata_with_fundamental_hpf_results!(hdata, HarmonicPowerModel, optimizer)
     end
     
-    return solve_model(hdata, model_type, optimizer_soc, build_hhc; multinetwork=true, kwargs...)
+    return solve_model(hdata, model_type, optimizer_soc, build_hhc; 
+                            solution_processors=[_HPM.sol_data_model!], 
+                            multinetwork=true, 
+                            kwargs...)
+end
+
+""
+function add_hhc_variables(pm, n)
+    ## voltage variables 
+    variable_bus_voltage(pm, nw=n, bounded=true)
+    variable_xfmr_voltage(pm, nw=n, bounded=true)
+
+    ## edge current variables
+    variable_branch_current(pm, nw=n, bounded=true)
+    variable_xfmr_current(pm, nw=n, bounded=true)
+
+    ## unit current variables
+    variable_filter_current(pm, nw=n, bounded=true)
+    variable_gen_current(pm, nw=n, bounded=true)
+    variable_hload_current(pm, nw=n, bounded=true)                         # empty variable
+    variable_hsrc_current(pm, nw=n, bounded=true)
+    variable_shunt_current(pm, nw=n, bounded=true)
+
+    # edge power variables
+    variable_branch_power(pm, nw=n, bounded=false)
+    variable_xfmr_power(pm, nw=n, bounded=false)
+
+    # unit power variables
+    variable_gen_power(pm, nw=n, bounded=false)
 end
 
 ""
@@ -233,20 +260,3 @@ function build_hhc(pm::dHHCPowerModel)
         end
 end end end
 
-""
-function add_hhc_variables(pm, n)
-    ## voltage variables 
-    variable_bus_voltage(pm, nw=n, bounded=true)
-    variable_xfmr_voltage(pm, nw=n, bounded=true)
-
-    ## edge current variables
-    variable_branch_current(pm, nw=n, bounded=true)
-    variable_xfmr_current(pm, nw=n, bounded=true)
-
-    ## unit current variables
-    variable_filter_current(pm, nw=n, bounded=true)
-    variable_gen_current(pm, nw=n, bounded=true)
-    variable_hload_current(pm, nw=n, bounded=true)                         # empty variable
-    variable_hsrc_current(pm, nw=n, bounded=true)
-    variable_shunt_current(pm, nw=n, bounded=true)
-end

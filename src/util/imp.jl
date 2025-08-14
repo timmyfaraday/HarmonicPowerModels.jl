@@ -24,7 +24,7 @@ function find_sparse_matrix_idx(A::_SPA.SparseMatrixCSC, i::Int, j::Int)
     return nzr[searchsortedfirst(rows,i)]
 end
 
-# cmp ##########################################################################
+# edge #########################################################################
 ## branch ######################################################################
 ""
 admittance_branch_series_ondiag(r::Float64, x::Float64, h::Float64) = 
@@ -117,7 +117,7 @@ function init_admittance_matrix!(branch::NamedTuple, xfmr::NamedTuple, h::Float6
         add!(i, j, v, to, fr, admittance_xfmr_series_offdiag(xfmr[:r][nx], xfmr[:x][nx], h))
         add!(i, j, v, to, to, admittance_xfmr_shunt_ondiag(xfmr[:b][nx], xfmr[:g][nx], h))
     end
-
+    
     # create sparse matrix
     y = _SPA.sparse(i, j, v)
 
