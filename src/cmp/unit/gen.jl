@@ -29,7 +29,7 @@ function calc_gen_current_rms_max(hdata::Dict{String,Any}, gdata::Dict{String,An
     v_rms_min   = hdata["nw"]["1"]["bus"][string(gdata["gen_bus"])]["v_rms_min"]
      
     # return S_nom / (sqrt(3) * v_rms_max)
-    return S_nom / (sqrt(3) * v_rms_min)
+    return S_nom / (v_rms_min) #sqrt(3) * 
 end
 ""
 collect_gen_current_magnitude_limits(pm::AbstractHarmonicModel, nw::Int) = 
@@ -56,6 +56,8 @@ function add_gen_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
             gen["p_fund_max"]   = gdata["pmax"]
             gen["q_fund_min"]   = gdata["qmin"]
             gen["q_fund_max"]   = gdata["qmax"]
+            gen["p_fund"]       = gdata["pg"]
+            gen["q_fund"]       = gdata["qg"]
         else
             gen["gsc"]          = calc_gen_admittance_real(hdata, gdata, h)
             gen["bsc"]          = calc_gen_admittance_imaginary(hdata, gdata, h)
@@ -86,12 +88,6 @@ function variable_gen_current_real(pm::AbstractHarmonicModel; nw::Int=fundamenta
 
     report && _PMs.sol_component_value(pm, nw, :gen, :cgr, _PMs.ids(pm, nw, :gen), cgr)
 end
-
-""
-function variable_gen_power(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
-    variable_gen_power_active(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-    variable_gen_power_reactive(pm, nw=nw, bounded=bounded, report=report; kwargs...)
-end
 ""
 function variable_gen_current_imaginary(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
     c_lim   = collect_gen_current_magnitude_limits(pm, nw)
@@ -110,6 +106,11 @@ function variable_gen_current_imaginary(pm::AbstractHarmonicModel; nw::Int=funda
     end
 
     report && _PMs.sol_component_value(pm, nw, :gen, :cgi, _PMs.ids(pm, nw, :gen), cgi)
+end
+""
+function variable_gen_power(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true, kwargs...)
+    variable_gen_power_active(pm, nw=nw, bounded=bounded, report=report; kwargs...)
+    variable_gen_power_reactive(pm, nw=nw, bounded=bounded, report=report; kwargs...)
 end
 ""
 function variable_gen_power_active(pm::AbstractHarmonicModel; nw::Int=fundamental(pm), bounded::Bool=true, report::Bool=true)
@@ -159,7 +160,10 @@ function constraint_gen_current(pm::AbstractHarmonicModel, g::Int; nw::Int=funda
 
     if nw ≠ fundamental(pm)
         constraint_gen_current(pm, nw, g, i, gsc, bsc)
-end end
+    else
+        constraint_gen_constant_power(pm, g, nw = nw)
+    end
+end
 ""
 function constraint_gen_current(pm::AbstractHarmonicModel, n::Int, g, i, gsc, bsc)
     vbr = _PMs.var(pm, n, :vbr, i)
@@ -241,4 +245,52 @@ end
 
 
 
+
+
+# ""
+# function constraint_gen_power(pm::AbstractHarmonicModel, g::Int; nw::Int=fundamental(pm))
+#     i   = _PMs.ref(pm, fundamental(pm), :gen, g, "bus")        
+
+#     constraint_gen_power(pm, nw, g, i)
+# end
+
+# ""
+# function constraint_gen_power(pm::AbstractHarmonicModel, n::Int, g, i)
+#     vbr = _PMs.var(pm, n, :vbr, i)
+#     vbi = _PMs.var(pm, n, :vbi, i)
+
+#     pg = _PMs.var(pm, n, :pg, g)
+#     qg = _PMs.var(pm, n, :qg, g)
+
+#     cgr = _PMs.var(pm, n, :cgr, g)
+#     cgi = _PMs.var(pm, n, :cgi, g)
+
+#     JuMP.@constraint(pm.model, pg == vbr * cgr + vbi * cgi)
+#     JuMP.@constraint(pm.model, qg == vbi * cgr - vbr * cgi)
+# end
+
+
+
+function constraint_gen_constant_power(pm::AbstractHarmonicModel, g::Int; nw::Int=fundamental(pm))
+    i   = _PMs.ref(pm, fundamental(pm), :gen, g, "bus")  
+    println(_PMs.ref(pm, nw, :bus, i, "type"))      
+    if _PMs.ref(pm, nw, :bus, i, "type") !== 4
+        println(i, g, _PMs.ref(pm, nw, :bus, i, "type"))
+        p_fund  = _PMs.ref(pm, nw, :gen, g, "p_fund")
+        q_fund  = _PMs.ref(pm, nw, :gen, g, "q_fund")
+        constraint_gen_constant_power(pm, nw, g, i, p_fund, q_fund)
+    end 
+end
+""
+function constraint_gen_constant_power(pm::AbstractHarmonicModel, n::Int, g, i, p_fund, q_fund)
+    vbr = _PMs.var(pm, n, :vbr, i)
+    vbi = _PMs.var(pm, n, :vbi, i)
+
+    cgr = _PMs.var(pm, n, :cgr, g)
+    cgi = _PMs.var(pm, n, :cgi, g)
+
+    JuMP.@constraint(pm.model, p_fund == vbr * cgr + vbi * cgi)
+    JuMP.@constraint(pm.model, q_fund == vbi * cgr - vbr * cgi)
+end
+# ""
 

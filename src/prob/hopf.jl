@@ -14,7 +14,10 @@
 
 ""
 solve_hopf(hdata, model_type::Type, optimizer; kwargs...) = 
-    solve_model(hdata, model_type, optimizer, build_hopf; multinetwork=true, kwargs...)
+    solve_model(hdata, model_type, optimizer, build_hopf; 
+                    solution_processors=[_HPM.sol_data_model!], 
+                    multinetwork=true, 
+                    kwargs...)
 
 ""
 function build_hopf(pm::HarmonicPowerModel)
@@ -34,12 +37,17 @@ function build_hopf(pm::HarmonicPowerModel)
         variable_hload_current(pm, nw=n, bounded=true)
         variable_hsrc_current(pm, nw=n, bounded=true)                          # empty variable
         variable_shunt_current(pm, nw=n, bounded=true)
+
+        # edge power variables
+        variable_branch_power(pm, nw=n, bounded=false)
+        variable_xfmr_power(pm, nw=n, bounded=false)
+
+        # unit power variables
+        variable_gen_power(pm, nw=n, bounded=false)
     end 
 
     # objective
     objective_voltage_distortion_minimization(pm)
-    # objective_power_flow(pm)
-
     # constraint
     # overall or fundamental constraints
     ### bus

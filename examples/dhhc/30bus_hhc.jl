@@ -34,26 +34,70 @@
 using HarmonicPowerModels, PowerModels
 using MadNLP, Clarabel, Ipopt
 using PrettyTables
+using Gurobi
+using Plots
 
 # pkg cte
 const PMs = PowerModels
 const HPM = HarmonicPowerModels
 
 # set the solver
-solver_nlp = MadNLP.Optimizer
+solver_nlp = Ipopt.Optimizer
 solver_soc = Clarabel.Optimizer
 
 # read-in data 
-path = joinpath(HPM.BASE_DIR,"test/data/matpower/industrial_network_hhc.m")
+path = joinpath(HPM.BASE_DIR,"test/data/matpower/30bus_network_hhc.m")
 data = PMs.parse_file(path)
+
+
+for (b, bus) in data["bus"]
+    bus["std"] = "IEC61000-2-4:2002, Cl. 2"
+    bus["ref_angle"] = 0.0
+    bus["vmax"]  = 1.1
+    bus["vmin"]  = 0.9
+end
+
+for (g,gen) in data["gen"]
+  gen["inf"] = 1
+  gen["gsc"] = 0.0
+  gen["bsc"] = 0.0
+  gen["xr_ratio"] = 30.0
+end
+
+# data["hload"] = data["load"]
+
+
+# function keep_fundamental_load!(hdata)
+#     for  n in keys(hdata["nw"])
+#       if n ≠ "1"
+#         for (l, load) in hdata["nw"][n]["hload"]
+#           delete!(hdata["nw"][n]["hload"], l)
+#         end
+#       end
+#     end
+#     return hdata
+# end
+# results_opf = PowerModels.solve_opf(data, ACPPowerModel, solver_nlp)["solution"]
+
+# for (b, bus) in data["bus"]
+#     bus["vm"] = results_opf["bus"]["$b"]["vm"]
+#     bus["va"] = results_opf["bus"]["$b"]["va"]
+# end
+
+# for (g, gen) in data["gen"]
+#   gen["pg"] = results_opf["gen"]["$g"]["pg"]
+#   gen["qg"] = results_opf["gen"]["$g"]["qg"]
+# end
+
+# for (s, shunt) in data["shunt"]
+#   delete!(data["shunt"], s)
+# end
 
 # set the ref bus to a clean bus
 data["bus"]["1"]["bus_type"] = 4
 
 # define the set of considered harmonics
 H = [1, 3, 5, 7]
-
-# TODO: Check the hsrc constraint -> casues convergence to infeasible point in OPF.....
 
 # COMPUTATION ##################################################################
 # absolute equality (ae) ######################################################
@@ -66,7 +110,7 @@ hdata_me = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principl
 results_me_nlp = HPM.solve_hhc(hdata_me, HarmonicPowerModel, solver_nlp)
 results_me_soc = HPM.solve_hhc(hdata_me, dHHCPowerModel, solver_nlp; optimizer_soc = solver_soc)
 
-## maximin (mm) ################################################################
+## maximin (mm) ####################################################`############
 hdata_mm = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "maximin")
 results_mm_nlp = HPM.solve_hhc(hdata_mm, HarmonicPowerModel, solver_nlp)
 results_mm_soc = HPM.solve_hhc(hdata_mm, dHHCPowerModel, solver_nlp; optimizer_soc = solver_soc)
@@ -83,6 +127,25 @@ results_mm_soc = HPM.solve_hhc(hdata_mm, dHHCPowerModel, solver_nlp; optimizer_s
 # # solve HHC problem -- SOC 
 # hdata_soc_ks = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, Zh)
 # results_hhc_soc_ks = HPM.solve_hhc(hdata_soc_ks, dHHCPowerModel, solver_nlp)
+
+
+header  = (
+            ["obj.", "mod.", "obj. value", "solve time [s]"]
+          );
+table_data    = vcat( ["abs. eq." "nl" results_ae_nlp["objective"] results_ae_nlp["solve_time"]],
+                ["abs. eq." "soc" results_ae_soc["objective"] results_ae_soc["solve_time"]],
+                ["max. eff." "nl" results_me_nlp["objective"] results_me_nlp["solve_time"]],
+                ["max. eff." "soc" results_me_soc["objective"] results_me_soc["solve_time"]],
+                ["maximin" "nl" results_mm_nlp["objective"] results_mm_nlp["solve_time"]],
+                ["maximin" "soc" results_mm_soc["objective"] results_mm_soc["solve_time"]],
+                #["KS barg." "nl" results_hhc_nlp_ks["objective"] results_hhc_nlp_ks["solve_time"]],
+                #["KS barg." "soc" results_hhc_soc_ks["objective"] results_hhc_soc_ks["solve_time"]]
+                )
+
+pretty_table(table_data, header=header)
+
+
+
 
 # RESULTS ######################################################################
 # TABLE: Harmonic current injection from the non-linear model with the 
@@ -127,17 +190,78 @@ results_mm_soc = HPM.solve_hhc(hdata_mm, dHHCPowerModel, solver_nlp; optimizer_s
 # TABLE: Objective value and solve times of non-linear and second-order cone 
 # models, for each considered fairness objective 
 
-header  = (
-            ["obj.", "mod.", "obj. value", "solve time [s]"]
-          );
-table_data    = vcat( ["abs. eq." "nl" results_ae_nlp["objective"] results_ae_nlp["solve_time"]],
-                ["abs. eq." "soc" results_ae_soc["objective"] results_ae_soc["solve_time"]],
-                ["max. eff." "nl" results_me_nlp["objective"] results_me_nlp["solve_time"]],
-                ["max. eff." "soc" results_me_soc["objective"] results_me_soc["solve_time"]],
-                ["maximin" "nl" results_mm_nlp["objective"] results_mm_nlp["solve_time"]],
-                ["maximin" "soc" results_mm_soc["objective"] results_mm_soc["solve_time"]],
-                #["KS barg." "nl" results_hhc_nlp_ks["objective"] results_hhc_nlp_ks["solve_time"]],
-                #["KS barg." "soc" results_hhc_soc_ks["objective"] results_hhc_soc_ks["solve_time"]]
-                )
+# header  = (
+#             ["obj.", "mod.", "obj. value", "solve time [s]"]
+#           );
+# table_data    = vcat( ["abs. eq." "nl" results_ae_nlp["objective"] results_ae_nlp["solve_time"]],
+#                 ["abs. eq." "soc" results_ae_soc["objective"] results_ae_soc["solve_time"]],
+#                 ["max. eff." "nl" results_me_nlp["objective"] results_me_nlp["solve_time"]],
+#                 ["max. eff." "soc" results_me_soc["objective"] results_me_soc["solve_time"]],
+#                 ["maximin" "nl" results_mm_nlp["objective"] results_mm_nlp["solve_time"]],
+#                 ["maximin" "soc" results_mm_soc["objective"] results_mm_soc["solve_time"]],
+#                 #["KS barg." "nl" results_hhc_nlp_ks["objective"] results_hhc_nlp_ks["solve_time"]],
+#                 #["KS barg." "soc" results_hhc_soc_ks["objective"] results_hhc_soc_ks["solve_time"]]
+#                 )
 
-pretty_table(table_data, header=header)
+# pretty_table(table_data, header=header)
+
+
+
+
+hdata = HPM.build_hdata_from_matpower_file(data, H=H, prob=:hhc, hhc_principle = "absolute equality")
+
+hpf_data = deepcopy(hdata)
+for n in keys(hpf_data["nw"])
+    if n ≠ "1"
+        delete!(hpf_data["nw"], n)
+    end
+end
+
+
+hpf= HPM.solve_hpf(hpf_data, HarmonicPowerModel, solver_nlp)["solution"]["nw"]["1"]
+hopf= HPM.solve_hopf(hpf_data, HarmonicPowerModel, solver_nlp)["solution"]["nw"]["1"]
+hpf1= HPM.solve_hhc_init(hpf_data, HarmonicPowerModel, solver_nlp)["solution"]["nw"]["1"]
+hhc= HPM.solve_hhc(hdata, HarmonicPowerModel, solver_nlp)["solution"]["nw"]["1"]
+# hopf_opf = HPM.solve_hopf(hpf_data, HarmonicPowerModel, solver_nlp)["solution"]["nw"]["1"]
+
+for (n, bus) in hpf["bus"]
+   println("hhc - hpf, bus: ",n ," ," , sqrt(hhc["bus"][n]["vbr"]^2 + hhc["bus"][n]["vbi"]^2) - sqrt(hpf1["bus"][n]["vbr"]^2 + hpf1["bus"][n]["vbi"]^2))
+end
+
+
+for (s, src) in hhc["hsrc"]
+   println("hhc - hpf, src: ",s ," ," , sqrt(hhc["hsrc"][s]["crr"]^2 + hhc["hsrc"][s]["cri"]^2) - sqrt(hpf1["hsrc"][s]["crr"]^2 + hpf1["hsrc"][s]["cri"]^2))
+end
+
+
+for (g, gen) in hhc["gen"]
+   println("hhc - hpf, gen: ",g ," ," , hhc["gen"][g]["cgm"] - hpf1["gen"][g]["cgm"])
+end
+
+
+
+
+
+
+sum([src["crr"] for (s, src) in results_me_nlp["solution"]["nw"]["1"]["hsrc"]])
+sum([gen["cgr"] for (g, gen) in results_me_nlp["solution"]["nw"]["1"]["gen"]])
+
+sum([src["crr"] for (s, src) in results_me_nlp["solution"]["nw"]["1"]["hsrc"]]) / sum([gen["cgr"] for (g, gen) in results_me_nlp["solution"]["nw"]["1"]["gen"]])
+
+
+sum([gen["pg"] for (g, gen) in results_me_nlp["solution"]["nw"]["1"]["gen"]])
+sum([src["p_fund"] for (s, src) in hdata_me["nw"]["1"]["hsrc"]])
+
+
+ib = [max(branch["cbm_fr"], branch["cbm_to"]) / hpf_data["nw"]["1"]["branch"][b]["i_rms_max"] for  (b, branch) in hpf["branch"]]
+Plots.plot(ib)
+
+ub = [bus["vbm"] for (b, bus) in hpf["bus"]]
+Plots.plot(ub)
+
+ig = [abs(gen["cgm"]) / hpf_data["nw"]["1"]["gen"][g]["i_rms_max"] for (g, gen) in hpf["gen"]]
+Plots.plot(ig)
+
+
+sum([gen["pg"] for (g, gen) in hpf["gen"]])
+sum([src["p_fund"] for (s, src) in hpf_data["nw"]["1"]["hsrc"]])

@@ -20,9 +20,10 @@ function add_shunt_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
                 shunt["id"]         = sdata["index"]
                 shunt["bus"]        = sdata["shunt_bus"]
                 #-----------------------------------#
-                shunt["b"]          = sdata["bs"]
+                shunt["b"]          = sdata["bs"] 
                 shunt["g"]          = sdata["gs"]
             else
+                voltage = fdata["bus"][string(hdata["nw"]["1"]["shunt"][s]["bus"])]["base_kv"]
                 shunt["b"]          = sdata["bs"] * h^(sign(sdata["bs"]))
                 shunt["g"]          = sdata["gs"] / sqrt(h)
 end end end
@@ -61,9 +62,10 @@ function constraint_shunt_current(pm::AbstractHarmonicModel, s::Int; nw::Int=fun
     g   = _PMs.ref(pm, nw, :shunt, s, "g")
     b   = _PMs.ref(pm, nw, :shunt, s, "b")
 
-    if nw ≠ fundamental(pm)
+    #if nw ≠ fundamental(pm)
         constraint_shunt_current(pm, nw, s, i, g, b)
-end end
+    #end 
+end
 ""
 function constraint_shunt_current(pm::AbstractHarmonicModel, n::Int, s, i, g, b)
     vbr = _PMs.var(pm, n, :vbr, i)

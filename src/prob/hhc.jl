@@ -13,9 +13,9 @@
 ################################################################################
 
 ""
-function solve_hhc(hdata, model_type::Type, optimizer; optimizer_soc = optimizer, kwargs...)
+function solve_hhc(hdata, model_type::Type, optimizer; optimizer_soc = optimizer, init = "pf", kwargs...)
     if model_type == dHHCPowerModel
-        update_hdata_with_fundamental_hpf_results!(hdata, HarmonicPowerModel, optimizer)
+        update_hdata_with_fundamental_hpf_results!(hdata, HarmonicPowerModel, optimizer; init = init)
     end
     
     return solve_model(hdata, model_type, optimizer_soc, build_hhc; 
@@ -55,9 +55,9 @@ function build_hhc(pm::HarmonicPowerModel)
     for n in _PMs.nw_ids(pm)
         ## fairness variable
         if n ≠ fundamental(pm)
-            variable_fairness_principle(pm, nw=n, bounded=true)
+            variable_fairness_principle(pm, nw = n, bounded=true)
         end
-        add_hhc_variables(pm, n) 
+        add_hhc_variables(pm, n)
     end
 
     # objective 
@@ -100,7 +100,7 @@ function build_hhc(pm::HarmonicPowerModel)
             constraint_fairness_principle(pm, nw=n)
         end
 
-        # ### reference bus
+        ### reference bus
         for i in _PMs.ids(pm, :ref_buses, nw=n)
             constraint_ref_voltage(pm, i, nw=n)
         end
@@ -145,9 +145,9 @@ function build_hhc(pm::HarmonicPowerModel)
             constraint_hsrc_current(pm, r, nw=n)
         end
 
-        ### harmonic load
+        ## harmonic load
         for l in _PMs.ids(pm, :hload, nw=n)
-            constraint_hload_power(pm, l, nw=n)
+            constraint_hload_current(pm, l, nw=n)
         end
 
         ### shunt
@@ -163,11 +163,13 @@ function build_hhc(pm::dHHCPowerModel)
     JuMP.add_bridge(pm.model, _MOI.Bridges.Constraint.SOCtoNonConvexQuadBridge)
 
     # variables 
-    for n in _PMs.nw_ids(pm) if n ≠ fundamental(pm)
-        ## fairness variable 
-        variable_fairness_principle(pm, nw=n, bounded=true)
-        add_hhc_variables(pm, n)    
-    end end
+    for n in _PMs.nw_ids(pm) 
+        if n ≠ fundamental(pm)
+            ## fairness variable 
+            variable_fairness_principle(pm, nw=n, bounded=true)
+            add_hhc_variables(pm, n)    
+        end
+    end
 
     # objective 
     objective_maximum_hosting_capacity(pm)
@@ -206,7 +208,7 @@ function build_hhc(pm::dHHCPowerModel)
         
         ### reference bus
         for i in _PMs.ids(pm, :ref_buses, nw=n)
-                constraint_ref_voltage(pm, i, nw=n)
+            constraint_ref_voltage(pm, i, nw=n)
         end
         
         ### clean bus 
@@ -251,7 +253,7 @@ function build_hhc(pm::dHHCPowerModel)
 
         ### harmonic load
         for l in _PMs.ids(pm, :hload, nw=n)
-            constraint_hload_power(pm, l, nw=n)
+            constraint_hload_current(pm, l, nw=n)
         end
 
         ### shunt 

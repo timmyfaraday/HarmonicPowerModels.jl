@@ -17,7 +17,7 @@ calc_hload_current_base(hdata::Dict{String,Any}, ldata::Dict{String,Any}) =
 
 # parameters ###################################################################
 ""
-function add_hload_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
+function add_hload_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any}; fundamental_only::Bool=false)
     for (nw, nwt) in hdata["nw"], (l, hload) in nwt["hload"]
         h       = parse(Int, nw)
         ldata   = fdata["load"][l]
@@ -29,7 +29,7 @@ function add_hload_hdata!(hdata::Dict{String,Any}, fdata::Dict{String,Any})
             hload["q_fund"]     = ldata["qd"]
             #-----------------------------------#
             hload["i_base_ka"]  = calc_hload_current_base(hdata, ldata)
-        else
+        elseif !fundamental_only
             hload["hcm"]        = fdata["bus"][string(ldata["load_bus"])]["nh_$nw"]
 end end end
 

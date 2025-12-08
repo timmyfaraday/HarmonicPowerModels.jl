@@ -22,21 +22,22 @@ solve_hpf(hdata, model_type::Type, optimizer; kwargs...) =
 ""
 function build_hpf(pm::HarmonicPowerModel)
     # variables
+    bounded = false
     for n in _PMs.nw_ids(pm)
         ## voltage variables
-        variable_bus_voltage(pm, nw=n, bounded=false)
-        variable_xfmr_voltage(pm, nw=n, bounded=false)
+        variable_bus_voltage(pm, nw=n, bounded=bounded)
+        variable_xfmr_voltage(pm, nw=n, bounded=bounded)
         
         ## edge current variables
-        variable_branch_current(pm, nw=n, bounded=false)
-        variable_xfmr_current(pm, nw=n, bounded=false)
+        variable_branch_current(pm, nw=n, bounded=bounded)
+        variable_xfmr_current(pm, nw=n, bounded=bounded)
 
         ## unit current variables
-        variable_filter_current(pm, nw=n, bounded=false)
-        variable_gen_current(pm, nw=n, bounded=false)
-        variable_hload_current(pm, nw=n, bounded=false)
-        variable_hsrc_current(pm, nw=n, bounded=false)                          # normally empty, except for init dHHCPowerModel
-        variable_shunt_current(pm, nw=n, bounded=false)
+        variable_filter_current(pm, nw=n, bounded=bounded)
+        variable_gen_current(pm, nw=n, bounded=bounded)
+        variable_hload_current(pm, nw=n, bounded=bounded)
+        variable_hsrc_current(pm, nw=n, bounded=bounded)                          # normally empty, except for init dHHCPowerModel
+        variable_shunt_current(pm, nw=n, bounded=bounded)
 
         # edge power variables
         variable_branch_power(pm, nw=n, bounded=false)
@@ -75,8 +76,7 @@ function build_hpf(pm::HarmonicPowerModel)
         ### branch 
         for b in _PMs.ids(pm, :branch, nw=n)
             constraint_branch_current_from(pm, b, nw=n)
-            constraint_branch_current_to(pm, b, nw=n)
-            
+            constraint_branch_current_to(pm, b, nw=n)            
             constraint_branch_voltage_drop(pm, b, nw=n)
         end
 

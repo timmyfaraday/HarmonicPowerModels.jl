@@ -52,7 +52,8 @@ function build_hdata_from_matpower_file(fdata::Dict{String,Any};
                                         prob::Symbol=:hpf,
                                         bus_id::Int=1,
                                         xfmr_magn::Dict{String,Any}=Dict{String,Any}(),
-                                        hhc_principle::String="maximum efficiency")
+                                        hhc_principle::String="maximum efficiency",
+                                        fundamental_only::Bool=false)
     hdata = init_hdata(fdata, H, prob, bus_id, hhc_principle)
 
     add_bus_hdata!(hdata, fdata)
@@ -65,7 +66,7 @@ function build_hdata_from_matpower_file(fdata::Dict{String,Any};
 
     add_filter_hdata!(hdata, fdata)
     add_gen_hdata!(hdata, fdata)
-    prob in [:hpf, :hopf]   && add_hload_hdata!(hdata, fdata) 
+    prob in [:hpf, :hopf, :hhc]   && add_hload_hdata!(hdata, fdata; fundamental_only=fundamental_only) 
     prob in [:hhc]          && add_hsrc_hdata!(hdata, fdata)
     add_shunt_hdata!(hdata, fdata)
 

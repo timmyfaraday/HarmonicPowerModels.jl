@@ -56,7 +56,8 @@ function calc_xfmr_current_rms_max(hdata::Dict{String,Any}, xdata::Dict{String,A
     v_rms_min   = [hdata["nw"]["1"]["bus"][string(xdata["f_bus"])]["v_rms_min"],
                     hdata["nw"]["1"]["bus"][string(xdata["t_bus"])]["v_rms_min"]]
 
-    return S_nom / s_base_mva / sqrt(3) ./ v_rms_min
+    #return S_nom / s_base_mva / sqrt(3) ./ v_rms_min
+    return S_nom / s_base_mva ./ v_rms_min
 end
 ""
 collect_xfmr_voltage_magnitude_limits(pm::AbstractHarmonicModel, nw::Int) =
