@@ -67,6 +67,7 @@ module HarmonicPowerModels
     include("prob/hopf.jl")
     include("prob/hpf.jl")
     include("prob/hhc.jl")
+    include("prob/hhc_pce.jl")
 
     include("util/imp.jl")
     include("util/init.jl")
@@ -80,7 +81,7 @@ module HarmonicPowerModels
     export AbstractSHHCModel, sHHC_SOC
 
     export replicate
-    export solve_hpf, solve_hopf, solve_hhc 
+    export solve_hpf, solve_hopf, solve_hhc, solve_shhc_soc
 
     export calculate_pos_seq_harmonic_impedance
     
