@@ -60,6 +60,7 @@ module HarmonicPowerModels
     include("core/variable.jl")
     include("core/pce.jl")
     include("core/data_pce.jl")
+    include("core/constraint_pce.jl")
 
     include("form/iv.jl")
 

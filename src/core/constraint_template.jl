@@ -140,7 +140,7 @@ function constraint_gen_current(pm::_PMs.AbstractPowerModel, g::Int; nw::Int=fun
     gsc = _PMs.ref(pm, nw, :gen, g, "gsc")
     bsc = _PMs.ref(pm, nw, :gen, g, "bsc")
 
-    if iszero(inf) && nw ≠ fundamental
+    if iszero(inf) && nw ≠ fundamental(pm)
         constraint_gen_current(pm, nw, g, bus, gsc, bsc)
     end
 end
