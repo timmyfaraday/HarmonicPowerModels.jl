@@ -8,6 +8,7 @@
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
+# v0.2.1 - reviewed TVA                                                        #
 ################################################################################
 
 # fairness principle
@@ -345,7 +346,12 @@ function variable_xfmr_current_magnetizing_real(pm::_PMs.AbstractPowerModel; nw:
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "cmrx_start", 0.0)
     )
 
-    ## bounds are needed
+    if bounded
+        for (x, xfmr) in _PMs.ref(pm, nw, :xfmr)
+            JuMP.set_lower_bound(cmrx[x], 0)
+            JuMP.set_upper_bound(cmrx[x], xfmr["c_rating"])
+        end
+    end
 
     report && _PMs.sol_component_value(pm, nw, :xfmr, :cmrx, _PMs.ids(pm, nw, :xfmr), cmrx)
 end
@@ -356,7 +362,12 @@ function variable_xfmr_current_magnetizing_imaginary(pm::_PMs.AbstractPowerModel
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :xfmr, x), "cmix_start", 0.0)
     )
 
-    ## bounds are needed
+    if bounded
+        for (x, xfmr) in _PMs.ref(pm, nw, :xfmr)
+            JuMP.set_lower_bound(cmix[x], 0)
+            JuMP.set_upper_bound(cmix[x], xfmr["c_rating"])
+        end
+    end
 
     report && _PMs.sol_component_value(pm, nw, :xfmr, :cmix, _PMs.ids(pm, nw, :xfmr), cmix)
 end

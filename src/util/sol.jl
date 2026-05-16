@@ -8,6 +8,7 @@
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
+# v0.2.1 - reviewed TVA                                                        #
 ################################################################################
 
 ""
@@ -34,6 +35,12 @@ function _sol_data_model_ivr!(solution::Dict)
             if haskey(branch, "qf") && haskey(branch, "qt")
                 branch["qloss"] = branch["qf"] + branch["qt"]
             end
+            if haskey(branch, "cr_fr") && haskey(branch, "ci_fr")
+                branch["cm_fr"] = sqrt(branch["cr_fr"]^2 + branch["ci_fr"]^2)
+            end
+            if haskey(branch, "cr_to") && haskey(branch, "ci_to")
+                branch["cm_to"] = sqrt(branch["cr_to"]^2 + branch["ci_to"]^2)
+            end
         end
     end
 
@@ -44,6 +51,12 @@ function _sol_data_model_ivr!(solution::Dict)
             end
             if haskey(xfmr, "qx_fr") && haskey(xfmr, "qx_to")
                 xfmr["qxloss"] = xfmr["qx_fr"] + xfmr["qx_to"]
+            end
+            if haskey(xfmr, "crx_fr") && haskey(xfmr, "cix_fr")
+                xfmr["cmx_fr"] = sqrt(xfmr["crx_fr"]^2 + xfmr["cix_fr"]^2)
+            end
+            if haskey(xfmr, "crx_to") && haskey(xfmr, "cix_to")
+                xfmr["cmx_to"] = sqrt(xfmr["crx_to"]^2 + xfmr["cix_to"]^2)
             end
         end
     end

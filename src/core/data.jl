@@ -8,6 +8,7 @@
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
+# v0.2.1 - reviewed TVA - this needs to be reworked asap                       #
 ################################################################################
 
 ""
@@ -32,12 +33,177 @@ const ihd_limits = Dict(
                                     0.00658, 0.00219, 0.00200, 0.00216, 0.00583,
                                     0.00213, 0.00551, 0.00210, 0.00200, 0.00208,
                                     0.00498, 0.00205, 0.00474, 0.00203, 0.00200,
-                                    0.00201, 0.00434, 0.00200, 0.00416, 0.00198])
+                                    0.00201, 0.00434, 0.00200, 0.00416, 0.00198],
+    "AS/NZS61000-3-6" =>           [1.00000, 0.02000, 0.05000, 0.01000, 0.05000,
+                                    0.00500, 0.05000, 0.00500, 0.01500, 0.00500,
+                                    0.03500, 0.00200, 0.03000, 0.00200, 0.00300,
+                                    0.00200, 0.02000, 0.00200, 0.01500, 0.00200,
+                                    0.00200, 0.00200, 0.01500, 0.00200, 0.01500,
+                                    0.00200, 0.00200, 0.00200, 0.01483, 0.00200,
+                                    0.01087, 0.00200, 0.00200, 0.00200, 0.00986,
+                                    0.00200, 0.00943, 0.00200, 0.00200, 0.00200,
+                                    0.00871, 0.00200, 0.00840, 0.00200, 0.00200,
+                                    0.00200, 0.00785, 0.00200, 0.00761, 0.00200],
+    "IEEE519-2022-1/69kV" =>       [1.0, 0.030 .* ones(49)...],
+    "IEEE519-2022-69/161kV" =>     [1.0, 0.015 .* ones(49)...])
 
 const thd_limits = Dict(
     "Clean Bus" =>                  0.00000,
     "IEC61000-2-4:2002, Cl. 2" =>   0.08000,
-    "IEC61000-3-6:2008" =>          0.08000) 
+    "IEC61000-3-6:2008" =>          0.08000,
+    "AS/NZS61000-3-6" =>            0.08000,
+    "IEEE519-2022-1/69kV" =>        0.05000,
+    "IEEE519-2022-69/161kV" =>      0.02500) 
+
+""
+function ihd_current_limit_ieee_519(voltage, i_ratio, harmonic)
+    if voltage < 69.0
+        if i_ratio == Inf
+            return 0.0
+        elseif i_ratio < 20
+            if 2 <= harmonic < 11
+                return 0.04
+            elseif 11 <= harmonic < 17
+                return 0.02
+            elseif 17 <= harmonic < 23
+                return 0.015
+            elseif 23 <= harmonic < 35
+                return 0.006
+            elseif 35 <= harmonic <= 50
+                return 0.003
+            else
+                return 0.0
+            end
+        elseif 20.0 <= i_ratio < 50.0
+            if 2 <= harmonic < 11
+                return 0.07
+            elseif 11 <= harmonic < 17
+                return 0.035
+            elseif 17 <= harmonic < 23
+                return 0.025
+            elseif 23 <= harmonic < 35
+                return 0.010
+            elseif 35 <= harmonic <= 50
+                return 0.005
+            else
+                return 0.0
+            end
+        elseif 50.0 <= i_ratio < 100.0
+            if 2 <= harmonic < 11
+                return 0.10
+            elseif 11 <= harmonic < 17
+                return 0.045
+            elseif 17 <= harmonic < 23
+                return 0.040
+            elseif 23 <= harmonic < 35
+                return 0.015
+            elseif 35 <= harmonic <= 50
+                return 0.007
+            else
+                return 0.0
+            end
+        elseif 100.0 <= i_ratio < 1000.0
+            if 2 <= harmonic < 11
+                return 0.12
+            elseif 11 <= harmonic < 17
+                return 0.055
+            elseif 17 <= harmonic < 23
+                return 0.050
+            elseif 23 <= harmonic < 35
+                return 0.020
+            elseif 35 <= harmonic <= 50
+                return 0.010
+            else
+                return 0.0
+            end
+        else
+            if 2 <= harmonic < 11
+                return 0.15
+            elseif 11 <= harmonic < 17
+                return 0.07
+            elseif 17 <= harmonic < 23
+                return 0.06
+            elseif 23 <= harmonic < 35
+                return 0.025
+            elseif 35 <= harmonic <= 50
+                return 0.014
+            else
+                return 0.0
+            end
+        end
+    else
+        if i_ratio == Inf
+            return 0.0
+        elseif i_ratio < 20       
+            if 2 <= harmonic < 11
+                return 0.02
+            elseif 11 <= harmonic < 17
+                return 0.01
+            elseif 17 <= harmonic < 23
+                return 0.0075
+            elseif 23 <= harmonic < 35
+                return 0.003
+            elseif 35 <= harmonic <= 50
+                return 0.0015
+            else
+                return 0.0
+            end
+        elseif 20.0 <= i_ratio < 50.0
+            if 2 <= harmonic < 11
+                return 0.035
+            elseif 11 <= harmonic < 17
+                return 0.0175
+            elseif 17 <= harmonic < 23
+                return 0.0125
+            elseif 23 <= harmonic < 35
+                return 0.005
+            elseif 35 <= harmonic <= 50
+                return 0.0025
+            else
+                return 0.0
+            end
+        elseif 50.0 <= i_ratio < 100.0
+            if 2 <= harmonic < 11
+                return 0.05
+            elseif 11 <= harmonic < 17
+                return 0.0225
+            elseif 17 <= harmonic < 23
+                return 0.02
+            elseif 23 <= harmonic < 35
+                return 0.0075
+            elseif 35 <= harmonic <= 50
+                return 0.0035
+            else
+                return 0.0
+            end
+        elseif 100.0 <= i_ratio < 1000.0
+            if 2 <= harmonic < 11
+                return 0.06
+            elseif 11 <= harmonic < 17
+                return 0.0275
+            elseif 17 <= harmonic < 23
+                return 0.025
+            elseif 23 <= harmonic < 35
+                return 0.01
+            elseif 35 <= harmonic <= 50
+                return 0.005
+            else
+                return 0.0
+            end
+        else
+            if 2 <= harmonic < 11
+                return 0.075
+            elseif 11 <= harmonic < 17
+                return 0.035
+            elseif 17 <= harmonic < 23
+                return 0.03
+            elseif 23 <= harmonic < 35
+                return 0.0125
+            elseif 35 <= harmonic <= 50
+                return 0.007
+            else
+                return 0.0
+end end end end
 
 """
     HarmonicPowerModels.replicate
@@ -55,7 +221,7 @@ function _HPM.replicate(data::Dict{String, Any};
             
             vmmin = min(f_bus["vmin"], t_bus["vmin"])
             
-            branch["c_rating"] = branch["rate_a"] / sqrt(3) / vmmin  
+            branch["c_rating"] = branch["rate_a"] / sqrt(3) / vmmin             # @Hakan: klopt dit
     end end
 
     # add xfmr current rating
@@ -66,7 +232,7 @@ function _HPM.replicate(data::Dict{String, Any};
             
             vmmin = min(f_bus["vmin"], t_bus["vmin"])
             
-            xfmr["c_rating"] = xfmr["rateA"] / data["baseMVA"] / vmmin          # @Hakan: klopt dit
+            xfmr["c_rating"] = xfmr["rateA"] / data["baseMVA"] / vmmin        # @Hakan: klopt dit
     end end
 
     # add the thd limits based on standard, if available
@@ -101,11 +267,7 @@ function _HPM.replicate(data::Dict{String, Any};
         for load in values(ntw["load"])
             bus = ntw["bus"]["$(load["source_id"][2])"]
                 
-            if nh == 1
-                mult = haskey(bus, "nh_$nh") ? bus["nh_$nh"] : 1.0 ;
-            else
-                mult = haskey(bus, "nh_$nh") ? bus["nh_$nh"] : 1.0 ;
-            end
+            mult = haskey(bus, "nh_$nh") ? bus["nh_$nh"] : 1.0 ;
 
             haskey(load, "pd") ? load["pd"] *= mult : ~ ;
             haskey(load, "qd") ? load["qd"] *= mult : ~ ;
@@ -135,7 +297,9 @@ function _HPM.replicate(data::Dict{String, Any};
                 gen["qmin"] = -abs(gen["qmax"])
             else #is true generator
                 if nw != "1" #cost of harmonics set to 0 
-                    gen["cost"] *= 0 
+                    if haskey(gen, "cost")
+                        gen["cost"] *= 0 
+                    end
                     #harmonics can be injected/absorbed to match load 
                     gen["pmin"] = -abs(gen["pmax"])
                     gen["qmin"] = -abs(gen["qmax"])
@@ -162,9 +326,8 @@ function _HPM.replicate(data::Dict{String, Any};
                     if nh <= length(ihd_limits[std])
                         bus["ihdmax"] = ihd_limits[std][nh]
                     else
-                        println("harmonic $nh not included in $std")            # change to warn 
-            end end end 
-        end
+                        @warn "harmonic $nh not included in $std"
+        end end end end
 
         # re-evaluate the branch data 
         for branch in values(ntw["branch"])
@@ -172,6 +335,12 @@ function _HPM.replicate(data::Dict{String, Any};
             haskey(branch, "br_x") ? branch["br_x"] *= nh : ~ ;
             haskey(branch, "b_fr") ? branch["b_fr"] *= nh : ~ ;
             haskey(branch, "b_to") ? branch["b_to"] *= nh : ~ ;
+        end
+
+        # re-evaluate the gen data
+        for gen in values(ntw["gen"])
+            haskey(gen, "bsc") ? gen["bsc"] /= nh : ~ ;
+            haskey(gen, "gsc") ? gen["gsc"] /= sqrt(nh) : ~ ;
         end
 
         # re-evaluate the transformer data

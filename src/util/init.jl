@@ -4,32 +4,52 @@
 # Optimization with Power Harmonics.                                           #
 # See http://github.com/timmyfaraday/HarmonicPowerModels.jl                    #
 ################################################################################
-# Authors: Hakan Ergun                                                         #
+# Authors: Hakan Ergun, Tom Van Acker                                          #
 ################################################################################
 # Changelog:                                                                   #
-# v0.2.0 - reviewed TVA                                                        #
+# v0.2.0 -  reviewed TVA                                                       #
+# v0.2.1 -  update_hdata_with_fairness_principle_data: optimized to only build #
+#           the model once and update for each load                            #
 ################################################################################
 
 ""
-function update_hdata_with_fairness_principle_data!(hdata, model_type::Type, optimizer)
+function update_hdata_with_fairness_principle_data!(hdata, model_type::Type, hhc_optimizer)
     if hdata["principle"] == "Kalai-Smorodinsky bargaining"
+        # make a deepcopy of the hdata
+        hdata_temp = deepcopy(hdata)
+
+        # set the principle to maximum efficiency
+        hdata_temp["principle"] = "maximum efficiency"
+
+        # instantiate with all loads
+        pm = _PMs.instantiate_model(hdata_temp, model_type, build_hhc)
+    
+        # solve the maximum efficiency harmonic hosting capacity problem for 
+        # each individual load
         for (l,load) in hdata["nw"]["1"]["load"]
-            # make a deepcopy of the hdata
-            hdata_temp = deepcopy(hdata)
-
-            # set the principle to maximum efficiency
-            hdata_temp["principle"] = "maximum efficiency"
-
-            # remove all the loads except for l, for all harmonics
-            for (nw,ntw) in hdata_temp["nw"], (nl,load) in ntw["load"] if nl ≠ l
-                delete!(ntw["load"], nl)
+            for (nw,ntw) in hdata_temp["nw"], (nl,load) in ntw["load"] 
+                c_rating = load["c_rating"]
+                if nl ≠ l
+                    JuMP.set_lower_bound(_PMs.var(pm, nw, :crd, nl), 0.0)
+                    JuMP.set_upper_bound(_PMs.var(pm, nw, :crd, nl), 0.0)
+                    JuMP.set_lower_bound(_PMs.var(pm, nw, :cid, nl), 0.0)
+                    JuMP.set_upper_bound(_PMs.var(pm, nw, :cid, nl), 0.0)
+                    JuMP.set_lower_bound(_PMs.var(pm, nw, :cmd, nl), 0.0)
+                    JuMP.set_upper_bound(_PMs.var(pm, nw, :cmd, nl), 0.0)
+                else 
+                    JuMP.set_lower_bound(_PMs.var(pm, nw, :crd, nl), -c_rating)
+                    JuMP.set_upper_bound(_PMs.var(pm, nw, :crd, nl),  c_rating)
+                    JuMP.set_lower_bound(_PMs.var(pm, nw, :cid, nl), -c_rating)
+                    JuMP.set_upper_bound(_PMs.var(pm, nw, :cid, nl),  c_rating)
+                    JuMP.set_lower_bound(_PMs.var(pm, nw, :cmd, nl),  0.0)
+                    JuMP.set_upper_bound(_PMs.var(pm, nw, :cmd, nl),  c_rating)
             end end
 
             # solve the harmonic hosting capacity problem for the single load
-            results_hhc = solve_hhc(hdata_temp, model_type, optimizer)
+            results_hhc_temp = optimize_model!(pm, hhc_optimizer)
 
             # write away the solution for each network
-            for (nw,ntw) in results_hhc["solution"]["nw"] if nw ≠ "1"
+            for (nw,ntw) in results_hhc_temp["solution"]["nw"] if nw ≠ "1"
                 hdata["nw"]["$nw"]["load"]["$l"]["cmdmax"] = ntw["load"]["$l"]["cmd"]
             end end
         end
@@ -42,7 +62,7 @@ function update_hdata_with_fundamental_hpf_results!(hdata, model_type::Type, opt
     hpf_data = deepcopy(hdata)
     for n in keys(hpf_data["nw"])
         if n ≠ "1"
-            delete!(hpf_data, n)
+            delete!(hpf_data["nw"], n)
         end
     end
 
@@ -60,10 +80,16 @@ function update_hdata_with_fundamental_hpf_results!(hdata, model_type::Type, opt
         branch["cm_to"] = sqrt( hpf_results["solution"]["nw"]["1"]["branch"][b]["cr_to"]^2 
                                 + hpf_results["solution"]["nw"]["1"]["branch"][b]["ci_to"]^2)
     end
-    for (x, xfmr) in hdata["nw"]["1"]["xfmr"]
-        xfmr["ctm_fr"] = sqrt(  hpf_results["solution"]["nw"]["1"]["xfmr"][x]["crx_fr"]^2 
-                                + hpf_results["solution"]["nw"]["1"]["xfmr"][x]["cix_fr"]^2)
-        xfmr["ctm_to"] = sqrt(  hpf_results["solution"]["nw"]["1"]["xfmr"][x]["crx_to"]^2 
-                                + hpf_results["solution"]["nw"]["1"]["xfmr"][x]["cix_to"]^2)
+    for (g, gen) in hdata["nw"]["1"]["gen"]
+        gen["cm"] = sqrt(   hpf_results["solution"]["nw"]["1"]["gen"][g]["crg"]^2 
+                            + hpf_results["solution"]["nw"]["1"]["gen"][g]["cig"]^2)
+    end
+    if haskey(hdata["nw"]["1"], "xfmr")
+        for (x, xfmr) in hdata["nw"]["1"]["xfmr"]
+            xfmr["ctm_fr"] = sqrt(  hpf_results["solution"]["nw"]["1"]["xfmr"][x]["crx_fr"]^2 
+                                    + hpf_results["solution"]["nw"]["1"]["xfmr"][x]["cix_fr"]^2)
+            xfmr["ctm_to"] = sqrt(  hpf_results["solution"]["nw"]["1"]["xfmr"][x]["crx_to"]^2 
+                                    + hpf_results["solution"]["nw"]["1"]["xfmr"][x]["cix_to"]^2)
+        end
     end
 end

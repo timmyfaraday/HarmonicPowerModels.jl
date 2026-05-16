@@ -44,7 +44,7 @@
         @test isapprox(results_hpf["objective"], 0; atol = 1e0)
         @test isapprox(results_hpf["solution"]["nw"]["1"]["bus"]["2"]["vr"],  0.96628746; atol = 1e-3)
         @test isapprox(results_hpf["solution"]["nw"]["1"]["bus"]["2"]["vi"], -0.02400000; atol = 1e-3)
-        @test isapprox(results_hpf["solution"]["nw"]["3"]["bus"]["2"]["vr"],  0.03391677; atol = 1e-3)
+        @test isapprox(results_hpf["solution"]["nw"]["3"]["bus"]["2"]["vr"], -0.01608323; atol = 1e-3)
         @test isapprox(results_hpf["solution"]["nw"]["3"]["bus"]["2"]["vi"], -0.01660243; atol = 1e-3)
 
     end

@@ -8,6 +8,7 @@
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
+# v0.2.1 - reviewed TVA                                                        #
 ################################################################################
 
 module HarmonicPowerModels
@@ -17,6 +18,8 @@ module HarmonicPowerModels
 
     # import pkgs
     import JuMP
+    import MathOptInterface
+
     import PowerModels
     import InfrastructureModels
 
@@ -28,6 +31,8 @@ module HarmonicPowerModels
 
     # pkg constants 
     const _HPM = HarmonicPowerModels
+
+    const _MOI = MathOptInterface
 
     const _PMs = PowerModels
     const _IMs = InfrastructureModels
@@ -58,6 +63,7 @@ module HarmonicPowerModels
     include("prob/hpf.jl")
     include("prob/hhc.jl")
 
+    include("util/imp.jl")
     include("util/init.jl")
     include("util/ref.jl")
     include("util/sol.jl")
@@ -70,4 +76,6 @@ module HarmonicPowerModels
     export replicate
     export solve_hpf, solve_hopf, solve_hhc 
 
+    export calculate_pos_seq_harmonic_impedance
+    
 end

@@ -8,6 +8,7 @@
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed by TVA                                                     #
+# v0.2.1 - reviewed by TVA                                                     #
 ################################################################################
 
 # ref bus
@@ -16,11 +17,8 @@ function constraint_voltage_ref_bus(pm::_PMs.AbstractPowerModel, i::Int; nw::Int
     if nw == 1
         vref = 1.0
     else
-        if hasref(pm, _PMs.pm_it_sym, nw, :bus, i, "ihdmax")
-            vref = _PMs.ref(pm, nw, :bus, i, "ihdmax")
-        else
-            vref = 0.0 
-    end end
+        vref = 0.0 
+    end
 
     constraint_voltage_ref_bus(pm, nw, i, vref)
 end
@@ -55,18 +53,18 @@ function constraint_voltage_thd_limit(pm::dHHC_SOC, i::Int)
 end
 ""
 function constraint_voltage_ihd_limit(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
-    ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
-
     if nw ≠ fundamental(pm)
+        ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
+
         constraint_voltage_ihd_limit(pm, nw, i, ihdmax)
     end
 end
 ""
 function constraint_voltage_ihd_limit(pm::dHHC_SOC, i::Int; nw::Int=fundamental(pm))
-    ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
-    vmfund = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
-
     if nw ≠ fundamental(pm)
+        ihdmax = _PMs.ref(pm, nw, :bus, i, "ihdmax")
+        vmfund = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
+
         constraint_voltage_ihd_limit(pm, nw, i, ihdmax, vmfund)
     end
 end
@@ -131,8 +129,41 @@ function constraint_active_filter_current(pm::_PMs.AbstractPowerModel, f::Int)
     end
 end
 
+# gen
+""
+function constraint_gen_current(pm::_PMs.AbstractPowerModel, g::Int; nw::Int=fundamental(pm))
+    gen = _PMs.ref(pm, fundamental(pm), :gen, g)
+    bus = gen["gen_bus"]
+
+    inf = _PMs.ref(pm, nw, :gen, g, "inf")
+    
+    gsc = _PMs.ref(pm, nw, :gen, g, "gsc")
+    bsc = _PMs.ref(pm, nw, :gen, g, "bsc")
+
+    if iszero(inf) && nw ≠ fundamental
+        constraint_gen_current(pm, nw, g, bus, gsc, bsc)
+    end
+end
+""
+function constraint_gen_current_rms_limit(pm::_PMs.AbstractPowerModel, g::Int)
+    gen = _PMs.ref(pm, fundamental(pm), :gen, g)
+
+    c_rating = gen["c_rating"]
+
+    constraint_gen_current_rms_limit(pm, g, c_rating)
+end
+""
+function constraint_gen_current_rms_limit(pm::dHHC_SOC, g::Int)
+    gen = _PMs.ref(pm, fundamental(pm), :gen, g)
+    
+    cm_fund = gen["cm"]
+    c_rating = gen["c_rating"]
+
+    constraint_current_rms_limit(pm, g, c_rating, cm_fund)
+end
+
 # load
-"" # needs work towards v0.2.1
+""
 function constraint_load_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fundamental(pm))
     load = _PMs.ref(pm, nw, :load, l)
 
@@ -141,13 +172,13 @@ function constraint_load_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fu
 
     aref   = load["ref_angle"]
 
-    if nw == 1
+    if nw == fundamental(pm)
         constraint_load_constant_power(pm, nw, l, i, pd, qd)
     else
         constraint_load_current_angle(pm, nw, l, aref)
     end  
 end
-"" # needs work towards v0.2.1
+""
 function constraint_load_power(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fundamental(pm))
     load = _PMs.ref(pm, nw, :load, l)
 
@@ -208,9 +239,9 @@ function constraint_xfmr_core_current_balance(pm::_PMs.AbstractPowerModel, x::In
     tr = _PMs.ref(pm, nw, :xfmr, x, "tr")
     ti = _PMs.ref(pm, nw, :xfmr, x, "ti")
 
-    rsh = _PMs.ref(pm, nw, :xfmr, x, "rsh")
+    gsh = _PMs.ref(pm, nw, :xfmr, x, "gsh")
 
-    constraint_xfmr_core_current_balance(pm, nw, x, f_idx, t_idx, tr, ti, rsh)
+    constraint_xfmr_core_current_balance(pm, nw, x, f_idx, t_idx, tr, ti, gsh)
 end
 ""
 function constraint_xfmr_winding_config(pm::_PMs.AbstractPowerModel, x::Int; nw::Int=fundamental(pm))

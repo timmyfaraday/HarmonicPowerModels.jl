@@ -8,6 +8,7 @@
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
+# v0.2.1 - reviewed TVA                                                        #
 ################################################################################
 
 ""
@@ -24,11 +25,11 @@ function solve_hhc(hdata, model_type::Type, optimizer; kwargs...)
 end
 ""
 function solve_hhc(hdata, model_type::Type, hhc_optimizer, hpf_optimizer; kwargs...)
-    # update hdata for chosen fairness principle
-    update_hdata_with_fairness_principle_data!(hdata, dHHC_NLP, hpf_optimizer) 
-
     # solve fundamental harmonic power flow problem and update hdata
     update_hdata_with_fundamental_hpf_results!(hdata, model_type, hpf_optimizer)
+
+    # update hdata for chosen fairness principle
+    update_hdata_with_fairness_principle_data!(hdata, dHHC_SOC, hhc_optimizer) 
 
     # solve second order cone harmonic hosting capacity problem
     return _PMs.solve_model(hdata, model_type, hhc_optimizer, build_hhc; 
@@ -77,6 +78,8 @@ function build_hhc(pm::dHHC_NLP)
     end
     ### generator
     for g in ids(pm, :gen)
+        constraint_gen_current_rms_limit(pm, g)
+
         _PMs.constraint_gen_active_bounds(pm, g, nw=fundamental(pm))
         _PMs.constraint_gen_reactive_bounds(pm, g, nw=fundamental(pm))
     end
@@ -111,6 +114,11 @@ function build_hhc(pm::dHHC_NLP)
             _PMs.constraint_voltage_drop(pm, b, nw=n)
         end
 
+        ### generator
+        for g in _PMs.ids(pm, :gen, nw=n)
+            constraint_gen_current(pm, g, nw=n)
+        end
+
         ### harmonic load
         for l in _PMs.ids(pm, :load, nw=n)
             constraint_load_current(pm, l, nw = n)
@@ -131,6 +139,9 @@ end
 
 ""
 function build_hhc(pm::dHHC_SOC)
+    # add SOCtoNonConvexQuadBridge
+    JuMP.add_bridge(pm.model, _MOI.Bridges.Constraint.SOCtoNonConvexQuadBridge)
+
     # variables 
     for n in _PMs.nw_ids(pm) if n ≠ fundamental(pm)
         ## fairness variable 
@@ -147,7 +158,7 @@ function build_hhc(pm::dHHC_SOC)
         variable_xfmr_current(pm, nw=n, bounded = true)
 
         ## node current variables
-        variable_filter_current(pm, nw=n, bounded=false)
+        variable_filter_current(pm, nw=n, bounded = true)
         variable_load_current(pm, nw=n, bounded = true)
         variable_gen_current(pm, nw=n, bounded = true)
     end end
@@ -159,16 +170,16 @@ function build_hhc(pm::dHHC_SOC)
     ## overall constraints
     ### node
     for i in ids(pm, :bus)
-        constraint_voltage_rms_limit(pm, i)
-        constraint_voltage_thd_limit(pm, i)
+        # constraint_voltage_rms_limit(pm, i)
+        # constraint_voltage_thd_limit(pm, i)
     end
     ### branch
     for b in ids(pm, :branch)
-        constraint_current_rms_limit(pm, b)
+        # constraint_current_rms_limit(pm, b)
     end
     ### xfmr 
     for x in ids(pm, :xfmr)
-        constraint_xfmr_current_rms_limit(pm, x)
+        # constraint_xfmr_current_rms_limit(pm, x)
     end
 
     ## harmonic constraints
@@ -177,8 +188,10 @@ function build_hhc(pm::dHHC_SOC)
         constraint_fairness_principle(pm, nw=n)
         
         ### reference node
-        for i in _PMs.ids(pm, :ref_buses, nw=n)
-            constraint_voltage_ref_bus(pm, i, nw=n)
+        if !haskey(pm.setting, "fix_refbus_angle") || pm.setting["fix_refbus_angle"] == true 
+            for i in _PMs.ids(pm, :ref_buses, nw=n)
+                constraint_voltage_ref_bus(pm, i, nw=n)
+            end
         end
 
         ### node

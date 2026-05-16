@@ -132,7 +132,7 @@
                 u_to    = results_hhc["solution"]["nw"]["$nh"]["bus"]["$t_bus"]["vr"] + 
                           results_hhc["solution"]["nw"]["$nh"]["bus"]["$t_bus"]["vi"] * im
 
-                rsh     = xfmr["rsh"]
+                gsh     = xfmr["gsh"]
                 z       = xfmr["xsc"] * im
 
                 r_fr    = xfmr["r1"]
@@ -170,8 +170,8 @@
 
                 ## Core
                 # Kirchhoff's current law
-                # tᵛᵍₓₕ * (Iˢₓᵢⱼₕ - Īᵐₓₕ + Ēₓₕ/rˢʰₓₕ) + Iₓⱼᵢₕ = 0, ∀ xij ∈ Tˣ⁻ᶠʳ, h ∈ H 
-                @test conj(t_vg) * (cst_fr - cmt - e / rsh) + cst_to ≈ 0.0
+                # tᵛᵍₓₕ * (Iˢₓᵢⱼₕ - Īᵐₓₕ + gˢʰₓₕ * Ēₓₕ) + Iₓⱼᵢₕ = 0, ∀ xij ∈ Tˣ⁻ᶠʳ, h ∈ H 
+                @test conj(t_vg) * (cst_fr - cmt - gsh * e) + cst_to ≈ 0.0
                 # Ohm's law
                 # Vₓᵢⱼₕ - Ēₓₕ = zˢ * Iˢₓᵢⱼₕ
                 @test vt_fr - e ≈ z * cst_fr
@@ -350,7 +350,7 @@
                 u_to    = results_hhc["solution"]["nw"]["$nh"]["bus"]["$t_bus"]["vr"] + 
                           results_hhc["solution"]["nw"]["$nh"]["bus"]["$t_bus"]["vi"] * im
 
-                rsh     = xfmr["rsh"]
+                gsh     = xfmr["gsh"]
                 z       = xfmr["xsc"] * im
 
                 r_fr    = xfmr["r1"]
@@ -388,8 +388,8 @@
 
                 ## Core
                 # Kirchhoff's current law
-                # tᵛᵍₓₕ * (Iˢₓᵢⱼₕ - Īᵐₓₕ + Ēₓₕ/rˢʰₓₕ) + Iₓⱼᵢₕ = 0, ∀ xij ∈ Tˣ⁻ᶠʳ, h ∈ H 
-                @test conj(t_vg) * (cst_fr - cmt - e / rsh) + cst_to ≈ 0.0
+                # tᵛᵍₓₕ * (Iˢₓᵢⱼₕ - Īᵐₓₕ + gˢʰₓₕ * Ēₓₕ) + Iₓⱼᵢₕ = 0, ∀ xij ∈ Tˣ⁻ᶠʳ, h ∈ H 
+                @test conj(t_vg) * (cst_fr - cmt - gsh * e) + cst_to ≈ 0.0
                 # Ohm's law
                 # Vₓᵢⱼₕ - Ēₓₕ = zˢ * Iˢₓᵢⱼₕ
                 @test vt_fr - e ≈ z * cst_fr

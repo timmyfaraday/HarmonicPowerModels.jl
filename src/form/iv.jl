@@ -8,6 +8,7 @@
 ################################################################################
 # Changelog:                                                                   #
 # v0.2.0 - reviewed TVA                                                        #
+# v0.2.1 - reviewed TVA                                                        #
 ################################################################################
 
 ## variables
@@ -131,7 +132,7 @@ function constraint_voltage_ref_bus(pm::_PMs.AbstractIVRModel, n::Int, i::Int, v
     vr = _PMs.var(pm, n, :vr, i)
     vi = _PMs.var(pm, n, :vi, i)
 
-    JuMP.@constraint(pm.model, vr == vref)
+    JuMP.@constraint(pm.model, vr == vref) 
     JuMP.@constraint(pm.model, vi == 0.0)
 end
 
@@ -222,11 +223,11 @@ function constraint_current_rms_limit(pm::_PMs.AbstractIVRModel, f_idx, t_idx, c
     crf =  [_PMs.var(pm, n, :cr, f_idx) for n in sorted_nw_ids(pm)]
     cif =  [_PMs.var(pm, n, :ci, f_idx) for n in sorted_nw_ids(pm)]
 
-    crx =  [_PMs.var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm)]
-    cix =  [_PMs.var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm)]
+    crt =  [_PMs.var(pm, n, :cr, t_idx) for n in sorted_nw_ids(pm)]
+    cit =  [_PMs.var(pm, n, :ci, t_idx) for n in sorted_nw_ids(pm)]
 
     JuMP.@constraint(pm.model, sum(crf.^2 + cif.^2) <= c_rating^2)
-    JuMP.@constraint(pm.model, sum(crx.^2 + cix.^2) <= c_rating^2)
+    JuMP.@constraint(pm.model, sum(crt.^2 + cit.^2) <= c_rating^2)
 end
 ""
 function constraint_current_rms_limit(pm::dHHC_SOC, f_idx, t_idx, c_rating, cm_fund_fr, cm_fund_to)
@@ -253,7 +254,7 @@ function constraint_fairness_principle(pm::_PMs.AbstractIVRModel, n, load_ids)
         cmd = [_PMs.var(pm, n, :cmd, l) for l in load_ids]
 
         for l in load_ids[2:end]
-            JuMP.@constraint(pm.model, cmd[first(load_ids)] .== cmd[l])
+            JuMP.@constraint(pm.model, cmd[first(load_ids)] == cmd[l]) ## is this correct
     end end
 
     # maximin
@@ -299,8 +300,35 @@ function constraint_active_filter_current(pm::_PMs.AbstractIVRModel, f, i)
                     )
 end
 
+# generator
+""
+function constraint_gen_current(pm::_PMs.AbstractIVRModel, n::Int, g, i, gsc, bsc)
+    vr = _PMs.var(pm, n, :vr, i)
+    vi = _PMs.var(pm, n, :vi, i)
+
+    crg = _PMs.var(pm, n, :crg, g)
+    cig = _PMs.var(pm, n, :cig, g)
+
+    JuMP.@constraint(pm.model, crg == gsc*vr - bsc*vi)
+    JuMP.@constraint(pm.model, cig == gsc*vi + bsc*vr)
+end
+""
+function constraint_gen_current_rms_limit(pm::_PMs.AbstractIVRModel, g, c_rating)
+    crg =  [_PMs.var(pm, n, :crg, g) for n in sorted_nw_ids(pm)]
+    cig =  [_PMs.var(pm, n, :cig, g) for n in sorted_nw_ids(pm)]
+
+    JuMP.@constraint(pm.model, sum(crg.^2 + cig.^2) <= c_rating^2)
+end
+""
+function constraint_gen_current_rms_limit(pm::dHHC_SOC, g, c_rating, cm_fund)
+    crg =  [_PMs.var(pm, n, :crg, g) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+    cig =  [_PMs.var(pm, n, :cig, g) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
+
+    JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund^2); vcat(crg, cig)] in JuMP.SecondOrderCone())
+end
+
 # load
-"" # needs work towards v0.2.1
+""
 function constraint_load_constant_power(pm::_PMs.AbstractIVRModel, n::Int, l, i, pd, qd)
     vr = _PMs.var(pm, n, :vr, i)
     vi = _PMs.var(pm, n, :vi, i)
@@ -310,25 +338,25 @@ function constraint_load_constant_power(pm::_PMs.AbstractIVRModel, n::Int, l, i,
     JuMP.@constraint(pm.model, pd == vr*crd  + vi*cid)
     JuMP.@constraint(pm.model, qd == vi*crd  - vr*cid)
 end
-"" # needs work towards v0.2.1
+""
 function constraint_load_current_angle(pm::_PMs.AbstractIVRModel, n::Int, l, aref)
     crd = _PMs.var(pm, n, :crd, l)
     cid = _PMs.var(pm, n, :cid, l)
     cmd = _PMs.var(pm, n, :cmd, l)
 
-    JuMP.@constraint(pm.model, cmd * sin(aref) == cid)
-    JuMP.@constraint(pm.model, cmd * cos(aref) == crd)
+    JuMP.@constraint(pm.model, cmd * sind(aref) == cid)
+    JuMP.@constraint(pm.model, cmd * cosd(aref) == crd)
 end
-"" # needs work towards v0.2.1
+""
 function constraint_load_current_angle(pm::dHHC_SOC, n::Int, l, aref)
     crd = _PMs.var(pm, n, :crd, l)
     cid = _PMs.var(pm, n, :cid, l)
     cmd = _PMs.var(pm, n, :cmd, l)
 
-    JuMP.@constraint(pm.model, cmd * sin(aref) == cid)
-    JuMP.@constraint(pm.model, cmd * cos(aref) == crd)
+    JuMP.@constraint(pm.model, cmd * sind(aref) == cid)
+    JuMP.@constraint(pm.model, cmd * cosd(aref) == crd)
 end
-"" # needs work towards v0.2.1
+""
 function constraint_load_constant_current(pm::_PMs.AbstractIVRModel, n::Int, l, mult)
     crd = _PMs.var(pm, n, :crd, l)
     cid = _PMs.var(pm, n, :cid, l)
@@ -401,15 +429,15 @@ function constraint_xfmr_core_voltage_phase_shift(pm::_PMs.AbstractIVRModel, n::
 end
 """
 first principles: conj(tₓᵢⱼ) * iₓᵢⱼ + iₓⱼᵢ = 0
-conj(tₓᵢⱼₕ) * (iˢₓᵢⱼₕ - iᵐₓₕ - eₓₕ / rˢʰₓₕ) + iₓⱼᵢₕ = 0
-(tʳₓᵢⱼₕ - j tⁱₓᵢⱼₕ) * (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ + j (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ)) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
-tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + j tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) - j tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) - j² tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
-tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + j tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) - j tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
+conj(tₓᵢⱼₕ) * (iˢₓᵢⱼₕ - iᵐₓₕ - eₓₕ) + iₓⱼᵢₕ = 0
+(tʳₓᵢⱼₕ - j tⁱₓᵢⱼₕ) * (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ + j (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ)) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
+tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) + j tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) - j tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) - j² tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
+tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) + j tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) - j tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) + tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) + iˢ⁻ʳₓⱼᵢₕ + j iˢ⁻ⁱₓⱼᵢₕ = 0
 
-Re: tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) + iˢ⁻ʳₓⱼᵢₕ = 0
-Im: tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ - eⁱₓₕ / rˢʰₓₕ) - tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ - eʳₓₕ / rˢʰₓₕ) + iˢ⁻ⁱₓⱼᵢₕ = 0
+Re: tʳₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) + tⁱₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) + iˢ⁻ʳₓⱼᵢₕ = 0
+Im: tʳₓᵢⱼₕ (iˢ⁻ⁱₓᵢⱼₕ - iᵐ⁻ⁱₓₕ -  gˢʰₓₕ * eⁱₓₕ) - tⁱₓᵢⱼₕ (iˢ⁻ʳₓᵢⱼₕ - iᵐ⁻ʳₓₕ -  gˢʰₓₕ * eʳₓₕ) + iˢ⁻ⁱₓⱼᵢₕ = 0
 """
-function constraint_xfmr_core_current_balance(pm::_PMs.AbstractIVRModel, n::Int, x, f_idx, t_idx, tr, ti, rsh)
+function constraint_xfmr_core_current_balance(pm::_PMs.AbstractIVRModel, n::Int, x, f_idx, t_idx, tr, ti, gsh)
     cmrx = _PMs.var(pm, n, :cmrx, x)
     cmix = _PMs.var(pm, n, :cmix, x)
 
@@ -422,14 +450,14 @@ function constraint_xfmr_core_current_balance(pm::_PMs.AbstractIVRModel, n::Int,
     erx = _PMs.var(pm, n, :erx, x)
     eix = _PMs.var(pm, n, :eix, x)
 
-    JuMP.@constraint(pm.model,  tr * (csrx_fr - cmrx - erx / rsh)
-                                + ti * (csix_fr - cmix - eix / rsh)
+    JuMP.@constraint(pm.model,  tr * (csrx_fr - cmrx - gsh * erx)
+                                + ti * (csix_fr - cmix - gsh * eix)
                                 + csrx_to 
                                     == 
                                 0.0
                     )
-    JuMP.@constraint(pm.model,  tr * (csix_fr - cmix - eix / rsh)
-                                - ti * (csrx_fr - cmrx - erx / rsh)
+    JuMP.@constraint(pm.model,  tr * (csix_fr - cmix - gsh * eix)
+                                - ti * (csrx_fr - cmrx - gsh * erx)
                                 + csix_to
                                     == 
                                 0.0
