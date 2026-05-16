@@ -59,6 +59,7 @@ module HarmonicPowerModels
     include("core/data.jl")
     include("core/variable.jl")
     include("core/pce.jl")
+    include("core/data_pce.jl")
 
     include("form/iv.jl")
 
