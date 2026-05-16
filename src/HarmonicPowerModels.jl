@@ -25,6 +25,7 @@ module HarmonicPowerModels
 
     import SignalDecomposition
     import Interpolations
+    import PolyChaos
     
     # import function to overwrite
     import InfrastructureModels: replicate
@@ -39,6 +40,7 @@ module HarmonicPowerModels
     
     const _SDC = SignalDecomposition
     const _INT = Interpolations
+    const _PCE = PolyChaos
 
     # const 
     const freq = 50.0
@@ -56,6 +58,7 @@ module HarmonicPowerModels
     include("core/constraint_template.jl")
     include("core/data.jl")
     include("core/variable.jl")
+    include("core/pce.jl")
 
     include("form/iv.jl")
 
