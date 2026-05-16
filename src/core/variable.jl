@@ -460,3 +460,101 @@ function variable_load_current_magnitude(pm::_PMs.AbstractPowerModel; nw::Int=fu
 
     report && _PMs.sol_component_value(pm, nw, :load, :cmd, _PMs.ids(pm, nw, :load), cmd)
 end
+
+# ── PCE variable declarations (sHHC) ─────────────────────────────────────────
+
+# 5.3a
+""
+function variable_bus_voltage_pce(pm::AbstractSHHCModel, nw::Int)
+    # existing: variable_bus_voltage_real(pm::AbstractPowerModel; nw, bounded, report)
+    #           variable_bus_voltage_imaginary(pm::AbstractPowerModel; nw, bounded, report)
+    is_mean = _PMs.ref(pm, nw)["is_mean_mode"]
+    variable_bus_voltage_real(pm; nw=nw, bounded=is_mean)
+    variable_bus_voltage_imaginary(pm; nw=nw, bounded=is_mean)
+end
+
+# 5.3b
+""
+function variable_voltage_squared_pce(pm::AbstractSHHCModel, nw::Int)
+    # existing: variable_bus_voltage_real(pm::AbstractPowerModel; nw, bounded, report)
+    is_mean = _PMs.ref(pm, nw)["is_mean_mode"]
+    xi = _PMs.var(pm, nw)[:xi] = JuMP.@variable(pm.model,
+        [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_xi",
+        start = 0.0
+    )
+    if is_mean
+        for (i, _) in _PMs.ref(pm, nw, :bus)
+            JuMP.set_lower_bound(xi[i], 0.0)
+        end
+    end
+end
+
+# 5.3c
+""
+function variable_hosting_capacity_pce(pm::AbstractSHHCModel, nw::Int)
+    # existing: variable_load_current_magnitude(pm::AbstractPowerModel; nw, bounded, report)
+    _PMs.ref(pm, nw)["is_mean_mode"] || return
+    cmd = _PMs.var(pm, nw)[:cmd] = JuMP.@variable(pm.model,
+            [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_cmd",
+            start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "cmd_start", 0.0)
+    )
+    for (d, load) in _PMs.ref(pm, nw, :load)
+        c_rating = load["c_rating"]
+        JuMP.set_lower_bound(cmd[d], 0.0)
+        JuMP.set_upper_bound(cmd[d], c_rating)
+    end
+    _PMs.sol_component_value(pm, nw, :load, :cmd, _PMs.ids(pm, nw, :load), cmd)
+end
+
+# 5.3d
+""
+function variable_fairness_pce(pm::AbstractSHHCModel, nw::Int)
+    # existing: variable_fairness_principle(pm::AbstractPowerModel; nw, bounded, report)
+    _PMs.ref(pm, nw)["is_mean_mode"] || return
+
+    if pm.data["principle"] == "maximum efficiency"
+        # no additional variables
+    end
+
+    if pm.data["principle"] == "absolute equality"
+        # no additional variables
+    end
+
+    if pm.data["principle"] == "maximin"
+        cmh = _PMs.var(pm, nw)[:cmh] = JuMP.@variable(pm.model, base_name="$(nw)_cmh",
+                start = 0.0
+        )
+        JuMP.set_lower_bound(cmh, 0.0)
+        _PMs.sol(pm, nw, :fairness)[:cmh] = cmh
+    end
+
+    if pm.data["principle"] == "Kalai-Smorodinsky bargaining"
+        fh = _PMs.var(pm, nw)[:fh] = JuMP.@variable(pm.model, base_name="$(nw)_fh",
+                start = 0.0
+        )
+        JuMP.set_lower_bound(fh, 0.0)
+        JuMP.set_upper_bound(fh, 1.0)
+        _PMs.sol(pm, nw, :fairness)[:fh] = fh
+    end
+end
+
+# 5.3e
+""
+function variable_chance_constraint_slack(pm::AbstractSHHCModel, nw::Int)
+    # existing: variable_load_current_magnitude(pm::AbstractPowerModel; nw, bounded, report)
+    _PMs.ref(pm, nw)["is_mean_mode"] || return
+    sigma_ihd = _PMs.var(pm, nw)[:sigma_ihd] = JuMP.@variable(pm.model,
+        [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_sigma_ihd",
+        start = 0.0
+    )
+    for (i, _) in _PMs.ref(pm, nw, :bus)
+        JuMP.set_lower_bound(sigma_ihd[i], 0.0)
+    end
+    sigma_thd = _PMs.var(pm, nw)[:sigma_thd] = JuMP.@variable(pm.model,
+        [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_sigma_thd",
+        start = 0.0
+    )
+    for (i, _) in _PMs.ref(pm, nw, :bus)
+        JuMP.set_lower_bound(sigma_thd[i], 0.0)
+    end
+end

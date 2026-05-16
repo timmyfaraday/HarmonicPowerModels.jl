@@ -20,3 +20,13 @@ mutable struct dHHC_NLP <: _PMs.AbstractIVRModel _PMs.@pm_fields end
 Deterministic Harmonic Hosting Capacity (SOC)
 """
 mutable struct dHHC_SOC <: _PMs.AbstractIVRModel _PMs.@pm_fields end
+
+"""
+Abstract Stochastic Harmonic Hosting Capacity model
+"""
+abstract type AbstractSHHCModel <: _PMs.AbstractIVRModel end
+
+"""
+Stochastic Harmonic Hosting Capacity (SOC, PCE)
+"""
+mutable struct sHHC_SOC <: AbstractSHHCModel _PMs.@pm_fields end

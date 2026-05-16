@@ -76,6 +76,7 @@ module HarmonicPowerModels
     # export
     export BASE_DIR
     export dHHC_NLP, dHHC_SOC
+    export AbstractSHHCModel, sHHC_SOC
 
     export replicate
     export solve_hpf, solve_hopf, solve_hhc 
