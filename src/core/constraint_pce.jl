@@ -138,50 +138,7 @@ function constraint_chance_thd(
         <= (limit_sq - xi_mean_sum)^2)
 end
 
-# ── 6.6: Galerkin projection for bus injection current squared ────────────────
-# Exact equality: J_bus_k == Σ_{k1,k2} T[k1,k2,k]·(IR_{k1}·IR_{k2} + II_{k1}·II_{k2})
-
-function constraint_pce_soc_current(
-    pm          :: AbstractSHHCModel,
-    pce         :: PCEData,
-    nw          :: Int,
-    h_idx       :: Int,
-    :: Int
-)
-    k = get_pce_mode(nw, pce.P_size)
-    for n_id in _PMs.ids(pm, nw, :bus)
-        J_k           = _PMs.var(pm, nw, :J_bus)[n_id]
-        bus_arcs      = _PMs.ref(pm, nw, :bus_arcs, n_id)
-        bus_arcs_xfmr = _PMs.ref(pm, nw, :bus_arcs_xfmr, n_id)
-
-        expr = JuMP.QuadExpr()
-        for k1 in 0:pce.deg, k2 in 0:pce.deg
-            m_val = pce.T[k1+1, k2+1, k+1]
-            abs(m_val) < 1e-14 && continue
-            nw1 = nw_id(h_idx, k1, pce.P_size)
-            nw2 = nw_id(h_idx, k2, pce.P_size)
-
-            IR_1 = JuMP.AffExpr(0.0)
-            for a in bus_arcs;       JuMP.add_to_expression!(IR_1, _PMs.var(pm, nw1, :cr,  a)) end
-            for t in bus_arcs_xfmr;  JuMP.add_to_expression!(IR_1, _PMs.var(pm, nw1, :crx, t)) end
-            IR_2 = JuMP.AffExpr(0.0)
-            for a in bus_arcs;       JuMP.add_to_expression!(IR_2, _PMs.var(pm, nw2, :cr,  a)) end
-            for t in bus_arcs_xfmr;  JuMP.add_to_expression!(IR_2, _PMs.var(pm, nw2, :crx, t)) end
-            II_1 = JuMP.AffExpr(0.0)
-            for a in bus_arcs;       JuMP.add_to_expression!(II_1, _PMs.var(pm, nw1, :ci,  a)) end
-            for t in bus_arcs_xfmr;  JuMP.add_to_expression!(II_1, _PMs.var(pm, nw1, :cix, t)) end
-            II_2 = JuMP.AffExpr(0.0)
-            for a in bus_arcs;       JuMP.add_to_expression!(II_2, _PMs.var(pm, nw2, :ci,  a)) end
-            for t in bus_arcs_xfmr;  JuMP.add_to_expression!(II_2, _PMs.var(pm, nw2, :cix, t)) end
-
-            JuMP.add_to_expression!(expr, m_val * IR_1 * IR_2)
-            JuMP.add_to_expression!(expr, m_val * II_1 * II_2)
-        end
-        JuMP.@constraint(pm.model, expr == J_k)
-    end
-end
-
-# ── 6.7: Galerkin projection for branch current squared ───────────────────────
+# ── 6.6: Galerkin projection for branch current squared ───────────────────────
 # Exact equality: J_branch_k == Σ_{k1,k2} T[k1,k2,k]·(CR_{k1}·CR_{k2} + CI_{k1}·CI_{k2})
 
 function constraint_pce_soc_branch_current(

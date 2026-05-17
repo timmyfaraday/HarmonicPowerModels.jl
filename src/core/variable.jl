@@ -540,22 +540,7 @@ end
 
 # 5.3e — sigma variables removed; chance constraints now use the squared Cantelli form directly.
 
-# 5.3f - Lifted squared bus injection current per PCE mode
-""
-function variable_bus_injection_current_squared_pce(pm::AbstractSHHCModel, nw::Int)
-    is_mean = pm.data["nw"]["$nw"]["is_mean_mode"]
-    J_bus = _PMs.var(pm, nw)[:J_bus] = JuMP.@variable(pm.model,
-        [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_J_bus",
-        start = 0.0
-    )
-    if is_mean
-        for (i, _) in _PMs.ref(pm, nw, :bus)
-            JuMP.set_lower_bound(J_bus[i], 0.0)
-        end
-    end
-end
-
-# 5.3g - Lifted squared branch current per PCE mode
+# 5.3f - Lifted squared branch current per PCE mode
 ""
 function variable_branch_current_squared_pce(pm::AbstractSHHCModel, nw::Int)
     is_mean = pm.data["nw"]["$nw"]["is_mean_mode"]

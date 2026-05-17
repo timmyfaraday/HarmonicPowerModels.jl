@@ -78,8 +78,6 @@ function build_shhc_soc!(pm::AbstractSHHCModel)
         variable_bus_voltage_pce(pm, nw)
         # Squared voltage magnitude per PCE mode (:xi, lb=0 only for mean mode).
         variable_voltage_squared_pce(pm, nw)
-        # Lifted squared bus injection current per PCE mode (:J_bus).
-        variable_bus_injection_current_squared_pce(pm, nw)
         # Lifted squared branch current per PCE mode (:J_branch).
         variable_branch_current_squared_pce(pm, nw)
 
@@ -158,7 +156,6 @@ function build_shhc_soc!(pm::AbstractSHHCModel)
         # PCE SOC constraints for non-fundamental harmonics only.
         if h_idx ≠ fundamental(pm)
             constraint_pce_soc_voltage(pm, pce, nw, h_idx, n_harm)
-            constraint_pce_soc_current(pm, pce, nw, h_idx, n_harm)
             constraint_pce_soc_branch_current(pm, pce, nw, h_idx, n_harm)
         end
     end
