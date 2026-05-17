@@ -1,26 +1,28 @@
 name = "HarmonicPowerModels"
 uuid = "56365af1-a032-4c1d-861b-3c9f15bdb54e"
-authors = ["Hakan Ergun", "Frederik Geth", "Tom Van Acker"]
 version = "0.2.1"
+authors = ["Hakan Ergun", "Frederik Geth", "Tom Van Acker"]
 
 [deps]
 InfrastructureModels = "2030c09a-7f63-5d83-885d-db604e0e9cc0"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
 MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
+PolyChaos = "8d666b04-775d-5f6e-b778-5ac7c70f65a3"
 PowerModels = "c36e90e8-916a-50a6-bd94-075b64ef4655"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 SignalDecomposition = "11a47235-7b84-4c7c-b885-fc3e2a9cf955"
 
 [compat]
 InfrastructureModels = "~0.6, ~0.7"
-Interpolations = "0.15"
+Interpolations = "0.15, 0.16"
 JuMP = "1.23"
 MathOptInterface = "1.31"
+PolyChaos = "1.1.0"
 PowerModels = "0.21"
 ProgressMeter = "1.10.0"
 SignalDecomposition = "1.1"
-julia = "1.9"
+julia = "1.12"
 
 [extras]
 Clarabel = "61c947e1-3e6d-4ee4-985a-eec8c727bd6e"

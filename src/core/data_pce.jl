@@ -17,6 +17,7 @@
 nw_id(h_idx::Int, k::Int, P_size::Int)     = (h_idx - 1) * P_size + k + 1
 get_pce_mode(nw::Int, P_size::Int)         = (nw - 1) % P_size
 get_harmonic_idx(nw::Int, P_size::Int)     = div(nw - 1, P_size) + 1
+harmonic_from_nw(pm, nw::Int)              = pm.data["nw"]["$nw"]["harmonic_idx"]
 
 # ── Input validation ─────────────────────────────────────────────────────────
 
@@ -58,7 +59,8 @@ function compute_lambda!(data::Dict, ::PCEData)
                 end
                 n_data["harmonic_sdata"][h_str] = Dict(
                     "lambda_ihd" => λ,
-                    "lambda_thd" => λ
+                    "lambda_thd" => λ,
+                    "lambda_rms" => λ
                 )
             end
         end
@@ -72,7 +74,8 @@ function compute_lambda!(data::Dict, ::PCEData)
                     b_data["harmonic_sdata"] = Dict()
                 end
                 b_data["harmonic_sdata"][string(h)] = Dict(
-                    "lambda_current" => λ
+                    "lambda_current"     => λ,
+                    "lambda_rms_current" => λ
                 )
             end
         end
@@ -115,7 +118,8 @@ function build_mn_pce_data(data::Dict, pce::PCEData;
         "pce"          => pce,
         "P_size"       => pce.P_size,
         "n_harmonics"  => n_harm,
-        "nw"           => Dict{String, Any}()
+        "nw"           => Dict{String, Any}(),
+        "sdata"        => data["sdata"],  # preserve lambda and other stochastic metadata
     )
 
     # Copy top-level non-nw keys from mn_harm.

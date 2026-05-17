@@ -412,6 +412,35 @@ The following facts, discovered from reading the actual source, are non-obvious 
 
 ---
 
+## DETERMINISTIC EQUATION MAPPING (Appendix A, updated paper)
+
+Mapping from equation numbers in [1] to implementation functions.  
+"Updated Eqs." refers to the numbering in the revised Appendix A (Eqs. 44–75).
+
+| Updated Eqs. | Description | Function | File |
+|---|---|---|---|
+| (44)–(45) | Objective: max hosting capacity | `objective_maximum_hosting_capacity` | `form/iv.jl` |
+| (46)–(47) | Reference bus voltage | `constraint_voltage_ref_bus` | `form/iv.jl:131` |
+| (48)–(49) | KCL — current balance | `constraint_current_balance` | `form/iv.jl:184` |
+| (50)–(51) | KVL — voltage drop | `_PMs.constraint_voltage_drop` | PowerModels |
+| (52)–(53) | Branch current from/to | `_PMs.constraint_current_from/to` | PowerModels |
+| (54)–(55) | Xfmr core voltage drop | `constraint_xfmr_core_voltage_drop` | `form/iv.jl:397` |
+| (56)–(57) | Xfmr core current balance | `constraint_xfmr_core_current_balance` | `form/iv.jl:440` |
+| (58)–(59) | Xfmr core voltage phase shift | `constraint_xfmr_core_voltage_phase_shift` | `form/iv.jl:420` |
+| (60)–(61) | Xfmr winding current balance | `constraint_xfmr_winding_current_balance` | `form/iv.jl:496` |
+| (62)–(65) | Xfmr winding config | `constraint_xfmr_winding_config` | `form/iv.jl:467` |
+| (66)–(67) | PCE angle-to-rectangular | `constraint_pce_angle_to_rectangular` | `constraint_pce.jl:17` |
+| (68)–(69) | Load constant power (fundamental) | `constraint_load_constant_power` | `form/iv.jl:332` |
+| (70) bus | PCE SOC bus injection current | `constraint_pce_soc_current` | `constraint_pce.jl` |
+| (70) branch | PCE SOC branch current | `constraint_pce_soc_branch_current` | `constraint_pce.jl` |
+| (71) | PCE SOC voltage magnitude | `constraint_pce_soc_voltage` | `constraint_pce.jl:53` |
+| (72) | RMS voltage chance constraint | `constraint_chance_rms_voltage` | `constraint_pce.jl` |
+| (73) | THD chance constraint | `constraint_chance_thd` | `constraint_pce.jl:116` |
+| (74) | IHD chance constraint | `constraint_chance_ihd` | `constraint_pce.jl:85` |
+| (75) | RMS branch current chance constraint | `constraint_chance_rms_current` | `constraint_pce.jl` |
+
+---
+
 ## REQUIRED FIXES (identified during sHHC-PCE development)
 
 ### RF-1: `is_zero_sequence` / `is_pos_sequence` / `is_neg_sequence` break in PCE-expanded multi-network
@@ -422,7 +451,7 @@ The following facts, discovered from reading the actual source, are non-obvious 
 
 **Required fix:** Add a helper `harmonic_from_nw(pm, nw)` that reads `ref(pm, nw)["harmonic_idx"]` (stored by `build_mn_pce_data`) and returns the true harmonic number. Replace `is_zero_sequence(n)` calls in these two functions with `is_zero_sequence(harmonic_from_nw(pm, n))`, or add `AbstractSHHCModel`-dispatched overloads.
 
-**Status:** Not yet fixed. The sHHC_SOC build function must not call `constraint_xfmr_winding_config` or `constraint_xfmr_winding_current_balance` until this fix is applied.
+**Status:** Fixed. Added `constraint_xfmr_winding_config(pm::AbstractSHHCModel, ...)` and `constraint_xfmr_winding_current_balance(pm::AbstractSHHCModel, ...)` dispatches in `src/form/iv.jl` that use `h = harmonic_from_nw(pm, n)` for `is_zero_sequence(h)`.
 
 ### RF-2: `constraint_gen_current` compares `nw::Int` to the function `fundamental` (not its return value)
 

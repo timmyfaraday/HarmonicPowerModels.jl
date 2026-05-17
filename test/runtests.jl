@@ -36,10 +36,11 @@ solver_soc = JuMP.optimizer_with_attributes(Clarabel.Optimizer, "verbose" => 0)
 PMs.silence()
 
 @testset "HarmonicPowerModels.jl" begin
-    
+
     # models
     include("hhc.jl")
     include("hpf.jl")
     include("hopf.jl")
+    include("test_shhc_soc.jl")
 
 end

@@ -33,7 +33,7 @@ function solve_shhc_soc(data::Dict, optimizer;
     check_shhc_data(data)
 
     # Default fairness principle to maximum efficiency if not specified.
-    haskey(data, "principle") || (data["principle"] = "maximum efficiency")
+    haskey(data, "principle") || (data["principle"] = "absolute equality")
 
     α   = Float64(data["sdata"]["alpha"])
     β   = Float64(data["sdata"]["beta"])
@@ -53,8 +53,6 @@ end
 # ── Model builder ─────────────────────────────────────────────────────────────
 
 function build_shhc_soc!(pm::AbstractSHHCModel)
-    JuMP.add_bridge(pm.model, _MOI.Bridges.Constraint.SOCtoNonConvexQuadBridge)
-
     pce    = pm.data["pce"]
     n_harm = pm.data["n_harmonics"]
 
@@ -70,11 +68,20 @@ function build_shhc_soc!(pm::AbstractSHHCModel)
     # ── Variable declarations ──────────────────────────────────────────────
     for nw in _PMs.nw_ids(pm)
         nw_data = pm.data["nw"]["$nw"]
+        h_idx   = nw_data["harmonic_idx"]
+        k       = nw_data["pce_mode"]
+
+        # Fundamental is deterministic: skip h=1 higher PCE modes (k>0).
+        h_idx == fundamental(pm) && k > 0 && continue
 
         # Bus voltage with PCE-aware bounding (:vr, :vi bounded only for mean mode).
         variable_bus_voltage_pce(pm, nw)
         # Squared voltage magnitude per PCE mode (:xi, lb=0 only for mean mode).
         variable_voltage_squared_pce(pm, nw)
+        # Lifted squared bus injection current per PCE mode (:J_bus).
+        variable_bus_injection_current_squared_pce(pm, nw)
+        # Lifted squared branch current per PCE mode (:J_branch).
+        variable_branch_current_squared_pce(pm, nw)
 
         # Standard network-element variables (same as dHHC_SOC).
         variable_xfmr_voltage(pm,  nw=nw, bounded=true)
@@ -84,25 +91,27 @@ function build_shhc_soc!(pm::AbstractSHHCModel)
         variable_gen_current(pm,    nw=nw, bounded=true)
 
         # Load real/imaginary currents declared for every PCE mode.
-        # :cmd (budget) is declared only for mean-mode via variable_hosting_capacity_pce.
         variable_load_current_real(pm,      nw=nw, bounded=true)
         variable_load_current_imaginary(pm, nw=nw, bounded=true)
 
-        if nw_data["is_mean_mode"]
+        # Harmonic mean-mode only: hosting-capacity budget and fairness.
+        if nw_data["is_mean_mode"] && h_idx ≠ fundamental(pm)
             variable_hosting_capacity_pce(pm, nw)    # :cmd
             variable_fairness_pce(pm, nw)            # :cmh or :fh per principle
-            variable_chance_constraint_slack(pm, nw) # :sigma_ihd, :sigma_thd
         end
     end
 
     # ── Objective ─────────────────────────────────────────────────────────
-    # objective_maximum_hosting_capacity (AUDIT.md G / form/iv.jl)
     objective_maximum_hosting_capacity(pm)
 
-    # ── Per-network linear constraints ────────────────────────────────────
+    # ── Per-network constraints ────────────────────────────────────────────
     for nw in _PMs.nw_ids(pm)
         nw_data = pm.data["nw"]["$nw"]
         h_idx   = nw_data["harmonic_idx"]
+        k       = nw_data["pce_mode"]
+
+        # Fundamental is deterministic: skip h=1 higher PCE modes (k>0).
+        h_idx == fundamental(pm) && k > 0 && continue
 
         # Reference bus.
         if !haskey(pm.setting, "fix_refbus_angle") ||
@@ -129,15 +138,14 @@ function build_shhc_soc!(pm::AbstractSHHCModel)
             constraint_gen_current(pm, g, nw=nw)
         end
 
-        # Transformer core constraints.
-        # NOTE: constraint_xfmr_winding_config and constraint_xfmr_winding_current_balance
-        # are omitted until RF-1 in AUDIT.md is resolved (is_zero_sequence breaks under
-        # the PCE-expanded nw encoding).
+        # Transformer core and winding constraints (RF-1 resolved via AbstractSHHCModel dispatch).
         for x in _PMs.ids(pm, :xfmr, nw=nw)
             constraint_xfmr_core_magnetization(pm, x, nw=nw)
             constraint_xfmr_core_voltage_drop(pm, x, nw=nw)
             constraint_xfmr_core_voltage_phase_shift(pm, x, nw=nw)
             constraint_xfmr_core_current_balance(pm, x, nw=nw)
+            constraint_xfmr_winding_config(pm, x, nw=nw)
+            constraint_xfmr_winding_current_balance(pm, x, nw=nw)
         end
 
         # Fundamental mean-mode: fix load to constant power (as in dHHC_SOC).
@@ -147,8 +155,12 @@ function build_shhc_soc!(pm::AbstractSHHCModel)
             end
         end
 
-        # PCE SOC voltage magnitude (replaces per-harmonic IHD voltage limit).
-        constraint_pce_soc_voltage(pm, pce, nw, h_idx, n_harm)
+        # PCE SOC constraints for non-fundamental harmonics only.
+        if h_idx ≠ fundamental(pm)
+            constraint_pce_soc_voltage(pm, pce, nw, h_idx, n_harm)
+            constraint_pce_soc_current(pm, pce, nw, h_idx, n_harm)
+            constraint_pce_soc_branch_current(pm, pce, nw, h_idx, n_harm)
+        end
     end
 
     # ── Fairness principle constraints (mean-mode networks only) ──────────
@@ -158,7 +170,6 @@ function build_shhc_soc!(pm::AbstractSHHCModel)
     end
 
     # ── Angle-to-rectangular: couple :cmd budget to all PCE modes ─────────
-    # Applied only to non-fundamental harmonics (:load component, AUDIT.md H).
     for h_idx in h_harm
         nw_0 = nw_id(h_idx, 0, pce.P_size)
         for u_id in _PMs.ids(pm, :load, nw=nw_0)
@@ -166,13 +177,25 @@ function build_shhc_soc!(pm::AbstractSHHCModel)
         end
     end
 
-    # ── Chance constraints per bus ────────────────────────────────────────
-    isempty(h_indices) && return
-    nw_0_ref = nw_id(h_indices[1], 0, pce.P_size)
+    # ── Chance constraints ────────────────────────────────────────────────
+    isempty(h_harm) && return
+    nw_0_ref = nw_id(h_harm[1], 0, pce.P_size)
+
+    # Reference buses have harmonic voltages fixed to zero by constraint_voltage_ref_bus,
+    # so the IHD/THD/RMS constraints are trivially satisfied and degenerate there.
+    # Skipping them removes the LICQ failure that prevents Ipopt from converging.
+    ref_bus_ids = Set(_PMs.ids(pm, :ref_buses, nw=nw_0_ref))
+
     for n_id in _PMs.ids(pm, :bus, nw=nw_0_ref)
+        n_id in ref_bus_ids && continue
         for h_idx in h_harm
             constraint_chance_ihd(pm, pce, h_idx, n_id, n_harm)
         end
-        isempty(h_harm) || constraint_chance_thd(pm, pce, h_harm, n_id, n_harm)
+        constraint_chance_thd(pm, pce, h_harm, n_id, n_harm)
+        constraint_chance_rms_voltage(pm, pce, h_harm, n_id, n_harm)
+    end
+
+    for b_id in _PMs.ids(pm, :branch, nw=nw_0_ref)
+        constraint_chance_rms_current(pm, pce, h_harm, b_id, n_harm)
     end
 end

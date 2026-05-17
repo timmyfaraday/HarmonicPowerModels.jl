@@ -468,7 +468,7 @@ end
 function variable_bus_voltage_pce(pm::AbstractSHHCModel, nw::Int)
     # existing: variable_bus_voltage_real(pm::AbstractPowerModel; nw, bounded, report)
     #           variable_bus_voltage_imaginary(pm::AbstractPowerModel; nw, bounded, report)
-    is_mean = _PMs.ref(pm, nw)["is_mean_mode"]
+    is_mean = pm.data["nw"]["$nw"]["is_mean_mode"]
     variable_bus_voltage_real(pm; nw=nw, bounded=is_mean)
     variable_bus_voltage_imaginary(pm; nw=nw, bounded=is_mean)
 end
@@ -477,7 +477,7 @@ end
 ""
 function variable_voltage_squared_pce(pm::AbstractSHHCModel, nw::Int)
     # existing: variable_bus_voltage_real(pm::AbstractPowerModel; nw, bounded, report)
-    is_mean = _PMs.ref(pm, nw)["is_mean_mode"]
+    is_mean = pm.data["nw"]["$nw"]["is_mean_mode"]
     xi = _PMs.var(pm, nw)[:xi] = JuMP.@variable(pm.model,
         [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_xi",
         start = 0.0
@@ -493,7 +493,7 @@ end
 ""
 function variable_hosting_capacity_pce(pm::AbstractSHHCModel, nw::Int)
     # existing: variable_load_current_magnitude(pm::AbstractPowerModel; nw, bounded, report)
-    _PMs.ref(pm, nw)["is_mean_mode"] || return
+    pm.data["nw"]["$nw"]["is_mean_mode"] || return
     cmd = _PMs.var(pm, nw)[:cmd] = JuMP.@variable(pm.model,
             [d in _PMs.ids(pm, nw, :load)], base_name="$(nw)_cmd",
             start = _PMs.comp_start_value(_PMs.ref(pm, nw, :load, d), "cmd_start", 0.0)
@@ -510,7 +510,7 @@ end
 ""
 function variable_fairness_pce(pm::AbstractSHHCModel, nw::Int)
     # existing: variable_fairness_principle(pm::AbstractPowerModel; nw, bounded, report)
-    _PMs.ref(pm, nw)["is_mean_mode"] || return
+    pm.data["nw"]["$nw"]["is_mean_mode"] || return
 
     if pm.data["principle"] == "maximum efficiency"
         # no additional variables
@@ -538,23 +538,34 @@ function variable_fairness_pce(pm::AbstractSHHCModel, nw::Int)
     end
 end
 
-# 5.3e
+# 5.3e — sigma variables removed; chance constraints now use the squared Cantelli form directly.
+
+# 5.3f - Lifted squared bus injection current per PCE mode
 ""
-function variable_chance_constraint_slack(pm::AbstractSHHCModel, nw::Int)
-    # existing: variable_load_current_magnitude(pm::AbstractPowerModel; nw, bounded, report)
-    _PMs.ref(pm, nw)["is_mean_mode"] || return
-    sigma_ihd = _PMs.var(pm, nw)[:sigma_ihd] = JuMP.@variable(pm.model,
-        [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_sigma_ihd",
+function variable_bus_injection_current_squared_pce(pm::AbstractSHHCModel, nw::Int)
+    is_mean = pm.data["nw"]["$nw"]["is_mean_mode"]
+    J_bus = _PMs.var(pm, nw)[:J_bus] = JuMP.@variable(pm.model,
+        [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_J_bus",
         start = 0.0
     )
-    for (i, _) in _PMs.ref(pm, nw, :bus)
-        JuMP.set_lower_bound(sigma_ihd[i], 0.0)
+    if is_mean
+        for (i, _) in _PMs.ref(pm, nw, :bus)
+            JuMP.set_lower_bound(J_bus[i], 0.0)
+        end
     end
-    sigma_thd = _PMs.var(pm, nw)[:sigma_thd] = JuMP.@variable(pm.model,
-        [i in _PMs.ids(pm, nw, :bus)], base_name="$(nw)_sigma_thd",
+end
+
+# 5.3g - Lifted squared branch current per PCE mode
+""
+function variable_branch_current_squared_pce(pm::AbstractSHHCModel, nw::Int)
+    is_mean = pm.data["nw"]["$nw"]["is_mean_mode"]
+    J_branch = _PMs.var(pm, nw)[:J_branch] = JuMP.@variable(pm.model,
+        [b in _PMs.ids(pm, nw, :branch)], base_name="$(nw)_J_branch",
         start = 0.0
     )
-    for (i, _) in _PMs.ref(pm, nw, :bus)
-        JuMP.set_lower_bound(sigma_thd[i], 0.0)
+    if is_mean
+        for (b, _) in _PMs.ref(pm, nw, :branch)
+            JuMP.set_lower_bound(J_branch[b], 0.0)
+        end
     end
 end

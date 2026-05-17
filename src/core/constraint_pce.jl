@@ -47,8 +47,8 @@ function constraint_pce_angle_to_rectangular(
     end
 end
 
-# ── 6.3: SOC voltage magnitude with PCE multiplication ───────────────────────
-# Paper Eq.(42): Σ_{k1,k2} T[k1,k2,k] · (VR_{k1}·VR_{k2} + VI_{k1}·VI_{k2}) ≤ ξ_k
+# ── 6.3: Galerkin projection for voltage magnitude squared ────────────────────
+# Exact equality (not SOC relaxation): ξ_k == Σ_{k1,k2} T[k1,k2,k]·(VR_{k1}·VR_{k2} + VI_{k1}·VI_{k2})
 
 function constraint_pce_soc_voltage(
     pm          :: AbstractSHHCModel,
@@ -66,7 +66,6 @@ function constraint_pce_soc_voltage(
             abs(m_val) < 1e-14 && continue
             nw1 = nw_id(h_idx, k1, pce.P_size)
             nw2 = nw_id(h_idx, k2, pce.P_size)
-            # :vr / :vi are the bus voltage symbols (AUDIT.md I).
             VR1 = _PMs.var(pm, nw1, :vr, n_id)
             VR2 = _PMs.var(pm, nw2, :vr, n_id)
             VI1 = _PMs.var(pm, nw1, :vi, n_id)
@@ -74,13 +73,15 @@ function constraint_pce_soc_voltage(
             JuMP.add_to_expression!(expr, m_val, VR1, VR2)
             JuMP.add_to_expression!(expr, m_val, VI1, VI2)
         end
-        JuMP.@constraint(pm.model, expr <= ξ_k)
+        JuMP.@constraint(pm.model, expr == ξ_k)
     end
 end
 
 # ── 6.4: IHD chance constraint ────────────────────────────────────────────────
-# Cantelli bound: E[ξ_h] + λ · σ_h ≤ (ihdmax · v_nom)²
-# SOC encodes σ_h ≥ ||norms .* ξ_higher||
+# Squared Cantelli (no sigma variable):
+#   E[ξ_h] ≤ limit²  and  λ² · Var[ξ_h] ≤ (limit² - E[ξ_h])²
+# This avoids the SOC auxiliary variable whose Jacobian is zero at the
+# trivial point, preventing LICQ failure in Ipopt.
 
 function constraint_chance_ihd(
     pm          :: AbstractSHHCModel,
@@ -91,27 +92,26 @@ function constraint_chance_ihd(
 )
     nw_0      = nw_id(h_idx, 0, pce.P_size)
     ξ_0       = _PMs.var(pm, nw_0, :xi)[n_id]
-    σ         = _PMs.var(pm, nw_0, :sigma_ihd)[n_id]
 
-    # IHD limit from AUDIT.md H: ref(pm, nw, :bus, i, "ihdmax").
     bus_data  = _PMs.ref(pm, nw_0, :bus, n_id)
     ihd_limit = bus_data["ihdmax"]
-    # Fundamental bus voltage from AUDIT.md H: ref(pm, fundamental(pm), :bus, i, "vm").
     v_nom     = _PMs.ref(pm, fundamental(pm), :bus, n_id)["vm"]
-    # λ from global sdata (set by compute_lambda! in data_pce.jl).
     λ         = pm.data["sdata"]["lambda"]
+    limit_sq  = (ihd_limit * v_nom)^2
 
     xi_higher = [_PMs.var(pm, nw_id(h_idx, k, pce.P_size), :xi)[n_id]
                  for k in 1:pce.deg]
     norms_k   = pce.norms[2:end]
 
+    JuMP.@constraint(pm.model, ξ_0 <= limit_sq)
     JuMP.@constraint(pm.model,
-        [σ; norms_k .* xi_higher] in JuMP.SecondOrderCone())
-    JuMP.@constraint(pm.model, ξ_0 + λ * σ <= (ihd_limit * v_nom)^2)
+        λ^2 * sum(norms_k[i] * xi_higher[i]^2 for i in eachindex(norms_k))
+        <= (limit_sq - ξ_0)^2)
 end
 
 # ── 6.5: THD chance constraint ────────────────────────────────────────────────
-# Cantelli bound: E[Σ_h ξ_h] + λ · σ_thd ≤ (thdmax · v_nom)²
+# Squared Cantelli (no sigma variable):
+#   E[Σ_h ξ_h] ≤ limit²  and  λ² · Var[Σ_h ξ_h] ≤ (limit² - E[Σ_h ξ_h])²
 
 function constraint_chance_thd(
     pm          :: AbstractSHHCModel,
@@ -120,23 +120,155 @@ function constraint_chance_thd(
     n_id        :: Any,
     :: Int
 )
-    nw_0_ref    = nw_id(h_indices[1], 0, pce.P_size)
-    σ_thd       = _PMs.var(pm, nw_0_ref, :sigma_thd)[n_id]
-    # THD limit from AUDIT.md H: ref(pm, fundamental(pm), :bus, i, "thdmax").
     thd_limit   = _PMs.ref(pm, fundamental(pm), :bus, n_id)["thdmax"]
-    # Fundamental bus voltage from AUDIT.md H.
     v_nom       = _PMs.ref(pm, fundamental(pm), :bus, n_id)["vm"]
-    # λ from global sdata.
     λ           = pm.data["sdata"]["lambda"]
+    limit_sq    = (thd_limit * v_nom)^2
 
-    xi_mean_sum = sum(
-        _PMs.var(pm, nw_id(h, 0, pce.P_size), :xi)[n_id] for h in h_indices)
+    xi_mean_sum = sum(_PMs.var(pm, nw_id(h, 0, pce.P_size), :xi)[n_id]
+                      for h in h_indices)
     xi_hi_sum   = [sum(_PMs.var(pm, nw_id(h, k, pce.P_size), :xi)[n_id]
                        for h in h_indices)
                    for k in 1:pce.deg]
     norms_k     = pce.norms[2:end]
 
+    JuMP.@constraint(pm.model, xi_mean_sum <= limit_sq)
     JuMP.@constraint(pm.model,
-        [σ_thd; norms_k .* xi_hi_sum] in JuMP.SecondOrderCone())
-    JuMP.@constraint(pm.model, xi_mean_sum + λ * σ_thd <= (thd_limit * v_nom)^2)
+        λ^2 * sum(norms_k[k] * xi_hi_sum[k]^2 for k in eachindex(norms_k))
+        <= (limit_sq - xi_mean_sum)^2)
+end
+
+# ── 6.6: Galerkin projection for bus injection current squared ────────────────
+# Exact equality: J_bus_k == Σ_{k1,k2} T[k1,k2,k]·(IR_{k1}·IR_{k2} + II_{k1}·II_{k2})
+
+function constraint_pce_soc_current(
+    pm          :: AbstractSHHCModel,
+    pce         :: PCEData,
+    nw          :: Int,
+    h_idx       :: Int,
+    :: Int
+)
+    k = get_pce_mode(nw, pce.P_size)
+    for n_id in _PMs.ids(pm, nw, :bus)
+        J_k           = _PMs.var(pm, nw, :J_bus)[n_id]
+        bus_arcs      = _PMs.ref(pm, nw, :bus_arcs, n_id)
+        bus_arcs_xfmr = _PMs.ref(pm, nw, :bus_arcs_xfmr, n_id)
+
+        expr = JuMP.QuadExpr()
+        for k1 in 0:pce.deg, k2 in 0:pce.deg
+            m_val = pce.T[k1+1, k2+1, k+1]
+            abs(m_val) < 1e-14 && continue
+            nw1 = nw_id(h_idx, k1, pce.P_size)
+            nw2 = nw_id(h_idx, k2, pce.P_size)
+
+            IR_1 = JuMP.AffExpr(0.0)
+            for a in bus_arcs;       JuMP.add_to_expression!(IR_1, _PMs.var(pm, nw1, :cr,  a)) end
+            for t in bus_arcs_xfmr;  JuMP.add_to_expression!(IR_1, _PMs.var(pm, nw1, :crx, t)) end
+            IR_2 = JuMP.AffExpr(0.0)
+            for a in bus_arcs;       JuMP.add_to_expression!(IR_2, _PMs.var(pm, nw2, :cr,  a)) end
+            for t in bus_arcs_xfmr;  JuMP.add_to_expression!(IR_2, _PMs.var(pm, nw2, :crx, t)) end
+            II_1 = JuMP.AffExpr(0.0)
+            for a in bus_arcs;       JuMP.add_to_expression!(II_1, _PMs.var(pm, nw1, :ci,  a)) end
+            for t in bus_arcs_xfmr;  JuMP.add_to_expression!(II_1, _PMs.var(pm, nw1, :cix, t)) end
+            II_2 = JuMP.AffExpr(0.0)
+            for a in bus_arcs;       JuMP.add_to_expression!(II_2, _PMs.var(pm, nw2, :ci,  a)) end
+            for t in bus_arcs_xfmr;  JuMP.add_to_expression!(II_2, _PMs.var(pm, nw2, :cix, t)) end
+
+            JuMP.add_to_expression!(expr, m_val * IR_1 * IR_2)
+            JuMP.add_to_expression!(expr, m_val * II_1 * II_2)
+        end
+        JuMP.@constraint(pm.model, expr == J_k)
+    end
+end
+
+# ── 6.7: Galerkin projection for branch current squared ───────────────────────
+# Exact equality: J_branch_k == Σ_{k1,k2} T[k1,k2,k]·(CR_{k1}·CR_{k2} + CI_{k1}·CI_{k2})
+
+function constraint_pce_soc_branch_current(
+    pm          :: AbstractSHHCModel,
+    pce         :: PCEData,
+    nw          :: Int,
+    h_idx       :: Int,
+    :: Int
+)
+    k = get_pce_mode(nw, pce.P_size)
+    for (b, branch) in _PMs.ref(pm, nw, :branch)
+        f_bus = branch["f_bus"]
+        t_bus = branch["t_bus"]
+        f_idx = (b, f_bus, t_bus)
+        J_k   = _PMs.var(pm, nw, :J_branch)[b]
+
+        expr = JuMP.QuadExpr()
+        for k1 in 0:pce.deg, k2 in 0:pce.deg
+            m_val = pce.T[k1+1, k2+1, k+1]
+            abs(m_val) < 1e-14 && continue
+            nw1 = nw_id(h_idx, k1, pce.P_size)
+            nw2 = nw_id(h_idx, k2, pce.P_size)
+            CR_1 = _PMs.var(pm, nw1, :cr, f_idx)
+            CR_2 = _PMs.var(pm, nw2, :cr, f_idx)
+            CI_1 = _PMs.var(pm, nw1, :ci, f_idx)
+            CI_2 = _PMs.var(pm, nw2, :ci, f_idx)
+            JuMP.add_to_expression!(expr, m_val, CR_1, CR_2)
+            JuMP.add_to_expression!(expr, m_val, CI_1, CI_2)
+        end
+        JuMP.@constraint(pm.model, expr == J_k)
+    end
+end
+
+# ── 6.8: RMS voltage chance constraint ────────────────────────────────────────
+# Squared Cantelli (no sigma variable):
+#   vm_1² + E[Σ_h ξ_h] ≤ vmaxrms²  and  λ² · Var[Σ_h ξ_h] ≤ (vmaxrms² - vm_1² - E[...])²
+
+function constraint_chance_rms_voltage(
+    pm          :: AbstractSHHCModel,
+    pce         :: PCEData,
+    h_indices   :: Vector{Int},
+    n_id        :: Any,
+    :: Int
+)
+    bus_data   = _PMs.ref(pm, fundamental(pm), :bus, n_id)
+    vmaxrms    = bus_data["vmaxrms"]
+    vm_1       = bus_data["vm"]
+    λ          = pm.data["sdata"]["lambda"]
+    slack_const = vmaxrms^2 - vm_1^2
+
+    xi_mean    = [_PMs.var(pm, nw_id(h, 0, pce.P_size), :xi)[n_id] for h in h_indices]
+    xi_hi_sum  = [sum(_PMs.var(pm, nw_id(h, k, pce.P_size), :xi)[n_id] for h in h_indices)
+                  for k in 1:pce.deg]
+    norms_k    = pce.norms[2:end]
+    xi_mean_sum = sum(xi_mean)
+
+    JuMP.@constraint(pm.model, xi_mean_sum <= slack_const)
+    JuMP.@constraint(pm.model,
+        λ^2 * sum(norms_k[k] * xi_hi_sum[k]^2 for k in eachindex(norms_k))
+        <= (slack_const - xi_mean_sum)^2)
+end
+
+# ── 6.9: RMS branch current chance constraint ─────────────────────────────────
+# Squared Cantelli (no sigma variable):
+#   cm_fund² + E[Σ_h J_h] ≤ c_rating²  and  λ² · Var[Σ_h J_h] ≤ (c_rating² - cm_fund² - E[...])²
+
+function constraint_chance_rms_current(
+    pm          :: AbstractSHHCModel,
+    pce         :: PCEData,
+    h_indices   :: Vector{Int},
+    b_id        :: Any,
+    :: Int
+)
+    branch     = _PMs.ref(pm, fundamental(pm), :branch, b_id)
+    c_rating   = branch["c_rating"]
+    cm_fund    = get(branch, "cm_fr", 0.0)
+    λ          = pm.data["sdata"]["lambda"]
+    slack_const = c_rating^2 - cm_fund^2
+
+    J_mean     = [_PMs.var(pm, nw_id(h, 0, pce.P_size), :J_branch)[b_id] for h in h_indices]
+    J_hi_sum   = [sum(_PMs.var(pm, nw_id(h, k, pce.P_size), :J_branch)[b_id] for h in h_indices)
+                  for k in 1:pce.deg]
+    norms_k    = pce.norms[2:end]
+    J_mean_sum = sum(J_mean)
+
+    JuMP.@constraint(pm.model, J_mean_sum <= slack_const)
+    JuMP.@constraint(pm.model,
+        λ^2 * sum(norms_k[k] * J_hi_sum[k]^2 for k in eachindex(norms_k))
+        <= (slack_const - J_mean_sum)^2)
 end

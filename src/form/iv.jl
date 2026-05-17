@@ -89,6 +89,25 @@ function objective_voltage_distortion_minimization(pm::_PMs.AbstractIVRModel)
     JuMP.@objective(pm.model, Min, sum(vr.^2 + vi.^2))
 end
 ""
+function objective_maximum_hosting_capacity(pm::AbstractSHHCModel)
+    # Sum :cmd only over mean-mode, non-fundamental harmonic networks.
+    h_mean_nws = [nw for nw in _PMs.nw_ids(pm)
+                  if pm.data["nw"]["$nw"]["is_mean_mode"] &&
+                     pm.data["nw"]["$nw"]["harmonic_idx"] ≠ fundamental(pm)]
+
+    if pm.data["principle"] in ("maximum efficiency", "absolute equality")
+        cmd = [_PMs.var(pm, nw, :cmd, l) for nw in h_mean_nws
+                                          for l  in _PMs.ids(pm, :load, nw=nw)]
+        JuMP.@objective(pm.model, Max, sum(cmd))
+    elseif pm.data["principle"] == "maximin"
+        cmh = [_PMs.var(pm, nw, :cmh) for nw in h_mean_nws]
+        JuMP.@objective(pm.model, Max, sum(cmh))
+    elseif pm.data["principle"] == "Kalai-Smorodinsky bargaining"
+        fh = [_PMs.var(pm, nw, :fh) for nw in h_mean_nws]
+        JuMP.@objective(pm.model, Max, sum(fh))
+    end
+end
+""
 function objective_maximum_hosting_capacity(pm::_PMs.AbstractIVRModel)
     # maximum efficiency
     if pm.data["principle"] == "maximum efficiency"
@@ -534,4 +553,53 @@ function constraint_xfmr_current_rms_limit(pm::dHHC_SOC, idx, c_rating, cm_fund)
     cix =  [_PMs.var(pm, n, :cix, idx) for n in sorted_nw_ids(pm) if n ≠ fundamental(pm)]
 
     JuMP.@constraint(pm.model, [sqrt(c_rating^2 - cm_fund^2); vcat(crx, cix)] in JuMP.SecondOrderCone())
+end
+
+# sHHC winding dispatches: use harmonic_from_nw to get true harmonic number
+# instead of nw_id, fixing RF-1 (is_zero_sequence on PCE-expanded network ids).
+""
+function constraint_xfmr_winding_config(pm::AbstractSHHCModel, n::Int, i, idx, r, re, xe, gnd)
+    h   = harmonic_from_nw(pm, n)
+    vr  = _PMs.var(pm, n, :vr,  i)
+    vi  = _PMs.var(pm, n, :vi,  i)
+    vrx = _PMs.var(pm, n, :vrx, idx)
+    vix = _PMs.var(pm, n, :vix, idx)
+    crx = _PMs.var(pm, n, :crx, idx)
+    cix = _PMs.var(pm, n, :cix, idx)
+
+    if !is_zero_sequence(h)
+        JuMP.@constraint(pm.model, vrx == vr - r * crx)
+        JuMP.@constraint(pm.model, vix == vi - r * cix)
+    end
+    if is_zero_sequence(h) && gnd == 1
+        JuMP.@constraint(pm.model, vrx == vr - (r + 3re) * crx + 3xe * cix)
+        JuMP.@constraint(pm.model, vix == vi - (r + 3re) * cix - 3xe * crx)
+    end
+    if is_zero_sequence(h) && gnd != 1
+        JuMP.@constraint(pm.model, crx == 0)
+        JuMP.@constraint(pm.model, cix == 0)
+    end
+end
+""
+function constraint_xfmr_winding_current_balance(pm::AbstractSHHCModel, n::Int, idx, r, b_sh, g_sh, cnf)
+    h    = harmonic_from_nw(pm, n)
+    vrx  = _PMs.var(pm, n, :vrx,  idx)
+    vix  = _PMs.var(pm, n, :vix,  idx)
+    crx  = _PMs.var(pm, n, :crx,  idx)
+    cix  = _PMs.var(pm, n, :cix,  idx)
+    csrx = _PMs.var(pm, n, :csrx, idx)
+    csix = _PMs.var(pm, n, :csix, idx)
+
+    if !is_zero_sequence(h)
+        JuMP.@constraint(pm.model, crx == csrx - g_sh * vrx + b_sh * vix)
+        JuMP.@constraint(pm.model, cix == csix - g_sh * vix - b_sh * vrx)
+    end
+    if is_zero_sequence(h) && cnf in ['Y', 'Z']
+        JuMP.@constraint(pm.model, crx == csrx - g_sh * vrx + b_sh * vix)
+        JuMP.@constraint(pm.model, cix == csix - g_sh * vix - b_sh * vrx)
+    end
+    if is_zero_sequence(h) && cnf in ['D'] && r ≠ 0.0
+        JuMP.@constraint(pm.model, crx == csrx - g_sh * vrx + b_sh * vix - vrx / r)
+        JuMP.@constraint(pm.model, cix == csix - g_sh * vix - b_sh * vrx - vix / r)
+    end
 end
