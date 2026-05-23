@@ -41,5 +41,6 @@ PMs.silence()
     include("hhc.jl")
     include("hpf.jl")
     include("hopf.jl")
+    include("robust.jl")
 
 end
