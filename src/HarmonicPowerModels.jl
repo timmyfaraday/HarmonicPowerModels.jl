@@ -58,11 +58,14 @@ module HarmonicPowerModels
     include("core/variable.jl")
 
     include("form/iv.jl")
+    include("form/iv_pce.jl")
 
     include("prob/hopf.jl")
     include("prob/hpf.jl")
     include("prob/hhc.jl")
+    include("prob/shhc.jl")
 
+    include("util/pce.jl")
     include("util/imp.jl")
     include("util/init.jl")
     include("util/ref.jl")
@@ -72,9 +75,11 @@ module HarmonicPowerModels
     # export
     export BASE_DIR
     export dHHC_NLP, dHHC_SOC
+    export sHHC_QCQP, sHHC_LP
 
     export replicate
-    export solve_hpf, solve_hopf, solve_hhc 
+    export solve_hpf, solve_hopf, solve_hhc, solve_shhc
+    export update_hdata_with_pce_data!
 
     export calculate_pos_seq_harmonic_impedance
     

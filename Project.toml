@@ -1,23 +1,35 @@
 name = "HarmonicPowerModels"
 uuid = "56365af1-a032-4c1d-861b-3c9f15bdb54e"
-authors = ["Hakan Ergun", "Frederik Geth", "Tom Van Acker"]
 version = "0.2.1"
+authors = ["Hakan Ergun", "Frederik Geth", "Tom Van Acker"]
 
 [deps]
+Clarabel = "61c947e1-3e6d-4ee4-985a-eec8c727bd6e"
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+HiGHS = "87dc4568-4c63-4d18-b0c0-bb2238e4078b"
 InfrastructureModels = "2030c09a-7f63-5d83-885d-db604e0e9cc0"
 Interpolations = "a98d9a8b-a2ab-59e6-89dd-64a1c18fca59"
 JuMP = "4076af6c-e467-56ae-b986-b466b2749572"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MathOptInterface = "b8f27783-ece8-5eb3-8dc8-9495eed66fee"
+PolyChaos = "8d666b04-775d-5f6e-b778-5ac7c70f65a3"
 PowerModels = "c36e90e8-916a-50a6-bd94-075b64ef4655"
+PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 ProgressMeter = "92933f4c-e287-5a05-a399-4b506db050ca"
 SignalDecomposition = "11a47235-7b84-4c7c-b885-fc3e2a9cf955"
 
 [compat]
+Clarabel = "0.11.1"
+Distributions = "0.25.125"
+HiGHS = "1.23.0"
 InfrastructureModels = "~0.6, ~0.7"
 Interpolations = "0.15"
 JuMP = "1.23"
+LinearAlgebra = "1.12.0"
 MathOptInterface = "1.31"
+PolyChaos = "1.1.0"
 PowerModels = "0.21"
+PrettyTables = "3.3.2"
 ProgressMeter = "1.10.0"
 SignalDecomposition = "1.1"
 julia = "1.9"

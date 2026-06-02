@@ -20,6 +20,12 @@ using Clarabel
 using Dierckx
 using Ipopt
 
+using Statistics
+using Random
+using PolyChaos
+using Distributions
+using Clarabel
+
 # pkg const
 const PMs = PowerModels
 const HPM = HarmonicPowerModels
@@ -36,10 +42,18 @@ solver_soc = JuMP.optimizer_with_attributes(Clarabel.Optimizer, "verbose" => 0)
 PMs.silence()
 
 @testset "HarmonicPowerModels.jl" begin
-    
+
     # models
     include("hhc.jl")
     include("hpf.jl")
     include("hopf.jl")
+
+    # PCE utilities for SHHC
+    @testset "PCE Utilities" begin
+        include("test_pce.jl")
+    end
+
+    # Stochastic HHC integration tests
+    include("shhc_industrial.jl")
 
 end

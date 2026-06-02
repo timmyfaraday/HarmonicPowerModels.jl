@@ -206,6 +206,110 @@ function ihd_current_limit_ieee_519(voltage, i_ratio, harmonic)
 end end end end
 
 """
+    update_hdata_with_pce_data!(hdata, pce_params)
+
+Precompute all polynomial chaos expansion (PCE) quantities required by
+`build_shhc` and store them in `hdata["pce"]`, making them accessible inside
+the PowerModels solve loop as `pm.data["pce"]`.
+
+# Arguments
+- `hdata`      — multinetwork data dict, as returned by `replicate`.
+- `pce_params` — Dict with the following keys:
+
+| Key | Type | Description |
+|---|---|---|
+| `"alpha_hat"` | Float64 | Beta shape parameter α̂ |
+| `"beta_hat"`  | Float64 | Beta shape parameter β̂ |
+| `"delta"`     | Int     | PCE degree (validated only for δ=2) |
+| `"n_terms"`   | Int     | Taylor terms for trig PCE (default 4) |
+| `"epsilon"`   | Float64 | Risk level ε for Cantelli bound |
+| `"harmonics"` | Dict{Int,(Float64,Float64)} | Maps harmonic order h to (v_min_h, v_max_h) in **radians** |
+
+# Stored result — `hdata["pce"]`
+
+| Key | Content |
+|---|---|
+| `"M"`         | (δ+1)×(δ+1)×(δ+1) multiplication tensor |
+| `"lambda"`    | Cantelli safety factor λ(ε) = √((1-ε)/ε) |
+| `"psi_norms"` | Vector of ⟨ψ_k,ψ_k⟩, length δ+1 |
+| `"K"`         | PCE index range 0:δ |
+| `"cos_phi"`   | `Dict{Int,Dict{Int,Vector}}` indexed by [nw_id][load_id] |
+| `"sin_phi"`   | `Dict{Int,Dict{Int,Vector}}` indexed by [nw_id][load_id] |
+
+All Dict keys use the same integer types that PowerModels uses internally for
+network and load ids (matching `nw::Int` and `d::Int` in the constraint functions).
+"""
+function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
+    α̂       = pce_params["alpha_hat"]
+    β̂       = pce_params["beta_hat"]
+    δ       = pce_params["delta"]
+    n_terms = get(pce_params, "n_terms", 4)
+    ε       = pce_params["epsilon"]
+    h_bounds = pce_params["harmonics"]      # Dict{Int => (v_min, v_max)} in radians
+
+    δ != 2 && @warn "update_hdata_with_pce_data!: δ=$δ detected; " *
+                    "PCE constraints are validated only for δ=2."
+
+    # ── 1. Jacobi basis ────────────────────────────────────────────────────────
+    basis = build_jacobi_basis(α̂, β̂, δ)
+
+    # ── 2. Multiplication tensor ───────────────────────────────────────────────
+    M = compute_multiplication_tensor(basis)
+
+    # ── 3. Cantelli factor ─────────────────────────────────────────────────────
+    lambda = cantelli_lambda(ε)
+
+    # ── 4. Basis norms ⟨ψ_k, ψ_k⟩ ─────────────────────────────────────────────
+    psi_norms = computeSP2(basis)           # length-(δ+1) vector, 1-indexed
+
+    # ── 5. Trig PCE coefficients per harmonic network and load ─────────────────
+    K = 0:δ
+
+    cos_phi = Dict{Int, Dict{Int, Vector{Float64}}}()
+    sin_phi = Dict{Int, Dict{Int, Vector{Float64}}}()
+
+    for (nw_str, ntw) in hdata["nw"]
+        nw_int = parse(Int, nw_str)
+
+        # Fundamental network has deterministic voltage — no stochastic angle.
+        nw_int == 1 && continue
+
+        # Skip harmonics for which no angle distribution was provided.
+        haskey(h_bounds, nw_int) || continue
+
+        v_min_h, v_max_h = h_bounds[nw_int]
+
+        # PCE coefficients of φ_{·,h}, then of cos(φ) and sin(φ).
+        phi_coeffs = affine_angle_pce(v_min_h, v_max_h, basis)
+        cos_coeffs, sin_coeffs = trig_pce_coefficients(phi_coeffs, M;
+                                                        n_terms=n_terms)
+
+        cos_phi[nw_int] = Dict{Int, Vector{Float64}}()
+        sin_phi[nw_int] = Dict{Int, Vector{Float64}}()
+
+        # All harmonic units at the same harmonic order share the same angle
+        # distribution, so they receive identical trig PCE coefficients.
+        for d_str in keys(ntw["load"])
+            d_int = parse(Int, d_str)
+            cos_phi[nw_int][d_int] = cos_coeffs
+            sin_phi[nw_int][d_int] = sin_coeffs
+        end
+    end
+
+    # ── 6. Store in hdata ──────────────────────────────────────────────────────
+    hdata["pce"] = Dict(
+        "M"         => M,
+        "lambda"    => lambda,
+        "psi_norms" => psi_norms,
+        "K"         => K,
+        "cos_phi"   => cos_phi,
+        "sin_phi"   => sin_phi,
+    )
+
+    return hdata
+end
+
+"""
     HarmonicPowerModels.replicate
 """
 function _HPM.replicate(data::Dict{String, Any}; 
