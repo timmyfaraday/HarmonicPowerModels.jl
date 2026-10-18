@@ -1,0 +1,222 @@
+IEEE30 binding-constraint diagnostic (dHHC_SOC at E[φ], Mosek; geometry from Z_h, 50000 MC samples)
+────────────────────────────────────────────────────────────────────────────────────────────
+base  N=8  global   dHHC@E[φ] Σ_h I_h = 1.2600e-02   I_h = 5:6.413e-03 7:3.014e-03 11:1.080e-03 13:2.094e-03
+  top constraints (utilisation):
+    1.0000  IHD  bus 28 h=13
+    1.0000  IHD  bus 21 h=5
+    1.0000  IHD  bus 30 h=7
+    1.0000  IHD  bus 28 h=11
+    0.9980  IHD  bus 22 h=5
+    0.9933  IHD  bus 24 h=5
+    0.9914  IHD  bus 20 h=5
+    0.9908  IHD  bus 19 h=5
+  generator RMS current (not enforced in dHHC_SOC): gen@8 over rating at the fundamental (cm=0.427 > 0.246), gen@1 over rating at the fundamental (cm=2.194 > 1.666), gen@11 over rating at the fundamental (cm=0.236 > 0.147), gen@2 over rating at the fundamental (cm=0.898 > 0.632), gen@13 over rating at the fundamental (cm=0.236 > 0.147), gen@5 over rating at the fundamental (cm=0.426 > 0.246)
+  bus 28  h=13  spread    4.9°  α(E)=1.000  α(95)=1.005  rob/q95=1.0110  E/q95=1.0106  (Σ|c|/|ΣcE|=1.000)
+  bus 21  h=5   spread    4.8°  α(E)=1.000  α(95)=1.001  rob/q95=1.0014  E/q95=1.0009  (Σ|c|/|ΣcE|=1.000)
+  bus 30  h=7   spread    3.9°  α(E)=1.000  α(95)=1.001  rob/q95=1.0029  E/q95=1.0025  (Σ|c|/|ΣcE|=1.000)
+  bus 28  h=11  spread    2.2°  α(E)=1.000  α(95)=1.004  rob/q95=1.0081  E/q95=1.0080  (Σ|c|/|ΣcE|=1.000)
+  bus 22  h=5   spread    4.8°  α(E)=1.000  α(95)=1.001  rob/q95=1.0014  E/q95=1.0009  (Σ|c|/|ΣcE|=1.000)
+  bus 24  h=5   spread    4.1°  α(E)=1.000  α(95)=1.001  rob/q95=1.0014  E/q95=1.0010  (Σ|c|/|ΣcE|=1.000)
+  bus 20  h=5   spread    4.1°  α(E)=1.000  α(95)=1.001  rob/q95=1.0014  E/q95=1.0010  (Σ|c|/|ΣcE|=1.000)
+  bus 19  h=5   spread    3.8°  α(E)=1.000  α(95)=1.001  rob/q95=1.0013  E/q95=1.0010  (Σ|c|/|ΣcE|=1.000)
+────────────────────────────────────────────────────────────────────────────────────────────
+base  N=8  local   dHHC@E[φ] Σ_h I_h = 1.4457e-02   I_h = 5:6.710e-03 7:3.304e-03 11:1.393e-03 13:3.049e-03
+  top constraints (utilisation):
+    1.0000  IHD  bus 28 h=13
+    1.0000  IHD  bus 21 h=5
+    1.0000  IHD  bus 28 h=11
+    1.0000  IHD  bus 30 h=7
+    0.9979  IHD  bus 22 h=5
+    0.9940  IHD  bus 24 h=5
+    0.9918  IHD  bus 20 h=5
+    0.9913  IHD  bus 19 h=5
+  generator RMS current (not enforced in dHHC_SOC): gen@8 over rating at the fundamental (cm=0.427 > 0.246), gen@1 over rating at the fundamental (cm=2.194 > 1.666), gen@11 over rating at the fundamental (cm=0.236 > 0.147), gen@2 over rating at the fundamental (cm=0.898 > 0.632), gen@13 over rating at the fundamental (cm=0.236 > 0.147), gen@5 over rating at the fundamental (cm=0.426 > 0.246)
+  bus 28  h=13  spread  156.9°  α(E)=1.227  α(95)=1.154  rob/q95=1.2770  E/q95=0.9013  (Σ|c|/|ΣcE|=1.457)
+  bus 21  h=5   spread   62.5°  α(E)=1.024  α(95)=1.017  rob/q95=1.0288  E/q95=0.9873  (Σ|c|/|ΣcE|=1.047)
+  bus 28  h=11  spread  134.6°  α(E)=1.142  α(95)=1.100  rob/q95=1.1832  E/q95=0.9344  (Σ|c|/|ΣcE|=1.291)
+  bus 30  h=7   spread   84.7°  α(E)=1.047  α(95)=1.035  rob/q95=1.0625  E/q95=0.9764  (Σ|c|/|ΣcE|=1.097)
+  bus 22  h=5   spread   62.5°  α(E)=1.024  α(95)=1.017  rob/q95=1.0288  E/q95=0.9873  (Σ|c|/|ΣcE|=1.047)
+  bus 24  h=5   spread   61.6°  α(E)=1.023  α(95)=1.017  rob/q95=1.0289  E/q95=0.9877  (Σ|c|/|ΣcE|=1.046)
+  bus 20  h=5   spread   62.3°  α(E)=1.024  α(95)=1.017  rob/q95=1.0288  E/q95=0.9875  (Σ|c|/|ΣcE|=1.046)
+  bus 19  h=5   spread   62.1°  α(E)=1.024  α(95)=1.017  rob/q95=1.0288  E/q95=0.9876  (Σ|c|/|ΣcE|=1.046)
+────────────────────────────────────────────────────────────────────────────────────────────
+base  N=21  global   dHHC@E[φ] Σ_h I_h = 3.0879e-03   I_h = 5:1.122e-03 7:6.379e-04 11:4.370e-04 13:8.906e-04
+  top constraints (utilisation):
+    1.0000  IHD  bus 7 h=13
+    1.0000  IHD  bus 30 h=5
+    1.0000  IHD  bus 28 h=11
+    1.0000  IHD  bus 30 h=7
+    0.9928  IHD  bus 26 h=5
+    0.9807  IHD  bus 26 h=7
+    0.9738  IHD  bus 7 h=11
+    0.9718  IHD  bus 29 h=7
+  generator RMS current (not enforced in dHHC_SOC): gen@8 over rating at the fundamental (cm=0.427 > 0.246), gen@1 over rating at the fundamental (cm=2.194 > 1.666), gen@11 over rating at the fundamental (cm=0.236 > 0.147), gen@2 over rating at the fundamental (cm=0.898 > 0.632), gen@13 over rating at the fundamental (cm=0.236 > 0.147), gen@5 over rating at the fundamental (cm=0.426 > 0.246)
+  bus 7   h=13  spread  112.4°  α(E)=1.005  α(95)=1.011  rob/q95=1.0327  E/q95=1.0191  (Σ|c|/|ΣcE|=1.014)
+  bus 30  h=5   spread    7.8°  α(E)=1.000  α(95)=1.001  rob/q95=1.0025  E/q95=1.0012  (Σ|c|/|ΣcE|=1.001)
+  bus 28  h=11  spread    3.5°  α(E)=1.000  α(95)=1.005  rob/q95=1.0153  E/q95=1.0152  (Σ|c|/|ΣcE|=1.000)
+  bus 30  h=7   spread    4.1°  α(E)=1.000  α(95)=1.002  rob/q95=1.0047  E/q95=1.0044  (Σ|c|/|ΣcE|=1.000)
+  bus 26  h=5   spread   10.8°  α(E)=1.001  α(95)=1.001  rob/q95=1.0028  E/q95=1.0005  (Σ|c|/|ΣcE|=1.002)
+────────────────────────────────────────────────────────────────────────────────────────────
+base  N=21  local   dHHC@E[φ] Σ_h I_h = 3.2061e-03   I_h = 5:1.154e-03 7:6.750e-04 11:5.408e-04 13:8.368e-04
+  top constraints (utilisation):
+    1.0000  IHD  bus 28 h=11
+    1.0000  IHD  bus 30 h=5
+    1.0000  IHD  bus 26 h=13
+    1.0000  IHD  bus 30 h=7
+    0.9974  IHD  bus 26 h=5
+    0.9870  IHD  bus 26 h=7
+    0.9731  IHD  bus 29 h=7
+    0.9698  IHD  bus 7 h=11
+  generator RMS current (not enforced in dHHC_SOC): gen@8 over rating at the fundamental (cm=0.427 > 0.246), gen@1 over rating at the fundamental (cm=2.194 > 1.666), gen@11 over rating at the fundamental (cm=0.236 > 0.147), gen@2 over rating at the fundamental (cm=0.898 > 0.632), gen@13 over rating at the fundamental (cm=0.236 > 0.147), gen@5 over rating at the fundamental (cm=0.426 > 0.246)
+  bus 28  h=11  spread  160.6°  α(E)=1.076  α(95)=1.067  rob/q95=1.1828  E/q95=0.9766  (Σ|c|/|ΣcE|=1.238)
+  bus 30  h=5   spread   80.1°  α(E)=1.011  α(95)=1.009  rob/q95=1.0189  E/q95=0.9946  (Σ|c|/|ΣcE|=1.029)
+  bus 26  h=13  spread  196.9°  α(E)=1.124  α(95)=1.101  rob/q95=1.1925  E/q95=0.9623  (Σ|c|/|ΣcE|=1.259)
+  bus 30  h=7   spread  106.0°  α(E)=1.021  α(95)=1.018  rob/q95=1.0409  E/q95=0.9916  (Σ|c|/|ΣcE|=1.058)
+  bus 26  h=5   spread   76.3°  α(E)=1.009  α(95)=1.008  rob/q95=1.0181  E/q95=0.9963  (Σ|c|/|ΣcE|=1.025)
+────────────────────────────────────────────────────────────────────────────────────────────
+banks  N=8  global   dHHC@E[φ] Σ_h I_h = 6.9448e-03   I_h = 5:4.756e-04 7:4.320e-03 11:5.618e-04 13:1.588e-03
+  top constraints (utilisation):
+    1.0000  IHD  bus 24 h=7
+    1.0000  IHD  bus 28 h=13
+    1.0000  IHD  bus 7 h=11
+    1.0000  IHD  bus 24 h=5
+    0.9999  IHD  bus 21 h=5
+    0.9985  IHD  bus 22 h=5
+    0.9915  IHD  bus 21 h=7
+    0.9908  IHD  bus 22 h=7
+  generator RMS current (not enforced in dHHC_SOC): gen@8 over rating at the fundamental (cm=0.421 > 0.246), gen@1 over rating at the fundamental (cm=2.197 > 1.666), gen@11 over rating at the fundamental (cm=0.229 > 0.147), gen@2 over rating at the fundamental (cm=0.845 > 0.632), gen@13 over rating at the fundamental (cm=0.229 > 0.147), gen@5 over rating at the fundamental (cm=0.393 > 0.246)
+  bus 24  h=7   spread    6.3°  α(E)=1.000  α(95)=1.001  rob/q95=1.0028  E/q95=1.0021  (Σ|c|/|ΣcE|=1.001)
+  bus 28  h=13  spread  176.5°  α(E)=1.042  α(95)=1.046  rob/q95=1.0585  E/q95=1.0066  (Σ|c|/|ΣcE|=1.082)
+  bus 7   h=11  spread  180.2°  α(E)=1.080  α(95)=1.082  rob/q95=1.0780  E/q95=1.0025  (Σ|c|/|ΣcE|=1.157)
+  bus 24  h=5   spread    5.0°  α(E)=1.000  α(95)=1.001  rob/q95=1.0014  E/q95=1.0009  (Σ|c|/|ΣcE|=1.000)
+  bus 21  h=5   spread    4.8°  α(E)=1.000  α(95)=1.001  rob/q95=1.0014  E/q95=1.0009  (Σ|c|/|ΣcE|=1.000)
+  bus 22  h=5   spread    4.8°  α(E)=1.000  α(95)=1.001  rob/q95=1.0014  E/q95=1.0009  (Σ|c|/|ΣcE|=1.000)
+  bus 21  h=7   spread    4.3°  α(E)=1.000  α(95)=1.001  rob/q95=1.0028  E/q95=1.0024  (Σ|c|/|ΣcE|=1.000)
+  bus 22  h=7   spread    4.4°  α(E)=1.000  α(95)=1.001  rob/q95=1.0028  E/q95=1.0024  (Σ|c|/|ΣcE|=1.000)
+────────────────────────────────────────────────────────────────────────────────────────────
+banks  N=8  local   dHHC@E[φ] Σ_h I_h = 8.0821e-03   I_h = 5:4.966e-04 7:4.742e-03 11:6.700e-04 13:2.174e-03
+  top constraints (utilisation):
+    1.0000  IHD  bus 24 h=7
+    1.0000  IHD  bus 28 h=13
+    1.0000  IHD  bus 7 h=11
+    1.0000  IHD  bus 21 h=5
+    0.9992  IHD  bus 24 h=5
+    0.9986  IHD  bus 22 h=5
+    0.9966  IHD  bus 21 h=7
+    0.9955  IHD  bus 22 h=7
+  generator RMS current (not enforced in dHHC_SOC): gen@8 over rating at the fundamental (cm=0.421 > 0.246), gen@1 over rating at the fundamental (cm=2.197 > 1.666), gen@11 over rating at the fundamental (cm=0.229 > 0.147), gen@2 over rating at the fundamental (cm=0.845 > 0.632), gen@13 over rating at the fundamental (cm=0.229 > 0.147), gen@5 over rating at the fundamental (cm=0.393 > 0.246)
+  bus 24  h=7   spread   87.9°  α(E)=1.051  α(95)=1.035  rob/q95=1.0590  E/q95=0.9730  (Σ|c|/|ΣcE|=1.098)
+  bus 28  h=13  spread  182.4°  α(E)=1.255  α(95)=1.167  rob/q95=1.2737  E/q95=0.8918  (Σ|c|/|ΣcE|=1.481)
+  bus 7   h=11  spread  187.6°  α(E)=1.198  α(95)=1.144  rob/q95=1.2132  E/q95=0.9265  (Σ|c|/|ΣcE|=1.379)
+  bus 21  h=5   spread   62.3°  α(E)=1.023  α(95)=1.016  rob/q95=1.0273  E/q95=0.9877  (Σ|c|/|ΣcE|=1.044)
+  bus 24  h=5   spread   63.0°  α(E)=1.024  α(95)=1.017  rob/q95=1.0276  E/q95=0.9874  (Σ|c|/|ΣcE|=1.045)
+  bus 22  h=5   spread   62.3°  α(E)=1.023  α(95)=1.016  rob/q95=1.0271  E/q95=0.9876  (Σ|c|/|ΣcE|=1.045)
+  bus 21  h=7   spread   84.8°  α(E)=1.047  α(95)=1.033  rob/q95=1.0580  E/q95=0.9757  (Σ|c|/|ΣcE|=1.093)
+  bus 22  h=7   spread   85.1°  α(E)=1.047  α(95)=1.033  rob/q95=1.0581  E/q95=0.9755  (Σ|c|/|ΣcE|=1.093)
+────────────────────────────────────────────────────────────────────────────────────────────
+banks  N=21  global   dHHC@E[φ] Σ_h I_h = 2.4420e-03   I_h = 5:1.155e-04 7:1.153e-03 11:5.440e-04 13:6.297e-04
+  top constraints (utilisation):
+    1.0000  IHD  bus 24 h=13
+    1.0000  IHD  bus 10 h=7
+    1.0000  IHD  bus 30 h=11
+    1.0000  IHD  bus 24 h=5
+    0.9950  IHD  bus 21 h=5
+    0.9939  IHD  bus 22 h=5
+    0.9828  IHD  bus 10 h=5
+    0.9631  IHD  bus 29 h=11
+  generator RMS current (not enforced in dHHC_SOC): gen@8 over rating at the fundamental (cm=0.421 > 0.246), gen@1 over rating at the fundamental (cm=2.197 > 1.666), gen@11 over rating at the fundamental (cm=0.229 > 0.147), gen@2 over rating at the fundamental (cm=0.845 > 0.632), gen@13 over rating at the fundamental (cm=0.229 > 0.147), gen@5 over rating at the fundamental (cm=0.393 > 0.246)
+  bus 24  h=13  spread  203.0°  α(E)=1.290  α(95)=1.276  rob/q95=1.4394  E/q95=0.9808  (Σ|c|/|ΣcE|=1.700)
+  bus 10  h=7   spread    5.1°  α(E)=1.000  α(95)=1.002  rob/q95=1.0054  E/q95=1.0050  (Σ|c|/|ΣcE|=1.000)
+  bus 30  h=11  spread  191.0°  α(E)=1.195  α(95)=1.187  rob/q95=1.2438  E/q95=0.9870  (Σ|c|/|ΣcE|=1.513)
+  bus 24  h=5   spread    5.1°  α(E)=1.000  α(95)=1.001  rob/q95=1.0027  E/q95=1.0024  (Σ|c|/|ΣcE|=1.000)
+  bus 21  h=5   spread    4.8°  α(E)=1.000  α(95)=1.001  rob/q95=1.0026  E/q95=1.0025  (Σ|c|/|ΣcE|=1.000)
+  bus 22  h=5   spread    4.8°  α(E)=1.000  α(95)=1.001  rob/q95=1.0026  E/q95=1.0025  (Σ|c|/|ΣcE|=1.000)
+────────────────────────────────────────────────────────────────────────────────────────────
+banks  N=21  local   dHHC@E[φ] Σ_h I_h = 2.5850e-03   I_h = 5:1.178e-04 7:1.211e-03 11:6.790e-04 13:5.773e-04
+  top constraints (utilisation):
+    1.0000  IHD  bus 24 h=13
+    1.0000  IHD  bus 30 h=11
+    1.0000  IHD  bus 10 h=7
+    1.0000  IHD  bus 24 h=5
+    0.9976  IHD  bus 26 h=13
+    0.9940  IHD  bus 21 h=5
+    0.9930  IHD  bus 22 h=5
+    0.9815  IHD  bus 10 h=5
+  generator RMS current (not enforced in dHHC_SOC): gen@8 over rating at the fundamental (cm=0.421 > 0.246), gen@1 over rating at the fundamental (cm=2.197 > 1.666), gen@11 over rating at the fundamental (cm=0.229 > 0.147), gen@2 over rating at the fundamental (cm=0.845 > 0.632), gen@13 over rating at the fundamental (cm=0.229 > 0.147), gen@5 over rating at the fundamental (cm=0.393 > 0.246)
+  bus 24  h=13  spread  178.0°  α(E)=1.229  α(95)=1.205  rob/q95=1.3989  E/q95=0.9634  (Σ|c|/|ΣcE|=1.559)
+  bus 30  h=11  spread  232.9°  α(E)=1.344  α(95)=1.290  rob/q95=1.4324  E/q95=0.9301  (Σ|c|/|ΣcE|=1.888)
+  bus 10  h=7   spread  102.4°  α(E)=1.017  α(95)=1.016  rob/q95=1.0417  E/q95=0.9969  (Σ|c|/|ΣcE|=1.051)
+  bus 24  h=5   spread   70.5°  α(E)=1.007  α(95)=1.007  rob/q95=1.0173  E/q95=0.9993  (Σ|c|/|ΣcE|=1.020)
+  bus 26  h=13  spread  205.7°  α(E)=1.207  α(95)=1.168  rob/q95=1.2455  E/q95=0.9428  (Σ|c|/|ΣcE|=1.476)
+  bus 21  h=5   spread   72.3°  α(E)=1.007  α(95)=1.007  rob/q95=1.0178  E/q95=0.9991  (Σ|c|/|ΣcE|=1.021)
+  bus 22  h=5   spread   72.1°  α(E)=1.007  α(95)=1.007  rob/q95=1.0178  E/q95=0.9992  (Σ|c|/|ΣcE|=1.021)
+────────────────────────────────────────────────────────────────────────────────────────────
+cable132c  N=8  global   dHHC@E[φ] Σ_h I_h = 6.3355e-02   I_h = 5:2.855e-02 7:1.859e-02 11:9.021e-03 13:7.201e-03
+  top constraints (utilisation):
+    1.0000  IHD  bus 12 h=7
+    1.0000  UNIT rating h=5
+    1.0000  IHD  bus 19 h=13
+    1.0000  IHD  bus 10 h=11
+    0.9964  IHD  bus 18 h=13
+    0.9962  IHD  bus 20 h=13
+    0.9952  IHD  bus 17 h=11
+    0.9937  IHD  bus 20 h=11
+  generator RMS current (not enforced in dHHC_SOC): gen@8 over rating at the fundamental (cm=0.403 > 0.246), gen@1 over rating at the fundamental (cm=2.170 > 1.666), gen@11 over rating at the fundamental (cm=0.167 > 0.147), gen@2 over rating at the fundamental (cm=0.823 > 0.632), gen@13 over rating at the fundamental (cm=0.159 > 0.147), gen@5 0.017
+  bus 12  h=7   spread  234.6°  α(E)=1.351  α(95)=1.314  rob/q95=1.1026  E/q95=0.9770  (Σ|c|/|ΣcE|=1.393)
+  bus 19  h=13  spread  232.0°  α(E)=1.150  α(95)=1.141  rob/q95=1.0712  E/q95=0.9935  (Σ|c|/|ΣcE|=1.131)
+  bus 10  h=11  spread  198.6°  α(E)=1.243  α(95)=1.227  rob/q95=1.0943  E/q95=0.9917  (Σ|c|/|ΣcE|=1.192)
+  bus 18  h=13  spread  245.1°  α(E)=1.146  α(95)=1.137  rob/q95=1.0695  E/q95=0.9935  (Σ|c|/|ΣcE|=1.129)
+  bus 20  h=13  spread  222.4°  α(E)=1.154  α(95)=1.144  rob/q95=1.0722  E/q95=0.9935  (Σ|c|/|ΣcE|=1.133)
+  bus 17  h=11  spread  198.5°  α(E)=1.253  α(95)=1.236  rob/q95=1.1100  E/q95=0.9898  (Σ|c|/|ΣcE|=1.222)
+  bus 20  h=11  spread  199.4°  α(E)=1.260  α(95)=1.241  rob/q95=1.1163  E/q95=0.9891  (Σ|c|/|ΣcE|=1.236)
+────────────────────────────────────────────────────────────────────────────────────────────
+cable132c  N=8  local   dHHC@E[φ] Σ_h I_h = 6.2611e-02   I_h = 5:2.855e-02 7:1.855e-02 11:8.536e-03 13:6.984e-03
+  top constraints (utilisation):
+    1.0000  IHD  bus 12 h=7
+    1.0000  IHD  bus 19 h=11
+    1.0000  UNIT rating h=5
+    1.0000  IHD  bus 19 h=13
+    0.9991  IHD  bus 20 h=11
+    0.9974  IHD  bus 17 h=11
+    0.9966  IHD  bus 20 h=13
+    0.9959  IHD  bus 16 h=13
+  generator RMS current (not enforced in dHHC_SOC): gen@8 over rating at the fundamental (cm=0.403 > 0.246), gen@1 over rating at the fundamental (cm=2.170 > 1.666), gen@11 over rating at the fundamental (cm=0.167 > 0.147), gen@2 over rating at the fundamental (cm=0.823 > 0.632), gen@13 over rating at the fundamental (cm=0.159 > 0.147), gen@5 0.017
+  bus 12  h=7   spread  270.0°  α(E)=1.348  α(95)=1.291  rob/q95=1.1101  E/q95=0.9642  (Σ|c|/|ΣcE|=1.389)
+  bus 19  h=11  spread  232.1°  α(E)=1.172  α(95)=1.133  rob/q95=1.1047  E/q95=0.9702  (Σ|c|/|ΣcE|=1.172)
+  bus 19  h=13  spread  229.0°  α(E)=1.107  α(95)=1.086  rob/q95=1.0634  E/q95=0.9839  (Σ|c|/|ΣcE|=1.097)
+  bus 20  h=11  spread  229.6°  α(E)=1.167  α(95)=1.130  rob/q95=1.1005  E/q95=0.9726  (Σ|c|/|ΣcE|=1.163)
+  bus 17  h=11  spread  226.3°  α(E)=1.162  α(95)=1.126  rob/q95=1.0949  E/q95=0.9734  (Σ|c|/|ΣcE|=1.154)
+  bus 20  h=13  spread  224.6°  α(E)=1.110  α(95)=1.088  rob/q95=1.0651  E/q95=0.9839  (Σ|c|/|ΣcE|=1.098)
+  bus 16  h=13  spread  228.1°  α(E)=1.105  α(95)=1.083  rob/q95=1.0613  E/q95=0.9830  (Σ|c|/|ΣcE|=1.096)
+────────────────────────────────────────────────────────────────────────────────────────────
+cable132c  N=21  global   dHHC@E[φ] Σ_h I_h = 5.2500e-03   I_h = 5:2.250e-03 7:1.649e-03 11:7.258e-04 13:6.253e-04
+  top constraints (utilisation):
+    1.0000  IHD  bus 26 h=5
+    1.0000  IHD  bus 26 h=7
+    1.0000  IHD  bus 26 h=11
+    1.0000  IHD  bus 26 h=13
+    0.9635  IHD  bus 30 h=11
+    0.9519  IHD  bus 30 h=5
+    0.9495  IHD  bus 30 h=13
+    0.9434  IHD  bus 30 h=7
+  generator RMS current (not enforced in dHHC_SOC): gen@8 over rating at the fundamental (cm=0.403 > 0.246), gen@1 over rating at the fundamental (cm=2.170 > 1.666), gen@11 over rating at the fundamental (cm=0.167 > 0.147), gen@2 over rating at the fundamental (cm=0.823 > 0.632), gen@13 over rating at the fundamental (cm=0.159 > 0.147), gen@5 0.008
+  bus 26  h=5   spread  193.9°  α(E)=1.038  α(95)=1.037  rob/q95=1.0092  E/q95=0.9973  (Σ|c|/|ΣcE|=1.086)
+  bus 26  h=7   spread  238.0°  α(E)=1.040  α(95)=1.040  rob/q95=1.0222  E/q95=1.0002  (Σ|c|/|ΣcE|=1.092)
+  bus 26  h=11  spread  200.4°  α(E)=1.013  α(95)=1.016  rob/q95=1.0239  E/q95=1.0066  (Σ|c|/|ΣcE|=1.031)
+  bus 26  h=13  spread  252.6°  α(E)=1.009  α(95)=1.013  rob/q95=1.0249  E/q95=1.0098  (Σ|c|/|ΣcE|=1.019)
+────────────────────────────────────────────────────────────────────────────────────────────
+cable132c  N=21  local   dHHC@E[φ] Σ_h I_h = 5.2476e-03   I_h = 5:2.235e-03 7:1.649e-03 11:7.295e-04 13:6.334e-04
+  top constraints (utilisation):
+    1.0000  IHD  bus 26 h=5
+    1.0000  IHD  bus 26 h=7
+    1.0000  IHD  bus 26 h=13
+    1.0000  IHD  bus 26 h=11
+    0.9526  IHD  bus 30 h=11
+    0.9491  IHD  bus 30 h=5
+    0.9418  IHD  bus 30 h=7
+    0.9358  IHD  bus 30 h=13
+  generator RMS current (not enforced in dHHC_SOC): gen@8 over rating at the fundamental (cm=0.403 > 0.246), gen@1 over rating at the fundamental (cm=2.170 > 1.666), gen@11 over rating at the fundamental (cm=0.167 > 0.147), gen@2 over rating at the fundamental (cm=0.823 > 0.632), gen@13 over rating at the fundamental (cm=0.159 > 0.147), gen@5 0.008
+  bus 26  h=5   spread  173.3°  α(E)=1.035  α(95)=1.034  rob/q95=1.0192  E/q95=0.9983  (Σ|c|/|ΣcE|=1.079)
+  bus 26  h=7   spread  228.7°  α(E)=1.040  α(95)=1.039  rob/q95=1.0349  E/q95=0.9981  (Σ|c|/|ΣcE|=1.092)
+  bus 26  h=13  spread  226.4°  α(E)=1.014  α(95)=1.018  rob/q95=1.0344  E/q95=1.0074  (Σ|c|/|ΣcE|=1.033)
+  bus 26  h=11  spread  229.0°  α(E)=1.016  α(95)=1.018  rob/q95=1.0293  E/q95=1.0049  (Σ|c|/|ΣcE|=1.036)

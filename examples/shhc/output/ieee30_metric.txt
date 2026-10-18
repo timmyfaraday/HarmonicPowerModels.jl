@@ -1,0 +1,16 @@
+IEEE30 — IHD-based hosting Σ_h I_h [p.u.]: deterministic at E[φ], robust over the angle
+support, exact per-constraint 95% quantile; U = I_95/I_rob, D = I_95/I_det.
+
+scenario     N ref    |      I_det      I_rob       I_95 |       U       D
+base         8 global | 1.2600e-02 1.2595e-02 1.2644e-02 |   +0.4%   +0.4%
+base         8 local  | 1.4457e-02 1.2728e-02 1.3900e-02 |   +9.2%   -3.9%
+base        21 global | 3.0879e-03 2.9398e-03 3.1159e-03 |   +6.0%   +0.9%
+base        21 local  | 3.2061e-03 2.8591e-03 3.1506e-03 |  +10.2%   -1.7%
+banks        8 global | 6.9448e-03 6.8247e-03 6.9661e-03 |   +2.1%   +0.3%
+banks        8 local  | 8.0821e-03 6.8681e-03 7.6621e-03 |  +11.6%   -5.2%
+banks       21 global | 2.4420e-03 2.0920e-03 2.4292e-03 |  +16.1%   -0.5%
+banks       21 local  | 2.5850e-03 2.0776e-03 2.5020e-03 |  +20.4%   -3.2%
+cable132c    8 global | 6.3355e-02 5.9691e-02 6.2806e-02 |   +5.2%   -0.9%
+cable132c    8 local  | 6.2611e-02 5.7056e-02 6.1577e-02 |   +7.9%   -1.7%
+cable132c   21 global | 5.2500e-03 5.1665e-03 5.2552e-03 |   +1.7%   +0.1%
+cable132c   21 local  | 5.2476e-03 5.1093e-03 5.2491e-03 |   +2.7%   +0.0%
