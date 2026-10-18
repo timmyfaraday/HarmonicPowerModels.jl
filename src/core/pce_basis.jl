@@ -29,6 +29,8 @@
 # `uni.quad` (`affine_trig_pce`). The superseded Taylor route (`trig_pce` plus #
 # a π/2 support rotation) is kept only for angles that are not affine in a     #
 # single germ; it is 1–2 orders of magnitude less accurate in the variance.    #
+# An angle affine in two germs (own + shared type germ) is projected exactly by #
+# `affine2_trig_pce`, as the product of the two univariate projections.         #
 # Authors: Tom Van Acker                                                        #
 
 using PolyChaos
@@ -247,6 +249,54 @@ function affine_trig_pce(pb::PCEBasis, u::Int, v_min::Real, v_max::Real)
 
     return Vector{Float64}(assign2multi(cos_uni, u, pb.ind)),
            Vector{Float64}(assign2multi(sin_uni, u, pb.ind))
+end
+
+"Univariate Galerkin coefficients (length deg+1) of cos/sin of φ = lo + (hi − lo)·ω."
+function _uni_trig(pb::PCEBasis, lo::Real, hi::Real)
+    nodes, weights = pb.uni.quad.nodes, pb.uni.quad.weights
+    sp2_uni = computeSP2(pb.uni)
+    φ = lo .+ (hi - lo) .* nodes
+    cφ, sφ = cos.(φ), sin.(φ)
+    c = zeros(pb.deg + 1); s = zeros(pb.deg + 1)
+    for j in 0:pb.deg
+        ψ = evaluate(j, nodes, pb.uni)
+        c[j+1] = sum(weights .* cφ .* ψ) / sp2_uni[j+1]
+        s[j+1] = sum(weights .* sφ .* ψ) / sp2_uni[j+1]
+    end
+    return c, s
+end
+
+"""
+    affine2_trig_pce(pb::PCEBasis, u, v_min, v_max, t, s_min, s_max)
+        -> (cos_coefs, sin_coefs)
+
+PCE coefficients of cos(φ) and sin(φ) for an angle affine in two independent
+germs — the unit's own germ `u` and a germ `t` it shares with other units, e.g.,
+a converter type's firing delay:
+
+    φ = φ₁(ω_u) + φ₂(ω_t),   φ₁ = v_min + (v_max − v_min)·ω_u,
+                              φ₂ = s_min + (s_max − s_min)·ω_t
+
+(radians; `s_max < s_min` is allowed). Since cos φ = cos φ₁ cos φ₂ − sin φ₁ sin φ₂
+and sin φ = sin φ₁ cos φ₂ + cos φ₁ sin φ₂ are sums of products of functions of
+independent germs, and the basis is the tensor product of the univariate ones,
+the projection is the product of the univariate projections (each exact by the
+Gauss rule in `pb.uni`), truncated to total degree `pb.deg`.
+"""
+function affine2_trig_pce(pb::PCEBasis, u::Int, v_min::Real, v_max::Real,
+                          t::Int, s_min::Real, s_max::Real)
+    u == t && error("affine2_trig_pce: the two germs must differ")
+    c1, s1 = _uni_trig(pb, v_min, v_max)
+    c2, s2 = _uni_trig(pb, s_min, s_max)
+    cos_c = zeros(pb.dim); sin_c = zeros(pb.dim)
+    for k in 1:pb.dim
+        row = view(pb.ind, k, :)
+        any(row[g] != 0 for g in eachindex(row) if g != u && g != t) && continue
+        j, l = row[u] + 1, row[t] + 1
+        cos_c[k] = c1[j] * c2[l] - s1[j] * s2[l]
+        sin_c[k] = s1[j] * c2[l] + c1[j] * s2[l]
+    end
+    return cos_c, sin_c
 end
 
 """

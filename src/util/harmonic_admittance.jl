@@ -389,14 +389,22 @@ function empirical_lambdas(hdata::Dict, g::AbstractDict; nsamp::Int=20000, seed:
     rng = Random.MersenneTwister(seed); Bd = Distributions.Beta(α̂, β̂)
     Vr = zeros(npos); Vi = zeros(npos)
     ωu = Dict(d => 0.0 for d in units)
+    utype  = get(pce, "unit_type", Dict{Int,String}())
+    shifts = get(pce, "type_shifts", Dict{Int,Dict{String,Tuple{Float64,Float64}}}())
+    ωt = Dict(t => 0.0 for t in unique(values(utype)))
     for m in 1:nsamp
         for d in units; ωu[d] = rand(rng, Bd); end
+        for t in keys(ωt); ωt[t] = rand(rng, Bd); end   # shared by all units of a type
         for h in harm_nws
             fill!(Vr, 0.0); fill!(Vi, 0.0); Zh = Z[h]
             for d in units
                 haskey(ubus, d) && haskey(bus_pos, ubus[d]) || continue
                 dp = bus_pos[ubus[d]]; lo, hi = ranges[h][d]
-                φ = lo + (hi - lo) * ωu[d]; c = cos(φ); s = sin(φ)
+                φ = lo + (hi - lo) * ωu[d]
+                if haskey(utype, d)
+                    s_lo, s_hi = shifts[h][utype[d]]; φ += s_lo + (s_hi - s_lo) * ωt[utype[d]]
+                end
+                c = cos(φ); s = sin(φ)
                 @inbounds for p in 1:npos
                     z = Zh[p, dp]; zr = real(z); zi = imag(z)
                     Vr[p] += zr * c - zi * s; Vi[p] += zi * c + zr * s

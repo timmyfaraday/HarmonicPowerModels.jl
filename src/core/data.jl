@@ -278,6 +278,18 @@ harmonic units are "normal" loads: they receive zero trig PCE coefficients
 | `"harmonics"` | Dict{Int, T} | Maps harmonic order h to its angle range in **radians**, where `T` is either a bare `(v_min, v_max)` tuple (shared by all units) or a `Dict{unit_id => (v_min, v_max)}` (per-unit) |
 | `"angle_centre"` | String (optional) | Where each unit's angle support is centred: `"range"` (default) keeps the supplied range as given, so every unit shares one mean angle; `"ref_angle"` re-centres it on each unit's own `load["ref_angle"]` (see below) |
 | `"harmonic_units"` | Vector{Int} (optional) | Load ids designated as harmonic sources; defaults to **all** loads |
+| `"type_germs"` | Dict{String, Dict} (optional) | Germs shared by groups of units (see below): name → `Dict("units" => Vector{Int}, "shift" => Dict{Int => (s_min, s_max)})`, shift in **radians** per harmonic |
+
+# Shared type germs
+A group of units (a converter type) can share one extra germ ω_t, which adds a
+common-mode angle shift to every unit of the group:
+
+    φ_{u,h} = v_min + (v_max − v_min)·ω_u + s_min + (s_max − s_min)·ω_t
+
+e.g., a firing delay common to all phase-controlled units, shifting harmonic h
+by −h·α_f. Each type adds one germ (dimension N + t), so the basis grows from
+C(N+δ, δ) to C(N+T+δ, δ); a unit belongs to at most one type. Units outside any
+type keep their single own germ.
 
 # Per-unit mean angles
 With `"angle_centre" => "ref_angle"` the supplied range supplies only the
@@ -310,6 +322,9 @@ per-unit `Dict` form instead.
 | `"sin_phi"`        | `Dict{Int,Dict{Int,Vector}}` indexed by [nw_id][load_id]; length-P per load |
 | `"harmonic_units"` | sorted Vector of harmonic-unit load ids (germ dimension = position) |
 | `"germ_dim"`       | `Dict{Int,Int}` mapping harmonic-unit id → germ dimension 1:N |
+| `"type_dim"`       | `Dict{String,Int}` mapping type name → germ dimension N+1:N+T |
+| `"unit_type"`      | `Dict{Int,String}` mapping a typed unit → its type |
+| `"type_shifts"`    | `Dict{Int,Dict{String,Tuple}}` per-harmonic type shift (s_min, s_max) [rad] |
 
 The basis is orthogonal w.r.t. the Beta **probability** measure, so
 `psi_norms[1] == 1` and the consumer formulas E[X] = x₀ and
@@ -343,8 +358,22 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
     N              = length(harmonic_units)
     N ≥ 1 || error("update_hdata_with_pce_data!: no harmonic units designated")
 
-    # ── 2. Multivariate PCE workspace (N germs, monic Beta01, prob. measure) ──
-    pb = PCEBasis(N, α̂, β̂, δ)
+    # shared type germs: dimensions N+1 … N+T, one per type (sorted by name)
+    type_germs = get(pce_params, "type_germs", Dict{String,Any}())
+    type_names = sort(collect(keys(type_germs)))
+    type_dim   = Dict(t => N + i for (i, t) in enumerate(type_names))
+    unit_type  = Dict{Int,String}()
+    for t in type_names, d in type_germs[t]["units"]
+        haskey(germ_dim, d) || error("update_hdata_with_pce_data!: type \"$t\" lists " *
+                                     "unit $d, which is not a harmonic unit")
+        haskey(unit_type, d) && error("update_hdata_with_pce_data!: unit $d belongs " *
+                                      "to types \"$(unit_type[d])\" and \"$t\"")
+        unit_type[d] = t
+    end
+    Ngerm = N + length(type_names)
+
+    # ── 2. Multivariate PCE workspace (N+T germs, monic Beta01, prob. measure) ──
+    pb = PCEBasis(Ngerm, α̂, β̂, δ)
     P  = pb.dim
 
     # ── 3. Multiplication tensor (dense; consumers index M[j,l,k] directly) ───
@@ -375,13 +404,22 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
     # populate the full basis (products of two single-germ terms). Exposing the
     # reduced set K_phys lets the QCQP create physical variables only where they
     # can be nonzero (0-based index values, a subset of K).
+    # With type germs a unit's cos/sin also live on (own germ, type germ) pairs,
+    # so those mixed indices are physical too.
     K      = 0:(P - 1)
-    K_phys = [k - 1 for k in 1:P if count(!iszero, view(pb.ind, k, :)) <= 1]
+    pairs  = Set((germ_dim[d], type_dim[t]) for (d, t) in unit_type)
+    function _physical(k)
+        nz = findall(!iszero, view(pb.ind, k, :))
+        length(nz) <= 1 || (length(nz) == 2 && (nz[1], nz[2]) in pairs)
+    end
+    K_phys = [k - 1 for k in 1:P if _physical(k)]
 
     cos_phi = Dict{Int, Dict{Int, Vector{Float64}}}()
     sin_phi = Dict{Int, Dict{Int, Vector{Float64}}}()
     # per-unit, per-harmonic angle support [rad] — retained for empirical-λ sampling
     angle_ranges = Dict{Int, Dict{Int, Tuple{Float64,Float64}}}()
+    # per-harmonic type shift [rad] — retained for empirical-λ sampling
+    type_shifts  = Dict{Int, Dict{String, Tuple{Float64,Float64}}}()
     zerovec = zeros(P)   # normal loads: no harmonic injection
 
     for (nw_str, ntw) in hdata["nw"]
@@ -397,6 +435,8 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
         cos_phi[nw_int] = Dict{Int, Vector{Float64}}()
         sin_phi[nw_int] = Dict{Int, Vector{Float64}}()
         angle_ranges[nw_int] = Dict{Int, Tuple{Float64,Float64}}()
+        type_shifts[nw_int] = Dict{String, Tuple{Float64,Float64}}(
+            t => Tuple(Float64.(type_germs[t]["shift"][nw_int])) for t in type_names)
 
         for d_str in keys(ntw["load"])
             d_int = parse(Int, d_str)
@@ -425,7 +465,12 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
                 offset = deg2rad(get(ntw["load"][d_str], "angle_offset", 0.0))
                 v_min, v_max = v_min + offset, v_max + offset
 
-                cc, sc = affine_trig_pce(pb, germ_dim[d_int], v_min, v_max)
+                cc, sc = if haskey(unit_type, d_int)
+                    t = unit_type[d_int]; s_min, s_max = type_shifts[nw_int][t]
+                    affine2_trig_pce(pb, germ_dim[d_int], v_min, v_max, type_dim[t], s_min, s_max)
+                else
+                    affine_trig_pce(pb, germ_dim[d_int], v_min, v_max)
+                end
                 cos_phi[nw_int][d_int] = cc
                 sin_phi[nw_int][d_int] = sc
                 angle_ranges[nw_int][d_int] = (Float64(v_min), Float64(v_max))
@@ -449,6 +494,9 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
         "sin_phi"        => sin_phi,
         "harmonic_units" => harmonic_units,
         "germ_dim"       => germ_dim,
+        "type_dim"       => type_dim,
+        "unit_type"      => unit_type,
+        "type_shifts"    => type_shifts,
         "bound"          => bound,
         "epsilon"        => ε,
         "alpha_beta"     => (Float64(α̂), Float64(β̂)),

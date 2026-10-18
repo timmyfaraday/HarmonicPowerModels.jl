@@ -62,5 +62,6 @@ PMs.silence()
     # Stochastic HHC integration tests
     include("shhc_industrial.jl")
     include("shhc_independent.jl")
+    include("shhc_type_germ.jl")
 
 end
