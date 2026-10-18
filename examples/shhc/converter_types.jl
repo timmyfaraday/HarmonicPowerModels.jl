@@ -13,6 +13,11 @@
 #          the h-th harmonic phasor of phase a by −h·αf; the dispersion (range  #
 #          width) is kept. Exact for the idealised rectangular current, an      #
 #          approximation once commutation overlap changes with αf.              #
+#   B(αc, w) type B whose firing delay is not fixed but ranges over          #
+#          [αc − w/2, αc + w/2] with the operating point. Approximation that    #
+#          keeps one germ per unit: the mean shifts by −h·αc and the support    #
+#          widens by h·w (the delay range seen at harmonic h), with the shared  #
+#          Beta shape over the widened support.                                 #
 #   C      a PWM active front end. Its low-order harmonics are not set by       #
 #          commutation and their angle follows the control and background       #
 #          distortion, so it is modelled as spread over the full circle:        #
@@ -31,13 +36,19 @@
 const TYPE_A = Dict(h => (PCE_PARAMS["harmonics"][h].v_min, PCE_PARAMS["harmonics"][h].v_max)
                     for h in (5, 7, 11, 13))
 
-"Angle range [rad] of converter `type` at harmonic `h`: :A, (:B, αf_deg) or :C."
+"Angle range [rad] of converter `type` at harmonic `h`: :A, (:B, αf_deg), (:B, αc_deg, w_deg) or :C."
 function type_range(type, h)
     lo, hi = TYPE_A[h]
     type == :A && return (lo, hi)
-    if type isa Tuple && type[1] == :B
+    if type isa Tuple && type[1] == :B && length(type) == 2
         δ = -h * deg2rad(type[2])
         return (lo + δ, hi + δ)
+    end
+    if type isa Tuple && type[1] == :B && length(type) == 3
+        Eω   = PCE_PARAMS["alpha_hat"] / (PCE_PARAMS["alpha_hat"] + PCE_PARAMS["beta_hat"])
+        mean = lo + (hi - lo) * Eω - h * deg2rad(type[2])
+        W    = (hi - lo) + h * deg2rad(type[3])
+        return (mean - W * Eω, mean + W * (1 - Eω))
     end
     if type == :C
         Eω = PCE_PARAMS["alpha_hat"] / (PCE_PARAMS["alpha_hat"] + PCE_PARAMS["beta_hat"])
@@ -60,5 +71,17 @@ function mix_ranges(mix::String, units)
     cyc = MIXES[mix]
     Dict{Int,Any}(h => Dict{Int,Tuple{Float64,Float64}}(
                       d => type_range(cyc[mod1(k, length(cyc))], h) for (k, d) in enumerate(units))
+                  for h in (5, 7, 11, 13))
+end
+
+"""
+Per-unit angle ranges with a share `s` ∈ [0, 1] of the units of type `typeB`
+and the rest of type A. Type-B units are spread evenly over the load order:
+unit k (1-based) is type B when ⌊k·s⌋ > ⌊(k−1)·s⌋.
+"""
+function share_ranges(s::Real, typeB, units)
+    isB(k) = floor(Int, k * s + 1e-9) > floor(Int, (k - 1) * s + 1e-9)
+    Dict{Int,Any}(h => Dict{Int,Tuple{Float64,Float64}}(
+                      d => type_range(isB(k) ? typeB : :A, h) for (k, d) in enumerate(units))
                   for h in (5, 7, 11, 13))
 end
