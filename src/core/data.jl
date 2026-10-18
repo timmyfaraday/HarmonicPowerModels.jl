@@ -417,6 +417,13 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
                     v_min, v_max = recentre_range(v_min, v_max, centre, Eω)
                 end
 
+                # Local angle reference: the support is given relative to the
+                # unit's own fundamental bus voltage and is rotated into the
+                # network frame by load["angle_offset"] = h·θ_i (see
+                # `update_hdata_with_angle_offsets!`); zero for "global".
+                offset = deg2rad(get(ntw["load"][d_str], "angle_offset", 0.0))
+                v_min, v_max = v_min + offset, v_max + offset
+
                 cc, sc = affine_trig_pce(pb, germ_dim[d_int], v_min, v_max)
                 cos_phi[nw_int][d_int] = cc
                 sin_phi[nw_int][d_int] = sc
@@ -562,6 +569,7 @@ function _HPM.replicate(data::Dict{String, Any};
     # rename the case
     hdata["name"] = data["name"]
     haskey(data, "principle") ? hdata["principle"] = data["principle"] : ~ ;
+    haskey(data, "angle_reference") ? hdata["angle_reference"] = data["angle_reference"] : ~ ;
 
     ### add entries to the harmonic data #######################################
     # add the xfmr magnetizing current

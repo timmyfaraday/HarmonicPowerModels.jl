@@ -316,6 +316,17 @@ function constraint_gen_current(pm::_PMs.AbstractIVRModel, n::Int, g, i, gsc, bs
     JuMP.@constraint(pm.model, cig == -(gsc*vi + bsc*vr))
 end
 ""
+function constraint_gen_pv_setpoint(pm::_PMs.AbstractIVRModel, n::Int, g, i, vg, pg)
+    vr = _PMs.var(pm, n, :vr, i)
+    vi = _PMs.var(pm, n, :vi, i)
+
+    crg = _PMs.var(pm, n, :crg, g)
+    cig = _PMs.var(pm, n, :cig, g)
+
+    JuMP.@constraint(pm.model, vr^2 + vi^2 == vg^2)
+    isnothing(pg) || JuMP.@constraint(pm.model, vr*crg + vi*cig == pg)
+end
+""
 function constraint_gen_current_rms_limit(pm::_PMs.AbstractIVRModel, g, c_rating)
     crg =  [_PMs.var(pm, n, :crg, g) for n in sorted_nw_ids(pm)]
     cig =  [_PMs.var(pm, n, :cig, g) for n in sorted_nw_ids(pm)]

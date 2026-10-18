@@ -43,10 +43,12 @@ The function:
 """
 function solve_shhc(hdata::Dict, ::Type{sHHC_QCQP}, optimizer;
                     pce_params::Dict, kwargs...)
-    update_hdata_with_pce_data!(hdata, pce_params)
     # Pre-compute fundamental HPF results so branch["cm_fr"] and bus["vm"] are
     # available for constraint_current_rms_chance and constraint_voltage_*_chance.
+    # It runs first: with a local angle reference the PCE angle supports are
+    # rotated by the fundamental bus voltage angles it produces.
     update_hdata_with_fundamental_hpf_results!(hdata, dHHC_NLP, optimizer)
+    update_hdata_with_pce_data!(hdata, pce_params)
     update_hdata_with_fairness_principle_data!(hdata, sHHC_QCQP, optimizer)
 
     return _PMs.solve_model(hdata, sHHC_QCQP, optimizer, build_shhc;
@@ -345,10 +347,11 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
         "scalar hosting capacity I_h. Use sHHC_QCQP for \"$principle\", or set " *
         "hdata[\"principle\"] = \"absolute equality\".")
 
-    update_hdata_with_pce_data!(hdata, pce_params)
     # The HPF requires a nonlinear solver (e.g. Ipopt); hpf_optimizer lets
-    # callers pass a different solver than the SOCP optimizer.
+    # callers pass a different solver than the SOCP optimizer. It runs before the
+    # PCE data so a local angle reference can rotate the angle supports.
     update_hdata_with_fundamental_hpf_results!(hdata, dHHC_NLP, hpf_optimizer)
+    update_hdata_with_pce_data!(hdata, pce_params)
 
     pce      = hdata["pce"]
     pb       = pce["basis"]          # multivariate PCEBasis (one germ per harmonic unit)

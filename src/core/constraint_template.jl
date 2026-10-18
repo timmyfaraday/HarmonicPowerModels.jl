@@ -158,6 +158,23 @@ function constraint_gen_current(pm::_PMs.AbstractPowerModel, g::Int; nw::Int=fun
         constraint_gen_current(pm, nw, g, bus, gsc, bsc)
     end
 end
+# pv bus — a generator on a PV bus (bus_type 2) holds its fundamental voltage
+# magnitude at vg and its active power at pg; the slack (bus_type 3) closes the
+# power balance. Only enforced at the fundamental.
+""
+function constraint_gen_pv_setpoint(pm::_PMs.AbstractPowerModel, g::Int; nw::Int=fundamental(pm), active_bounds::Bool=true)
+    nw == fundamental(pm) || return
+
+    gen = _PMs.ref(pm, nw, :gen, g)
+    bus = gen["gen_bus"]
+
+    if _PMs.ref(pm, nw, :bus, bus)["bus_type"] == 2
+        # with the generator bounds enforced, pmin == pmax already fixes the
+        # active power; repeating it as an equality over-determines the model.
+        pg = active_bounds && gen["pmin"] == gen["pmax"] ? nothing : gen["pg"]
+        constraint_gen_pv_setpoint(pm, nw, g, bus, gen["vg"], pg)
+    end
+end
 ""
 function constraint_gen_current_rms_limit(pm::_PMs.AbstractPowerModel, g::Int)
     gen = _PMs.ref(pm, fundamental(pm), :gen, g)
@@ -184,7 +201,7 @@ function constraint_load_current(pm::_PMs.AbstractPowerModel, l::Int; nw::Int=fu
     i      = load["load_bus"]
     pd, qd = load["pd"], load["qd"]
 
-    aref   = load["ref_angle"]
+    aref   = load["ref_angle"] + get(load, "angle_offset", 0.0)
 
     if nw == fundamental(pm)
         constraint_load_constant_power(pm, nw, l, i, pd, qd)

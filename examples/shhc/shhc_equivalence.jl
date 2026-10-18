@@ -47,6 +47,9 @@ phys_ranges(cfg) = Dict{Int,Any}(h => cfg.base_ranges[h] for h in cfg.harm)
 # ── solve wrappers (fresh replicate each call) ──────────────────────────────────
 function _rep(cfg)
     hd = HPM.replicate(deepcopy(cfg.data), H = cfg.H)
+    # optional angle reference: "global" (network frame) or "local" (relative to
+    # each unit's fundamental bus voltage, see update_hdata_with_angle_offsets!)
+    hasproperty(cfg, :angle_reference) && (hd["angle_reference"] = cfg.angle_reference)
     # optional post-replicate hook (e.g. to_single_ground!) applied before unit restriction
     hasproperty(cfg, :postrep) && cfg.postrep !== nothing && cfg.postrep(hd)
     if cfg.restrict_units                       # IEEE-30: keep only the first-N units

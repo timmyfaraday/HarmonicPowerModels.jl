@@ -49,10 +49,12 @@ function build_hpf(pm::_PMs.AbstractIVRModel)
     for f in ids(pm, :filter)
         constraint_active_filter(pm, f, nw=fundamental(pm))
     end
-    ### generator — fundamental power bounds (P/Q based on the bus voltage)
+    ### generator — power flow setpoints: the slack fixes its voltage (above),
+    ### a PV generator its voltage magnitude and active power. Generator P/Q
+    ### limits are not enforced: they would over-determine the square power-flow
+    ### system, which Ipopt cannot solve with inequality constraints present.
     for g in ids(pm, :gen)
-        _PMs.constraint_gen_active_bounds(pm, g, nw=fundamental(pm))
-        _PMs.constraint_gen_reactive_bounds(pm, g, nw=fundamental(pm))
+        constraint_gen_pv_setpoint(pm, g, nw=fundamental(pm), active_bounds=false)
     end
 
     ## harmonic constraints

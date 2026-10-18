@@ -84,7 +84,7 @@ module HarmonicPowerModels
 
     export replicate
     export solve_hpf, solve_hopf, solve_hhc, solve_shhc
-    export update_hdata_with_pce_data!
+    export update_hdata_with_pce_data!, update_hdata_with_angle_offsets!
 
     export calculate_pos_seq_harmonic_impedance
     export build_harmonic_Ybus, harmonic_transfer_impedance, bus_voltage_limits

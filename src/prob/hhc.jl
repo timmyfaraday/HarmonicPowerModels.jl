@@ -82,8 +82,9 @@ function build_hhc(pm::dHHC_NLP)
 
         _PMs.constraint_gen_active_bounds(pm, g, nw=fundamental(pm))
         _PMs.constraint_gen_reactive_bounds(pm, g, nw=fundamental(pm))
+        constraint_gen_pv_setpoint(pm, g, nw=fundamental(pm))
     end
-    ### xfmr 
+    ### xfmr
     for x in ids(pm, :xfmr)
         constraint_xfmr_current_rms_limit(pm, x)
     end

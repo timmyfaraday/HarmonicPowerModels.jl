@@ -1,0 +1,26 @@
+════════════════════════════════════════════════════════════════════════════════════
+STOCHASTIC EQUIVALENCE — IEEE30PV_N4_LOCAL
+════════════════════════════════════════════════════════════════════════════════════
+Units=4  ε=0.05  MC samples=1000
+
+sHHC_SOC vs sHHC_QCQP per chance bound  [Σ_h I_h, pu]:
+  bound      SOC              QCQP             SOC-QCQP%    status
+  empirical  3.20005211e-02   3.21239239e-02   -0.3841      OPTIMAL/LOCALLY_SOLVED
+  gaussian   3.17461179e-02   3.18943176e-02   -0.4647      OPTIMAL/LOCALLY_SOLVED
+  cantelli   2.90087947e-02   2.96338250e-02   -2.1092      OPTIMAL/LOCALLY_SOLVED
+
+Monte-Carlo dHHC objective distribution [pu]:
+  min=3.050107e-02 q05=3.176477e-02 median=3.354482e-02 q95=3.498897e-02 max=3.655262e-02 mean=3.345973e-02
+
+deterministic dHHC@E[φ] = 3.362488e-02  (MC pct 52.5%, viol 52.5%)
+
+sHHC objective vs MC (q05 = 95%-reliable target; viol = P[H<obj]):
+  SOC  empirical  = 3.200052e-02  (vs q05 +0.74%, viol 8.3%)
+  QCQP empirical  = 3.212392e-02  (vs q05 +1.13%, viol 9.7%)
+  SOC  gaussian   = 3.174612e-02  (vs q05 -0.06%, viol 4.8%)
+  QCQP gaussian   = 3.189432e-02  (vs q05 +0.41%, viol 7.4%)
+  SOC  cantelli   = 2.900879e-02  (vs q05 -8.68%, viol 0.0%)
+  QCQP cantelli   = 2.963382e-02  (vs q05 -6.71%, viol 0.0%)
+
+MC CSV: ieee30pv_N4_local_stoch_mc.csv   refs: ieee30pv_N4_local_stoch_refs.csv
+════════════════════════════════════════════════════════════════════════════════════
