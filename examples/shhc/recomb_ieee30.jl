@@ -26,7 +26,13 @@ include(joinpath(@__DIR__, "diag_binding_ieee30.jl"))
 iec_alpha(h) = h < 10 ? 1.4 : 2.0
 lawsum(m, α) = sum(m .^ α)^(1 / α)
 
-function recombination(scen, N, aref)
+"""
+    recombination(scen, N, aref; ranges = nothing)
+
+`ranges[h][d] = (lo, hi)` [rad] sets a per-unit angle support (e.g., from
+`mix_ranges` in converter_types.jl); by default every unit takes the §II range.
+"""
+function recombination(scen, N, aref; ranges = nothing)
     data = ieee30_scenario(scen, ipopt)
     units = sort(parse.(Int, collect(keys(data["load"]))))[1:N]
     hd = HPM.replicate(deepcopy(data), H = H)
@@ -42,9 +48,11 @@ function recombination(scen, N, aref)
     res = Dict{Int,Dict{Symbol,Float64}}()
     for h in harm
         off = [deg2rad(get(hd["nw"]["$h"]["load"]["$d"], "angle_offset", 0.0)) for d in units]
-        lo, hi = rng[h]; lo_j = lo .+ off; hi_j = hi .+ off
-        φE = lo_j .+ (hi - lo) * Eω
-        W  = [lo_j .+ (hi - lo) .* rand(beta, N) for _ in 1:20_000]
+        lo_u = [ranges === nothing ? rng[h][1] : ranges[h][d][1] for d in units]
+        hi_u = [ranges === nothing ? rng[h][2] : ranges[h][d][2] for d in units]
+        lo_j = lo_u .+ off; hi_j = hi_u .+ off; wd = hi_u .- lo_u
+        φE = lo_j .+ wd .* Eω
+        W  = [lo_j .+ wd .* rand(beta, N) for _ in 1:20_000]
         cap = minimum(hd["nw"]["$h"]["load"]["$d"]["c_rating"] for d in units)
         buses = [(L = hd["nw"]["$h"]["bus"][b]["ihdmax"] * bus["vm"],
                   z = [Z[h][bus_pos[parse(Int, b)], bus_pos[ubus[d]]] for d in units])
@@ -83,21 +91,23 @@ end
 fmt(x) = isnan(x) ? "  cap" : isinf(x) ? "  >8 " : @sprintf("%5.2f", x)
 pct(a, b) = @sprintf("%+6.1f%%", 100(a / b - 1))
 
-open(joinpath(@__DIR__, "output", "ieee30_recombination.txt"), "w") do io
-    println(io, "IEEE30 — feasible recombination vs the IEC 61000-3-6 summation law (binding: IHD).")
-    println(io, "α_eq: summation exponent reproducing the network hosting current (IEC: 1.4 for h=5,7; 2.0 for h=11,13).")
-    println(io, "Hosting Σ_h I_h relative to the deterministic angle E[φ]; 'cap' = unit rating binds.\n")
-    @printf(io, "%-10s %2s %-6s | %-23s | %-23s | %8s %8s %8s %8s %8s\n", "scenario", "N", "ref",
-            "α_eq det  h=5/7/11/13", "α_eq q95  h=5/7/11/13", "arith", "robust", "q95", "IEC", "rss")
-    for scen in ["base", "banks", "cable33", "cable132c", "cableallc"], N in (8, 21), aref in ("global", "local")
-        r = recombination(scen, N, aref)
-        tot(k) = sum(r[h][k] for h in harm)
-        @printf(io, "%-10s %2d %-6s | %s | %s | %8s %8s %8s %8s %8s\n", scen, N, aref,
-                join([fmt(r[h][:det_alpha]) for h in harm], " "),
-                join([fmt(r[h][:q95_alpha]) for h in harm], " "),
-                pct(tot(:arith), tot(:det)), pct(tot(:rob), tot(:det)), pct(tot(:q95), tot(:det)),
-                pct(tot(:iec), tot(:det)), pct(tot(:rss), tot(:det)))
-        flush(io)
+if abspath(PROGRAM_FILE) == @__FILE__
+    open(joinpath(@__DIR__, "output", "ieee30_recombination.txt"), "w") do io
+        println(io, "IEEE30 — feasible recombination vs the IEC 61000-3-6 summation law (binding: IHD).")
+        println(io, "α_eq: summation exponent reproducing the network hosting current (IEC: 1.4 for h=5,7; 2.0 for h=11,13).")
+        println(io, "Hosting Σ_h I_h relative to the deterministic angle E[φ]; 'cap' = unit rating binds.\n")
+        @printf(io, "%-10s %2s %-6s | %-23s | %-23s | %8s %8s %8s %8s %8s\n", "scenario", "N", "ref",
+                "α_eq det  h=5/7/11/13", "α_eq q95  h=5/7/11/13", "arith", "robust", "q95", "IEC", "rss")
+        for scen in ["base", "banks", "cable33", "cable132c", "cableallc"], N in (8, 21), aref in ("global", "local")
+            r = recombination(scen, N, aref)
+            tot(k) = sum(r[h][k] for h in harm)
+            @printf(io, "%-10s %2d %-6s | %s | %s | %8s %8s %8s %8s %8s\n", scen, N, aref,
+                    join([fmt(r[h][:det_alpha]) for h in harm], " "),
+                    join([fmt(r[h][:q95_alpha]) for h in harm], " "),
+                    pct(tot(:arith), tot(:det)), pct(tot(:rob), tot(:det)), pct(tot(:q95), tot(:det)),
+                    pct(tot(:iec), tot(:det)), pct(tot(:rss), tot(:det)))
+            flush(io)
+        end
     end
+    println("✓ ieee30_recombination.txt")
 end
-println("✓ ieee30_recombination.txt")
