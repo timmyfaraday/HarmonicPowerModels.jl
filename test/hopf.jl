@@ -20,7 +20,7 @@ Example considering harmonic optimal power flow for a two-bus example.
     @testset "Two-Bus Example" begin
         # read-in data
         path = joinpath(HPM.BASE_DIR,"test/data/matpower/two_bus_example_hpf.m")
-        data = PMs.parse_file(path)
+        data = HPM.parse_file(path)
 
         # set the formulation
         form = PMs.IVRPowerModel
@@ -45,7 +45,7 @@ Example considering harmonic optimal power flow for a two-bus example.
     @testset "Industrial Example" begin
         # read-in data
         path = joinpath(HPM.BASE_DIR,"test/data/matpower/industrial_network_hopf.m")
-        data = PowerModels.parse_file(path)
+        data = HPM.parse_file(path)
 
         # set the formulation
         form = PMs.IVRPowerModel
@@ -93,7 +93,7 @@ Example considering harmonic optimal power flow for a two-bus example.
 
         # solve HOPF problem w. xfmr magnitization
         hdata_w = HPM.replicate(data, H=H, xfmr_magn=magn, bus_id=6)
-        results_w = HPM.solve_hopf(hdata_wo, PMs.IVRPowerModel, solver_nlp)
+        results_w = HPM.solve_hopf(hdata_w, PMs.IVRPowerModel, solver_nlp)
 
         @testset "HOPF w/o Xfmr Magnitization" begin
             # solved to optimality

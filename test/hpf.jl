@@ -20,7 +20,7 @@
 
         # read-in data
         path = joinpath(HPM.BASE_DIR,"test/data/matpower/two_bus_example_hpf.m")
-        data = PMs.parse_file(path)
+        data = HPM.parse_file(path)
 
         # set the formulation
         form = PMs.IVRPowerModel

@@ -43,6 +43,9 @@ PMs.silence()
 
 @testset "HarmonicPowerModels.jl" begin
 
+    # data layer
+    include("test_data.jl")
+
     # models
     include("hhc.jl")
     include("hpf.jl")
@@ -53,7 +56,11 @@ PMs.silence()
         include("test_pce.jl")
     end
 
+    # Constructive worst-case angle utilities
+    include("test_constructive.jl")
+
     # Stochastic HHC integration tests
     include("shhc_industrial.jl")
+    include("shhc_independent.jl")
 
 end

@@ -25,7 +25,10 @@ module HarmonicPowerModels
 
     import SignalDecomposition
     import Interpolations
-    
+    import Distributions
+    import Random
+    import Statistics
+
     # import function to overwrite
     import InfrastructureModels: replicate
 
@@ -52,6 +55,7 @@ module HarmonicPowerModels
 
     # include
     include("core/base.jl")
+    include("core/pce_basis.jl")    # unified PolyChaos-based PCE workspace
     include("core/types.jl")
     include("core/constraint_template.jl")
     include("core/data.jl")
@@ -65,22 +69,28 @@ module HarmonicPowerModels
     include("prob/hhc.jl")
     include("prob/shhc.jl")
 
-    include("util/pce.jl")
     include("util/imp.jl")
     include("util/init.jl")
     include("util/ref.jl")
     include("util/sol.jl")
     include("util/xfmr_magn.jl")
+    include("util/harmonic_admittance.jl")
+    include("core/lp_reduction.jl")
 
     # export
     export BASE_DIR
     export dHHC_NLP, dHHC_SOC
-    export sHHC_QCQP, sHHC_LP
+    export sHHC_QCQP, sHHC_SOC
 
     export replicate
     export solve_hpf, solve_hopf, solve_hhc, solve_shhc
     export update_hdata_with_pce_data!
 
     export calculate_pos_seq_harmonic_impedance
+    export build_harmonic_Ybus, harmonic_transfer_impedance, bus_voltage_limits
+    export reduced_harmonic_impedance, constructive_worst_case_angles, recentre_angle_ranges
+    export empirical_lambdas, solve_shhc_calibrated
+    export compute_C_coefficients, compute_alpha, compute_C_scalar
+    export lp_solution, compare_shared_vs_independent
     
 end

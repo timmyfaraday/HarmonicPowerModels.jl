@@ -95,9 +95,18 @@ function build_hhc(pm::dHHC_NLP)
             constraint_fairness_principle(pm, nw=n)
         end
 
-        ### reference node
-        for i in _PMs.ids(pm, :ref_buses, nw=n)
-            constraint_voltage_ref_bus(pm, i, nw=n)
+        ### reference / clean buses — the fundamental slack fixes a voltage; at
+        ### the harmonics only clean buses are forced to V=0 (ideal ground), all
+        ### other buses are grounded through the generator subtransient impedance
+        ### and the line/bus shunts.
+        if n == fundamental(pm)
+            for i in _PMs.ids(pm, :ref_buses, nw=n)
+                constraint_voltage_ref_bus(pm, i, nw=n)
+            end
+        else
+            for i in _PMs.ids(pm, :bus, nw=n)
+                constraint_voltage_clean_bus(pm, i, nw=n)
+            end
         end
 
         ### node
@@ -114,7 +123,7 @@ function build_hhc(pm::dHHC_NLP)
             _PMs.constraint_voltage_drop(pm, b, nw=n)
         end
 
-        ### generator
+        ### generator — harmonic subtransient-impedance shunt to ground
         for g in _PMs.ids(pm, :gen, nw=n)
             constraint_gen_current(pm, g, nw=n)
         end
@@ -166,18 +175,18 @@ function build_hhc(pm::dHHC_SOC)
     # objective 
     objective_maximum_hosting_capacity(pm)
 
-    # constraints 
-    ## overall constraints
+    # constraints
+    ## overall constraints (cross-harmonic RMS / THD voltage and RMS current)
     ### node
     for i in ids(pm, :bus)
-        # constraint_voltage_rms_limit(pm, i)
-        # constraint_voltage_thd_limit(pm, i)
+        constraint_voltage_rms_limit(pm, i)
+        constraint_voltage_thd_limit(pm, i)
     end
     ### branch
     for b in ids(pm, :branch)
-        # constraint_current_rms_limit(pm, b)
+        constraint_current_rms_limit(pm, b)
     end
-    ### xfmr 
+    ### xfmr
     for x in ids(pm, :xfmr)
         # constraint_xfmr_current_rms_limit(pm, x)
     end
@@ -186,12 +195,12 @@ function build_hhc(pm::dHHC_SOC)
     for n in _PMs.nw_ids(pm) if n ≠ fundamental(pm)
         ### fairness principle
         constraint_fairness_principle(pm, nw=n)
-        
-        ### reference node
-        if !haskey(pm.setting, "fix_refbus_angle") || pm.setting["fix_refbus_angle"] == true 
-            for i in _PMs.ids(pm, :ref_buses, nw=n)
-                constraint_voltage_ref_bus(pm, i, nw=n)
-            end
+
+        ### clean buses — only clean buses are forced to V=0 at the harmonics
+        ### (ideal ground); all other buses are grounded through the generator
+        ### subtransient impedance and the line/bus shunts.
+        for i in _PMs.ids(pm, :bus, nw=n)
+            constraint_voltage_clean_bus(pm, i, nw=n)
         end
 
         ### node
@@ -206,6 +215,11 @@ function build_hhc(pm::dHHC_SOC)
             _PMs.constraint_current_to(pm, b, nw=n)
 
             _PMs.constraint_voltage_drop(pm, b, nw=n)
+        end
+
+        ### generator — harmonic subtransient-impedance shunt to ground
+        for g in _PMs.ids(pm, :gen, nw=n)
+            constraint_gen_current(pm, g, nw=n)
         end
 
         ### xfmr

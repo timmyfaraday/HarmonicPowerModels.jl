@@ -68,9 +68,18 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
 
     ## harmonic constraints
     for n in _PMs.nw_ids(pm)
-        ### reference node
-        for i in _PMs.ids(pm, :ref_buses, nw=n) 
-            constraint_voltage_ref_bus(pm, i, nw=n)
+        ### reference / clean buses — the fundamental slack fixes a voltage; at
+        ### the harmonics only clean buses are forced to V=0 (ideal ground), all
+        ### other buses are grounded through the generator subtransient impedance
+        ### and the line/bus shunts.
+        if n == fundamental(pm)
+            for i in _PMs.ids(pm, :ref_buses, nw=n)
+                constraint_voltage_ref_bus(pm, i, nw=n)
+            end
+        else
+            for i in _PMs.ids(pm, :bus, nw=n)
+                constraint_voltage_clean_bus(pm, i, nw=n)
+            end
         end
 
         ### node
@@ -83,14 +92,19 @@ function build_hopf(pm::_PMs.AbstractIVRModel)
         for b in _PMs.ids(pm, :branch, nw=n)
             _PMs.constraint_current_from(pm, b, nw=n)
             _PMs.constraint_current_to(pm, b, nw=n)
-            
+
             _PMs.constraint_voltage_drop(pm, b, nw=n)
+        end
+
+        ### generator — harmonic subtransient-impedance shunt to ground
+        for g in _PMs.ids(pm, :gen, nw=n)
+            constraint_gen_current(pm, g, nw=n)
         end
 
         ### harmonic load
         for l in _PMs.ids(pm, :load, nw=n)
             constraint_load_power(pm, l, nw=n)
-        end   
+        end
     
         ### xfmr
         for x in _PMs.ids(pm, :xfmr, nw=n)

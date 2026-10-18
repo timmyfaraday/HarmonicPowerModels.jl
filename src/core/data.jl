@@ -55,6 +55,35 @@ const thd_limits = Dict(
     "IEEE519-2022-1/69kV" =>        0.05000,
     "IEEE519-2022-69/161kV" =>      0.02500) 
 
+"""
+    HarmonicPowerModels.parse_file(path; kwargs...)
+
+Parse a MATPOWER/PowerModels case while preserving the HarmonicPowerModels
+"clean bus" convention (`bus_type == 4`).
+
+A clean bus is an ideal source: it acts as a voltage reference at the fundamental
+and is forced to V=0 (ideal ground) at every harmonic.  MATPOWER reserves
+`type 4` for isolated buses and PowerModels' validation rewrites/deactivates such
+buses, so this wrapper parses with `validate=false`, records the marking in
+`bus["is_clean"]`, remaps the clean buses to `bus_type = 3` (fundamental
+reference), and only then runs the standard network corrections.
+
+All other buses receive `bus["is_clean"] = false`.
+"""
+function parse_file(path::String; kwargs...)
+    data = _PMs.parse_file(path; validate=false, kwargs...)
+    for (_, bus) in data["bus"]
+        if bus["bus_type"] == 4
+            bus["is_clean"]  = true
+            bus["bus_type"]  = 3        # ideal source ⇒ fundamental reference
+        else
+            bus["is_clean"]  = false
+        end
+    end
+    _PMs.correct_network_data!(data)
+    return data
+end
+
 ""
 function ihd_current_limit_ieee_519(voltage, i_ratio, harmonic)
     if voltage < 69.0
@@ -205,12 +234,34 @@ function ihd_current_limit_ieee_519(voltage, i_ratio, harmonic)
                 return 0.0
 end end end end
 
+# Internal: resolve the (v_min, v_max) angle range for harmonic unit `uid` at
+# harmonic `h` from a `pce_params["harmonics"][h]` entry that is either a bare
+# `(v_min, v_max)` tuple (shared by all units) or a `Dict{unit_id => (v_min, v_max)}`.
+function _resolve_angle_range(entry, uid::Int)
+    if entry isa AbstractDict
+        haskey(entry, uid) || error("update_hdata_with_pce_data!: no angle range " *
+                                    "for harmonic unit $uid in per-unit harmonics entry")
+        return entry[uid]
+    else
+        return entry            # bare (v_min, v_max), shared across units
+    end
+end
+
 """
     update_hdata_with_pce_data!(hdata, pce_params)
 
 Precompute all polynomial chaos expansion (PCE) quantities required by
 `build_shhc` and store them in `hdata["pce"]`, making them accessible inside
 the PowerModels solve loop as `pm.data["pce"]`.
+
+# Model — independent germ per harmonic unit
+Each *harmonic unit* (a load designated as a harmonic current source) carries
+its **own** independent Beta(α̂, β̂) germ; the germ space has dimension
+`N` = number of harmonic units and the multivariate basis has
+`P = C(N+δ, δ)` terms. A unit's germ drives its angle at every harmonic, while
+the angle *range* may differ per `(unit, harmonic)`. Loads not designated as
+harmonic units are "normal" loads: they receive zero trig PCE coefficients
+(no harmonic injection) and occupy no germ dimension.
 
 # Arguments
 - `hdata`      — multinetwork data dict, as returned by `replicate`.
@@ -221,20 +272,54 @@ the PowerModels solve loop as `pm.data["pce"]`.
 | `"alpha_hat"` | Float64 | Beta shape parameter α̂ |
 | `"beta_hat"`  | Float64 | Beta shape parameter β̂ |
 | `"delta"`     | Int     | PCE degree (validated only for δ=2) |
-| `"n_terms"`   | Int     | Taylor terms for trig PCE (default 4) |
-| `"epsilon"`   | Float64 | Risk level ε for Cantelli bound |
-| `"harmonics"` | Dict{Int,(Float64,Float64)} | Maps harmonic order h to (v_min_h, v_max_h) in **radians** |
+| `"n_terms"`   | Int     | Accepted and ignored (superseded Taylor trig PCE; see `affine_trig_pce`) |
+| `"epsilon"`   | Float64 | Risk level ε for the chance-constraint bound |
+| `"bound"`     | String (optional) | Chance-constraint bound: `"cantelli"` (default, distribution-free √((1-ε)/ε)) or `"gaussian"` (Φ⁻¹(1-ε)) |
+| `"harmonics"` | Dict{Int, T} | Maps harmonic order h to its angle range in **radians**, where `T` is either a bare `(v_min, v_max)` tuple (shared by all units) or a `Dict{unit_id => (v_min, v_max)}` (per-unit) |
+| `"angle_centre"` | String (optional) | Where each unit's angle support is centred: `"range"` (default) keeps the supplied range as given, so every unit shares one mean angle; `"ref_angle"` re-centres it on each unit's own `load["ref_angle"]` (see below) |
+| `"harmonic_units"` | Vector{Int} (optional) | Load ids designated as harmonic sources; defaults to **all** loads |
+
+# Per-unit mean angles
+With `"angle_centre" => "ref_angle"` the supplied range supplies only the
+*dispersion*, and each unit's mean angle becomes its own `load["ref_angle"]` —
+the rotation between that unit and the network reference, which `replicate`
+resolves per (load, harmonic) from `bus_harmonics`, with the sign set by the
+harmonic's sequence (positive keeps it, negative flips it, zero-sequence is 0).
+Mean angles that differ across units are the mechanism by which contributions at
+a shared bus stop being collinear, so this is what lets the aggregate distortion
+fall below the arithmetic sum of its parts.
+
+A unit with no `ref_angle` in the data is centred on 0, and a network whose
+`bus_harmonics` gives every bus the same reference angle gains no diversity from
+this setting — check the data before expecting an effect. For centres that do not
+come from `bus_harmonics` (a converter topology or pulse number, say), build the
+per-unit ranges directly with [`recentre_angle_ranges`](@ref) and pass them in the
+per-unit `Dict` form instead.
 
 # Stored result — `hdata["pce"]`
 
 | Key | Content |
 |---|---|
-| `"M"`         | (δ+1)×(δ+1)×(δ+1) multiplication tensor |
-| `"lambda"`    | Cantelli safety factor λ(ε) = √((1-ε)/ε) |
-| `"psi_norms"` | Vector of ⟨ψ_k,ψ_k⟩, length δ+1 |
-| `"K"`         | PCE index range 0:δ |
-| `"cos_phi"`   | `Dict{Int,Dict{Int,Vector}}` indexed by [nw_id][load_id] |
-| `"sin_phi"`   | `Dict{Int,Dict{Int,Vector}}` indexed by [nw_id][load_id] |
+| `"basis"`          | multivariate `PCEBasis` (N germs, monic Beta01, probability measure) |
+| `"M"`              | P×P×P multiplication tensor (dense) |
+| `"lambda"`         | Cantelli safety factor λ(ε) = √((1-ε)/ε) |
+| `"psi_norms"`      | Vector of ⟨Ψ_k,Ψ_k⟩, length P; `psi_norms[1] == 1` |
+| `"K"`              | full PCE index range 0:(P-1) (lifted variables, chance constraints) |
+| `"K_phys"`         | reduced single-germ index values (physical voltage/current variables) |
+| `"cos_phi"`        | `Dict{Int,Dict{Int,Vector}}` indexed by [nw_id][load_id]; length-P per load |
+| `"sin_phi"`        | `Dict{Int,Dict{Int,Vector}}` indexed by [nw_id][load_id]; length-P per load |
+| `"harmonic_units"` | sorted Vector of harmonic-unit load ids (germ dimension = position) |
+| `"germ_dim"`       | `Dict{Int,Int}` mapping harmonic-unit id → germ dimension 1:N |
+
+The basis is orthogonal w.r.t. the Beta **probability** measure, so
+`psi_norms[1] == 1` and the consumer formulas E[X] = x₀ and
+Var[X] = Σ_{k≥1} psi_norms[k+1]·x_k² hold without total-measure corrections.
+
+Each harmonic unit `d` occupies the **same** germ dimension `germ_dim[d]` in
+every harmonic network, so a unit's harmonics are perfectly correlated (one
+germ) while distinct units are independent. This consistency is what makes the
+cross-harmonic THD/RMS chance constraints (which sum the k-th PCE coefficient
+over harmonics) well-defined.
 
 All Dict keys use the same integer types that PowerModels uses internally for
 network and load ids (matching `nw::Int` and `d::Int` in the constraint functions).
@@ -243,30 +328,61 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
     α̂       = pce_params["alpha_hat"]
     β̂       = pce_params["beta_hat"]
     δ       = pce_params["delta"]
-    n_terms = get(pce_params, "n_terms", 4)
     ε       = pce_params["epsilon"]
-    h_bounds = pce_params["harmonics"]      # Dict{Int => (v_min, v_max)} in radians
+    h_bounds = pce_params["harmonics"]      # Dict{Int => range} in radians
 
     δ != 2 && @warn "update_hdata_with_pce_data!: δ=$δ detected; " *
                     "PCE constraints are validated only for δ=2."
 
-    # ── 1. Jacobi basis ────────────────────────────────────────────────────────
-    basis = build_jacobi_basis(α̂, β̂, δ)
+    # ── 1. Harmonic-unit designation and germ-dimension map (D3/D6) ───────────
+    all_loads = sort(unique(parse(Int, d)
+                            for (nw_str, ntw) in hdata["nw"] if nw_str != "1"
+                            for d in keys(ntw["load"])))
+    harmonic_units = sort(collect(get(pce_params, "harmonic_units", all_loads)))
+    germ_dim       = Dict(uid => i for (i, uid) in enumerate(harmonic_units))
+    N              = length(harmonic_units)
+    N ≥ 1 || error("update_hdata_with_pce_data!: no harmonic units designated")
 
-    # ── 2. Multiplication tensor ───────────────────────────────────────────────
-    M = compute_multiplication_tensor(basis)
+    # ── 2. Multivariate PCE workspace (N germs, monic Beta01, prob. measure) ──
+    pb = PCEBasis(N, α̂, β̂, δ)
+    P  = pb.dim
 
-    # ── 3. Cantelli factor ─────────────────────────────────────────────────────
-    lambda = cantelli_lambda(ε)
+    # ── 3. Multiplication tensor (dense; consumers index M[j,l,k] directly) ───
+    M = dense_tensor(pb)
 
-    # ── 4. Basis norms ⟨ψ_k, ψ_k⟩ ─────────────────────────────────────────────
-    psi_norms = computeSP2(basis)           # length-(δ+1) vector, 1-indexed
+    # ── 4. Chance-constraint factor and basis norms (psi_norms[1] == 1) ───────
+    # bound ∈ {"cantelli" (default, distribution-free), "gaussian" (N(0,1)),
+    #          "empirical" (per-constraint λ* calibrated from the sampled output)}.
+    # For :empirical the scalar λ is a fallback (=1.0); per-constraint factors are
+    # supplied via pce_params["empirical_lambdas"] and stored as pce["lambdas"].
+    bound  = Symbol(get(pce_params, "bound", "cantelli"))
+    lambda = risk_factor(ε, bound)
 
-    # ── 5. Trig PCE coefficients per harmonic network and load ─────────────────
-    K = 0:δ
+    # Where each unit's angle support is centred (see the loop below).
+    centre_mode = get(pce_params, "angle_centre", "range")
+    centre_mode in ("range", "ref_angle") || error(
+        "update_hdata_with_pce_data!: angle_centre = \"$centre_mode\" is not " *
+        "recognised; use \"range\" (default) or \"ref_angle\".")
+    Eω = α̂ / (α̂ + β̂)          # Beta mean fraction, for re-centring
+
+    emp_lambdas = get(pce_params, "empirical_lambdas", nothing)
+    psi_norms = pb.sp2
+
+    # ── 5. Index sets: full (lifted vars) and reduced single-germ (physical) ──
+    # Physical voltage/current PCE coefficients are nonzero only on multi-indices
+    # supported on a single germ (each is linear in one unit's cos/sin); cross-
+    # germ indices are forced to zero by KCL. The lifted |·|² variables, however,
+    # populate the full basis (products of two single-germ terms). Exposing the
+    # reduced set K_phys lets the QCQP create physical variables only where they
+    # can be nonzero (0-based index values, a subset of K).
+    K      = 0:(P - 1)
+    K_phys = [k - 1 for k in 1:P if count(!iszero, view(pb.ind, k, :)) <= 1]
 
     cos_phi = Dict{Int, Dict{Int, Vector{Float64}}}()
     sin_phi = Dict{Int, Dict{Int, Vector{Float64}}}()
+    # per-unit, per-harmonic angle support [rad] — retained for empirical-λ sampling
+    angle_ranges = Dict{Int, Dict{Int, Tuple{Float64,Float64}}}()
+    zerovec = zeros(P)   # normal loads: no harmonic injection
 
     for (nw_str, ntw) in hdata["nw"]
         nw_int = parse(Int, nw_str)
@@ -276,43 +392,131 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
 
         # Skip harmonics for which no angle distribution was provided.
         haskey(h_bounds, nw_int) || continue
-
-        v_min_h, v_max_h = h_bounds[nw_int]
-
-        # PCE coefficients of φ_{·,h}, then of cos(φ) and sin(φ).
-        phi_coeffs = affine_angle_pce(v_min_h, v_max_h, basis)
-        cos_coeffs, sin_coeffs = trig_pce_coefficients(phi_coeffs, M;
-                                                        n_terms=n_terms)
+        entry = h_bounds[nw_int]
 
         cos_phi[nw_int] = Dict{Int, Vector{Float64}}()
         sin_phi[nw_int] = Dict{Int, Vector{Float64}}()
+        angle_ranges[nw_int] = Dict{Int, Tuple{Float64,Float64}}()
 
-        # All harmonic units at the same harmonic order share the same angle
-        # distribution, so they receive identical trig PCE coefficients.
         for d_str in keys(ntw["load"])
             d_int = parse(Int, d_str)
-            cos_phi[nw_int][d_int] = cos_coeffs
-            sin_phi[nw_int][d_int] = sin_coeffs
+            if haskey(germ_dim, d_int)
+                # harmonic unit: own germ dimension, support-centred trig PCE
+                v_min, v_max = _resolve_angle_range(entry, d_int)
+
+                # Per-unit mean angle. With centre_mode == "ref_angle" the support
+                # is re-centred on this unit's own network reference angle — the
+                # vector-group rotation between the unit and the reference, which
+                # `replicate` already resolved per (load, harmonic) with the right
+                # sequence sign. The supplied range then contributes only the
+                # dispersion, and E[φ] equals the angle the deterministic model
+                # injects, so the dHHC ≡ sHHC point-mass equivalence holds unit by
+                # unit rather than only on average.
+                if centre_mode == "ref_angle"
+                    centre = deg2rad(get(ntw["load"][d_str], "ref_angle", 0.0))
+                    v_min, v_max = recentre_range(v_min, v_max, centre, Eω)
+                end
+
+                cc, sc = affine_trig_pce(pb, germ_dim[d_int], v_min, v_max)
+                cos_phi[nw_int][d_int] = cc
+                sin_phi[nw_int][d_int] = sc
+                angle_ranges[nw_int][d_int] = (Float64(v_min), Float64(v_max))
+            else
+                # normal load: zero harmonic injection
+                cos_phi[nw_int][d_int] = zerovec
+                sin_phi[nw_int][d_int] = zerovec
+            end
         end
     end
 
     # ── 6. Store in hdata ──────────────────────────────────────────────────────
     hdata["pce"] = Dict(
-        "M"         => M,
-        "lambda"    => lambda,
-        "psi_norms" => psi_norms,
-        "K"         => K,
-        "cos_phi"   => cos_phi,
-        "sin_phi"   => sin_phi,
+        "basis"          => pb,
+        "M"              => M,
+        "lambda"         => lambda,
+        "psi_norms"      => psi_norms,
+        "K"              => K,
+        "K_phys"         => K_phys,
+        "cos_phi"        => cos_phi,
+        "sin_phi"        => sin_phi,
+        "harmonic_units" => harmonic_units,
+        "germ_dim"       => germ_dim,
+        "bound"          => bound,
+        "epsilon"        => ε,
+        "alpha_beta"     => (Float64(α̂), Float64(β̂)),
+        "angle_ranges"   => angle_ranges,
+        "lambdas"        => emp_lambdas,   # per-constraint λ* (or nothing)
     )
 
     return hdata
 end
 
 """
+    _warn_floating_harmonic_components(ntw, h)
+
+Warn if harmonic network `ntw` (order `h`) contains a connected component with no
+path to ground.  Now that no harmonic bus voltage is forced, the only harmonic
+ground paths are the generator subtransient admittance (gsc/bsc), the line/branch
+charging (g_fr/b_fr, g_to/b_to), bus shunts (gs/bs), and ideal ("inf") sources.
+A component lacking all of these makes the nodal admittance Y_h singular.
+"""
+function _warn_floating_harmonic_components(ntw::Dict, h::Int)
+    adj = Dict{Int, Vector{Int}}()
+    for (_, b) in ntw["bus"]
+        get!(adj, b["bus_i"], Int[])
+    end
+    addedge!(a, b) = (push!(get!(adj, a, Int[]), b); push!(get!(adj, b, Int[]), a))
+    for (_, br) in ntw["branch"]
+        get(br, "br_status", 1) == 0 && continue
+        addedge!(br["f_bus"], br["t_bus"])
+    end
+    if haskey(ntw, "xfmr")
+        for (_, x) in ntw["xfmr"]
+            addedge!(x["f_bus"], x["t_bus"])
+        end
+    end
+
+    grounded = Set{Int}()
+    for (_, b) in ntw["bus"]
+        get(b, "is_clean", false) && push!(grounded, b["bus_i"])   # ideal harmonic ground
+    end
+    for (_, br) in ntw["branch"]
+        (get(br, "b_fr", 0.0) != 0.0 || get(br, "g_fr", 0.0) != 0.0) && push!(grounded, br["f_bus"])
+        (get(br, "b_to", 0.0) != 0.0 || get(br, "g_to", 0.0) != 0.0) && push!(grounded, br["t_bus"])
+    end
+    for (_, s) in get(ntw, "shunt", Dict{String,Any}())
+        (get(s, "gs", 0.0) != 0.0 || get(s, "bs", 0.0) != 0.0) && push!(grounded, s["shunt_bus"])
+    end
+    for (_, g) in ntw["gen"]
+        if !iszero(get(g, "inf", 0))
+            push!(grounded, g["gen_bus"])                  # ideal source grounds the bus
+        elseif get(g, "gsc", 0.0) != 0.0 || get(g, "bsc", 0.0) != 0.0
+            push!(grounded, g["gen_bus"])                  # subtransient admittance
+        end
+    end
+
+    seen = Set{Int}()
+    for s in keys(adj)
+        s in seen && continue
+        comp = Int[]; stack = [s]; push!(seen, s)
+        while !isempty(stack)
+            u = pop!(stack); push!(comp, u)
+            for v in adj[u]
+                v in seen || (push!(seen, v); push!(stack, v))
+            end
+        end
+        if isempty(intersect(comp, grounded))
+            @warn "harmonic $h: connected component $(sort(comp)) has no path to " *
+                  "ground (no generator subtransient impedance, line charging, or " *
+                  "bus shunt); the harmonic admittance Y_$h is singular."
+        end
+    end
+end
+
+"""
     HarmonicPowerModels.replicate
 """
-function _HPM.replicate(data::Dict{String, Any}; 
+function _HPM.replicate(data::Dict{String, Any};
                             bus_id::Int=1,
                             H::Array{Int}=Int[], 
                             xfmr_magn::Dict{String,Any}=Dict{String,Any}())
@@ -325,7 +529,10 @@ function _HPM.replicate(data::Dict{String, Any};
             
             vmmin = min(f_bus["vmin"], t_bus["vmin"])
             
-            branch["c_rating"] = branch["rate_a"] / sqrt(3) / vmmin             # @Hakan: klopt dit
+            # PowerModels per-unit uses S = V·I (three-phase folded into the
+            # base), so the current limit is rate_a / V — no √3 factor. vmmin
+            # (worst-case lowest voltage → highest current) keeps it conservative.
+            branch["c_rating"] = branch["rate_a"] / vmmin
     end end
 
     # add xfmr current rating
@@ -370,14 +577,33 @@ function _HPM.replicate(data::Dict{String, Any};
         # re-evaluate load power
         for load in values(ntw["load"])
             bus = ntw["bus"]["$(load["source_id"][2])"]
-                
+
             mult = haskey(bus, "nh_$nh") ? bus["nh_$nh"] : 1.0 ;
+
+            # Harmonic current rating of the unit, i.e. the cap on the harmonic
+            # current it may inject (bound on crd/cid/cmd, and on the hosting
+            # capacity I_h of the stochastic models).  Derived from the unit's
+            # RATED FUNDAMENTAL current |S_d| / V_min at its bus, so that a unit
+            # is never allowed to inject more harmonic current than the current
+            # it is built for.  Computed BEFORE the harmonic power scaling below,
+            # which is why it sits here.
+            #
+            # A "c_rating" already present in the input data wins: that is where
+            # a converter nameplate, or a standards-based emission allowance such
+            # as the IEEE-519 current-distortion limit (see
+            # `ihd_current_limit_ieee_519`, which needs the site's I_sc/I_L ratio
+            # and is therefore not derivable from the network data alone), is
+            # supplied per load.
+            if !haskey(load, "c_rating")
+                vmin_d = get(bus, "vmin", 1.0)
+                vmin_d > 0.0 || (vmin_d = 1.0)
+                load["c_rating"] = sqrt(get(load, "pd", 0.0)^2 +
+                                        get(load, "qd", 0.0)^2) / vmin_d
+            end
 
             haskey(load, "pd") ? load["pd"] *= mult : ~ ;
             haskey(load, "qd") ? load["qd"] *= mult : ~ ;
             load["multiplier"] = mult
-
-            load["c_rating"] = 1.0 # TODO
 
             if haskey(bus, "ref_angle")
                 if is_pos_sequence(nh)
@@ -433,7 +659,7 @@ function _HPM.replicate(data::Dict{String, Any};
                         @warn "harmonic $nh not included in $std"
         end end end end
 
-        # re-evaluate the branch data 
+        # re-evaluate the branch data
         for branch in values(ntw["branch"])
             haskey(branch, "br_r") ? branch["br_r"] *= sqrt(nh) : ~ ;
             haskey(branch, "br_x") ? branch["br_x"] *= nh : ~ ;
@@ -441,10 +667,36 @@ function _HPM.replicate(data::Dict{String, Any};
             haskey(branch, "b_to") ? branch["b_to"] *= nh : ~ ;
         end
 
-        # re-evaluate the gen data
+        # re-evaluate the bus shunt data: a shunt is a fixed physical element, so
+        # its ADMITTANCE is frequency-dependent even though its rating is not.
+        # In the MATPOWER sign convention bs > 0 is capacitive and bs < 0 is
+        # inductive, so at harmonic h
+        #   capacitor: B(h) = ω(h)·C       = bs·h
+        #   reactor:   B(h) = −1/(ω(h)·L)  = bs/h
+        # A conductive shunt (gs) is frequency-independent. Leaving bs unscaled
+        # understates a capacitor bank by a factor h and overstates a reactor by
+        # the same factor, which is exactly where harmonic resonances live.
+        for shunt in values(get(ntw, "shunt", Dict{String,Any}()))
+            haskey(shunt, "bs") || continue
+            shunt["bs"] = shunt["bs"] >= 0.0 ? shunt["bs"] * nh : shunt["bs"] / nh
+        end
+
+        # re-evaluate the gen data: the per-generator short-circuit impedance
+        # fields (rsc, xsc) are the fundamental per-unit subtransient impedance
+        # z_sc = rsc + j*xsc (see mpc.gen_sc).  At harmonic h the generator
+        # presents the harmonic-scaled impedance
+        #   z_sc(h) = rsc*sqrt(h) + j*xsc*h ,
+        # so the shunt admittance to ground used by the harmonic constraints is
+        #   Y_g(h) = gsc + j*bsc = 1/z_sc(h).
+        # rsc = xsc = 0 (clean machine, no gen_sc row) ⇒ no ground path.
         for gen in values(ntw["gen"])
-            haskey(gen, "bsc") ? gen["bsc"] /= nh : ~ ;
-            haskey(gen, "gsc") ? gen["gsc"] /= sqrt(nh) : ~ ;
+            rsc = get(gen, "rsc", 0.0)
+            xsc = get(gen, "xsc", 0.0)
+            if !iszero(rsc) || !iszero(xsc)
+                Yh = 1 / (rsc * sqrt(nh) + im * xsc * nh)        # Y_g(h)
+                gen["gsc"] = real(Yh)
+                gen["bsc"] = imag(Yh)
+            end
         end
 
         # re-evaluate the transformer data
@@ -473,7 +725,13 @@ function _HPM.replicate(data::Dict{String, Any};
                     xfmr["tr"] = 1.0
                     xfmr["ti"] = 0.0
         end end end
-    end 
+    end
+
+    # warn about floating (ungrounded) harmonic components ⇒ singular Y_h
+    for (nw, ntw) in hdata["nw"]
+        nw == "1" && continue
+        _warn_floating_harmonic_components(ntw, parse(Int, nw))
+    end
 
     return hdata
 end

@@ -15,7 +15,7 @@
     @testset "NLP - Industrial Network" begin
         # read-in data 
         path = joinpath(HPM.BASE_DIR,"test/data/matpower/industrial_network_hhc.m")
-        data = PMs.parse_file(path)
+        data = HPM.parse_file(path)
 
         # set the formulation
         form = dHHC_NLP
@@ -227,7 +227,7 @@
     @testset "SOC - Industrial Network" begin
         # read-in data 
         path = joinpath(HPM.BASE_DIR,"test/data/matpower/industrial_network_hhc.m")
-        data = PMs.parse_file(path)
+        data = HPM.parse_file(path)
 
         # set the formulation
         form = dHHC_SOC
@@ -445,7 +445,7 @@
     @testset "Equivalence NLP vs SOC - Industrial Network" begin
         # read-in data 
         path = joinpath(HPM.BASE_DIR,"test/data/matpower/industrial_network_hhc.m")
-        data = PMs.parse_file(path)
+        data = HPM.parse_file(path)
 
         # set the formulation
         form_nlp = dHHC_NLP

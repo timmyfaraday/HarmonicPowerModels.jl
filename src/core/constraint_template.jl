@@ -17,10 +17,19 @@ function constraint_voltage_ref_bus(pm::_PMs.AbstractPowerModel, i::Int; nw::Int
     if nw == 1
         vref = 1.0
     else
-        vref = 0.0 
+        vref = 0.0
     end
 
     constraint_voltage_ref_bus(pm, nw, i, vref)
+end
+
+# clean bus — an ideal source: a fundamental reference (handled via ref_buses)
+# that is additionally forced to V=0 at every harmonic (ideal harmonic ground).
+""
+function constraint_voltage_clean_bus(pm::_PMs.AbstractPowerModel, i::Int; nw::Int=fundamental(pm))
+    if nw ≠ fundamental(pm) && get(_PMs.ref(pm, nw, :bus, i), "is_clean", false)
+        constraint_voltage_ref_bus(pm, nw, i, 0.0)
+    end
 end
 
 # bus
@@ -132,15 +141,20 @@ end
 # gen
 ""
 function constraint_gen_current(pm::_PMs.AbstractPowerModel, g::Int; nw::Int=fundamental(pm))
-    gen = _PMs.ref(pm, fundamental(pm), :gen, g)
-    bus = gen["gen_bus"]
+    gen     = _PMs.ref(pm, fundamental(pm), :gen, g)
+    bus     = gen["gen_bus"]
 
-    inf = _PMs.ref(pm, nw, :gen, g, "inf")
-    
-    gsc = _PMs.ref(pm, nw, :gen, g, "gsc")
-    bsc = _PMs.ref(pm, nw, :gen, g, "bsc")
+    gen_nw  = _PMs.ref(pm, nw, :gen, g)
+    inf     = get(gen_nw, "inf", 0)
+    gsc     = get(gen_nw, "gsc", 0.0)   # Y_g(h) = gsc + j*bsc (subtransient adm.)
+    bsc     = get(gen_nw, "bsc", 0.0)
+    clean   = get(_PMs.ref(pm, nw, :bus, bus), "is_clean", false)
 
-    if iszero(inf) && nw ≠ fundamental
+    # only the harmonic networks get the subtransient-impedance shunt; the
+    # fundamental keeps free current injection (bounded by P/Q limits).  An
+    # "infinite" generator (inf=1) or a generator on a clean bus is an ideal
+    # source (its current stays free to absorb the harmonic mismatch) ⇒ no shunt.
+    if iszero(inf) && !clean && nw ≠ fundamental(pm)
         constraint_gen_current(pm, nw, g, bus, gsc, bsc)
     end
 end

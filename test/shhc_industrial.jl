@@ -1,15 +1,18 @@
 ################################################################################
 # test/shhc_industrial.jl                                                      #
-# Integration tests for solve_shhc — verifies sHHC_QCQP and sHHC_LP on the   #
+# Integration tests for solve_shhc — verifies sHHC_QCQP and sHHC_SOC on the   #
 # two-bus network from `two_bus_example_hpf.m`, augmented with the harmonic   #
 # angle distributions from §II Table III of the SHHC paper.                   #
 #                                                                               #
 # Assertions                                                                    #
 #   A. Both stochastic solvers reach a feasible (solved) termination status.   #
-#   B. sHHC_LP objective > dHHC_SOC objective — accounting for phase-angle    #
-#      uncertainty strictly increases the admissible hosting capacity.          #
-#   C. sHHC_QCQP objective ≥ dHHC_SOC objective (Cantelli bound ≤ worst-case).#
-#   D. Per-harmonic LP bound I₅ > 0 and satisfies the IHD limit analytically. #
+#   B. dHHC_SOC ≡ sHHC_SOC ≡ sHHC_QCQP. This network has a SINGLE harmonic     #
+#      unit, so every harmonic bus voltage is |V_h| = |Z_h|·I_h regardless of  #
+#      the injection angle: the angle carries no information and the exact      #
+#      uplift from modelling its uncertainty is ZERO. Any disagreement between  #
+#      the three models here is a network-model or constraint-set gap, which is #
+#      what makes this the sharpest available cross-check of the three builds.  #
+#   C. Per-harmonic SOC bound I₅ > 0 and satisfies the IHD limit analytically. #
 ################################################################################
 
 @testset "SHHC — Two-Bus Network" begin
@@ -22,7 +25,7 @@
 
     path  = joinpath(HPM.BASE_DIR, "test", "data", "matpower",
                      "two_bus_example_hpf.m")
-    _data = PMs.parse_file(path)
+    _data = HPM.parse_file(path)
     for (_, bus) in _data["bus"]
         bus["ref_angle"] = 0.0
     end
@@ -62,23 +65,28 @@
 
     I_det = sol_det["objective"]
 
-    # ── 2. Stochastic LP ───────────────────────────────────────────────────────
-    sol_lp = HPM.solve_shhc(fresh_hdata(), sHHC_LP, solver_soc;
+    # ── 2. Stochastic SOC ───────────────────────────────────────────────────────
+    sol_soc = HPM.solve_shhc(fresh_hdata(), sHHC_SOC, solver_soc;
                              pce_params = pce_params,
                              hpf_optimizer = solver_nlp)
 
-    @testset "Stochastic LP (sHHC_LP)" begin
-        @test sol_lp["termination_status"] == OPTIMAL
-        @test isapprox(sol_lp["objective_value"], sum(values(sol_lp["solution"]));
+    @testset "Stochastic SOC (sHHC_SOC)" begin
+        @test sol_soc["termination_status"] == OPTIMAL
+        @test isapprox(sol_soc["objective_value"], sum(values(sol_soc["solution"]));
                        rtol=1e-4)
 
         # Per-harmonic capacity must be positive for each harmonic with angle data
-        for (h, I_h) in sol_lp["solution"]
+        for (h, I_h) in sol_soc["solution"]
             @test I_h >= 0.0
         end
 
-        # B. Stochastic LP admits strictly more capacity than deterministic
-        @test sol_lp["objective_value"] > I_det
+        # B. One harmonic unit ⇒ |V_h| is angle-independent ⇒ zero true uplift,
+        #    so the stochastic SOCP must reproduce the deterministic capacity.
+        #    The residual is the degree-2 truncation of |V|², which leaves a
+        #    spurious variance of order 1e-3·mean and can only make the chance
+        #    constraint tighter, never looser — hence the one-sided tolerance.
+        @test isapprox(sol_soc["objective_value"], I_det; rtol = 1e-3)
+        @test sol_soc["objective_value"] <= I_det + 1e-6
     end
 
     # ── 3. Stochastic QCQP ────────────────────────────────────────────────────
@@ -89,22 +97,58 @@
         @test sol_qp["termination_status"] in [LOCALLY_SOLVED, OPTIMAL]
         @test sol_qp["objective"] >= 0.0
 
-        # C. Stochastic QCQP should match or exceed deterministic capacity
-        #    (Cantelli risk bound is less conservative than worst-case)
-        @test sol_qp["objective"] >= I_det - 1e-4   # small tolerance for NLP
+        # B (QCQP side). Same argument: one harmonic unit ⇒ no uplift to gain,
+        #    so the QCQP must also land on the deterministic capacity.
+        @test isapprox(sol_qp["objective"], I_det; rtol = 1e-3)
     end
 
-    # ── 4. Report ──────────────────────────────────────────────────────────────
-    println("\n  ┌─ SHHC Two-Bus Results ─────────────────────────────────────")
+    # ── 4. Per-unit harmonic current rating ───────────────────────────────────
+    @testset "per-unit c_rating cap (sHHC_SOC)" begin
+        # replicate derives load["c_rating"] from the unit's rated fundamental
+        # current |S_d|/V_min; on this network that is well above the capacity the
+        # IHD limit allows, so the cap must NOT bind at the default value …
+        hd_ref = fresh_hdata()
+        @test all(ld["c_rating"] > 1.0 for (_, ld) in hd_ref["nw"]["5"]["load"])
+
+        # … and must bind when tightened below the unconstrained optimum.
+        cap  = 0.5 * minimum(values(sol_soc["solution"]))
+        hd   = fresh_hdata()
+        for (_, ntw) in hd["nw"], (_, ld) in ntw["load"]
+            ld["c_rating"] = cap
+        end
+        sol_cap = HPM.solve_shhc(hd, sHHC_SOC, solver_soc;
+                                 pce_params = pce_params, hpf_optimizer = solver_nlp)
+        @test sol_cap["termination_status"] == OPTIMAL
+        for (_, I_h) in sol_cap["solution"]
+            @test I_h ⪅ cap
+        end
+        @test sol_cap["objective_value"] < sol_soc["objective_value"]
+    end
+
+    # ── 5. Fairness principle guard ───────────────────────────────────────────
+    @testset "sHHC_SOC rejects non-equality principles" begin
+        # the SOCP assigns one scalar I_h to every unit, so it can only represent
+        # absolute equality; anything else must fail loudly, not be ignored
+        for p in ("maximin", "maximum efficiency", "Kalai-Smorodinsky bargaining")
+            hd = fresh_hdata()
+            hd["principle"] = p
+            @test_throws ErrorException HPM.solve_shhc(hd, sHHC_SOC, solver_soc;
+                            pce_params = pce_params, hpf_optimizer = solver_nlp)
+        end
+    end
+
+    # ── 6. Report ──────────────────────────────────────────────────────────────
+    println("\n  ┌─ SHHC Two-Bus Results (1 harmonic unit ⇒ expected uplift 0) ")
     println("  │  Deterministic HHC (dHHC_SOC):  I_total = ",
             round(I_det, digits=4))
-    println("  │  Stochastic LP   (sHHC_LP):     I_total = ",
-            round(sol_lp["objective_value"], digits=4),
-            "  (+",
-            round((sol_lp["objective_value"]/I_det - 1)*100, digits=1), "%)")
-    println("  │  Stochastic QCQP (sHHC_QCQP):  I_total = ",
-            round(sol_qp["objective"], digits=4))
-    for (h, I_h) in sort(collect(sol_lp["solution"]))
+    println("  │  Stochastic SOC   (sHHC_SOC):   I_total = ",
+            round(sol_soc["objective_value"], digits=4),
+            "  (", round((sol_soc["objective_value"]/I_det - 1)*100, digits=3), "%)")
+    println("  │  Stochastic QCQP  (sHHC_QCQP):  I_total = ",
+            round(sol_qp["objective"], digits=4),
+            "  (", round((sol_qp["objective"]/I_det - 1)*100, digits=3), "%)")
+    println("  │  per-harmonic sHHC_SOC capacity:")
+    for (h, I_h) in sort(collect(sol_soc["solution"]); by = first)
         println("  │    h=$h  I_h = ", round(I_h, digits=4), " p.u.")
     end
     println("  └────────────────────────────────────────────────────────────")

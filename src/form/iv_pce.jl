@@ -15,6 +15,11 @@
 
 _pce_M(pm)           = pm.data["pce"]["M"]
 _pce_lambda(pm)      = pm.data["pce"]["lambda"]
+# per-constraint empirical λ* (kind ∈ {:ihd,:agg,:rmsi}); falls back to scalar λ
+function _pce_lambda(pm, kind::Symbol, key)
+    ls = get(pm.data["pce"], "lambdas", nothing)
+    (ls !== nothing && haskey(ls[kind], key)) ? ls[kind][key] : pm.data["pce"]["lambda"]
+end
 _pce_norms(pm)       = pm.data["pce"]["psi_norms"]
 _pce_cos_phi(pm,h,d) = pm.data["pce"]["cos_phi"][h][d]
 _pce_sin_phi(pm,h,d) = pm.data["pce"]["sin_phi"][h][d]
@@ -110,15 +115,14 @@ end
 
 PCE Kirchhoff current law at bus i (one linear constraint pair per k ∈ K).
 
-Because network parameters (shunt conductance gs, susceptance bs) are
-deterministic, the PCE coefficients decouple across k and satisfy independent
-linear balance equations:
+Because network parameters are deterministic, the PCE coefficients decouple
+across k and satisfy independent linear balance equations:
 
-    Σ_a cr_pce[a,k] = −Σ_d crd_pce[d,k] − gs_total·vr_pce[i,k] + bs_total·vi_pce[i,k]
-    Σ_a ci_pce[a,k] = −Σ_d cid_pce[d,k] − gs_total·vi_pce[i,k] − bs_total·vr_pce[i,k]
+    Σ_a cr_pce[a,k] + Σ_a I_branch_shunt_r[a,k]
+        = −Σ_d crd_pce[d,k] − gs_total·vr_pce[i,k] + bs_total·vi_pce[i,k]
 
-Transformer and filter currents are omitted in the sHHC_QCQP model; add
-crx_pce / crf_pce terms here when those components are included.
+where `I_branch_shunt` accounts for the π-model shunt currents at bus i from
+each branch arc (g_fr/b_fr at the from-bus, g_to/b_to at the to-bus).
 """
 function constraint_current_balance_pce(pm::sHHC_QCQP, i::Int;
                                          nw::Int=fundamental(pm), K=0:2)
@@ -126,6 +130,7 @@ function constraint_current_balance_pce(pm::sHHC_QCQP, i::Int;
     bus_arcs_xfmr = _PMs.ref(pm, nw, :bus_arcs_xfmr, i)
     bus_loads     = _PMs.ref(pm, nw, :bus_loads,      i)
     bus_shunts    = _PMs.ref(pm, nw, :bus_shunts,     i)
+    bus_gens      = _PMs.ref(pm, nw, :bus_gens,       i)
 
     bus_gs = Dict(s => _PMs.ref(pm, nw, :shunt, s, "gs") for s in bus_shunts)
     bus_bs = Dict(s => _PMs.ref(pm, nw, :shunt, s, "bs") for s in bus_shunts)
@@ -140,22 +145,55 @@ function constraint_current_balance_pce(pm::sHHC_QCQP, i::Int;
     gs_total = isempty(bus_shunts) ? 0.0 : sum(values(bus_gs))
     bs_total = isempty(bus_shunts) ? 0.0 : sum(values(bus_bs))
 
+    # at a harmonic each generator is a passive shunt to ground through its
+    # subtransient admittance Y_g(h) = gsc + j*bsc; the sink current -Y_g*V
+    # enters the KCL identically to a bus shunt, so fold it into gs/bs totals.
+    for g in bus_gens
+        gen_g = _PMs.ref(pm, nw, :gen, g)
+        iszero(get(gen_g, "inf", 0)) || continue   # ideal source: no shunt
+        gs_total += get(gen_g, "gsc", 0.0)
+        bs_total += get(gen_g, "bsc", 0.0)
+    end
+
+    # Per-arc π-model with off-nominal complex tap t = tm·e^{jθ} on the from side
+    # (mirrors PowerModels IVR constraint_current_from/to). cr_pce[a] is the series
+    # current csr at arc a (csr_to = −csr_fr via series conservation in build_shhc).
+    # The full arc current entering KCL is:
+    #   from-arc: (tr·csr − ti·csi + g_fr·vr − b_fr·vi)/tm²   (+ imag analog)
+    #   to-arc  :  csr_to + g_to·vr − b_to·vi                 (+ imag analog)
+    # Bus shunts (gs/bs) stay on the RHS; branch shunts are folded into the arcs.
+    arcs = Tuple{Any,Bool,Float64,Float64,Float64,Float64,Float64}[]
+    for (b, f, t) in bus_arcs
+        br = _PMs.ref(pm, nw, :branch, b)
+        tm = get(br, "tap", 1.0); tm == 0.0 && (tm = 1.0); sh = get(br, "shift", 0.0)
+        tr = tm*cos(sh); ti = tm*sin(sh)
+        if f == i
+            push!(arcs, ((b,f,t), true,  tr, ti, tm^2, get(br,"g_fr",0.0), get(br,"b_fr",0.0)))
+        else
+            push!(arcs, ((b,f,t), false, tr, ti, tm^2, get(br,"g_to",0.0), get(br,"b_to",0.0)))
+        end
+    end
+    acr(a, fr, tr, ti, tm2, g, b, k) = fr ?
+        (tr*cr_pce[a,k] - ti*ci_pce[a,k] + g*vr_pce[i,k] - b*vi_pce[i,k]) / tm2 :
+        (cr_pce[a,k] + g*vr_pce[i,k] - b*vi_pce[i,k])
+    aci(a, fr, tr, ti, tm2, g, b, k) = fr ?
+        (tr*ci_pce[a,k] + ti*cr_pce[a,k] + g*vi_pce[i,k] + b*vr_pce[i,k]) / tm2 :
+        (ci_pce[a,k] + g*vi_pce[i,k] + b*vr_pce[i,k])
+
     for k in K
         JuMP.@constraint(pm.model,
-            sum(cr_pce[a, k] for a in bus_arcs)
+            sum(acr(a..., k) for a in arcs)
             + _xfmr_cr_pce(pm, nw, bus_arcs_xfmr, k)
             ==
             - sum(crd_pce[d, k] for d in bus_loads)
-            - gs_total * vr_pce[i, k]
-            + bs_total * vi_pce[i, k]
+            - gs_total * vr_pce[i, k] + bs_total * vi_pce[i, k]
         )
         JuMP.@constraint(pm.model,
-            sum(ci_pce[a, k] for a in bus_arcs)
+            sum(aci(a..., k) for a in arcs)
             + _xfmr_ci_pce(pm, nw, bus_arcs_xfmr, k)
             ==
             - sum(cid_pce[d, k] for d in bus_loads)
-            - gs_total * vi_pce[i, k]
-            - bs_total * vr_pce[i, k]
+            - gs_total * vi_pce[i, k] - bs_total * vr_pce[i, k]
         )
     end
 end
@@ -193,14 +231,19 @@ function constraint_voltage_drop_pce(pm::sHHC_QCQP, b::Int;
     cr_pce = _PMs.var(pm, nw, :cr_pce)
     ci_pce = _PMs.var(pm, nw, :ci_pce)
 
+    # off-nominal complex tap t = tm·e^{jθ} on the from side (PowerModels IVR
+    # convention). cr_pce[f_idx]/ci_pce[f_idx] is the series current csr_fr.
+    tm = get(branch, "tap", 1.0); tm == 0.0 && (tm = 1.0)
+    sh = get(branch, "shift", 0.0); tr = tm*cos(sh); ti = tm*sin(sh); tm2 = tm^2
+
     for k in K
         JuMP.@constraint(pm.model,
-            vr_pce[t_bus, k] == vr_pce[f_bus, k]
+            vr_pce[t_bus, k] == (vr_pce[f_bus, k]*tr + vi_pce[f_bus, k]*ti)/tm2
                                  - r * cr_pce[f_idx, k]
                                  + x * ci_pce[f_idx, k]
         )
         JuMP.@constraint(pm.model,
-            vi_pce[t_bus, k] == vi_pce[f_bus, k]
+            vi_pce[t_bus, k] == (vi_pce[f_bus, k]*tr - vr_pce[f_bus, k]*ti)/tm2
                                  - r * ci_pce[f_idx, k]
                                  - x * cr_pce[f_idx, k]
         )
@@ -231,23 +274,26 @@ k≥1 (non-convex quadratic equality, responsible for PCE variance accuracy):
     Off-diagonal M entries produce bilinear terms, making this non-convex.
 """
 function constraint_lifted_voltage_pce(pm::sHHC_QCQP, i::Int;
-                                        nw::Int=fundamental(pm), K=0:2)
+                                        nw::Int=fundamental(pm), K=0:2, K_phys=K)
     M      = _pce_M(pm)
     vr_pce = _PMs.var(pm, nw, :vr_pce)
     vi_pce = _PMs.var(pm, nw, :vi_pce)
     w_pce  = _PMs.var(pm, nw, :w_pce)
 
+    # k ranges over the full basis K; the voltage factors are nonzero only on the
+    # reduced single-germ set K_phys, so j,l are summed over K_phys.
     for k in K
         lhs = sum(
             M[j+1, l+1, k+1] * (vr_pce[i, j] * vr_pce[i, l]
                                 + vi_pce[i, j] * vi_pce[i, l])
-            for j in K, l in K
+            for j in K_phys, l in K_phys
         )
-        if k == 0
-            JuMP.@constraint(pm.model, lhs <= w_pce[i, 0])
-        else
-            JuMP.@constraint(pm.model, lhs == w_pce[i, k])
-        end
+        # All k: equality. For k=0 the original code used an inequality intended
+        # as a convex-relaxation hint for SDP solvers. With Ipopt (NLP) the loose
+        # inequality lets the optimizer decouple w_pce[i,0] from the actual |V|²,
+        # trivialising the SOCtoNonConvexQuadBridge Cantelli constraint and
+        # allowing cmd to grow far beyond the IHD limit. Equality is correct here.
+        JuMP.@constraint(pm.model, lhs == w_pce[i, k])
     end
 end
 
@@ -270,7 +316,7 @@ vr_pce/vi_pce and j_pce in place of w_pce:
         = j_pce[f_idx, k]   (k≥1, quadratic equality for variance correctness)
 """
 function constraint_lifted_current_pce(pm::sHHC_QCQP, b::Int;
-                                        nw::Int=fundamental(pm), K=0:2)
+                                        nw::Int=fundamental(pm), K=0:2, K_phys=K)
     M      = _pce_M(pm)
     branch = _PMs.ref(pm, nw, :branch, b)
     f_bus  = branch["f_bus"]
@@ -281,17 +327,15 @@ function constraint_lifted_current_pce(pm::sHHC_QCQP, b::Int;
     ci_pce = _PMs.var(pm, nw, :ci_pce)
     j_pce  = _PMs.var(pm, nw, :j_pce)
 
+    # k ranges over the full basis K; the current factors are nonzero only on the
+    # reduced single-germ set K_phys, so j,l are summed over K_phys.
     for k in K
         lhs = sum(
             M[j+1, l+1, k+1] * (cr_pce[f_idx, j] * cr_pce[f_idx, l]
                                 + ci_pce[f_idx, j] * ci_pce[f_idx, l])
-            for j in K, l in K
+            for j in K_phys, l in K_phys
         )
-        if k == 0
-            JuMP.@constraint(pm.model, lhs <= j_pce[f_idx, 0])
-        else
-            JuMP.@constraint(pm.model, lhs == j_pce[f_idx, k])
-        end
+        JuMP.@constraint(pm.model, lhs == j_pce[f_idx, k])
     end
 end
 
@@ -317,7 +361,7 @@ Rearranging to second-order cone (SOC) form:
 """
 function constraint_voltage_ihd_chance(pm::sHHC_QCQP, i::Int;
                                         nw::Int=fundamental(pm))
-    λ         = _pce_lambda(pm)
+    λ         = _pce_lambda(pm, :ihd, (nw, i))
     psi_norms = _pce_norms(pm)
     ihdmax    = _PMs.ref(pm, nw,              :bus, i, "ihdmax")
     v_fund    = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
@@ -327,6 +371,10 @@ function constraint_voltage_ihd_chance(pm::sHHC_QCQP, i::Int;
 
     w_pce = _PMs.var(pm, nw, :w_pce)
 
+    # Explicit sign constraint: restores the condition (limit - w0)/λ ≥ 0 that the
+    # SOCtoNonConvexQuadBridge drops when converting the SOC to a quadratic.
+    JuMP.@constraint(pm.model, w_pce[i, 0] <= limit)
+    λ <= 0.0 && return                 # empirical λ*≈0 ⇒ mean bound only (no variance cone)
     JuMP.@constraint(pm.model,
         [(limit - w_pce[i, 0]) / λ;
          [sqrt(psi_norms[k+1]) * w_pce[i, k] for k in K_high]]
@@ -352,7 +400,7 @@ Defining W0 = Σ_h w_h[i,0] and Wk = Σ_h w_h[i,k], the SOC form is:
 """
 function constraint_voltage_thd_chance(pm::sHHC_QCQP, i::Int;
                                         harmonics, K=0:2)
-    λ         = _pce_lambda(pm)
+    λ         = _pce_lambda(pm, :agg, i)
     psi_norms = _pce_norms(pm)
     thdmax    = _PMs.ref(pm, fundamental(pm), :bus, i, "thdmax")
     v_fund    = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
@@ -363,6 +411,8 @@ function constraint_voltage_thd_chance(pm::sHHC_QCQP, i::Int;
     W0 = sum(_PMs.var(pm, nw, :w_pce)[i, 0] for nw in harmonics)
     Wk = [sum(_PMs.var(pm, nw, :w_pce)[i, k] for nw in harmonics) for k in K_high]
 
+    JuMP.@constraint(pm.model, W0 <= limit)
+    λ <= 0.0 && return
     JuMP.@constraint(pm.model,
         [(limit - W0) / λ;
          [sqrt(psi_norms[k+1]) * Wk[idx] for (idx, k) in enumerate(K_high)]]
@@ -392,7 +442,7 @@ component. SOC form with W0 = Σ_h w_h[i,0] and Wk = Σ_h w_h[i,k]:
 """
 function constraint_voltage_rms_chance(pm::sHHC_QCQP, i::Int;
                                         nw_ids, K=0:2)
-    λ         = _pce_lambda(pm)
+    λ         = _pce_lambda(pm, :agg, i)
     psi_norms = _pce_norms(pm)
     vmaxrms   = _PMs.ref(pm, fundamental(pm), :bus, i, "vmaxrms")
     v_fund    = _PMs.ref(pm, fundamental(pm), :bus, i, "vm")
@@ -403,6 +453,8 @@ function constraint_voltage_rms_chance(pm::sHHC_QCQP, i::Int;
     W0 = sum(_PMs.var(pm, nw, :w_pce)[i, 0] for nw in nw_ids)
     Wk = [sum(_PMs.var(pm, nw, :w_pce)[i, k] for nw in nw_ids) for k in K_high]
 
+    JuMP.@constraint(pm.model, W0 <= limit)
+    λ <= 0.0 && return
     JuMP.@constraint(pm.model,
         [(limit - W0) / λ;
          [sqrt(psi_norms[k+1]) * Wk[idx] for (idx, k) in enumerate(K_high)]]
@@ -434,7 +486,7 @@ SOC form with J0 = Σ_h j_h[f_idx,0] and Jk = Σ_h j_h[f_idx,k]:
 """
 function constraint_current_rms_chance(pm::sHHC_QCQP, b::Int;
                                         nw_ids, K=0:2)
-    λ         = _pce_lambda(pm)
+    λ         = _pce_lambda(pm, :rmsi, b)
     psi_norms = _pce_norms(pm)
     branch    = _PMs.ref(pm, fundamental(pm), :branch, b)
     f_bus     = branch["f_bus"]
@@ -449,6 +501,8 @@ function constraint_current_rms_chance(pm::sHHC_QCQP, b::Int;
     J0 = sum(_PMs.var(pm, nw, :j_pce)[f_idx, 0] for nw in nw_ids)
     Jk = [sum(_PMs.var(pm, nw, :j_pce)[f_idx, k] for nw in nw_ids) for k in K_high]
 
+    JuMP.@constraint(pm.model, J0 <= limit)
+    λ <= 0.0 && return
     JuMP.@constraint(pm.model,
         [(limit - J0) / λ;
          [sqrt(psi_norms[k+1]) * Jk[idx] for (idx, k) in enumerate(K_high)]]

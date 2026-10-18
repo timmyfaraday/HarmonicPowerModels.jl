@@ -309,8 +309,11 @@ function constraint_gen_current(pm::_PMs.AbstractIVRModel, n::Int, g, i, gsc, bs
     crg = _PMs.var(pm, n, :crg, g)
     cig = _PMs.var(pm, n, :cig, g)
 
-    JuMP.@constraint(pm.model, crg == gsc*vr - bsc*vi)
-    JuMP.@constraint(pm.model, cig == gsc*vi + bsc*vr)
+    # at a harmonic the generator is a passive shunt to ground through its
+    # subtransient admittance Y_g(h) = gsc + j*bsc, i.e. it absorbs current
+    # I = -Y_g*V (sink convention, matching the bus-shunt terms in the KCL).
+    JuMP.@constraint(pm.model, crg == -(gsc*vr - bsc*vi))
+    JuMP.@constraint(pm.model, cig == -(gsc*vi + bsc*vr))
 end
 ""
 function constraint_gen_current_rms_limit(pm::_PMs.AbstractIVRModel, g, c_rating)
