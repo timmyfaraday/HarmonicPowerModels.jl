@@ -14,12 +14,15 @@
 #   SHHC_DET       "1" to also run the deterministic equivalence (needs QCQP)    #
 #   SHHC_NMC       Monte-Carlo samples, default 1000                             #
 #   SHHC_CONIC     conic solver: "mosek" (default) or "gurobi"                   #
+#   SHHC_SCENARIO  capacitive scenario from ieee30_scenarios.jl, default "base"  #
+#                  (re-dispatched with the baseline AC-OPF recipe)               #
 #                                                                               #
 # Solvers: Mosek (default) or Gurobi for the conic hosting-capacity models,     #
 # Ipopt (MUMPS) for the fundamental power flow and the QCQP — Ipopt with ma27   #
 # fails on this power flow. Gurobi returns LOCALLY_SOLVED points that overstate #
 # sHHC_SOC by 1.5-6.7% against Mosek at N=21, so Mosek is the reference.        #
-# Output: examples/shhc/output/ieee30pv_N<N>_<ref>_*.{txt,csv}.                 #
+# Output: examples/shhc/output/ieee30pv_N<N>_<ref>_*.{txt,csv} for "base",      #
+#         ieee30pv_<scenario>_N<N>_<ref>_* otherwise.                            #
 # Author: Tom Van Acker                                                          #
 ################################################################################
 
@@ -29,6 +32,7 @@ using JuMP, Printf
 
 include(joinpath(@__DIR__, "pce_params.jl"))
 include(joinpath(@__DIR__, "shhc_equivalence.jl"))
+include(joinpath(@__DIR__, "ieee30_scenarios.jl"))
 
 const TLIM  = 360.0
 const NUNIT = parse(Int, get(ENV, "SHHC_N", "8"))
@@ -36,6 +40,7 @@ const AREF  = get(ENV, "SHHC_ANGLE_REF", "global")
 const DET   = get(ENV, "SHHC_DET", "0") == "1"
 const NMC   = parse(Int, get(ENV, "SHHC_NMC", "1000"))
 const CONIC = get(ENV, "SHHC_CONIC", "mosek")
+const SCEN  = get(ENV, "SHHC_SCENARIO", "base")
 
 ipopt  = optimizer_with_attributes(Ipopt.Optimizer,
             "print_level" => 0, "max_wall_time" => TLIM,
@@ -54,7 +59,7 @@ mosek  = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true,
 conic  = CONIC == "gurobi" ? gurobi : mosek
 
 PowerModels.silence()
-data = HPM.parse_file(joinpath(@__DIR__, "data", "30bus_network_shhc_pv.m"))
+data = ieee30_scenario(SCEN, ipopt)
 H    = [1, 5, 7, 11, 13]
 harm = [5, 7, 11, 13]
 outdir = joinpath(@__DIR__, "output"); mkpath(outdir)
@@ -67,12 +72,13 @@ cfg = (; data, H, harm,
        α̂ = PCE_PARAMS["alpha_hat"], β̂ = PCE_PARAMS["beta_hat"], ε = PCE_PARAMS["epsilon"],
        pce_params      = PCE_PARAMS,
        ipopt = ipopt, mosek = conic,           # `mosek` is the conic-solver slot
-       name = "ieee30pv_N$(NUNIT)_$(AREF)" * (CONIC == "mosek" ? "" : "_$(CONIC)"), outdir = outdir,
+       name = "ieee30pv_" * (SCEN == "base" ? "" : "$(SCEN)_") * "N$(NUNIT)_$(AREF)" *
+              (CONIC == "mosek" ? "" : "_$(CONIC)"), outdir = outdir,
        angle_reference = AREF,
        restrict_units = true, qcqp_ok = NUNIT ≤ 6,
        nmc = NMC, nsamp_lambda = 20000)
 
-println("IEEE-30 single slack, N=$NUNIT units $(cfg.units), angle reference: $AREF")
+println("IEEE-30 single slack, scenario $SCEN, N=$NUNIT units $(cfg.units), angle reference: $AREF")
 DET && deterministic_equivalence(cfg)
 stochastic_equivalence(cfg)
 

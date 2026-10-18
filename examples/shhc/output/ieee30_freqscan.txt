@@ -1,0 +1,143 @@
+════════════════════════════════════════════════════════════════════════════════════════════
+SCENARIO BASE
+════════════════════════════════════════════════════════════════════════════════════════════
+Fundamental: |V| in [0.9003, 1.0164] p.u., max branch loading 94.0% (branch 1-2)
+Dispatch: gen@1 Pg=2.191 Vg=1.0000, gen@2 Pg=0.822 Vg=0.9756, gen@5 Pg=0.000 Vg=0.9392, gen@8 Pg=0.000 Vg=0.9361, gen@11 Pg=0.000 Vg=1.0163, gen@13 Pg=0.000 Vg=1.0164
+Admittance check vs _harmonic_admittance at h=5,7,11,13: max |ΔY| = 0.00e+00
+
+Parallel-resonance peaks of |Z_ii| (harmonic order):
+  bus 4   9.45, 18.85, 21.25
+  bus 10  9.40, 18.60, 21.20
+  bus 17  9.40, 18.60
+  bus 24  9.40, 18.60, 21.15
+  bus 30  9.35, 18.60, 21.05
+
+Transfer-impedance angle spread over the 8 units' buses [deg]  (bus with the largest Σ_j|Z_ij| / max over buses):
+  h=5   exposed bus 10  spread    4.9   |  max spread    5.4 at bus 27
+  h=7   exposed bus 27  spread    3.9   |  max spread    4.5 at bus 10
+  h=11  exposed bus 28  spread    2.2   |  max spread  156.2 at bus 12
+  h=13  exposed bus 28  spread    4.9   |  max spread  181.3 at bus 25
+
+Transfer-impedance angle spread over the 21 units' buses [deg]  (bus with the largest Σ_j|Z_ij| / max over buses):
+  h=5   exposed bus 30  spread    7.8   |  max spread   10.8 at bus 26
+  h=7   exposed bus 30  spread    4.1   |  max spread    6.6 at bus 26
+  h=11  exposed bus 28  spread    3.5   |  max spread  166.5 at bus 30
+  h=13  exposed bus 30  spread  189.0   |  max spread  191.9 at bus 12
+
+════════════════════════════════════════════════════════════════════════════════════════════
+SCENARIO BANKS
+════════════════════════════════════════════════════════════════════════════════════════════
+Fundamental: |V| in [0.9299, 1.0489] p.u., max branch loading 94.0% (branch 1-2)
+Dispatch: gen@1 Pg=2.197 Vg=1.0000, gen@2 Pg=0.812 Vg=0.9755, gen@5 Pg=0.000 Vg=0.9436, gen@8 Pg=0.000 Vg=0.9509, gen@11 Pg=0.000 Vg=1.0489, gen@13 Pg=0.000 Vg=1.0458
+Admittance check vs _harmonic_admittance at h=5,7,11,13: max |ΔY| = 0.00e+00
+
+Parallel-resonance peaks of |Z_ii| (harmonic order):
+  bus 4   5.00, 11.40, 19.10, 21.30
+  bus 10  5.05, 11.45, 13.85
+  bus 17  5.05, 11.35, 13.15
+  bus 24  5.05, 13.50
+  bus 30  5.00, 11.25, 13.15, 18.95, 21.10
+
+Transfer-impedance angle spread over the 8 units' buses [deg]  (bus with the largest Σ_j|Z_ij| / max over buses):
+  h=5   exposed bus 10  spread    4.7   |  max spread   30.2 at bus 5
+  h=7   exposed bus 10  spread    4.0   |  max spread  173.1 at bus 1
+  h=11  exposed bus 7   spread  180.2   |  max spread  189.5 at bus 18
+  h=13  exposed bus 28  spread  176.5   |  max spread  207.0 at bus 10
+
+Transfer-impedance angle spread over the 21 units' buses [deg]  (bus with the largest Σ_j|Z_ij| / max over buses):
+  h=5   exposed bus 10  spread    4.7   |  max spread   31.1 at bus 5
+  h=7   exposed bus 10  spread    5.1   |  max spread  174.3 at bus 7
+  h=11  exposed bus 7   spread  180.2   |  max spread  259.2 at bus 19
+  h=13  exposed bus 24  spread  203.0   |  max spread  293.7 at bus 16
+
+════════════════════════════════════════════════════════════════════════════════════════════
+SCENARIO CABLE33
+════════════════════════════════════════════════════════════════════════════════════════════
+Fundamental: |V| in [0.9371, 1.0402] p.u., max branch loading 94.0% (branch 1-2)
+Dispatch: gen@1 Pg=2.195 Vg=1.0000, gen@2 Pg=0.808 Vg=0.9755, gen@5 Pg=0.000 Vg=0.9428, gen@8 Pg=0.000 Vg=0.9486, gen@11 Pg=0.000 Vg=1.0402, gen@13 Pg=0.000 Vg=1.0301
+Admittance check vs _harmonic_admittance at h=5,7,11,13: max |ΔY| = 0.00e+00
+Cable length: 155 km in total
+
+Parallel-resonance peaks of |Z_ii| (harmonic order):
+  bus 4   6.00, 11.55, 19.40, 21.40
+  bus 10  6.05, 11.05, 14.55, 19.55
+  bus 17  6.05, 11.05, 14.55, 19.55
+  bus 24  6.05, 14.55, 19.50, 24.90
+  bus 30  6.05, 11.55, 14.85, 21.50
+
+Transfer-impedance angle spread over the 8 units' buses [deg]  (bus with the largest Σ_j|Z_ij| / max over buses):
+  h=5   exposed bus 30  spread    5.9   |  max spread    5.9 at bus 27
+  h=7   exposed bus 30  spread    3.1   |  max spread  141.5 at bus 5
+  h=11  exposed bus 30  spread    4.1   |  max spread   94.1 at bus 28
+  h=13  exposed bus 30  spread  175.7   |  max spread  183.2 at bus 12
+
+Transfer-impedance angle spread over the 21 units' buses [deg]  (bus with the largest Σ_j|Z_ij| / max over buses):
+  h=5   exposed bus 30  spread    8.3   |  max spread   11.9 at bus 1
+  h=7   exposed bus 30  spread    9.3   |  max spread  154.5 at bus 5
+  h=11  exposed bus 30  spread  171.0   |  max spread  200.9 at bus 2
+  h=13  exposed bus 30  spread  191.9   |  max spread  264.9 at bus 5
+
+════════════════════════════════════════════════════════════════════════════════════════════
+SCENARIO CABLE132
+════════════════════════════════════════════════════════════════════════════════════════════
+Not operable: no AC-OPF dispatch respects the branch ratings (redispatch!: AC-OPF did not solve (LOCALLY_INFEASIBLE))
+
+════════════════════════════════════════════════════════════════════════════════════════════
+SCENARIO CABLEALL
+════════════════════════════════════════════════════════════════════════════════════════════
+Not operable: no AC-OPF dispatch respects the branch ratings (redispatch!: AC-OPF did not solve (LOCALLY_INFEASIBLE))
+
+════════════════════════════════════════════════════════════════════════════════════════════
+SCENARIO CABLE132C
+════════════════════════════════════════════════════════════════════════════════════════════
+Fundamental: |V| in [0.9648, 1.0500] p.u., max branch loading 94.6% (branch 1-2)
+Dispatch: gen@1 Pg=2.168 Vg=1.0000, gen@2 Pg=0.718 Vg=0.9931, gen@5 Pg=0.000 Vg=0.9836, gen@8 Pg=0.000 Vg=0.9936, gen@11 Pg=0.000 Vg=1.0500, gen@13 Pg=0.000 Vg=1.0500
+Admittance check vs _harmonic_admittance at h=5,7,11,13: max |ΔY| = 0.00e+00
+Cable length: 588 km in total
+
+Parallel-resonance peaks of |Z_ii| (harmonic order):
+  bus 4   2.55, 6.50, 7.35, 10.05, 14.30, 17.75, 21.40
+  bus 10  2.55, 6.45, 17.50
+  bus 17  2.55, 6.45, 17.55
+  bus 24  2.50, 6.45, 17.80
+  bus 30  2.50, 6.50
+
+Transfer-impedance angle spread over the 8 units' buses [deg]  (bus with the largest Σ_j|Z_ij| / max over buses):
+  h=5   exposed bus 10  spread  190.3   |  max spread  200.1 at bus 27
+  h=7   exposed bus 5   spread  200.4   |  max spread  278.7 at bus 7
+  h=11  exposed bus 12  spread  225.3   |  max spread  260.8 at bus 8
+  h=13  exposed bus 12  spread  223.7   |  max spread  270.7 at bus 28
+
+Transfer-impedance angle spread over the 21 units' buses [deg]  (bus with the largest Σ_j|Z_ij| / max over buses):
+  h=5   exposed bus 26  spread  193.9   |  max spread  200.6 at bus 27
+  h=7   exposed bus 26  spread  238.0   |  max spread  278.7 at bus 7
+  h=11  exposed bus 26  spread  200.4   |  max spread  261.5 at bus 28
+  h=13  exposed bus 26  spread  252.6   |  max spread  291.0 at bus 6
+
+════════════════════════════════════════════════════════════════════════════════════════════
+SCENARIO CABLEALLC
+════════════════════════════════════════════════════════════════════════════════════════════
+Fundamental: |V| in [0.9835, 1.0500] p.u., max branch loading 94.6% (branch 1-2)
+Dispatch: gen@1 Pg=2.166 Vg=1.0000, gen@2 Pg=0.714 Vg=0.9931, gen@5 Pg=0.000 Vg=0.9835, gen@8 Pg=0.000 Vg=0.9939, gen@11 Pg=0.000 Vg=1.0500, gen@13 Pg=0.000 Vg=1.0348
+Admittance check vs _harmonic_admittance at h=5,7,11,13: max |ΔY| = 0.00e+00
+Cable length: 743 km in total
+
+Parallel-resonance peaks of |Z_ii| (harmonic order):
+  bus 4   2.50, 6.40, 7.30, 10.05, 14.30, 17.80, 21.40
+  bus 10  2.50, 6.35, 8.25, 14.40
+  bus 17  2.50, 6.35, 8.25, 9.90, 14.35
+  bus 24  2.50, 6.35, 8.30, 14.40
+  bus 30  2.50, 6.40, 8.30, 14.55
+
+Transfer-impedance angle spread over the 8 units' buses [deg]  (bus with the largest Σ_j|Z_ij| / max over buses):
+  h=5   exposed bus 30  spread  194.0   |  max spread  194.0 at bus 27
+  h=7   exposed bus 30  spread  223.8   |  max spread  257.6 at bus 7
+  h=11  exposed bus 30  spread  206.0   |  max spread  261.6 at bus 25
+  h=13  exposed bus 30  spread  248.1   |  max spread  249.3 at bus 1
+
+Transfer-impedance angle spread over the 21 units' buses [deg]  (bus with the largest Σ_j|Z_ij| / max over buses):
+  h=5   exposed bus 30  spread  196.7   |  max spread  196.7 at bus 27
+  h=7   exposed bus 30  spread  230.4   |  max spread  257.6 at bus 7
+  h=11  exposed bus 30  spread  208.9   |  max spread  264.6 at bus 26
+  h=13  exposed bus 30  spread  265.5   |  max spread  282.2 at bus 8
+

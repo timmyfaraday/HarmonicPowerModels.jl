@@ -1,0 +1,23 @@
+════════════════════════════════════════════════════════════════════════════════════
+STOCHASTIC EQUIVALENCE — IEEE30PV_CABLE132C_N21_LOCAL
+════════════════════════════════════════════════════════════════════════════════════
+Units=21  ε=0.05  MC samples=1000
+
+sHHC_SOC vs sHHC_QCQP per chance bound  [Σ_h I_h, pu]:
+  bound      SOC              QCQP             SOC-QCQP%    status
+  empirical  5.25450123e-03   —                —            OPTIMAL/skipped
+  gaussian   5.23878418e-03   —                —            OPTIMAL/skipped
+  cantelli   5.13689463e-03   —                —            OPTIMAL/skipped
+
+Monte-Carlo dHHC objective distribution [pu]:
+  min=5.232092e-03 q05=5.258874e-03 median=5.296880e-03 q95=5.377643e-03 max=5.469639e-03 mean=5.304955e-03
+
+deterministic dHHC@E[φ] = 5.247648e-03  (MC pct 1.4%, viol 1.4%)
+
+sHHC objective vs MC (q05 = 95%-reliable target; viol = P[H<obj]):
+  SOC  empirical  = 5.254501e-03  (vs q05 -0.08%, viol 3.2%)
+  SOC  gaussian   = 5.238784e-03  (vs q05 -0.38%, viol 0.5%)
+  SOC  cantelli   = 5.136895e-03  (vs q05 -2.32%, viol 0.0%)
+
+MC CSV: ieee30pv_cable132c_N21_local_stoch_mc.csv   refs: ieee30pv_cable132c_N21_local_stoch_refs.csv
+════════════════════════════════════════════════════════════════════════════════════

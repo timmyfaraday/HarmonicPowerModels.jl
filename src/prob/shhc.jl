@@ -529,12 +529,16 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
     # Cantelli bound  E[S] + λ√Var[S] ≤ limit  for an aggregate S whose per-harmonic
     # PCE coefficients are coef[h] (length |K|); added as a second-order cone in g_h.
     function _cantelli_soc!(coef, limit, λ)
+        ES = JuMP.@expression(model, sum(coef[h][1] * g_h[h] for h in keys(coef)))
         if limit <= 0.0
-            @warn "solve_shhc (SOCP): non-positive limit $limit; constraint skipped " *
-                  "(fundamental already at/over the limit)."
+            # The fundamental already uses the whole limit: no harmonic headroom.
+            # E[S] ≤ limit forces every contributing g_h to zero (infeasible when
+            # the limit is negative), exactly as in the dHHC and QCQP models.
+            @warn "solve_shhc (SOCP): non-positive limit $limit " *
+                  "(fundamental already at/over the limit); harmonic headroom is zero."
+            JuMP.@constraint(model, ES <= limit)
             return
         end
-        ES = JuMP.@expression(model, sum(coef[h][1] * g_h[h] for h in keys(coef)))
         Wk = [JuMP.@expression(model, sum(coef[h][k+1] * g_h[h] for h in keys(coef))) for k in Kh]
         if λ <= 0.0                       # empirical λ*≈0 ⇒ mean bound (no variance term)
             JuMP.@constraint(model, ES <= limit); return
