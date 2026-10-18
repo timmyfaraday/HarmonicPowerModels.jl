@@ -8,9 +8,9 @@
 #                                                                               #
 # Environment variables:                                                         #
 #   SHHC_N         number of harmonic units (first N loads), default 8           #
-#   SHHC_ANGLE_REF "global" (default) or "local": harmonic angles relative to   #
-#                  the network reference, or to each unit's own fundamental bus  #
-#                  voltage (rotated by h·θ_i)                                    #
+#   SHHC_ANGLE_REF "local" (default): harmonic angles relative to each unit's   #
+#                  own fundamental bus voltage (rotated by h·θ_i); "global"      #
+#                  (deprecated) takes them in the network frame                  #
 #   SHHC_DET       "1" to also run the deterministic equivalence (needs QCQP)    #
 #   SHHC_NMC       Monte-Carlo samples, default 1000                             #
 #   SHHC_CONIC     conic solver: "mosek" (default) or "gurobi"                   #
@@ -36,7 +36,7 @@ include(joinpath(@__DIR__, "ieee30_scenarios.jl"))
 
 const TLIM  = 360.0
 const NUNIT = parse(Int, get(ENV, "SHHC_N", "8"))
-const AREF  = get(ENV, "SHHC_ANGLE_REF", "global")
+const AREF  = get(ENV, "SHHC_ANGLE_REF", "local")
 const DET   = get(ENV, "SHHC_DET", "0") == "1"
 const NMC   = parse(Int, get(ENV, "SHHC_NMC", "1000"))
 const CONIC = get(ENV, "SHHC_CONIC", "mosek")

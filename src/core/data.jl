@@ -420,7 +420,8 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
                 # Local angle reference: the support is given relative to the
                 # unit's own fundamental bus voltage and is rotated into the
                 # network frame by load["angle_offset"] = h·θ_i (see
-                # `update_hdata_with_angle_offsets!`); zero for "global".
+                # `update_hdata_with_angle_offsets!`); zero for the deprecated
+                # "global" reference.
                 offset = deg2rad(get(ntw["load"][d_str], "angle_offset", 0.0))
                 v_min, v_max = v_min + offset, v_max + offset
 

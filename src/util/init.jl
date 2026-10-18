@@ -106,22 +106,30 @@ end
 Set `load["angle_offset"]` [deg] for every load in every harmonic network,
 following `hdata["angle_reference"]`:
 
-- `"global"` (default): offset 0 — harmonic angles are given in the network
-  frame, i.e., relative to the reference bus voltage.
-- `"local"`: harmonic angles are given relative to the unit's own fundamental
-  bus voltage, as a converter model produces them. A time shift of the
-  fundamental by θ_i rotates the h-th harmonic phasor by h·θ_i, so the angle in
-  the network frame gains `angle_offset = h·θ_i`, with θ_i the fundamental
+- `"local"` (default): harmonic angles are given relative to the unit's own
+  fundamental bus voltage, as a converter model produces them. A time shift of
+  the fundamental by θ_i rotates the h-th harmonic phasor by h·θ_i, so the angle
+  in the network frame gains `angle_offset = h·θ_i`, with θ_i the fundamental
   voltage angle at the unit's bus.
+- `"global"` (**deprecated**): offset 0 — harmonic angles are taken in the
+  network frame, i.e., relative to the reference bus voltage, whatever the
+  unit's position. Kept only to reproduce earlier results; it ignores the
+  fundamental voltage angle at the unit's terminal, which the converter's
+  harmonic angles are defined against.
 
 Requires the fundamental bus voltage angles `bus["va"]` [deg], as set by
-`update_hdata_with_fundamental_hpf_results!`.
+`update_hdata_with_fundamental_hpf_results!`, which calls this function. Solves
+that skip the fundamental power flow (`solve_hhc` without an `hpf_optimizer`)
+set no offsets.
 """
 function update_hdata_with_angle_offsets!(hdata)
-    mode = get(hdata, "angle_reference", "global")
+    mode = get(hdata, "angle_reference", "local")
     mode in ("global", "local") || error(
         "update_hdata_with_angle_offsets!: angle_reference = \"$mode\" is not " *
-        "recognised; use \"global\" (default) or \"local\".")
+        "recognised; use \"local\" (default) or the deprecated \"global\".")
+    mode == "global" && @warn "angle_reference = \"global\" is deprecated: harmonic " *
+        "angles are defined against each unit's own fundamental bus voltage; use " *
+        "\"local\" (the default)." maxlog=1
 
     fund_bus = hdata["nw"]["1"]["bus"]
     for (n, ntw) in hdata["nw"]

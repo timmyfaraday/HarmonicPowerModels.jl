@@ -13,6 +13,14 @@
 
 ""
 function solve_hhc(hdata, model_type::Type, optimizer; kwargs...)
+    # without the fundamental power flow no angle offsets are computed, so the
+    # harmonic angles stay in the network frame (the deprecated "global"
+    # reference); the local reference needs solve_hhc(..., hhc_optimizer, hpf_optimizer)
+    get(hdata, "angle_reference", "local") == "local" &&
+        @warn "solve_hhc without an hpf_optimizer cannot apply the local angle " *
+              "reference (it needs the fundamental bus voltage angles); harmonic " *
+              "angles are taken in the network frame." maxlog=1
+
     # update hdata for chosen fairness principle
     update_hdata_with_fairness_principle_data!(hdata, model_type, optimizer) 
 

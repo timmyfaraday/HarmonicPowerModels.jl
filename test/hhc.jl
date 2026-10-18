@@ -461,6 +461,9 @@
                 bus["angle_range"] = 0.0
             end
         end
+        # the joint NLP solves the fundamental in the model and cannot apply the
+        # local angle reference, so compare both in the (deprecated) network frame
+        hdata["angle_reference"] = "global"
 
         # solve HHC problem
         results_hhc_nlp = HPM.solve_hhc(hdata, form_nlp, solver_nlp)
