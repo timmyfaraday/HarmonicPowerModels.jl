@@ -103,3 +103,23 @@ function typeB_germ(units; αc = 30.0, w = 30.0, share = 0.5)
     shift  = Dict(h => (-h * deg2rad(αc - w * Eω), -h * deg2rad(αc + w * (1 - Eω))) for h in (5, 7, 11, 13))
     return Dict("B" => Dict("units" => Bunits, "shift" => shift))
 end
+
+"""
+    types_cyclic(units, delays; w = 30.0) -> Dict
+
+Converter types assigned cyclically over the load order, one per mean firing
+delay in `delays` [deg]. A delay of 0 is type A (no firing-delay germ); every
+other type has its own germ shared by its units, `w` wide (`pce_params["type_germs"]`
+format). WORKING ASSUMPTION, as `typeB_germ`.
+"""
+function types_cyclic(units, delays; w = 30.0)
+    Eω = PCE_PARAMS["alpha_hat"] / (PCE_PARAMS["alpha_hat"] + PCE_PARAMS["beta_hat"])
+    out = Dict{String,Any}()
+    for (t, αc) in enumerate(delays)
+        αc == 0 && continue
+        us = [d for (k, d) in enumerate(units) if mod1(k, length(delays)) == t]
+        out["T$(t)"] = Dict("units" => us, "shift" => Dict(h => (-h * deg2rad(αc - w * Eω),
+                                                                -h * deg2rad(αc + w * (1 - Eω))) for h in (5, 7, 11, 13)))
+    end
+    return out
+end

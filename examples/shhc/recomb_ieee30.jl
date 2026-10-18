@@ -36,8 +36,8 @@ lawsum(m, α) = sum(m .^ α)^(1 / α)
 type gets the extra shift s_lo + (s_hi − s_lo)·ω_t with one ω_t per type. The
 robust bound then maximises over ω_t on a grid as well.
 """
-function recombination(scen, N, aref; ranges = nothing, types = nothing)
-    data = ieee30_scenario(scen, ipopt)
+function recombination(scen, N, aref; ranges = nothing, types = nothing, data = nothing)
+    data = data === nothing ? ieee30_scenario(scen, ipopt) : data
     units = sort(parse.(Int, collect(keys(data["load"]))))[1:N]
     hd = HPM.replicate(deepcopy(data), H = H)
     hd["angle_reference"] = aref
@@ -62,8 +62,14 @@ function recombination(scen, N, aref; ranges = nothing, types = nothing)
                     sum(mask .* (sh[1] + (sh[2] - sh[1]) * ζ[i]) for (i, (mask, sh)) in enumerate(tg))
         φE = lo_j .+ wd .* Eω .+ tshift(fill(Eω, length(tg)))
         W  = [lo_j .+ wd .* rand(beta, N) .+ tshift(rand(beta, length(tg))) for _ in 1:20_000]
-        ζgrid = isempty(tg) ? [Float64[]] :
-                vec([collect(z) for z in Iterators.product(fill(range(0, 1, length = 41), length(tg))...)])
+        # robust bound: exact over a grid of the type germ for at most one type; with
+        # several types the type shifts are bounded per unit (a conservative bound)
+        function robust_types(z)
+            length(tg) <= 1 && return maximum(robust_abs(z, lo_j .+ tshift(ζ), hi_j .+ tshift(ζ))
+                                              for ζ in (isempty(tg) ? [Float64[]] : [[x] for x in range(0, 1, length = 41)]))
+            slo = sum(mask .* min(sh...) for (mask, sh) in tg); shi = sum(mask .* max(sh...) for (mask, sh) in tg)
+            return robust_abs(z, lo_j .+ slo, hi_j .+ shi)
+        end
         cap = minimum(hd["nw"]["$h"]["load"]["$d"]["c_rating"] for d in units)
         buses = [(L = hd["nw"]["$h"]["bus"][b]["ihdmax"] * bus["vm"],
                   z = [Z[h][bus_pos[parse(Int, b)], bus_pos[ubus[d]]] for d in units])
@@ -71,7 +77,7 @@ function recombination(scen, N, aref; ranges = nothing, types = nothing)
         host(A) = min(cap, minimum(bb.L / A(bb.z) for bb in buses))
         r = Dict(
             :arith => host(z -> sum(abs.(z))),
-            :rob   => host(z -> maximum(robust_abs(z, lo_j .+ tshift(ζ), hi_j .+ tshift(ζ)) for ζ in ζgrid)),
+            :rob   => host(z -> robust_types(z)),
             :det   => host(z -> abs(sum(z .* cis.(φE)))),
             :q95   => host(z -> quantile([abs(sum(z .* cis.(w))) for w in W], 0.95)),
             :iec   => host(z -> lawsum(abs.(z), iec_alpha(h))),

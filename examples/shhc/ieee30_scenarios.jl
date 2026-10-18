@@ -131,3 +131,12 @@ function ieee30_scenario(name::String, nlp_optimizer)
     redispatch!(data, nlp_optimizer)
     return data
 end
+
+"Parse the single-slack IEEE30 case with one capacitor bank `bs` [p.u.] at `bus`, re-dispatched."
+function ieee30_bank(bus::Int, bs::Real, nlp_optimizer)
+    data = HarmonicPowerModels.parse_file(joinpath(@__DIR__, "data", "30bus_network_shhc_pv.m"))
+    data["shunt"] = Dict{String,Any}("1" => Dict{String,Any}("index" => 1, "shunt_bus" => bus, "gs" => 0.0,
+                                     "bs" => bs, "status" => 1, "source_id" => ["bus", bus]))
+    redispatch!(data, nlp_optimizer)
+    return data
+end
