@@ -22,18 +22,9 @@
 %   08/20/93 UW ARCHIVE           100.0  1961 W IEEE 30 Bus Test Case
 %
 %   Changes for the purpose of hhc
-%   - change all generator nodes to reference buses, i.e., setting perfect voltage
-%   - remove all shunt elements
-%
-% 	Changes for the purpose of short-circuit calculation - commented out:
-% 	- add ref bus 991, voltage = 132.0
-% 	- change all other bus type to one
+%   - remove all shunt bus elements
 % 	- add short-circuit impedance for all generators:
-% 		- 1:2 	: Ssc = 2.0GVA, XRr = 20 -> r = 0.0025, x = 0.05
-% 		- 3:6 	: Ssc = 0.2GVA, XRr = 20 -> r = 0.025, x = 0.5
-% 		z = Sbase / Ssc
-% 		r = z / sqrt(1 + XRr^2)
-% 		x = z / sqrt(1 + (1/XRr)^2)
+% 		- 1:6 	: Ssc = 5.0GVA, XRr = 20 -> r = 0.001, x = 0.02
 %
 % Adapted from test/data/matpower/30bus_network_hhc.m for the
 % stochastic harmonic hosting capacity (SHHC) paper.
@@ -49,7 +40,6 @@ mpc.principle = 'absolute equality'
 %% bus data
 %	bus_i	type	Pd	Qd	Gs	Bs	area	Vm	Va	baseKV	zone	Vmax	Vmin
 mpc.bus = [
-	% 991  3   0.0     0.0     0.0     0.0     1		1.00000		0.00000  132.0	 1 		1.06000		0.94000;
 	1	 3	 0.0	 0.0	 0.0	 0.0	 1	    1.00000	    0.00000	 132.0	 1	    1.06000	    0.94000;
 	2	 3	 21.7	 12.7	 0.0	 0.0	 1	    1.00000	    0.00000	 132.0	 1	    1.06000	    0.94000;
 	3	 1	 2.4	 1.2	 0.0	 0.0	 1	    1.00000	    0.00000	 132.0	 1	    1.06000	    0.94000;
@@ -85,19 +75,19 @@ mpc.bus = [
 %% bus harmonic data
 %column_names%  ref_angle   standard
 mpc.bus_harmonics = [
-                0.0         'Clean Bus';               % 1  (ref)
-                0.0         'Clean Bus';               % 2  (ref)
+                0.0         'IEC61000-3-6:2008';       % 1  (ref)
+                0.0         'IEC61000-3-6:2008';       % 2  (ref)
                 0.0         'IEC61000-3-6:2008';       % 3
                 0.0         'IEC61000-3-6:2008';       % 4
-                0.0         'Clean Bus';               % 5  (ref)
+                0.0         'IEC61000-3-6:2008';       % 5  (ref)
                 0.0         'IEC61000-3-6:2008';       % 6
                 0.0         'IEC61000-3-6:2008';       % 7
-                0.0         'Clean Bus';               % 8  (ref)
+                0.0         'IEC61000-3-6:2008';       % 8  (ref)
                 0.0         'IEC61000-3-6:2008';       % 9
                 0.0         'IEC61000-3-6:2008';       % 10
-                0.0         'Clean Bus';               % 11 (ref)
+                0.0         'IEC61000-3-6:2008';       % 11 (ref)
                 0.0         'IEC61000-3-6:2008';       % 12
-                0.0         'Clean Bus';               % 13 (ref)
+                0.0         'IEC61000-3-6:2008';       % 13 (ref)
                 0.0         'IEC61000-3-6:2008';       % 14
                 0.0         'IEC61000-3-6:2008';       % 15
                 0.0         'IEC61000-3-6:2008';       % 16
@@ -139,15 +129,25 @@ mpc.gencost = [
 	2	 0.0	 0.0	 3	   0.000000	   0.000000	   0.000000; % SYNC
 ];
 
+%% generator short-circuit impedance data
+% Fundamental per-unit subtransient impedance z_sc = rsc + j*xsc per generator
+% (rows aligned with mpc.gen).  Derived from the machine short-circuit rating:
+%   z = Sbase / Ssc ,  rsc = z / sqrt(1 + XRr^2) ,  xsc = z / sqrt(1 + (1/XRr)^2)
+% with Sbase = 100 MVA.  At harmonic h the reader scales z_sc(h) = rsc*sqrt(h) +
+% j*xsc*h and stamps the shunt admittance Y_g(h) = 1/z_sc(h) to ground.
+%column_names%  rsc         xsc
+mpc.gen_sc = [
+	0.001	    0.02;	% gen 1  (bus 1):  Ssc = 5.0 GVA, XRr = 20
+	0.001	    0.02;	% gen 2  (bus 2):  Ssc = 5.0 GVA, XRr = 20
+	0.001	    0.02;	% gen 3  (bus 5):  Ssc = 5.0 GVA, XRr = 20
+	0.001	    0.02;	% gen 4  (bus 8):  Ssc = 5.0 GVA, XRr = 20
+	0.001	    0.02;	% gen 5  (bus 11): Ssc = 5.0 GVA, XRr = 20
+	0.001	    0.02;	% gen 6  (bus 13): Ssc = 5.0 GVA, XRr = 20
+]
+
 %% branch data
 %	fbus	tbus	r	x	b	rateA	rateB	rateC	ratio	angle	status	angmin	angmax
 mpc.branch = [
-	% 991	 1   0.0025  0.0500	 0.0000 999 	999		999		0.0		0.0		1	 -30.0	30.0; 
-	% 991  2   0.0025  0.0500	 0.0000 999 	999		999		0.0		0.0		1	 -30.0	30.0;
-	% 991  5   0.025   0.500	 0.0000 999 	999		999		0.0		0.0		1	 -30.0	30.0;
-	% 991  8   0.025   0.500	 0.0000 999 	999		999		0.0		0.0		1	 -30.0	30.0;
-	% 991  11  0.025   0.500	 0.0000 999 	999		999		0.0		0.0		1	 -30.0	30.0;
-	% 991  13  0.025   0.500	 0.0000 999 	999		999		0.0		0.0		1	 -30.0	30.0; 
 	1	 2	 0.0192	 0.0575	 0.0528	 138	 138	 138	 0.0	 0.0	 1	 -30.0	 30.0;
 	1	 3	 0.0452	 0.1652	 0.0408	 152	 152	 152	 0.0	 0.0	 1	 -30.0	 30.0;
 	2	 4	 0.057	 0.1737	 0.0368	 139	 139	 139	 0.0	 0.0	 1	 -30.0	 30.0;
