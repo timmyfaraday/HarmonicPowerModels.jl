@@ -85,3 +85,21 @@ function share_ranges(s::Real, typeB, units)
                       d => type_range(isB(k) ? typeB : :A, h) for (k, d) in enumerate(units))
                   for h in (5, 7, 11, 13))
 end
+
+"""
+    typeB_germ(units; αc = 30.0, w = 30.0, share = 0.5) -> Dict
+
+Type-B population with a shared firing-delay germ (`pce_params["type_germs"]`
+format): a `share` of the units (spread evenly over the load order) are type B,
+whose firing delay has mean `αc` and a Beta support `w` wide [deg], common to all
+type-B units. Harmonic h shifts by −h·α_f, so the shift support is
+(−h·(αc − w·E[ω]), −h·(αc + w·(1 − E[ω]))) [rad]; the own-germ range stays type A.
+WORKING ASSUMPTION — to be replaced by converter data (Harmonic Meeting, 30/10).
+"""
+function typeB_germ(units; αc = 30.0, w = 30.0, share = 0.5)
+    Eω  = PCE_PARAMS["alpha_hat"] / (PCE_PARAMS["alpha_hat"] + PCE_PARAMS["beta_hat"])
+    isB(k) = floor(Int, k * share + 1e-9) > floor(Int, (k - 1) * share + 1e-9)
+    Bunits = [d for (k, d) in enumerate(units) if isB(k)]
+    shift  = Dict(h => (-h * deg2rad(αc - w * Eω), -h * deg2rad(αc + w * (1 - Eω))) for h in (5, 7, 11, 13))
+    return Dict("B" => Dict("units" => Bunits, "shift" => shift))
+end

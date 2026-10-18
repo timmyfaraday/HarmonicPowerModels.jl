@@ -27,12 +27,16 @@ iec_alpha(h) = h < 10 ? 1.4 : 2.0
 lawsum(m, α) = sum(m .^ α)^(1 / α)
 
 """
-    recombination(scen, N, aref; ranges = nothing)
+    recombination(scen, N, aref; ranges = nothing, types = nothing)
 
 `ranges[h][d] = (lo, hi)` [rad] sets a per-unit angle support (e.g., from
 `mix_ranges` in converter_types.jl); by default every unit takes the §II range.
+`types` adds shared type germs in the `pce_params["type_germs"]` format
+(name => Dict("units" => …, "shift" => Dict(h => (s_lo, s_hi)))): every unit of a
+type gets the extra shift s_lo + (s_hi − s_lo)·ω_t with one ω_t per type. The
+robust bound then maximises over ω_t on a grid as well.
 """
-function recombination(scen, N, aref; ranges = nothing)
+function recombination(scen, N, aref; ranges = nothing, types = nothing)
     data = ieee30_scenario(scen, ipopt)
     units = sort(parse.(Int, collect(keys(data["load"]))))[1:N]
     hd = HPM.replicate(deepcopy(data), H = H)
@@ -51,8 +55,15 @@ function recombination(scen, N, aref; ranges = nothing)
         lo_u = [ranges === nothing ? rng[h][1] : ranges[h][d][1] for d in units]
         hi_u = [ranges === nothing ? rng[h][2] : ranges[h][d][2] for d in units]
         lo_j = lo_u .+ off; hi_j = hi_u .+ off; wd = hi_u .- lo_u
-        φE = lo_j .+ wd .* Eω
-        W  = [lo_j .+ wd .* rand(beta, N) for _ in 1:20_000]
+        # shared type germs: per type, the units' indicator and the shift range
+        tg = types === nothing ? [] :
+             [([d in tt["units"] for d in units], tt["shift"][h]) for tt in values(types)]
+        tshift(ζ) = isempty(tg) ? zeros(N) :
+                    sum(mask .* (sh[1] + (sh[2] - sh[1]) * ζ[i]) for (i, (mask, sh)) in enumerate(tg))
+        φE = lo_j .+ wd .* Eω .+ tshift(fill(Eω, length(tg)))
+        W  = [lo_j .+ wd .* rand(beta, N) .+ tshift(rand(beta, length(tg))) for _ in 1:20_000]
+        ζgrid = isempty(tg) ? [Float64[]] :
+                vec([collect(z) for z in Iterators.product(fill(range(0, 1, length = 41), length(tg))...)])
         cap = minimum(hd["nw"]["$h"]["load"]["$d"]["c_rating"] for d in units)
         buses = [(L = hd["nw"]["$h"]["bus"][b]["ihdmax"] * bus["vm"],
                   z = [Z[h][bus_pos[parse(Int, b)], bus_pos[ubus[d]]] for d in units])
@@ -60,7 +71,7 @@ function recombination(scen, N, aref; ranges = nothing)
         host(A) = min(cap, minimum(bb.L / A(bb.z) for bb in buses))
         r = Dict(
             :arith => host(z -> sum(abs.(z))),
-            :rob   => host(z -> robust_abs(z, lo_j, hi_j)),
+            :rob   => host(z -> maximum(robust_abs(z, lo_j .+ tshift(ζ), hi_j .+ tshift(ζ)) for ζ in ζgrid)),
             :det   => host(z -> abs(sum(z .* cis.(φE)))),
             :q95   => host(z -> quantile([abs(sum(z .* cis.(w))) for w in W], 0.95)),
             :iec   => host(z -> lawsum(abs.(z), iec_alpha(h))),

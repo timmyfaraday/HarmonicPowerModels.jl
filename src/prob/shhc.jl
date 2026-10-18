@@ -642,8 +642,17 @@ function solve_shhc_calibrated(hdata::Dict, ::Type{M}, optimizer;
                                pce_params::Dict, nsamp::Int=20000, maxiter::Int=6,
                                tol::Real=1e-3, init_bound::String="gaussian",
                                verbose::Bool=false, kwargs...) where {M}
-    # workspace with PCE data (angle ranges, ε, α̂β̂) for λ* sampling — no HPF needed
-    hd_pce = deepcopy(hdata)
+    # workspace with PCE data (angle ranges, ε, α̂β̂) for λ* sampling. The
+    # fundamental power flow runs first, as in solve_shhc: with the local angle
+    # reference the sampled angles must include the offsets h·θ_i it produces.
+    hd_pce  = deepcopy(hdata)
+    hpf_opt = get(kwargs, :hpf_optimizer, M === sHHC_QCQP ? optimizer : nothing)
+    if hpf_opt !== nothing
+        update_hdata_with_fundamental_hpf_results!(hd_pce, dHHC_NLP, hpf_opt)
+    elseif get(hdata, "angle_reference", "local") == "local"
+        @warn "solve_shhc_calibrated: no hpf_optimizer, so λ* is sampled without the " *
+              "local angle offsets." maxlog=1
+    end
     update_hdata_with_pce_data!(hd_pce, merge(pce_params, Dict("bound" => init_bound)))
 
     # initial solve to obtain a hosting decision g
