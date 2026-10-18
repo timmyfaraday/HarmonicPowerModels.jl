@@ -1,0 +1,102 @@
+
+════════════════════════════════════════════════════════════════════════════════
+SHHC INDUSTRIAL NETWORK — PAPER TEST CASE
+════════════════════════════════════════════════════════════════════════════════
+9-bus industrial network, 4 LCC converter units (all harmonic units)
+Harmonics       : [5, 7, 11, 13]
+Beta(α̂=4.0414, β̂=4.7762)  →  E[ω] = 0.458333
+Risk level ε    : 0.05   (Cantelli λ = 4.3589,  Gaussian λ = 1.64485)
+PCE degree δ    : 2,  Taylor n_terms = 4
+Per-solve cutoff: 360.0 s
+Solvers         : dHHC_SOC=Mosek,  sHHC_QCQP=Ipopt+MA27,  sHHC_SOC=Mosek (SOCP),  HPF=Ipopt+MA27
+Angle model     : Section-II Beta spread applied RELATIVE to the constructive
+                  worst case (φ_d = −arg(Z_{n*,d})); n* = bus 8. Worst case = E[φ].
+
+────────────────────────────────────────────────────────────────────────────────
+0.  ANGLE MODEL — section-II spread vs constructive worst-case means
+────────────────────────────────────────────────────────────────────────────────
+  Section-II range per harmonic (Table III) and the per-unit worst-case mean E[φ]=φ_wc:
+
+  h     v_min [°]     v_max [°]     range [°]   
+  5     4.7500        40.0500       35.3000     
+  7     -22.7700      27.5100       50.2800     
+  11    79.6900       164.0100      84.3200     
+  13    49.3800       147.6700      98.2900     
+
+  Per-unit worst-case mean angle φ_wc [°] (= E[φ], the constructive alignment at bus 8):
+
+  h\unit  u1          u2          u3          u4        
+  5       -119.184    -118.768    -86.737     -82.057   
+  7       -59.299     -58.954     -87.241     -83.275   
+  11      -119.414    -119.153    -87.798     -84.628   
+  13      -59.444     -59.213     -87.975     -85.057   
+
+════════════════════════════════════════════════════════════════════════════════
+A.  EQUIVALENCE — at the means (point mass = constructive worst case)
+════════════════════════════════════════════════════════════════════════════════
+Claim: dHHC_SOC ≡ sHHC_SOC ≡ sHHC_QCQP when each unit's angle is fixed at φ_wc.
+Statuses: dHHC=OPTIMAL  SOC=OPTIMAL  QCQP=LOCALLY_SOLVED
+
+  h     I_dHHC [pu]       I_SOC [pu]        I_QCQP [pu]       SOC-dHHC [%]   QCQP-dHHC [%]
+  5     6.01604599e-04    6.01652151e-04    6.01541172e-04    +0.0079        -0.0105      
+  7     3.08022969e-04    3.08143201e-04    3.08060529e-04    +0.0390        +0.0122      
+  11    1.24963579e-04    1.24971733e-04    1.24980902e-04    +0.0065        +0.0139      
+  13    8.94342540e-05    8.92289154e-05    8.94426721e-05    -0.2296        +0.0094      
+
+  Totals [pu]:  dHHC=1.12402540e-03   SOC=1.12399600e-03   QCQP=1.12402527e-03
+  Max relative deviation from dHHC: 0.2296 %
+  Solve times [s]:  dHHC(sweep)=4.20  SOC=3.22  QCQP=3.10
+  VERDICT: equivalence holds (≤ 1 %).
+
+════════════════════════════════════════════════════════════════════════════════
+B.  UNCERTAINTY — uplift over the constructive worst-case lower bound
+════════════════════════════════════════════════════════════════════════════════
+Section-II Beta spread applied around φ_wc (worst case = mean). De-phasing
+away from the worst case recombines the harmonics ⇒ sHHC capacity > the
+lower bound. Reported for both chance bounds; and sHHC_SOC ≈ sHHC_QCQP.
+
+────────────────────────────────────────────────────────────────────────────────
+  B.C  bound = cantelli   (λ = 4.3589)
+────────────────────────────────────────────────────────────────────────────────
+  Statuses: SOC=OPTIMAL  QCQP=LOCALLY_SOLVED
+
+  h     I_dHHC [pu]       I_SOC [pu]        I_QCQP [pu]       SOC/dHHC [%]   QCQP/dHHC [%]  SOC-QCQP [%] 
+  5     6.01604599e-04    6.02262858e-04    6.02866709e-04    +0.1094        +0.2098        -0.1002      
+  7     3.08022969e-04    3.04626421e-04    3.04800485e-04    -1.1027        -1.0462        -0.0571      
+  11    1.24963579e-04    1.18632420e-04    1.18598380e-04    -5.0664        -5.0936        +0.0287      
+  13    8.94342540e-05    8.32881075e-05    8.31351538e-05    -6.8723        -7.0433        +0.1840      
+
+  Totals [pu]:  dHHC=1.12402540e-03   SOC=1.10880981e-03   QCQP=1.10940073e-03
+  Uplift over worst-case lower bound:  SOC=-1.3537 %   QCQP=-1.3011 %
+  Solve times [s]:  SOC=0.06  QCQP=0.47
+
+────────────────────────────────────────────────────────────────────────────────
+  B.G  bound = gaussian   (λ = 1.64485)
+────────────────────────────────────────────────────────────────────────────────
+  Statuses: SOC=OPTIMAL  QCQP=LOCALLY_SOLVED
+
+  h     I_dHHC [pu]       I_SOC [pu]        I_QCQP [pu]       SOC/dHHC [%]   QCQP/dHHC [%]  SOC-QCQP [%] 
+  5     6.01604599e-04    6.01725848e-04    6.01909941e-04    +0.0202        +0.0508        -0.0306      
+  7     3.08022969e-04    3.07308963e-04    3.07397763e-04    -0.2318        -0.2030        -0.0289      
+  11    1.24963579e-04    1.23605102e-04    1.23614609e-04    -1.0871        -1.0795        -0.0077      
+  13    8.94342540e-05    8.81218492e-05    8.80910154e-05    -1.4675        -1.5019        +0.0350      
+
+  Totals [pu]:  dHHC=1.12402540e-03   SOC=1.12076176e-03   QCQP=1.12101333e-03
+  Uplift over worst-case lower bound:  SOC=-0.2904 %   QCQP=-0.2680 %
+  Solve times [s]:  SOC=0.01  QCQP=0.48
+
+────────────────────────────────────────────────────────────────────────────────
+C.  SOLVE SUMMARY
+────────────────────────────────────────────────────────────────────────────────
+  model / scenario            status            time [s]  
+  dHHC_SOC (worst case)       OPTIMAL           4.20      
+  sHHC_SOC  (det)             OPTIMAL           3.22      
+  sHHC_QCQP (det)             LOCALLY_SOLVED    3.10      
+  sHHC_SOC  (unc, cantelli)   OPTIMAL           0.06      
+  sHHC_QCQP (unc, cantelli)   LOCALLY_SOLVED    0.47      
+  sHHC_SOC  (unc, gaussian)   OPTIMAL           0.01      
+  sHHC_QCQP (unc, gaussian)   LOCALLY_SOLVED    0.48      
+
+════════════════════════════════════════════════════════════════════════════════
+END OF REPORT
+════════════════════════════════════════════════════════════════════════════════

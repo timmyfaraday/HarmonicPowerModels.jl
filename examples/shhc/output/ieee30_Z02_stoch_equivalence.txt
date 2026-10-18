@@ -1,0 +1,23 @@
+════════════════════════════════════════════════════════════════════════════════════
+STOCHASTIC EQUIVALENCE — IEEE30
+════════════════════════════════════════════════════════════════════════════════════
+Units=21  ε=0.05  MC samples=2000
+
+sHHC_SOC vs sHHC_QCQP per chance bound  [Σ_h I_h, pu]:
+  bound      SOC              QCQP             SOC-QCQP%    status
+  empirical  3.41430188e-03   —                —            OPTIMAL/skipped
+  gaussian   3.41123469e-03   —                —            OPTIMAL/skipped
+  cantelli   3.35998838e-03   —                —            OPTIMAL/skipped
+
+Monte-Carlo dHHC objective distribution [pu]:
+  min=3.396543e-03 q05=3.416908e-03 median=3.440868e-03 q95=3.474341e-03 max=3.517755e-03 mean=3.442547e-03
+
+deterministic dHHC@E[φ] = 3.384444e-03  (MC pct 0.0%, viol 0.0%)
+
+sHHC objective vs MC (q05 = 95%-reliable target; viol = P[H<obj]):
+  SOC  empirical  = 3.414302e-03  (vs q05 -0.08%, viol 3.0%)
+  SOC  gaussian   = 3.411235e-03  (vs q05 -0.17%, viol 1.1%)
+  SOC  cantelli   = 3.359988e-03  (vs q05 -1.67%, viol 0.0%)
+
+MC CSV: ieee30_stoch_mc.csv   refs: ieee30_stoch_refs.csv
+════════════════════════════════════════════════════════════════════════════════════

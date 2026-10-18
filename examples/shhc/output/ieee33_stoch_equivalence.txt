@@ -1,0 +1,17 @@
+════════════════════════════════════════════════════════════════════════════════════
+STOCHASTIC EQUIVALENCE — IEEE33
+════════════════════════════════════════════════════════════════════════════════════
+Units=32  ε=0.05  MC samples=2000
+
+sHHC_SOC vs sHHC_QCQP per chance bound  [Σ_h I_h, pu]:
+  bound      SOC              QCQP             SOC-QCQP%    status
+
+Monte-Carlo dHHC objective distribution [pu]:
+  min=1.403479e-04 q05=1.408329e-04 median=1.416634e-04 q95=1.429093e-04 max=1.451668e-04 mean=1.417406e-04
+
+deterministic dHHC@E[φ] = 1.398856e-04  (MC pct 0.0%, viol 0.0%)
+
+sHHC objective vs MC (q05 = 95%-reliable target; viol = P[H<obj]):
+
+MC CSV: ieee33_stoch_mc.csv   refs: ieee33_stoch_refs.csv
+════════════════════════════════════════════════════════════════════════════════════
