@@ -313,7 +313,6 @@ per-unit `Dict` form instead.
 | Key | Content |
 |---|---|
 | `"basis"`          | multivariate `PCEBasis` (N germs, monic Beta01, probability measure) |
-| `"M"`              | P×P×P multiplication tensor (dense) |
 | `"lambda"`         | Cantelli safety factor λ(ε) = √((1-ε)/ε) |
 | `"psi_norms"`      | Vector of ⟨Ψ_k,Ψ_k⟩, length P; `psi_norms[1] == 1` |
 | `"K"`              | full PCE index range 0:(P-1) (lifted variables, chance constraints) |
@@ -373,11 +372,8 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
     Ngerm = N + length(type_names)
 
     # ── 2. Multivariate PCE workspace (N+T germs, monic Beta01, prob. measure) ──
-    pb = PCEBasis(Ngerm, α̂, β̂, δ)
+    pb = cached_pce_basis(Ngerm, α̂, β̂, δ)
     P  = pb.dim
-
-    # ── 3. Multiplication tensor (dense; consumers index M[j,l,k] directly) ───
-    M = dense_tensor(pb)
 
     # ── 4. Chance-constraint factor and basis norms (psi_norms[1] == 1) ───────
     # bound ∈ {"cantelli" (default, distribution-free), "gaussian" (N(0,1)),
@@ -485,7 +481,6 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
     # ── 6. Store in hdata ──────────────────────────────────────────────────────
     hdata["pce"] = Dict(
         "basis"          => pb,
-        "M"              => M,
         "lambda"         => lambda,
         "psi_norms"      => psi_norms,
         "K"              => K,

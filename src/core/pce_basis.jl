@@ -11,7 +11,8 @@
 # This removes the ξ = 2ω−1 affine map, the a = β̂−1 / b = α̂−1 parameter   #
 # swap, and the norm0 = √⟨Ψ_0,Ψ_0⟩ corrections of the legacy Jacobi code.  #
 #                                                                               #
-# Galerkin tensor — stored SPARSE (99.9 % of entries vanish at IEEE-30 size): #
+# Galerkin tensor — stored SPARSE (99.9 % of entries vanish at IEEE-30 size)  #
+# and built from univariate triple products (see `galerkin_nonzeros`):         #
 #   M[j,l,k] = ⟨Ψ_j Ψ_l, Ψ_k⟩ / ⟨Ψ_k, Ψ_k⟩    (1-indexed)                #
 # kept as nonzero triples with j ≤ l; `galerkin_product` restores symmetry.   #
 #                                                                               #
@@ -83,17 +84,65 @@ function PCEBasis(N::Int, α̂::Real, β̂::Real, δ::Int; nrec::Int = 3δ + 2)
     sp2     = [prod(sp2_uni[ind[k, u] + 1] for u in 1:N) for k in 1:P]
 
     # sparse Galerkin tensor: M[j,l,k] = ⟨Ψ_jΨ_l,Ψ_k⟩/⟨Ψ_k,Ψ_k⟩, j ≤ l
-    t3   = Tensor(3, mop)
-    M_nz = Tuple{Int,Int,Int,Float64}[]
-    idx  = Vector{Int}(undef, 3)
-    for j in 1:P, l in j:P, k in 1:P
-        idx[1] = j - 1; idx[2] = l - 1; idx[3] = k - 1
-        v = t3.get(idx)
-        abs(v) > 1e-14 && push!(M_nz, (j, l, k, v / sp2[k]))
-    end
+    M_nz = galerkin_nonzeros(uni, ind, sp2, δ)
 
     return PCEBasis(N, δ, P, uni, mop, ind, sp2, M_nz)
 end
+
+"""
+    galerkin_nonzeros(uni, ind, sp2, δ) -> Vector{Tuple{Int,Int,Int,Float64}}
+
+Nonzero entries (j, l, k, M[j,l,k]), j ≤ l, of the Galerkin tensor of the product
+basis with multi-indices `ind` (P×N, degree-graded) and norms `sp2`.
+
+The basis is a tensor product, so ⟨Ψ_jΨ_l,Ψ_k⟩ = ∏_u e(j_u, l_u, k_u) with the
+univariate triple products e(a, b, c) = ⟨ψ_aψ_bψ_c⟩, a, b, c ≤ δ: a table of
+(δ+1)³ values from the univariate Gauss rule. Since e(0, 0, c) = ⟨ψ_c⟩ = 0 for
+c > 0, an entry can only be nonzero when k is supported on the germs of j and l,
+at most 2δ of them. Enumerating those k per pair (j, l) costs O(P²) instead of
+the O(P³) quadratures of PolyChaos's `Tensor(3, ·)`, with identical values.
+"""
+function galerkin_nonzeros(uni, ind::AbstractMatrix{<:Integer}, sp2::AbstractVector, δ::Int)
+    P, N = size(ind)
+    t1 = Tensor(3, uni)
+    e  = [t1.get([a, b, c]) for a in 0:δ, b in 0:δ, c in 0:δ]      # e[a+1, b+1, c+1]
+    pos   = Dict(Tuple(view(ind, k, :)) => k for k in 1:P)
+    supp  = [findall(!iszero, view(ind, k, :)) for k in 1:P]
+    # multi-index degree patterns of total degree ≤ δ on m germs, m = 0 … 2δ
+    pats  = [m == 0 ? [Int[]] : [collect(c) for c in Iterators.product(ntuple(_ -> 0:δ, m)...) if sum(c) <= δ]
+             for m in 0:2δ]
+    M_nz  = Tuple{Int,Int,Int,Float64}[]
+    kidx  = zeros(Int, N)
+    for j in 1:P, l in j:P
+        S = union(supp[j], supp[l])
+        for pat in pats[length(S) + 1]
+            v = 1.0
+            for (i, u) in enumerate(S)
+                v *= e[ind[j, u] + 1, ind[l, u] + 1, pat[i] + 1]
+                iszero(v) && break
+            end
+            abs(v) > 1e-14 || continue
+            fill!(kidx, 0)
+            for (i, u) in enumerate(S); kidx[u] = pat[i]; end
+            k = pos[Tuple(kidx)]
+            push!(M_nz, (j, l, k, v / sp2[k]))
+        end
+    end
+    return M_nz
+end
+
+# Bases depend only on (N, α̂, β̂, δ, nrec): sweeps and calibration iterations
+# reuse them instead of rebuilding identical tensors.
+const _PCEBASIS_CACHE = Dict{Tuple{Int,Float64,Float64,Int,Int},Any}()
+
+"""
+    cached_pce_basis(N, α̂, β̂, δ; nrec = 3δ + 2) -> PCEBasis
+
+`PCEBasis(N, α̂, β̂, δ; nrec)`, built once per argument set and then reused.
+"""
+cached_pce_basis(N::Int, α̂::Real, β̂::Real, δ::Int; nrec::Int = 3δ + 2) =
+    get!(() -> PCEBasis(N, α̂, β̂, δ; nrec = nrec), _PCEBASIS_CACHE,
+         (N, Float64(α̂), Float64(β̂), δ, nrec))::PCEBasis
 
 """
     dense_tensor(pb::PCEBasis) -> Array{Float64,3}

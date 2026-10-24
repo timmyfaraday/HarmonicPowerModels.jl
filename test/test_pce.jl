@@ -226,4 +226,23 @@ end
         @test isapprox(z_sp, z_dn; rtol=1e-10)
     end
 
+    # The tensor is built from univariate triple products; it must equal the
+    # multivariate quadrature of PolyChaos's Tensor(3, mop), entry by entry.
+    @testset "Galerkin tensor vs PolyChaos Tensor(3, mop)" begin
+        for N in (1, 3, 5)
+            pb  = _HPMt.PCEBasis(N, _α̂, _β̂, _δ)
+            t3  = Tensor(3, pb.mop)
+            ref = Dict{Tuple{Int,Int,Int},Float64}()
+            for j in 1:pb.dim, l in j:pb.dim, k in 1:pb.dim
+                v = t3.get([j - 1, l - 1, k - 1])
+                abs(v) > 1e-14 && (ref[(j, l, k)] = v / pb.sp2[k])
+            end
+            got = Dict((j, l, k) => v for (j, l, k, v) in pb.M_nz)
+            @test keys(got) == keys(ref)
+            @test all(isapprox(got[key], ref[key]; rtol=1e-12, atol=1e-14) for key in keys(ref))
+        end
+        # the cache returns the same workspace for the same arguments
+        @test _HPMt.cached_pce_basis(3, _α̂, _β̂, _δ) === _HPMt.cached_pce_basis(3, _α̂, _β̂, _δ)
+    end
+
 end

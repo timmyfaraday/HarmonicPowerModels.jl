@@ -13,7 +13,8 @@
 
 # ── Internal PCE data accessors ────────────────────────────────────────────────
 
-_pce_M(pm)           = pm.data["pce"]["M"]
+# dense P×P×P tensor, built on first use: only the QCQP indexes it directly
+_pce_M(pm)           = get!(() -> dense_tensor(pm.data["pce"]["basis"]), pm.data["pce"], "M")
 _pce_lambda(pm)      = pm.data["pce"]["lambda"]
 # per-constraint empirical λ* (kind ∈ {:ihd,:agg,:rmsi}); falls back to scalar λ
 function _pce_lambda(pm, kind::Symbol, key)
