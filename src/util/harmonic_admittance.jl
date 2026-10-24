@@ -372,14 +372,17 @@ function empirical_lambdas(hdata::Dict, g::AbstractDict; nsamp::Int=20000, seed:
     pos2bus = Dict(p => n for (n, p) in bus_pos)
 
     # branch endpoints + series admittance per harmonic (positions; 0 = reference)
-    brinfo = Dict(h => Tuple{Int,Int,Int,Float64,Float64}[] for h in harm_nws)
+    brinfo = Dict(h => Tuple{Int,Int,Int,Float64,Float64,Float64,Float64}[] for h in harm_nws)
     for h in harm_nws
         for (b_str, br) in hdata["nw"]["$h"]["branch"]
             r, x = br["br_r"], br["br_x"]; (abs(r) + abs(x) > 0.0) || continue
             ys = 1.0 / (r + im * x)
             fp = get(bus_pos, br["f_bus"], 0); tp = get(bus_pos, br["t_bus"], 0)
             (fp == 0 && tp == 0) && continue
-            push!(brinfo[h], (parse(Int, b_str), fp, tp, real(ys), imag(ys)))
+            # series current y_s·(V_f/t − V_t), off-nominal complex tap t on the from side
+            tm = get(br, "tap", 1.0); tm == 0.0 && (tm = 1.0)
+            ct = 1.0 / (tm * cis(get(br, "shift", 0.0)))
+            push!(brinfo[h], (parse(Int, b_str), fp, tp, real(ys), imag(ys), real(ct), imag(ct)))
         end
     end
 
@@ -392,6 +395,7 @@ function empirical_lambdas(hdata::Dict, g::AbstractDict; nsamp::Int=20000, seed:
     utype  = get(pce, "unit_type", Dict{Int,String}())
     shifts = get(pce, "type_shifts", Dict{Int,Dict{String,Tuple{Float64,Float64}}}())
     ωt = Dict(t => 0.0 for t in unique(values(utype)))
+    wts = fairness_weights(hdata, units)
     for m in 1:nsamp
         for d in units; ωu[d] = rand(rng, Bd); end
         for t in keys(ωt); ωt[t] = rand(rng, Bd); end   # shared by all units of a type
@@ -404,16 +408,17 @@ function empirical_lambdas(hdata::Dict, g::AbstractDict; nsamp::Int=20000, seed:
                 if haskey(utype, d)
                     s_lo, s_hi = shifts[h][utype[d]]; φ += s_lo + (s_hi - s_lo) * ωt[utype[d]]
                 end
-                c = cos(φ); s = sin(φ)
+                c = wts[d] * cos(φ); s = wts[d] * sin(φ)      # unit d injects w_d·I_h
                 @inbounds for p in 1:npos
                     z = Zh[p, dp]; zr = real(z); zi = imag(z)
                     Vr[p] += zr * c - zi * s; Vi[p] += zi * c + zr * s
                 end
             end
             @inbounds for p in 1:npos; aV[h][p][m] = Vr[p]^2 + Vi[p]^2; end
-            for (bid, fp, tp, gy, by) in brinfo[h]
-                dVr = (fp == 0 ? 0.0 : Vr[fp]) - (tp == 0 ? 0.0 : Vr[tp])
-                dVi = (fp == 0 ? 0.0 : Vi[fp]) - (tp == 0 ? 0.0 : Vi[tp])
+            for (bid, fp, tp, gy, by, cr, ci) in brinfo[h]
+                vfr = fp == 0 ? 0.0 : Vr[fp]; vfi = fp == 0 ? 0.0 : Vi[fp]
+                dVr = (cr * vfr - ci * vfi) - (tp == 0 ? 0.0 : Vr[tp])
+                dVi = (cr * vfi + ci * vfr) - (tp == 0 ? 0.0 : Vi[tp])
                 Ir = gy * dVr - by * dVi; Ii = gy * dVi + by * dVr
                 aI[h][bid][m] = Ir^2 + Ii^2
             end

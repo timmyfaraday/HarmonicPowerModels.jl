@@ -138,8 +138,7 @@
     @testset "sHHC_SOC: independent, equal hosting" begin
         sol = HPM.solve_shhc(fresh(), sHHC_SOC, solver_soc;
                              pce_params = base_params(), hpf_optimizer = solver_nlp)
-        # Clarabel sits on its tolerance here (Mosek: OPTIMAL, same I_h to 1e-13)
-        @test sol["termination_status"] in (OPTIMAL, ALMOST_OPTIMAL)
+        @test sol["termination_status"] == OPTIMAL
         for (_, I_h) in sol["solution"]
             @test I_h > 0.0
         end
@@ -161,6 +160,50 @@
             @test cmd(h, load_ids[3]) ≈ 0.0
             @test cmd(h, load_ids[4]) ≈ 0.0
         end
+    end
+
+    # ── 4a. sHHC_SOC — weighted equality (fixed allocation ratios) ───────────
+    @testset "sHHC_SOC: weighted equality" begin
+        weighted(w) = begin
+            d = deepcopy(_data); d["principle"] = "weighted equality"
+            for (k, v) in w; d["load"]["$k"]["fairness_weight"] = v; end
+            HPM.replicate(d; H=H_TEST)
+        end
+        soc(hd; p = base_params()) = HPM.solve_shhc(hd, sHHC_SOC, solver_soc;
+                                                     pce_params = p, hpf_optimizer = solver_nlp)
+        ok(sol) = sol["termination_status"] == OPTIMAL
+        ae = soc(fresh())
+
+        # w = 1 reproduces absolute equality (explicit and default weights)
+        for w in (Dict(d => 1.0 for d in load_ids), Dict{Int,Float64}())
+            we = soc(weighted(w))
+            @test ok(we)
+            for h in (5, 7)
+                @test isapprox(we["solution"][h], ae["solution"][h]; rtol=1e-6)
+            end
+            @test isapprox(we["objective_value"], ae["objective_value"]; rtol=1e-6)
+        end
+
+        # uniform weights c scale I_h by 1/c and leave every unit's allocation unchanged
+        c  = 2.5
+        wc = soc(weighted(Dict(d => c for d in load_ids)))
+        @test ok(wc)
+        for h in (5, 7)
+            @test isapprox(c * wc["solution"][h], ae["solution"][h]; rtol=1e-5)
+        end
+        @test isapprox(wc["objective_value"], ae["objective_value"]; rtol=1e-5)
+
+        # vanishing weights on two units reproduce hosting by the other two only
+        tiny = soc(weighted(Dict(load_ids[3] => 1e-7, load_ids[4] => 1e-7)))
+        p2   = base_params(); p2["harmonic_units"] = [load_ids[1], load_ids[2]]
+        sub  = soc(fresh(); p = p2)
+        @test ok(tiny) && ok(sub)
+        for h in (5, 7)
+            @test isapprox(tiny["solution"][h], sub["solution"][h]; rtol=1e-4)
+        end
+
+        # a non-positive weight is rejected
+        @test_throws ErrorException soc(weighted(Dict(load_ids[1] => 0.0)))
     end
 
     # ── 4b. sHHC_QCQP ≡ sHHC_SOC with an off-nominal branch tap ──────────────

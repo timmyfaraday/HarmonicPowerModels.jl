@@ -305,11 +305,12 @@ end
 """
     solve_shhc(hdata, sHHC_SOC, optimizer; pce_params, hpf_optimizer, kwargs...)
 
-Solve the stochastic HHC problem as a Second-Order Cone Program (SOCP) under
-absolute-equality fairness.
+Solve the stochastic HHC problem as a Second-Order Cone Program (SOCP) for a
+fairness principle with fixed allocation ratios: `"absolute equality"` (every
+unit receives I_h) or `"weighted equality"` (unit d receives w_d·I_h, with w_d
+from `load["fairness_weight"]`, see [`fairness_weights`](@ref)).
 
-Under this principle all harmonic units at harmonic h receive the same scalar
-hosting capacity I_h, so the squared bus voltages and branch currents are
+With fixed ratios, one scalar hosting capacity I_h per harmonic remains, so the squared bus voltages and branch currents are
 quadratic in I_h (computed analytically via the harmonic admittance matrix Z_h
 and the PCE multiplication tensor). The chance constraints become a small
 program in the per-harmonic variables I_h (with g_h = I_h²):
@@ -330,9 +331,9 @@ Steps
    (a conic solver, e.g. Mosek or Clarabel — not HiGHS).
 
 Returns a result Dict with `"termination_status"`, `"objective_value"`, and
-`"solution"` (Dict mapping harmonic nw id → optimal I_h).
+`"solution"` (Dict mapping harmonic nw id → optimal I_h; unit d hosts w_d·I_h).
 
-Only the absolute-equality fairness principle is representable in this
+Only principles with fixed allocation ratios are representable in this
 formulation: the single scalar I_h per harmonic is what makes the squared
 magnitudes quadratic in one variable and the chance constraints conic. Any other
 `hdata["principle"]` is rejected rather than silently ignored; use `sHHC_QCQP`,
@@ -341,11 +342,12 @@ which carries a per-unit current variable.
 function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
                     pce_params::Dict, hpf_optimizer=optimizer, kwargs...)
     principle = get(hdata, "principle", "absolute equality")
-    principle == "absolute equality" || error(
+    principle in ("absolute equality", "weighted equality") || error(
         "solve_shhc (sHHC_SOC): fairness principle \"$principle\" is not " *
-        "representable in the SOCP, which assigns every harmonic unit the same " *
-        "scalar hosting capacity I_h. Use sHHC_QCQP for \"$principle\", or set " *
-        "hdata[\"principle\"] = \"absolute equality\".")
+        "representable in the SOCP, which fixes the ratios between the units' " *
+        "allocations (I_{d,h} = w_d·I_h, one scalar I_h per harmonic). Use sHHC_QCQP " *
+        "for \"$principle\", or set hdata[\"principle\"] to \"absolute equality\" " *
+        "or \"weighted equality\" (weights in load[\"fairness_weight\"]).")
 
     # The HPF requires a nonlinear solver (e.g. Ipopt); hpf_optimizer lets
     # callers pass a different solver than the SOCP optimizer. It runs before the
@@ -409,6 +411,8 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
     #   Ci_{n,h,k} = Σ_d [ Im(Z_red[n,d])·cos_d,k + Re(Z_red[n,d])·sin_d,k ]
     # Reference buses have V=0 → response = 0; normal loads contribute zero
     # (their cos/sin vectors are all-zero).
+    # fixed allocation weights: unit d injects w_d·I_h (w_d = 1 under absolute equality)
+    wts = fairness_weights(hdata, pce["harmonic_units"])
     alpha_re = Dict{Int, Matrix{Float64}}()   # [nw_int][bus_id, k_idx]
     alpha_im = Dict{Int, Matrix{Float64}}()
 
@@ -438,6 +442,8 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
                 rz, iz = real(z_nd), imag(z_nd)
                 cp_d   = cph[d]
                 sp_d   = sph[d]
+                w_d    = get(wts, d, 0.0)        # normal loads inject nothing anyway
+                rz, iz = w_d * rz, w_d * iz
                 for (k_idx, _) in enumerate(K)
                     ar[n, k_idx] += rz * cp_d[k_idx] - iz * sp_d[k_idx]
                     ai[n, k_idx] += iz * cp_d[k_idx] + rz * sp_d[k_idx]
@@ -500,32 +506,52 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
     # (each unit's harmonics share its germ), matching the QCQP THD/RMS chance
     # constraints.
     model = JuMP.Model(optimizer)
-    # U_h = number of HARMONIC units at harmonic h (only these host capacity);
-    # normal loads are present in the network but inject nothing.
+    # U_h = Σ w_d over the HARMONIC units at harmonic h, i.e., the total hosting
+    # per unit of I_h (the number of units under absolute equality); normal loads
+    # are present in the network but inject nothing.
     hunit_set = Set(pce["harmonic_units"])
-    U_h = Dict(nw_int => count(d -> parse(Int, d) in hunit_set,
-                               keys(hdata["nw"]["$nw_int"]["load"]))
+    U_h = Dict(nw_int => sum((wts[parse(Int, d)] for d in keys(hdata["nw"]["$nw_int"]["load"])
+                              if parse(Int, d) in hunit_set); init = 0.0)
                for nw_int in harm_nw_ints)
 
-    JuMP.@variable(model, I_h[h in harm_nw_ints] >= 0)
-    JuMP.@variable(model, g_h[h in harm_nw_ints] >= 0)
+    # Scaling: I_h ≈ 1e-3 and g_h = I_h² ≈ 1e-7 p.u. sit at the edge of the conic
+    # solvers' tolerances (Clarabel returned OPTIMAL 2 % above the optimum). The
+    # program is solved in I'_h = I_h/s_h with s_h the bound from the individual
+    # harmonic voltage limits alone, and every constraint is divided by its limit.
+    s_h = Dict{Int,Float64}()
+    for (nw_str, nw_int) in zip(harm_nw_strs, harm_nw_ints)
+        r = Inf
+        if haskey(alpha_V, nw_int)
+            for (bi_str, bus) in hdata["nw"][nw_str]["bus"]
+                haskey(bus, "ihdmax") || continue
+                a0 = alpha_V[nw_int][bus_idx[bus["bus_i"]], 1]
+                L  = (bus["ihdmax"] * fund_nw["bus"][bi_str]["vm"])^2
+                a0 > 0.0 && L > 0.0 && (r = min(r, sqrt(L / a0)))
+            end
+        end
+        s_h[nw_int] = isfinite(r) ? r : 1.0
+    end
+
+    JuMP.@variable(model, Ip_h[h in harm_nw_ints] >= 0)    # I_h / s_h
+    JuMP.@variable(model, gp_h[h in harm_nw_ints] >= 0)    # g_h / s_h²
+    I_h = Dict(h => s_h[h] * Ip_h[h] for h in harm_nw_ints)
+    g_h = Dict(h => s_h[h]^2 * gp_h[h] for h in harm_nw_ints)
     for h in harm_nw_ints                      # I_h² ≤ g_h  (rotated cone)
-        JuMP.@constraint(model, [g_h[h], 0.5, I_h[h]] in JuMP.RotatedSecondOrderCone())
+        JuMP.@constraint(model, [gp_h[h], 0.5, Ip_h[h]] in JuMP.RotatedSecondOrderCone())
     end
 
     # Per-unit harmonic current rating, mirroring the cmd ≤ load["c_rating"]
     # bound of the dHHC and QCQP models (see `variable_load_current_magnitude`).
-    # Under absolute equality every harmonic unit is assigned the same I_h, so
-    # the binding cap is the SMALLEST rating among the units — the network's
-    # weakest unit limits the common allocation. Omitting this bound lets the
-    # SOCP report capacities the units could not physically carry, and makes it
-    # disagree with the dHHC/QCQP wherever the rating binds.
+    # Unit d is assigned w_d·I_h, so the binding cap is the SMALLEST c_rating/w_d
+    # among the units (the smallest rating under absolute equality). Omitting this
+    # bound lets the SOCP report capacities the units could not physically carry,
+    # and makes it disagree with the dHHC/QCQP wherever the rating binds.
     for h in harm_nw_ints
-        caps = [ld["c_rating"] for (d, ld) in hdata["nw"]["$h"]["load"]
+        caps = [ld["c_rating"] / wts[parse(Int, d)] for (d, ld) in hdata["nw"]["$h"]["load"]
                 if parse(Int, d) in hunit_set && haskey(ld, "c_rating")]
         isempty(caps) && continue
-        JuMP.set_upper_bound(I_h[h], minimum(caps))
-        JuMP.set_upper_bound(g_h[h], minimum(caps)^2)
+        JuMP.set_upper_bound(Ip_h[h], minimum(caps) / s_h[h])
+        JuMP.set_upper_bound(gp_h[h], (minimum(caps) / s_h[h])^2)
     end
 
     Kh = [k for k in K if k != 0]              # k ≥ 1 PCE indices
@@ -543,13 +569,14 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
             JuMP.@constraint(model, ES <= limit)
             return
         end
+        σ = 1.0 / limit                   # normalise the constraint by its limit
         Wk = [JuMP.@expression(model, sum(coef[h][k+1] * g_h[h] for h in keys(coef))) for k in Kh]
         if λ <= 0.0                       # empirical λ*≈0 ⇒ mean bound (no variance term)
-            JuMP.@constraint(model, ES <= limit); return
+            JuMP.@constraint(model, σ * ES <= 1.0); return
         end
         JuMP.@constraint(model,
-            vcat((limit - ES) / λ,
-                 [sqrt(psi_norms[k+1]) * Wk[j] for (j, k) in enumerate(Kh)])
+            vcat(σ * (limit - ES) / λ,
+                 [σ * sqrt(psi_norms[k+1]) * Wk[j] for (j, k) in enumerate(Kh)])
             in JuMP.SecondOrderCone())
     end
 
@@ -564,7 +591,8 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
             λ      = λfor(:ihd, (nw_int, bus["bus_i"]))
             Cscal  = A[n, 1] + λ * sqrt(sum(psi_norms[k+1] * A[n, idx]^2
                                             for (idx, k) in enumerate(K) if k != 0; init=0.0))
-            Cscal > 0.0 && JuMP.@constraint(model, Cscal * g_h[nw_int] <= (bus["ihdmax"] * v_fund)^2)
+            L      = (bus["ihdmax"] * v_fund)^2
+            Cscal > 0.0 && JuMP.@constraint(model, (Cscal / L) * g_h[nw_int] <= 1.0)
         end
     end
 
@@ -589,7 +617,9 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
         _cantelli_soc!(coef, fbr["c_rating"]^2 - get(fbr, "cm_fr", 0.0)^2, λfor(:rmsi, b))
     end
 
-    JuMP.@objective(model, Max, sum(U_h[h] * I_h[h] for h in harm_nw_ints; init=0.0))
+    # objective normalised by S = Σ_h U_h·s_h; the reported value is rescaled
+    S = sum(U_h[h] * s_h[h] for h in harm_nw_ints; init = 0.0); S > 0.0 || (S = 1.0)
+    JuMP.@objective(model, Max, sum(U_h[h] * s_h[h] / S * Ip_h[h] for h in harm_nw_ints; init=0.0))
     JuMP.optimize!(model)
 
     # cache precomputed scalars for external result reporting
@@ -598,7 +628,7 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
 
     return Dict(
         "termination_status" => JuMP.termination_status(model),
-        "objective_value"    => JuMP.has_values(model) ? JuMP.objective_value(model) : NaN,
+        "objective_value"    => JuMP.has_values(model) ? S * JuMP.objective_value(model) : NaN,
         "solve_time"         => JuMP.solve_time(model),
         "solution"           => JuMP.has_values(model) ?
                                     Dict(h => JuMP.value(I_h[h]) for h in harm_nw_ints) :

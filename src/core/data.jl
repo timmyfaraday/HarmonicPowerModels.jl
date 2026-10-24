@@ -787,3 +787,23 @@ function _HPM.replicate(data::Dict{String, Any};
 
     return hdata
 end
+
+"""
+    fairness_weights(hdata, units) -> Dict{Int,Float64}
+
+Fixed allocation weights w_d of the harmonic units `units` for the second-order
+cone program, I_{d,h} = w_d·I_h. Under `"absolute equality"` every w_d = 1; under
+`"weighted equality"` w_d is `load["fairness_weight"]` of the fundamental network
+(default 1.0), which must be positive.
+"""
+function fairness_weights(hdata::Dict, units)
+    principle = get(hdata, "principle", "absolute equality")
+    fund = hdata["nw"]["1"]["load"]
+    w = Dict{Int,Float64}()
+    for d in units
+        w[d] = principle == "weighted equality" ?
+               Float64(get(get(fund, "$d", Dict{String,Any}()), "fairness_weight", 1.0)) : 1.0
+        w[d] > 0.0 || error("fairness_weights: unit $d has a non-positive fairness_weight $(w[d])")
+    end
+    return w
+end

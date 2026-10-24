@@ -61,15 +61,15 @@ constraints reduce to a small program in the per-harmonic variables I_h:
   (per branch) chance constraints couple the harmonics quadratically and become
   SECOND-ORDER CONE constraints in I_h².
 
-Each I_h is additionally capped by the smallest `load["c_rating"]` among the
-harmonic units, mirroring the `cmd ≤ c_rating` bound of the dHHC and QCQP models:
-under absolute equality the common allocation cannot exceed what the weakest unit
-can carry.
+Unit d hosts w_d·I_h, with w_d = 1 under `"absolute equality"` and
+`load["fairness_weight"]` under `"weighted equality"`. Each I_h is capped by the
+smallest `c_rating/w_d` among the harmonic units, mirroring the `cmd ≤ c_rating`
+bound of the dHHC and QCQP models.
 
-Because the single scalar I_h is what makes the formulation conic, absolute
-equality is the ONLY fairness principle this model can represent. `solve_shhc`
-rejects any other `hdata["principle"]` rather than ignoring it; use `sHHC_QCQP`,
-which carries a per-unit current variable.
+Because the single scalar I_h is what makes the formulation conic, only principles
+with fixed allocation ratios can be represented. `solve_shhc` rejects any other
+`hdata["principle"]` rather than ignoring it; use `sHHC_QCQP`, which carries a
+per-unit current variable.
 
 Both the Cantelli (one-sided Chebyshev) and the Gaussian chance-constraint
 bounds are supported via `pce_params["bound"]` (see `update_hdata_with_pce_data!`).
