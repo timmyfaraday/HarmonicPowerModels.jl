@@ -599,6 +599,7 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
     return Dict(
         "termination_status" => JuMP.termination_status(model),
         "objective_value"    => JuMP.has_values(model) ? JuMP.objective_value(model) : NaN,
+        "solve_time"         => JuMP.solve_time(model),
         "solution"           => JuMP.has_values(model) ?
                                     Dict(h => JuMP.value(I_h[h]) for h in harm_nw_ints) :
                                     Dict{Int, Float64}(),
