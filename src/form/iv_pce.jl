@@ -343,6 +343,20 @@ end
 # 7. IHD voltage chance constraint
 # ══════════════════════════════════════════════════════════════════════════════
 
+# Second-order cone of a chance constraint E + λ·√Var ≤ limit, with the mean X0 and
+# the higher PCE coefficients Xk of the aggregate, divided by the limit. The
+# SOCtoNonConvexQuadBridge turns the cone into t² ≥ ‖x‖²; unscaled, both sides are
+# of the order (limit)² ≈ 1e-8…1e-11 p.u., below Ipopt's constraint tolerance, so the
+# variance term would go unenforced. Scaled, both sides are of order one.
+function _chance_cone!(pm::sHHC_QCQP, limit, X0, Xk, λ, psi_norms, K_high)
+    s = limit > 0.0 ? 1.0 / limit : 1.0
+    JuMP.@constraint(pm.model,
+        [s * (limit - X0) / λ;
+         [s * sqrt(psi_norms[k+1]) * Xk[idx] for (idx, k) in enumerate(K_high)]]
+        in JuMP.SecondOrderCone()
+    )
+end
+
 """
     constraint_voltage_ihd_chance(pm::sHHC_QCQP, i; nw)
 
@@ -375,11 +389,7 @@ function constraint_voltage_ihd_chance(pm::sHHC_QCQP, i::Int;
     # SOCtoNonConvexQuadBridge drops when converting the SOC to a quadratic.
     JuMP.@constraint(pm.model, w_pce[i, 0] <= limit)
     λ <= 0.0 && return                 # empirical λ*≈0 ⇒ mean bound only (no variance cone)
-    JuMP.@constraint(pm.model,
-        [(limit - w_pce[i, 0]) / λ;
-         [sqrt(psi_norms[k+1]) * w_pce[i, k] for k in K_high]]
-        in JuMP.SecondOrderCone()
-    )
+    _chance_cone!(pm, limit, w_pce[i, 0], [w_pce[i, k] for k in K_high], λ, psi_norms, K_high)
 end
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -413,11 +423,7 @@ function constraint_voltage_thd_chance(pm::sHHC_QCQP, i::Int;
 
     JuMP.@constraint(pm.model, W0 <= limit)
     λ <= 0.0 && return
-    JuMP.@constraint(pm.model,
-        [(limit - W0) / λ;
-         [sqrt(psi_norms[k+1]) * Wk[idx] for (idx, k) in enumerate(K_high)]]
-        in JuMP.SecondOrderCone()
-    )
+    _chance_cone!(pm, limit, W0, Wk, λ, psi_norms, K_high)
 end
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -455,11 +461,7 @@ function constraint_voltage_rms_chance(pm::sHHC_QCQP, i::Int;
 
     JuMP.@constraint(pm.model, W0 <= limit)
     λ <= 0.0 && return
-    JuMP.@constraint(pm.model,
-        [(limit - W0) / λ;
-         [sqrt(psi_norms[k+1]) * Wk[idx] for (idx, k) in enumerate(K_high)]]
-        in JuMP.SecondOrderCone()
-    )
+    _chance_cone!(pm, limit, W0, Wk, λ, psi_norms, K_high)
 end
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -503,11 +505,7 @@ function constraint_current_rms_chance(pm::sHHC_QCQP, b::Int;
 
     JuMP.@constraint(pm.model, J0 <= limit)
     λ <= 0.0 && return
-    JuMP.@constraint(pm.model,
-        [(limit - J0) / λ;
-         [sqrt(psi_norms[k+1]) * Jk[idx] for (idx, k) in enumerate(K_high)]]
-        in JuMP.SecondOrderCone()
-    )
+    _chance_cone!(pm, limit, J0, Jk, λ, psi_norms, K_high)
 end
 
 # ══════════════════════════════════════════════════════════════════════════════

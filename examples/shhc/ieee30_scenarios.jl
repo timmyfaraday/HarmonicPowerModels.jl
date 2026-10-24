@@ -89,6 +89,32 @@ function to_cable!(data, kvs; comp = 0.0)
     return data
 end
 
+"""
+Remove the charging of every line (non-transformer branch): a purely inductive
+network, as the inductive case of Van Acker and Ergun (PESGM 2025). Capacitive
+elements are then only those a scenario adds explicitly.
+"""
+function inductive!(data)
+    for br in values(data["branch"])
+        br["transformer"] && continue
+        br["b_fr"] = 0.0; br["b_to"] = 0.0
+    end
+    return data
+end
+
+"Add one capacitor bank of `bs` p.u. at `bus`."
+function add_bank!(data, bus::Int, bs::Real)
+    shunts = get!(data, "shunt", Dict{String,Any}())
+    k = length(shunts) + 1
+    shunts["$k"] = Dict{String,Any}("index" => k, "shunt_bus" => bus, "gs" => 0.0, "bs" => bs,
+                                    "status" => 1, "source_id" => ["bus", bus])
+    return data
+end
+
+# paper scenarios: purely inductive base network, then capacitive elements added
+const PAPER_BANK_BUS  = 29          # bus of the capacitor bank (positive impact, see sens_ieee30.jl)
+const PAPER_BANK_SIZE = 0.19        # p.u. (19 Mvar)
+
 const SCENARIOS = Dict{String,Function}(
     "base"     => d -> d,
     "banks"    => add_original_banks!,
@@ -97,20 +123,25 @@ const SCENARIOS = Dict{String,Function}(
     "cableall" => d -> to_cable!(d, (33.0, 132.0)),
     "cable132c" => d -> to_cable!(d, (132.0,); comp = K_COMP),
     "cableallc" => d -> to_cable!(d, (33.0, 132.0); comp = K_COMP),
+    "inductive"           => d -> inductive!(d),
+    "inductive_bank"      => d -> add_bank!(inductive!(d), PAPER_BANK_BUS, PAPER_BANK_SIZE),
+    "inductive_cable33"   => d -> to_cable!(inductive!(d), (33.0,)),
+    "inductive_cable132c" => d -> to_cable!(inductive!(d), (132.0,); comp = K_COMP),
 )
 
 """
 Re-dispatch `data` with the baseline AC-OPF recipe and write the resulting
 active power and voltage setpoints into the generators (`pg`, `vg`).
 """
-function redispatch!(data, nlp_optimizer)
+function redispatch!(data, nlp_optimizer; vmin = 0.90, lift_q = :slack)
     d = deepcopy(data)
     for (i, bus) in d["bus"]
         bus["bus_type"] == 3 ? (bus["vmin"] = bus["vmax"] = 1.0) :
-                               (bus["vmin"] = 0.90; bus["vmax"] = min(bus["vmax"], 1.05))
+                               (bus["vmin"] = vmin; bus["vmax"] = min(bus["vmax"], 1.05))
     end
     for gen in values(d["gen"])
-        d["bus"]["$(gen["gen_bus"])"]["bus_type"] == 3 && (gen["qmin"] = -10.0; gen["qmax"] = 10.0)
+        (lift_q == :all || d["bus"]["$(gen["gen_bus"])"]["bus_type"] == 3) &&
+            (gen["qmin"] = -10.0; gen["qmax"] = 10.0)
     end
     res = PowerModels.solve_ac_opf(d, nlp_optimizer)
     st  = res["termination_status"]
@@ -128,15 +159,27 @@ function ieee30_scenario(name::String, nlp_optimizer)
     haskey(SCENARIOS, name) || error("unknown scenario \"$name\"; use one of $(sort(collect(keys(SCENARIOS))))")
     data = HarmonicPowerModels.parse_file(joinpath(@__DIR__, "data", "30bus_network_shhc_pv.m"))
     SCENARIOS[name](data)
-    redispatch!(data, nlp_optimizer)
+    # paper scenarios (purely inductive base): original voltage limits 0.94-1.05 p.u.,
+    # with the reactive limits of all generators and synchronous condensers lifted at
+    # the fundamental, since the line charging no longer supports the voltage
+    startswith(name, "inductive") ? redispatch!(data, nlp_optimizer; vmin = 0.94, lift_q = :all) :
+                                    redispatch!(data, nlp_optimizer)
     return data
 end
 
-"Parse the single-slack IEEE30 case with one capacitor bank `bs` [p.u.] at `bus`, re-dispatched."
+"Parse the single-slack IEEE30 case with one capacitor bank `bs` [p.u.] at `bus`, re-dispatched (legacy, with line charging)."
 function ieee30_bank(bus::Int, bs::Real, nlp_optimizer)
     data = HarmonicPowerModels.parse_file(joinpath(@__DIR__, "data", "30bus_network_shhc_pv.m"))
     data["shunt"] = Dict{String,Any}("1" => Dict{String,Any}("index" => 1, "shunt_bus" => bus, "gs" => 0.0,
                                      "bs" => bs, "status" => 1, "source_id" => ["bus", bus]))
     redispatch!(data, nlp_optimizer)
+    return data
+end
+
+"Purely inductive IEEE30 case with one capacitor bank `bs` [p.u.] at `bus`, re-dispatched as the paper scenarios."
+function ieee30_inductive_bank(bus::Int, bs::Real, nlp_optimizer)
+    data = HarmonicPowerModels.parse_file(joinpath(@__DIR__, "data", "30bus_network_shhc_pv.m"))
+    add_bank!(inductive!(data), bus, bs)
+    redispatch!(data, nlp_optimizer; vmin = 0.94, lift_q = :all)
     return data
 end

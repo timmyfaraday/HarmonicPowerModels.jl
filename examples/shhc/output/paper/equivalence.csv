@@ -1,0 +1,8 @@
+check,N,method_a,method_b,value_a,value_b,rel_diff_pct
+point mass,4,dHHC_SOC,sHHC_SOC,5.40642179e-02,5.40642178e-02,-9.36e-08
+point mass,4,dHHC_SOC,sHHC_QCQP,5.40642179e-02,5.38419244e-02,-4.11e-01
+stochastic cantelli,4,sHHC_SOC,sHHC_QCQP,4.86125271e-02,4.84720094e-02,-2.89e-01
+stochastic gaussian,4,sHHC_SOC,sHHC_QCQP,5.23953960e-02,5.21789641e-02,-4.13e-01
+stochastic empirical,4,sHHC_SOC,sHHC_QCQP,5.25217126e-02,5.23048330e-02,-4.13e-01
+reduction,21,dHHC_SOC,reduced deterministic,3.25480311e-03,3.25480312e-03,2.97e-07
+reduction,21,sHHC_SOC empirical,exact 95 % quantile,3.24431845e-03,3.24390921e-03,-1.26e-02

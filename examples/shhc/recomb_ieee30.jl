@@ -31,12 +31,14 @@ lawsum(m, α) = sum(m .^ α)^(1 / α)
 
 `ranges[h][d] = (lo, hi)` [rad] sets a per-unit angle support (e.g., from
 `mix_ranges` in converter_types.jl); by default every unit takes the §II range.
+`eval_I[h]` evaluates the violation probability of the binding individual-harmonic
+voltage limit at the hosting current `eval_I[h]` (returned as `:viol`).
 `types` adds shared type germs in the `pce_params["type_germs"]` format
 (name => Dict("units" => …, "shift" => Dict(h => (s_lo, s_hi)))): every unit of a
 type gets the extra shift s_lo + (s_hi − s_lo)·ω_t with one ω_t per type. The
 robust bound then maximises over ω_t on a grid as well.
 """
-function recombination(scen, N, aref; ranges = nothing, types = nothing, data = nothing)
+function recombination(scen, N, aref; ranges = nothing, types = nothing, data = nothing, eval_I = nothing, prob = 0.95)
     data = data === nothing ? ieee30_scenario(scen, ipopt) : data
     units = sort(parse.(Int, collect(keys(data["load"]))))[1:N]
     hd = HPM.replicate(deepcopy(data), H = H)
@@ -79,10 +81,16 @@ function recombination(scen, N, aref; ranges = nothing, types = nothing, data = 
             :arith => host(z -> sum(abs.(z))),
             :rob   => host(z -> robust_types(z)),
             :det   => host(z -> abs(sum(z .* cis.(φE)))),
-            :q95   => host(z -> quantile([abs(sum(z .* cis.(w))) for w in W], 0.95)),
+            :q95   => host(z -> quantile([abs(sum(z .* cis.(w))) for w in W], prob)),   # (1-ε) quantile
             :iec   => host(z -> lawsum(abs.(z), iec_alpha(h))),
             :rss   => host(z -> lawsum(abs.(z), 2.0)),
             :capped => cap)
+        # violation probability of the individual harmonic voltage limits at a given
+        # hosting current (e.g., a second-order cone solution): worst bus, per sample set
+        if eval_I !== nothing
+            Ih = eval_I[h]
+            r[:viol] = maximum(count(w -> Ih * abs(sum(bb.z .* cis.(w))) > bb.L, W) / length(W) for bb in buses)
+        end
         # equivalent summation exponent: α with host(law α) = target (bisection)
         for key in (:det, :q95)
             target = r[key]
