@@ -475,8 +475,12 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
             (abs(r) + abs(x) > 0.0) || continue
             f, t = bus_idx[br["f_bus"]], bus_idx[br["t_bus"]]
             ys   = 1.0 / (r + im * x); gy, by = real(ys), imag(ys)
-            dVr  = view(ar, f, :) .- view(ar, t, :)
-            dVi  = view(ai, f, :) .- view(ai, t, :)
+            # series current y_s·(V_f/t − V_t) with the off-nominal complex tap t
+            # on the from side, as in the QCQP's Ohm's law and the dHHC
+            tm   = get(br, "tap", 1.0); tm == 0.0 && (tm = 1.0)
+            ct   = 1.0 / (tm * cis(get(br, "shift", 0.0))); cr, ci = real(ct), imag(ct)
+            dVr  = (cr .* view(ar, f, :) .- ci .* view(ai, f, :)) .- view(ar, t, :)
+            dVi  = (cr .* view(ai, f, :) .+ ci .* view(ar, f, :)) .- view(ai, t, :)
             Ibr  = gy .* dVr .- by .* dVi
             Ibi  = gy .* dVi .+ by .* dVr
             AI[parse(Int, b_str)] = galerkin_product(pb, Ibr, Ibr) .+

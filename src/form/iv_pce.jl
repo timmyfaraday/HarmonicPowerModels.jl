@@ -167,7 +167,9 @@ function constraint_current_balance_pce(pm::sHHC_QCQP, i::Int;
         br = _PMs.ref(pm, nw, :branch, b)
         tm = get(br, "tap", 1.0); tm == 0.0 && (tm = 1.0); sh = get(br, "shift", 0.0)
         tr = tm*cos(sh); ti = tm*sin(sh)
-        if f == i
+        # bus_arcs holds (l, i, j) with i the bus itself for both orientations, so
+        # the from-side is identified through the branch's own f_bus.
+        if f == br["f_bus"]
             push!(arcs, ((b,f,t), true,  tr, ti, tm^2, get(br,"g_fr",0.0), get(br,"b_fr",0.0)))
         else
             push!(arcs, ((b,f,t), false, tr, ti, tm^2, get(br,"g_to",0.0), get(br,"b_to",0.0)))

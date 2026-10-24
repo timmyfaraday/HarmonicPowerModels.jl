@@ -162,4 +162,25 @@
         end
     end
 
+    # ── 4b. sHHC_QCQP ≡ sHHC_SOC with an off-nominal branch tap ──────────────
+    # The QCQP's KCL must orient each arc by the branch's own f_bus (the tap
+    # scaling and the from-side shunt apply at the from-end only), and the SOCP's
+    # branch current is the series current y_s·(V_f/t − V_t). Without taps both
+    # errors vanish, so this case needs a tap ≠ 1; on branch 4 (buses 6–7) the
+    # current limit binds, so both are exercised. Totals are compared: the THD
+    # constraint couples the harmonics and leaves their split nearly degenerate.
+    @testset "sHHC_QCQP ≡ sHHC_SOC: off-nominal tap" begin
+        tapped() = begin
+            d = deepcopy(_data)
+            d["branch"]["4"]["tap"] = 0.9
+            HPM.replicate(d; H=H_TEST)
+        end
+        soc  = HPM.solve_shhc(tapped(), sHHC_SOC, solver_soc;
+                              pce_params = base_params(), hpf_optimizer = solver_nlp)
+        qcqp = HPM.solve_shhc(tapped(), sHHC_QCQP, solver_nlp; pce_params = base_params())
+        @test qcqp["termination_status"] in [LOCALLY_SOLVED, OPTIMAL]
+        @test isapprox(sum(qcqp["solution"]["nw"]["$h"]["load"]["$(load_ids[1])"]["cmd"] for h in (5, 7)),
+                       sum(soc["solution"][h] for h in (5, 7)); rtol=1e-3)
+    end
+
 end
