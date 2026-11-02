@@ -53,5 +53,28 @@
         vmax = maximum(maximum(HPM._violations_at(hd, model, box, [a, b, c], g)[pos])
                        for a in grid, b in grid, c in grid)
         @test vmax ≤ 1e-6
+
+        # a-posteriori check: the robust solution holds, the nominal stochastic one does not
+        pc = posterior_check(hd, model, box, res["solution"]; n = 128)
+        @test pc.n == 128
+        @test pc.max_violation ≤ 1e-6 && pc.violated_fraction == 0.0
+        pn = posterior_check(hd, model, box, nom["solution"]; n = 128)
+        @test pn.max_violation > 0.1 && pn.violated_fraction > 0.0
+        @test all(-1 .<= pn.point .<= 1)
+        @test posterior_check(hd, model, box, nom["solution"]; n = 128) == pn   # seeded
+        ps = posterior_check(hd, model, box, res["solution"]; n = 64, method = :sobol)
+        @test ps.max_violation ≤ 1e-6
+        @test_throws ArgumentError posterior_check(hd, model, box, res["solution"]; method = :grid)
+    end
+
+    @testset "posterior check from solve_rhhc" begin
+        hd  = HPM.replicate(deepcopy(data); H)
+        box = ParameterBox(:kC_cable => (1.0, 0.95, 1.05))
+        res = solve_rhhc(hd, ScaledBranchModel(hd, classes), box, solver_soc;
+                         pce_params = deepcopy(pp), hpf_optimizer = solver_nlp,
+                         nbackground = 16, posterior = 64)
+        @test res["signed_off"]
+        @test res["posterior"].n == 64
+        @test res["posterior"].max_violation ≤ 1e-6
     end
 end

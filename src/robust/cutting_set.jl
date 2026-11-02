@@ -40,15 +40,17 @@ method, for the uncertain branches of `model` over the parameter box `box`.
 Returns a Dict with `"termination_status"` of the last master, `"upper_bound"` (the master
 value), `"lower_bound"` and `"solution"` (I_h of the scaled, robust-feasible decision),
 `"master_solution"` (the master's I_h), `"max_violation"` (the oracle's last v at the master
-solution), `"gap"`, `"iterations"`, `"history"` (per iteration: v, bounds, cuts added, time)
-and `"dictionary"`.
+solution), `"gap"`, `"iterations"`, `"history"` (per iteration: v, bounds, cuts added, time),
+`"dictionary"` and, when `posterior > 0`, `"posterior"`: [`posterior_check`](@ref) of the robust
+solution on `posterior` independent random points.
 """
 function solve_rhhc(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox, optimizer;
                     pce_params::Dict, hpf_optimizer = optimizer, nbackground::Int = 1024,
                     use_seeds::Bool = true,
                     effort = (ncons = 5, starts = 3, iters = 10),
                     signoff = (ncons = typemax(Int), starts = 5, iters = 30),
-                    tol::Real = 1e-4, maxiter::Int = 50, verbose::Bool = false)
+                    tol::Real = 1e-4, maxiter::Int = 50, posterior::Int = 0,
+                    verbose::Bool = false)
     principle = get(hdata, "principle", "absolute equality")
     principle in ("absolute equality", "weighted equality") || error(
         "solve_rhhc: fairness principle \"$principle\" is not representable in the second-" *
@@ -121,12 +123,14 @@ function solve_rhhc(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox,
               "(numerical tolerance of the master); the lower bound accounts for them."
 
     scale = 1.0 / sqrt(1.0 + max(v, 0.0))
+    sol   = Dict(h => scale * I for (h, I) in Iv)
+    post  = posterior > 0 ? posterior_check(hdata, model, box, sol; n = posterior, tol) : nothing
     return Dict(
         "termination_status" => status,
         "upper_bound"        => UB,
         "lower_bound"        => LB,
         "gap"                => isfinite(UB) && UB > 0 ? (UB - LB) / UB : NaN,
-        "solution"           => Dict(h => scale * I for (h, I) in Iv),
+        "solution"           => sol,
         "master_solution"    => Iv,
         "max_violation"      => v,
         "signed_off"         => signed_off,
@@ -135,6 +139,53 @@ function solve_rhhc(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox,
         "scenarios"          => Dict(dict.keys[j] => sort(collect(scen[j])) for j in eachindex(scen)
                                      if length(scen[j]) > 1),
         "dictionary"         => dict,
+        "posterior"          => post,
         "solve_time"         => time() - t0,
     )
+end
+
+# ──────────────────────────────────────────────────────────────────────────────
+# A-posteriori check
+# ──────────────────────────────────────────────────────────────────────────────
+
+"""
+    posterior_check(hdata, model, box, solution; n = 1024, seed = 2, method = :random,
+                    tol = 1e-4) -> NamedTuple
+
+Check the hosting capacity `solution` (h ⇒ I_h) on `n` points of `box` that the method did
+not use: independent uniform draws (`method = :random`, from `seed`) or a Sobol set shifted
+by `seed` (`method = :sobol`; the dictionary of [`solve_rhhc`](@ref) uses seed 1). Every
+constraint is evaluated in full at g_h = I_h². With an approximate oracle this check is the
+evidence of robustness beyond the points the method evaluated (Mutapcic & Boyd 2009, §5.1).
+`hdata` must carry the PCE data of the solve.
+
+Returns `max_violation` (largest normalized violation over constraints with a positive
+limit), the `constraint` (kind, key) and latent `point` attaining it, `violated_fraction`
+(share of points with a violation above `tol`) and `n`.
+"""
+function posterior_check(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox,
+                         solution; n::Int = 1024, seed::Integer = 2, method::Symbol = :random,
+                         tol::Real = 1e-4)
+    g  = Dict(h => I^2 for (h, I) in solution)
+    pts = if method === :sobol
+        background_points(box, n; seed)
+    elseif method === :random
+        rng = Random.MersenneTwister(seed)
+        [2 .* rand(rng, length(box)) .- 1 for _ in 1:n]
+    else
+        throw(ArgumentError("posterior_check: method must be :random or :sobol, got :$method"))
+    end
+    m0   = moments_at(hdata, model, nominal_point(box))
+    c0   = shhc_constraints(hdata, m0)
+    pos  = [c.limit > 0.0 for c in c0]
+    keys = [(c.kind, c.key) for c in c0]
+    vmax, jmax, smax, nviol = -Inf, 0, 0, 0
+    for (s, ξ) in enumerate(pts)
+        v = _violations_at(hdata, model, box, ξ, g)
+        j = argmax(ifelse.(pos, v, -Inf))
+        v[j] > tol && (nviol += 1)
+        v[j] > vmax && ((vmax, jmax, smax) = (v[j], j, s))
+    end
+    return (max_violation = vmax, constraint = keys[jmax], point = pts[smax],
+            violated_fraction = nviol / n, n = n)
 end

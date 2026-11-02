@@ -104,7 +104,7 @@ module HarmonicPowerModels
     export Seed, resonance_seeds, background_points
     export ParameterDictionary, build_dictionary, dictionary_violations, add_point!
     export OracleResult, pessimize!, max_violation
-    export solve_rhhc
+    export solve_rhhc, posterior_check
     export compute_C_coefficients, compute_alpha, compute_C_scalar
     export lp_solution, compare_shared_vs_independent
     
