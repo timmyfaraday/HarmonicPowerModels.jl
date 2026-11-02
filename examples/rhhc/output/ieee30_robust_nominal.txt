@@ -1,0 +1,13 @@
+IEEE 30-bus, inductive_cable33, 21 units, ε = 0.05; 22 cables, 12 overhead lines (one class each)
+
+== 1. nominal stochastic versus robust, box d = 5 ==
+cantelli nominal 0.034491 (violated at 98.3 % of the box, worst +2.666)
+cantelli robust  0.027876  [LB 0.027876, UB 0.027887, gap 4.0e-04]  6 iterations, 101 s, signed off
+cantelli robust  a posteriori: worst -1.87e-02 ((:ihd, (5, 30))), violated at 0.0 %
+         per harmonic, robust / nominal: h5 0.823, h7 0.478, h11 0.923, h13 0.754
+         history (v, UB, cuts): (3.36, 0.03449, 34) (0.0382, 0.02800, 2) (0.00163, 0.02790, 1) (0.00113, 0.02789, 1) (0.00194, 0.02789, 1) (0.000806, 0.02789, 0)
+gaussian nominal 0.035686 (violated at 98.3 % of the box, worst +2.665)
+gaussian robust  0.028891  [LB 0.028891, UB 0.028901, gap 3.5e-04]  6 iterations, 95 s, signed off
+gaussian robust  a posteriori: worst -1.78e-02 ((:ihd, (5, 30))), violated at 0.0 %
+         per harmonic, robust / nominal: h5 0.823, h7 0.478, h11 0.926, h13 0.755
+         history (v, UB, cuts): (3.36, 0.03569, 35) (0.0442, 0.02904, 2) (0.00119, 0.02891, 1) (0.0021, 0.02891, 1) (0.00144, 0.02890, 1) (0.000693, 0.02890, 0)

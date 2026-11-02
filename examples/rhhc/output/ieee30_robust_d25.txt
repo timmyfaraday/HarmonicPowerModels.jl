@@ -1,0 +1,8 @@
+IEEE 30-bus, inductive_cable33, 21 units, ε = 0.05; 22 cables, 12 overhead lines (one class each)
+
+== 2. ablation of the dictionary (Cantelli) ==
+box     seeds  background  iterations  robust(LB)   gap      time[s]  posterior worst  violated
+d25     no             64          26  0.025591  4.0e-04     1603        -1.29e-01      0.0 %
+d25     yes            64          25  0.025576  4.1e-04     1515        -1.30e-01      0.0 %
+d25     no            512          36  0.025567  4.9e-04     2520        -1.31e-01      0.0 %
+d25     yes           512          34  0.025575  4.2e-04     1986        -1.30e-01      0.0 %
