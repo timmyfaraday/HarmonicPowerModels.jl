@@ -303,65 +303,20 @@ end
 # ── Solver entry point ─────────────────────────────────────────────────────────
 
 """
-    solve_shhc(hdata, sHHC_SOC, optimizer; pce_params, hpf_optimizer, kwargs...)
+    shhc_moments(hdata; networks = hdata["nw"]) -> NamedTuple
 
-Solve the stochastic HHC problem as a Second-Order Cone Program (SOCP) for a
-fairness principle with fixed allocation ratios: `"absolute equality"` (every
-unit receives I_h) or `"weighted equality"` (unit d receives w_d·I_h, with w_d
-from `load["fairness_weight"]`, see [`fairness_weights`](@ref)).
+Steps 3–5 of [`solve_shhc`](@ref) for `sHHC_SOC`: the PCE moments of the squared bus
+voltages (`alpha_V`) and series branch currents (`alpha_I`) per unit hosting current.
+`hdata` must already carry the PCE data (`update_hdata_with_pce_data!`).
 
-With fixed ratios, one scalar hosting capacity I_h per harmonic remains, so the squared bus voltages and branch currents are
-quadratic in I_h (computed analytically via the harmonic admittance matrix Z_h
-and the PCE multiplication tensor). The chance constraints become a small
-program in the per-harmonic variables I_h (with g_h = I_h²):
-
-- IHD is per harmonic ⇒ a LINEAR bound on g_h.
-- THD and RMS-voltage (per bus) and RMS-current (per branch) couple the
-  harmonics quadratically ⇒ SECOND-ORDER CONE constraints in g_h.
-
-Steps
------
-1. Precompute PCE data (`update_hdata_with_pce_data!`); the chance-constraint
-   factor λ honours `pce_params["bound"]` (`:cantelli` default, or `:gaussian`).
-2. Solve the fundamental harmonic power flow (`hpf_optimizer`, an NLP solver).
-3. Build harmonic admittance matrices Z_h from scaled network data.
-4. Compute voltage- and branch-current-response PCE coefficients via Z_h.
-5. Compute the squared-magnitude PCE scalars α_V, α_I via the M tensor.
-6. Build the SOCP (IHD linear bounds + THD/RMS cones) and solve with `optimizer`
-   (a conic solver, e.g. Mosek or Clarabel — not HiGHS).
-
-Returns a result Dict with `"termination_status"`, `"objective_value"`, and
-`"solution"` (Dict mapping harmonic nw id → optimal I_h; unit d hosts w_d·I_h).
-
-Only principles with fixed allocation ratios are representable in this
-formulation: the single scalar I_h per harmonic is what makes the squared
-magnitudes quadratic in one variable and the chance constraints conic. Any other
-`hdata["principle"]` is rejected rather than silently ignored; use `sHHC_QCQP`,
-which carries a per-unit current variable.
+The harmonic admittances, loads and branch impedances are read from `networks` (nw id
+string ⇒ network data), which defaults to `hdata["nw"]`. Passing the networks of another
+realization of the network parameters gives that realization's moments, with the same
+buses, units and PCE data — the oracle of the robust (cutting-set) formulation.
 """
-function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
-                    pce_params::Dict, hpf_optimizer=optimizer, kwargs...)
-    principle = get(hdata, "principle", "absolute equality")
-    principle in ("absolute equality", "weighted equality") || error(
-        "solve_shhc (sHHC_SOC): fairness principle \"$principle\" is not " *
-        "representable in the SOCP, which fixes the ratios between the units' " *
-        "allocations (I_{d,h} = w_d·I_h, one scalar I_h per harmonic). Use sHHC_QCQP " *
-        "for \"$principle\", or set hdata[\"principle\"] to \"absolute equality\" " *
-        "or \"weighted equality\" (weights in load[\"fairness_weight\"]).")
-
-    # The HPF requires a nonlinear solver (e.g. Ipopt); hpf_optimizer lets
-    # callers pass a different solver than the SOCP optimizer. It runs before the
-    # PCE data so a local angle reference can rotate the angle supports.
-    update_hdata_with_fundamental_hpf_results!(hdata, dHHC_NLP, hpf_optimizer)
-    update_hdata_with_pce_data!(hdata, pce_params)
-
+function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
     pce      = hdata["pce"]
     pb       = pce["basis"]          # multivariate PCEBasis (one germ per harmonic unit)
-    lambda   = pce["lambda"]
-    lambdas  = get(pce, "lambdas", nothing)   # per-constraint λ* (empirical) or nothing
-    # λ for a given constraint: per-constraint empirical value if available, else scalar
-    λfor(kind, key) = (lambdas !== nothing && haskey(lambdas[kind], key)) ?
-                       lambdas[kind][key] : lambda
     psi_norms = pce["psi_norms"]
     K        = pce["K"]
     cos_phi  = pce["cos_phi"]
@@ -391,7 +346,7 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
 
     Z_harm = Dict{Int, Matrix{ComplexF64}}()
     for (nw_str, nw_int) in zip(harm_nw_strs, harm_nw_ints)
-        nw_data = hdata["nw"][nw_str]
+        nw_data = networks[nw_str]
         Yh      = _harmonic_admittance(nw_data, bus_idx)
         Y_red   = Yh[non_ref_ids, non_ref_ids]
         nr      = length(non_ref_ids)
@@ -423,7 +378,7 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
         haskey(cos_phi, nw_int) || continue
 
         Zr      = Z_harm[nw_int]
-        nw_data = hdata["nw"][nw_str]
+        nw_data = networks[nw_str]
         cph     = cos_phi[nw_int]   # Dict: load id → length-P coefficient vector
         sph     = sin_phi[nw_int]
 
@@ -465,7 +420,7 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
     for (nw_str, nw_int) in zip(harm_nw_strs, harm_nw_ints)
         haskey(alpha_re, nw_int) || continue
         ar, ai  = alpha_re[nw_int], alpha_im[nw_int]
-        nw_data = hdata["nw"][nw_str]
+        nw_data = networks[nw_str]
 
         A = zeros(Nn, length(K))
         for n in 1:Nn
@@ -494,6 +449,24 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
         end
         alpha_I[nw_int] = AI
     end
+
+    return (; pb, K, psi_norms, alpha_re, alpha_im, alpha_V, alpha_I, Nn, bus_idx,
+              ref_bus_ids, harm_nw_strs, harm_nw_ints, wts)
+end
+
+"""
+    shhc_master(hdata, moments, optimizer) -> NamedTuple
+
+Step 6 of [`solve_shhc`](@ref) for `sHHC_SOC`, without the chance constraints: the model,
+the scaled variables I'_h = I_h/s_h and g'_h = g_h/s_h² with I_h² ≤ g_h, the unit
+ratings and the normalised objective. The scaling s_h and the objective weights are
+fixed by `moments` (the nominal network); add the chance constraints of one or more
+network realizations with [`add_shhc_constraints!`](@ref).
+"""
+function shhc_master(hdata::Dict, moments, optimizer)
+    (; K, alpha_V, bus_idx, harm_nw_strs, harm_nw_ints, wts) = moments
+    pce     = hdata["pce"]
+    fund_nw = hdata["nw"]["1"]
 
     # ── Step 6: build the SOCP ────────────────────────────────────────────────
     # Variables I_h ≥ 0 (hosting capacity per harmonic) and g_h = I_h² ≥ 0.
@@ -553,6 +526,32 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
         JuMP.set_upper_bound(Ip_h[h], minimum(caps) / s_h[h])
         JuMP.set_upper_bound(gp_h[h], (minimum(caps) / s_h[h])^2)
     end
+
+    # objective normalised by S = Σ_h U_h·s_h; the reported value is rescaled
+    S = sum(U_h[h] * s_h[h] for h in harm_nw_ints; init = 0.0); S > 0.0 || (S = 1.0)
+    JuMP.@objective(model, Max, sum(U_h[h] * s_h[h] / S * Ip_h[h] for h in harm_nw_ints; init=0.0))
+
+    return (; model, Ip_h, gp_h, I_h, g_h, s_h, U_h, S)
+end
+
+"""
+    add_shhc_constraints!(master, hdata, moments)
+
+Add the chance constraints of step 6 of [`solve_shhc`](@ref) for `sHHC_SOC` to `master`
+(from [`shhc_master`](@ref)), for the network realization whose moments are `moments`:
+IHD (linear per bus and harmonic), THD and RMS voltage (cones per bus) and RMS current
+(cones per branch).
+"""
+function add_shhc_constraints!(master, hdata::Dict, moments)
+    (; K, psi_norms, alpha_V, alpha_I, bus_idx, ref_bus_ids, harm_nw_strs, harm_nw_ints) = moments
+    (; model, g_h) = master
+    pce     = hdata["pce"]
+    fund_nw = hdata["nw"]["1"]
+    lambda   = pce["lambda"]
+    lambdas  = get(pce, "lambdas", nothing)   # per-constraint λ* (empirical) or nothing
+    # λ for a given constraint: per-constraint empirical value if available, else scalar
+    λfor(kind, key) = (lambdas !== nothing && haskey(lambdas[kind], key)) ?
+                       lambdas[kind][key] : lambda
 
     Kh = [k for k in K if k != 0]              # k ≥ 1 PCE indices
 
@@ -616,10 +615,69 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
         isempty(coef) && continue
         _cantelli_soc!(coef, fbr["c_rating"]^2 - get(fbr, "cm_fr", 0.0)^2, λfor(:rmsi, b))
     end
+    return master
+end
 
-    # objective normalised by S = Σ_h U_h·s_h; the reported value is rescaled
-    S = sum(U_h[h] * s_h[h] for h in harm_nw_ints; init = 0.0); S > 0.0 || (S = 1.0)
-    JuMP.@objective(model, Max, sum(U_h[h] * s_h[h] / S * Ip_h[h] for h in harm_nw_ints; init=0.0))
+"""
+    solve_shhc(hdata, sHHC_SOC, optimizer; pce_params, hpf_optimizer, kwargs...)
+
+Solve the stochastic HHC problem as a Second-Order Cone Program (SOCP) for a
+fairness principle with fixed allocation ratios: `"absolute equality"` (every
+unit receives I_h) or `"weighted equality"` (unit d receives w_d·I_h, with w_d
+from `load["fairness_weight"]`, see [`fairness_weights`](@ref)).
+
+With fixed ratios, one scalar hosting capacity I_h per harmonic remains, so the squared bus voltages and branch currents are
+quadratic in I_h (computed analytically via the harmonic admittance matrix Z_h
+and the PCE multiplication tensor). The chance constraints become a small
+program in the per-harmonic variables I_h (with g_h = I_h²):
+
+- IHD is per harmonic ⇒ a LINEAR bound on g_h.
+- THD and RMS-voltage (per bus) and RMS-current (per branch) couple the
+  harmonics quadratically ⇒ SECOND-ORDER CONE constraints in g_h.
+
+Steps
+-----
+1. Precompute PCE data (`update_hdata_with_pce_data!`); the chance-constraint
+   factor λ honours `pce_params["bound"]` (`:cantelli` default, or `:gaussian`).
+2. Solve the fundamental harmonic power flow (`hpf_optimizer`, an NLP solver).
+3. Build harmonic admittance matrices Z_h from scaled network data.
+4. Compute voltage- and branch-current-response PCE coefficients via Z_h.
+5. Compute the squared-magnitude PCE scalars α_V, α_I via the M tensor.
+6. Build the SOCP (IHD linear bounds + THD/RMS cones) and solve with `optimizer`
+   (a conic solver, e.g. Mosek or Clarabel — not HiGHS).
+
+Returns a result Dict with `"termination_status"`, `"objective_value"`, and
+`"solution"` (Dict mapping harmonic nw id → optimal I_h; unit d hosts w_d·I_h).
+
+Only principles with fixed allocation ratios are representable in this
+formulation: the single scalar I_h per harmonic is what makes the squared
+magnitudes quadratic in one variable and the chance constraints conic. Any other
+`hdata["principle"]` is rejected rather than silently ignored; use `sHHC_QCQP`,
+which carries a per-unit current variable.
+"""
+function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
+                    pce_params::Dict, hpf_optimizer=optimizer, kwargs...)
+    principle = get(hdata, "principle", "absolute equality")
+    principle in ("absolute equality", "weighted equality") || error(
+        "solve_shhc (sHHC_SOC): fairness principle \"$principle\" is not " *
+        "representable in the SOCP, which fixes the ratios between the units' " *
+        "allocations (I_{d,h} = w_d·I_h, one scalar I_h per harmonic). Use sHHC_QCQP " *
+        "for \"$principle\", or set hdata[\"principle\"] to \"absolute equality\" " *
+        "or \"weighted equality\" (weights in load[\"fairness_weight\"]).")
+
+    # The HPF requires a nonlinear solver (e.g. Ipopt); hpf_optimizer lets
+    # callers pass a different solver than the SOCP optimizer. It runs before the
+    # PCE data so a local angle reference can rotate the angle supports.
+    update_hdata_with_fundamental_hpf_results!(hdata, dHHC_NLP, hpf_optimizer)
+    update_hdata_with_pce_data!(hdata, pce_params)
+
+    moments = shhc_moments(hdata)
+    master  = shhc_master(hdata, moments, optimizer)
+    add_shhc_constraints!(master, hdata, moments)
+    (; model, I_h, S) = master
+    (; alpha_re, alpha_im, alpha_V, alpha_I, harm_nw_ints) = moments
+    pce = hdata["pce"]
+
     JuMP.optimize!(model)
 
     # cache precomputed scalars for external result reporting
