@@ -315,7 +315,8 @@ M[h,h'] = Σ_{k≥1} ψ_k·a_{h,k}·a_{h',k}, so
 
 which needs |H| + |H|² numbers per constraint and point instead of the full PCE
 coefficients. `keys[j]` is `(kind, key)` of constraint j, in the order of
-[`shhc_constraints`](@ref); `labels[s]` is `:nominal`, `:vertex`, `:seed` or `:background`.
+[`shhc_constraints`](@ref); `labels[s]` is `:nominal`, `:vertex`, `:seed`, `:background`
+or `:refined` (added by the oracle). Points are appended with [`add_point!`](@ref).
 """
 struct ParameterDictionary
     box::ParameterBox
@@ -325,8 +326,8 @@ struct ParameterDictionary
     λ::Vector{Float64}
     points::Vector{Vector{Float64}}
     labels::Vector{Symbol}
-    μ::Array{Float64,3}      # (|H|, constraints, points)
-    M::Array{Float64,4}      # (|H|, |H|, constraints, points)
+    μ::Vector{Matrix{Float64}}          # per point: (|H|, constraints)
+    M::Vector{Array{Float64,3}}         # per point: (|H|, |H|, constraints)
 end
 
 # compact (μ, M) of the constraints at one point, in the harmonic order `H`
@@ -350,6 +351,24 @@ function _compact(cons, moments, H)
 end
 
 """
+    add_point!(dict, hdata, model, ξ, label) -> Int
+
+Evaluate the constraints at the latent point `ξ` and append it to `dict` with `label`;
+returns its index.
+"""
+function add_point!(dict::ParameterDictionary, hdata::Dict, model::AbstractNetworkModel,
+                    ξ::AbstractVector, label::Symbol)
+    m = moments_at(hdata, model, latent(dict.box, ξ))
+    c = shhc_constraints(hdata, m)
+    [(x.kind, x.key) for x in c] == dict.keys ||
+        error("add_point!: the constraint set changed at ξ = $ξ")
+    μ, M = _compact(c, m, dict.harmonics)
+    push!(dict.points, collect(Float64, ξ)); push!(dict.labels, label)
+    push!(dict.μ, μ); push!(dict.M, M)
+    return length(dict.points)
+end
+
+"""
     build_dictionary(hdata, model, box; seeds = Seed[], nbackground = 1024,
                      vertices = length(box) <= 10, seed = 1) -> ParameterDictionary
 
@@ -360,31 +379,33 @@ Evaluate the constraints of the robust program at the nominal point, the vertice
 function build_dictionary(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox;
                           seeds = Seed[], nbackground::Int = 1024,
                           vertices::Bool = length(box) <= 10, seed::Integer = 1)
-    d = length(box)
-    points = Vector{Float64}[zeros(d)]; labels = Symbol[:nominal]
+    d  = length(box)
+    m0 = moments_at(hdata, model, nominal_point(box))
+    c0 = shhc_constraints(hdata, m0)
+    dict = ParameterDictionary(box, sort(m0.harm_nw_ints), [(c.kind, c.key) for c in c0],
+                               [c.limit for c in c0], [c.λ for c in c0],
+                               Vector{Float64}[], Symbol[], Matrix{Float64}[], Array{Float64,3}[])
+    add_point!(dict, hdata, model, zeros(d), :nominal)
     if vertices
         for v in Iterators.product(ntuple(_ -> (-1.0, 1.0), d)...)
-            push!(points, collect(v)); push!(labels, :vertex)
+            add_point!(dict, hdata, model, collect(v), :vertex)
         end
     end
-    for s in seeds; push!(points, s.ξ); push!(labels, :seed); end
-    for ξ in background_points(box, nbackground; seed); push!(points, ξ); push!(labels, :background); end
-
-    m0   = moments_at(hdata, model, latent(box, points[1]))
-    c0   = shhc_constraints(hdata, m0)
-    H    = sort(m0.harm_nw_ints)
-    keys = [(c.kind, c.key) for c in c0]
-    μ = zeros(length(H), length(c0), length(points))
-    M = zeros(length(H), length(H), length(c0), length(points))
-    for (s, ξ) in enumerate(points)
-        m = s == 1 ? m0 : moments_at(hdata, model, latent(box, ξ))
-        c = s == 1 ? c0 : shhc_constraints(hdata, m)
-        [(x.kind, x.key) for x in c] == keys ||
-            error("build_dictionary: the constraint set changed at point $s")
-        μ[:, :, s], M[:, :, :, s] = _compact(c, m, H)
+    for s in seeds
+        add_point!(dict, hdata, model, s.ξ, :seed)
     end
-    return ParameterDictionary(box, H, keys, [c.limit for c in c0], [c.λ for c in c0],
-                               points, labels, μ, M)
+    for ξ in background_points(box, nbackground; seed)
+        add_point!(dict, hdata, model, ξ, :background)
+    end
+    return dict
+end
+
+# normalized violation of constraint j from its compact form at one point
+function _compact_violation(dict::ParameterDictionary, j::Int, μ, M, gv)
+    μg = dot(view(μ, :, j), gv)
+    F  = dict.λ[j] <= 0.0 ? μg : μg + dict.λ[j] * sqrt(max(dot(gv, view(M, :, :, j), gv), 0.0))
+    L  = dict.limit[j]
+    return L > 0.0 ? F / L - 1.0 : F - L
 end
 
 """
@@ -399,11 +420,7 @@ function dictionary_violations(dict::ParameterDictionary, g)
     nc, np = length(dict.keys), length(dict.points)
     V = zeros(nc, np)
     for s in 1:np, j in 1:nc
-        μg = dot(view(dict.μ, :, j, s), gv)
-        F  = dict.λ[j] <= 0.0 ? μg :
-             μg + dict.λ[j] * sqrt(max(dot(gv, view(dict.M, :, :, j, s), gv), 0.0))
-        L  = dict.limit[j]
-        V[j, s] = L > 0.0 ? F / L - 1.0 : F - L
+        V[j, s] = _compact_violation(dict, j, dict.μ[s], dict.M[s], gv)
     end
     return V
 end

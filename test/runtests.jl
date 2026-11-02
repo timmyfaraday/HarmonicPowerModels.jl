@@ -68,5 +68,6 @@ PMs.silence()
     include("rhhc_network_model.jl")
     include("rhhc_moments.jl")
     include("rhhc_sampling.jl")
+    include("rhhc_oracle.jl")
 
 end
