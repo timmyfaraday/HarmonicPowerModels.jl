@@ -535,16 +535,32 @@ function shhc_master(hdata::Dict, moments, optimizer)
 end
 
 """
-    add_shhc_constraints!(master, hdata, moments)
+    ShhcConstraint
 
-Add the chance constraints of step 6 of [`solve_shhc`](@ref) for `sHHC_SOC` to `master`
-(from [`shhc_master`](@ref)), for the network realization whose moments are `moments`:
-IHD (linear per bus and harmonic), THD and RMS voltage (cones per bus) and RMS current
-(cones per branch).
+One chance constraint of the `sHHC_SOC` program in the hosting variables g_h (= I_h²):
+E[S] + λ·√Var[S] ≤ `limit`, where S has the PCE coefficients `coef[h]` (length |K|) per
+unit g_h. `kind` is `:ihd` (`key` = (h, bus id), a single harmonic), `:thd` or `:rmsv`
+(`key` = bus id) or `:rmsi` (`key` = branch id).
 """
-function add_shhc_constraints!(master, hdata::Dict, moments)
-    (; K, psi_norms, alpha_V, alpha_I, bus_idx, ref_bus_ids, harm_nw_strs, harm_nw_ints) = moments
-    (; model, g_h) = master
+struct ShhcConstraint
+    kind::Symbol
+    key::Any
+    coef::Dict{Int,Vector{Float64}}
+    limit::Float64
+    λ::Float64
+end
+
+"""
+    shhc_constraints(hdata, moments) -> Vector{ShhcConstraint}
+
+The chance constraints of step 6 of [`solve_shhc`](@ref) for `sHHC_SOC`, for the network
+realization whose moments are `moments`: IHD per bus and harmonic, THD and RMS voltage
+per bus, RMS current per branch. The one definition of these constraints: the solver
+builds them with [`add_shhc_constraint!`](@ref) and the robust oracle evaluates them with
+[`constraint_value`](@ref).
+"""
+function shhc_constraints(hdata::Dict, moments)
+    (; alpha_V, alpha_I, bus_idx, ref_bus_ids, harm_nw_strs, harm_nw_ints) = moments
     pce     = hdata["pce"]
     fund_nw = hdata["nw"]["1"]
     lambda   = pce["lambda"]
@@ -553,33 +569,9 @@ function add_shhc_constraints!(master, hdata::Dict, moments)
     λfor(kind, key) = (lambdas !== nothing && haskey(lambdas[kind], key)) ?
                        lambdas[kind][key] : lambda
 
-    Kh = [k for k in K if k != 0]              # k ≥ 1 PCE indices
+    cons = ShhcConstraint[]
 
-    # Cantelli bound  E[S] + λ√Var[S] ≤ limit  for an aggregate S whose per-harmonic
-    # PCE coefficients are coef[h] (length |K|); added as a second-order cone in g_h.
-    function _cantelli_soc!(coef, limit, λ)
-        ES = JuMP.@expression(model, sum(coef[h][1] * g_h[h] for h in keys(coef)))
-        if limit <= 0.0
-            # The fundamental already uses the whole limit: no harmonic headroom.
-            # E[S] ≤ limit forces every contributing g_h to zero (infeasible when
-            # the limit is negative), exactly as in the dHHC and QCQP models.
-            @warn "solve_shhc (SOCP): non-positive limit $limit " *
-                  "(fundamental already at/over the limit); harmonic headroom is zero."
-            JuMP.@constraint(model, ES <= limit)
-            return
-        end
-        σ = 1.0 / limit                   # normalise the constraint by its limit
-        Wk = [JuMP.@expression(model, sum(coef[h][k+1] * g_h[h] for h in keys(coef))) for k in Kh]
-        if λ <= 0.0                       # empirical λ*≈0 ⇒ mean bound (no variance term)
-            JuMP.@constraint(model, σ * ES <= 1.0); return
-        end
-        JuMP.@constraint(model,
-            vcat(σ * (limit - ES) / λ,
-                 [σ * sqrt(psi_norms[k+1]) * Wk[j] for (j, k) in enumerate(Kh)])
-            in JuMP.SecondOrderCone())
-    end
-
-    # IHD — linear per (bus, harmonic)
+    # IHD — one harmonic per (bus, harmonic)
     for (nw_str, nw_int) in zip(harm_nw_strs, harm_nw_ints)
         haskey(alpha_V, nw_int) || continue
         A = alpha_V[nw_int]
@@ -587,35 +579,122 @@ function add_shhc_constraints!(master, hdata::Dict, moments)
             haskey(bus, "ihdmax") || continue
             n      = bus_idx[bus["bus_i"]]
             v_fund = fund_nw["bus"][bi_str]["vm"]
-            λ      = λfor(:ihd, (nw_int, bus["bus_i"]))
-            Cscal  = A[n, 1] + λ * sqrt(sum(psi_norms[k+1] * A[n, idx]^2
-                                            for (idx, k) in enumerate(K) if k != 0; init=0.0))
-            L      = (bus["ihdmax"] * v_fund)^2
-            Cscal > 0.0 && JuMP.@constraint(model, (Cscal / L) * g_h[nw_int] <= 1.0)
+            push!(cons, ShhcConstraint(:ihd, (nw_int, bus["bus_i"]),
+                Dict(nw_int => A[n, :]), (bus["ihdmax"] * v_fund)^2,
+                λfor(:ihd, (nw_int, bus["bus_i"]))))
         end
     end
 
-    # THD + RMS-voltage — per bus (cross-harmonic SOC on Σ_h|V_{n,h}|²)
+    # THD + RMS-voltage — per bus (cross-harmonic on Σ_h|V_{n,h}|²)
     for (bi_str, fbus) in fund_nw["bus"]
         n = bus_idx[fbus["bus_i"]]
         n in ref_bus_ids && continue
-        coef   = Dict(h => view(alpha_V[h], n, :) for h in harm_nw_ints if haskey(alpha_V, h))
+        coef   = Dict(h => alpha_V[h][n, :] for h in harm_nw_ints if haskey(alpha_V, h))
         v_fund = fbus["vm"]
         λ      = λfor(:agg, fbus["bus_i"])
-        haskey(fbus, "thdmax")  && _cantelli_soc!(coef, (fbus["thdmax"] * v_fund)^2, λ)
-        haskey(fbus, "vmaxrms") && _cantelli_soc!(coef, fbus["vmaxrms"]^2 - v_fund^2, λ)
+        haskey(fbus, "thdmax")  && push!(cons, ShhcConstraint(:thd, fbus["bus_i"], coef,
+                                             (fbus["thdmax"] * v_fund)^2, λ))
+        haskey(fbus, "vmaxrms") && push!(cons, ShhcConstraint(:rmsv, fbus["bus_i"], coef,
+                                             fbus["vmaxrms"]^2 - v_fund^2, λ))
     end
 
-    # RMS-current — per branch (cross-harmonic SOC on Σ_h|I_{b,h}|²)
+    # RMS-current — per branch (cross-harmonic on Σ_h|I_{b,h}|²)
     for (b_str, fbr) in fund_nw["branch"]
         haskey(fbr, "c_rating") || continue
         b    = parse(Int, b_str)
         coef = Dict(h => alpha_I[h][b] for h in harm_nw_ints
                     if haskey(alpha_I, h) && haskey(alpha_I[h], b))
         isempty(coef) && continue
-        _cantelli_soc!(coef, fbr["c_rating"]^2 - get(fbr, "cm_fr", 0.0)^2, λfor(:rmsi, b))
+        push!(cons, ShhcConstraint(:rmsi, b, coef,
+                                   fbr["c_rating"]^2 - get(fbr, "cm_fr", 0.0)^2, λfor(:rmsi, b)))
+    end
+    return cons
+end
+
+"""
+    add_shhc_constraint!(master, c, moments)
+
+Add the chance constraint `c` ([`ShhcConstraint`](@ref)) to `master` (from
+[`shhc_master`](@ref)): a linear bound for `:ihd`, a second-order cone otherwise, both
+normalised by the limit.
+"""
+function add_shhc_constraint!(master, c::ShhcConstraint, moments)
+    (; K, psi_norms) = moments
+    (; model, g_h) = master
+    coef, limit, λ = c.coef, c.limit, c.λ
+
+    if c.kind === :ihd
+        # a single harmonic: E[S] + λ√Var[S] = Cscal·g_h for g_h ≥ 0, a linear bound
+        h, A  = only(coef)
+        Cscal = A[1] + λ * sqrt(sum(psi_norms[k+1] * A[idx]^2
+                                    for (idx, k) in enumerate(K) if k != 0; init=0.0))
+        Cscal > 0.0 && JuMP.@constraint(model, (Cscal / limit) * g_h[h] <= 1.0)
+        return master
+    end
+
+    # Cantelli bound  E[S] + λ√Var[S] ≤ limit  for an aggregate S whose per-harmonic
+    # PCE coefficients are coef[h] (length |K|); added as a second-order cone in g_h.
+    Kh = [k for k in K if k != 0]              # k ≥ 1 PCE indices
+    ES = JuMP.@expression(model, sum(coef[h][1] * g_h[h] for h in keys(coef)))
+    if limit <= 0.0
+        # The fundamental already uses the whole limit: no harmonic headroom.
+        # E[S] ≤ limit forces every contributing g_h to zero (infeasible when
+        # the limit is negative), exactly as in the dHHC and QCQP models.
+        @warn "solve_shhc (SOCP): non-positive limit $limit " *
+              "(fundamental already at/over the limit); harmonic headroom is zero."
+        JuMP.@constraint(model, ES <= limit)
+        return master
+    end
+    σ = 1.0 / limit                   # normalise the constraint by its limit
+    Wk = [JuMP.@expression(model, sum(coef[h][k+1] * g_h[h] for h in keys(coef))) for k in Kh]
+    if λ <= 0.0                       # empirical λ*≈0 ⇒ mean bound (no variance term)
+        JuMP.@constraint(model, σ * ES <= 1.0); return master
+    end
+    JuMP.@constraint(model,
+        vcat(σ * (limit - ES) / λ,
+             [σ * sqrt(psi_norms[k+1]) * Wk[j] for (j, k) in enumerate(Kh)])
+        in JuMP.SecondOrderCone())
+    return master
+end
+
+"""
+    add_shhc_constraints!(master, hdata, moments)
+
+Add every chance constraint of [`shhc_constraints`](@ref) for the network realization
+whose moments are `moments` to `master`.
+"""
+function add_shhc_constraints!(master, hdata::Dict, moments)
+    for c in shhc_constraints(hdata, moments)
+        add_shhc_constraint!(master, c, moments)
     end
     return master
+end
+
+"""
+    constraint_value(c, g, moments) -> Float64
+
+E[S] + λ·√Var[S] of the chance constraint `c` at the hosting variables `g` (h ⇒ g_h,
+with g_h = I_h² the squared hosting current), to compare with `c.limit`.
+"""
+function constraint_value(c::ShhcConstraint, g, moments)
+    (; K, psi_norms) = moments
+    ES = sum(c.coef[h][1] * g[h] for h in keys(c.coef))
+    c.λ <= 0.0 && return ES
+    var = sum(psi_norms[k+1] * sum(c.coef[h][k+1] * g[h] for h in keys(c.coef))^2
+              for k in K if k != 0; init = 0.0)
+    return ES + c.λ * sqrt(var)
+end
+
+"""
+    normalized_violation(c, g, moments) -> Float64
+
+`constraint_value(c, g, moments) / c.limit − 1`: positive when `c` is violated at `g`, in
+the units of the normalised constraint of the program. For a non-positive limit, where the
+program forces the contributing g_h to zero, it returns `constraint_value − limit`.
+"""
+function normalized_violation(c::ShhcConstraint, g, moments)
+    v = constraint_value(c, g, moments)
+    return c.limit > 0.0 ? v / c.limit - 1.0 : v - c.limit
 end
 
 """

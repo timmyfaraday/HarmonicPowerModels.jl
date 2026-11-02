@@ -93,9 +93,10 @@ module HarmonicPowerModels
     export reduced_harmonic_impedance, constructive_worst_case_angles, recentre_angle_ranges
     export empirical_lambdas, solve_shhc_calibrated
     export shhc_moments, shhc_master, add_shhc_constraints!
+    export ShhcConstraint, shhc_constraints, add_shhc_constraint!, constraint_value, normalized_violation
     export ParameterBox, latent, nominal_point
     export AbstractNetworkModel, ScaledBranchModel, ExactPiModel, uncertain_branches, branch_data
-    export networks_at, harmonic_network, harmonic_sequence, admittance_at
+    export networks_at, harmonic_network, harmonic_sequence, admittance_at, moments_at
     export compute_C_coefficients, compute_alpha, compute_C_scalar
     export lp_solution, compare_shared_vs_independent
     

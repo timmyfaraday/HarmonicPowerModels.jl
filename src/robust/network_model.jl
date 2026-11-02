@@ -247,3 +247,36 @@ function admittance_at(hdata::Dict, model::AbstractNetworkModel, p, h::Real;
     ntw     = _override_branches(harmonic_network(hdata, h; sequence), model, p, h, sequence)
     return _harmonic_admittance(ntw, bus_idx), bus_idx
 end
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Moments at a parameter point
+# ──────────────────────────────────────────────────────────────────────────────
+
+# The robust program needs a chance-constraint factor that does not depend on the network
+# realization. Cantelli (distribution-free) and Gaussian are fixed numbers. The empirical
+# factor λ* is calibrated per constraint on the sampled output of the NOMINAL network, so
+# it does not carry over to another point of the box: reject it rather than reuse it.
+function _check_robust_bound(hdata::Dict)
+    pce   = hdata["pce"]
+    bound = pce["bound"]
+    bound in (:cantelli, :gaussian) || throw(ArgumentError(
+        "robust HHC: the chance-constraint bound must be :cantelli or :gaussian, got " *
+        ":$bound. The empirical factor λ* is calibrated on the nominal network and does " *
+        "not hold at other points of the parameter box."))
+    get(pce, "lambdas", nothing) === nothing || throw(ArgumentError(
+        "robust HHC: per-constraint empirical factors λ* are present in hdata[\"pce\"]; " *
+        "they are calibrated on the nominal network and cannot be used in the robust program."))
+    return nothing
+end
+
+"""
+    moments_at(hdata, model, p) -> NamedTuple
+
+The moments of [`shhc_moments`](@ref) at the parameter point `p` of the network model
+`model`. `hdata` must carry the PCE data with a Cantelli or Gaussian bound: the empirical
+factor λ* is calibrated on the nominal network and is rejected.
+"""
+function moments_at(hdata::Dict, model::AbstractNetworkModel, p)
+    _check_robust_bound(hdata)
+    return shhc_moments(hdata; networks = networks_at(hdata, model, p))
+end
