@@ -69,6 +69,8 @@ module HarmonicPowerModels
     include("prob/hhc.jl")
     include("prob/shhc.jl")
 
+    include("robust/network_model.jl")
+
     include("util/imp.jl")
     include("util/init.jl")
     include("util/ref.jl")
@@ -90,6 +92,10 @@ module HarmonicPowerModels
     export build_harmonic_Ybus, harmonic_transfer_impedance, bus_voltage_limits
     export reduced_harmonic_impedance, constructive_worst_case_angles, recentre_angle_ranges
     export empirical_lambdas, solve_shhc_calibrated
+    export shhc_moments, shhc_master, add_shhc_constraints!
+    export ParameterBox, latent, nominal_point
+    export AbstractNetworkModel, ScaledBranchModel, ExactPiModel, uncertain_branches, branch_data
+    export networks_at, harmonic_network, harmonic_sequence, admittance_at
     export compute_C_coefficients, compute_alpha, compute_C_scalar
     export lp_solution, compare_shared_vs_independent
     

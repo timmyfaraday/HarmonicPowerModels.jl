@@ -565,6 +565,89 @@ function _warn_floating_harmonic_components(ntw::Dict, h::Int)
 end
 
 """
+    _scale_network_to_harmonic!(ntw, nh, sequence)
+
+Scale the network elements of `ntw`, holding fundamental (50 Hz) data, to the harmonic
+order `nh`: branches, bus shunts, generator subtransient admittances and transformers,
+with the transformer phase shift of `sequence` (`:positive`, `:negative` or `:zero`).
+`nh` may be any positive real, so the same rules give the network between harmonics.
+This is the one copy of the scaling rules: [`replicate`](@ref) applies it per harmonic.
+"""
+function _scale_network_to_harmonic!(ntw::Dict, nh::Real, sequence::Symbol)
+    # re-evaluate the branch data
+    for branch in values(ntw["branch"])
+        haskey(branch, "br_r") ? branch["br_r"] *= sqrt(nh) : ~ ;
+        haskey(branch, "br_x") ? branch["br_x"] *= nh : ~ ;
+        haskey(branch, "b_fr") ? branch["b_fr"] *= nh : ~ ;
+        haskey(branch, "b_to") ? branch["b_to"] *= nh : ~ ;
+    end
+
+    # re-evaluate the bus shunt data: a shunt is a fixed physical element, so
+    # its ADMITTANCE is frequency-dependent even though its rating is not.
+    # In the MATPOWER sign convention bs > 0 is capacitive and bs < 0 is
+    # inductive, so at harmonic h
+    #   capacitor: B(h) = ω(h)·C       = bs·h
+    #   reactor:   B(h) = −1/(ω(h)·L)  = bs/h
+    # A conductive shunt (gs) is frequency-independent. Leaving bs unscaled
+    # understates a capacitor bank by a factor h and overstates a reactor by
+    # the same factor, which is exactly where harmonic resonances live.
+    for shunt in values(get(ntw, "shunt", Dict{String,Any}()))
+        haskey(shunt, "bs") || continue
+        shunt["bs"] = shunt["bs"] >= 0.0 ? shunt["bs"] * nh : shunt["bs"] / nh
+    end
+
+    # re-evaluate the gen data: the per-generator short-circuit impedance
+    # fields (rsc, xsc) are the fundamental per-unit subtransient impedance
+    # z_sc = rsc + j*xsc (see mpc.gen_sc).  At harmonic h the generator
+    # presents the harmonic-scaled impedance
+    #   z_sc(h) = rsc*sqrt(h) + j*xsc*h ,
+    # so the shunt admittance to ground used by the harmonic constraints is
+    #   Y_g(h) = gsc + j*bsc = 1/z_sc(h).
+    # rsc = xsc = 0 (clean machine, no gen_sc row) ⇒ no ground path.
+    for gen in values(ntw["gen"])
+        rsc = get(gen, "rsc", 0.0)
+        xsc = get(gen, "xsc", 0.0)
+        if !iszero(rsc) || !iszero(xsc)
+            Yh = 1 / (rsc * sqrt(nh) + im * xsc * nh)        # Y_g(h)
+            gen["gsc"] = real(Yh)
+            gen["bsc"] = imag(Yh)
+        end
+    end
+
+    # re-evaluate the transformer data
+    if haskey(ntw, "xfmr") 
+        for xfmr in values(ntw["xfmr"])
+            haskey(xfmr, "xsc") ? xfmr["xsc"] *= nh : ~ ;
+            haskey(xfmr, "r1")  ? xfmr["r1"] *= sqrt(nh) : ~ ;
+            haskey(xfmr, "r2")  ? xfmr["r2"] *= sqrt(nh) : ~ ;
+
+            haskey(xfmr, "xe1") ? xfmr["xe1"] *= nh : ~ ;
+            haskey(xfmr, "xe2") ? xfmr["xe2"] *= nh : ~ ;
+            haskey(xfmr, "re1") ? xfmr["re1"] *= sqrt(nh) : ~ ;
+            haskey(xfmr, "re2") ? xfmr["re2"] *= sqrt(nh) : ~ ;
+
+            xfmr["cnf1"] = haskey(xfmr, "vg") ? uppercase(xfmr["vg"][1]) : 'Y' ;
+            xfmr["cnf2"] = haskey(xfmr, "vg") ? uppercase(xfmr["vg"][2]) : 'Y' ;
+
+            shift = haskey(xfmr, "vg") ? parse(Int, xfmr["vg"][3:end]) : 0 ;
+            if sequence === :positive
+                xfmr["tr"] = cosd(-30.0 * shift)
+                xfmr["ti"] = sind(-30.0 * shift)
+            elseif sequence === :negative
+                xfmr["tr"] = cosd(30.0 * shift)
+                xfmr["ti"] = sind(30.0 * shift)
+            elseif sequence === :zero
+                xfmr["tr"] = 1.0
+                xfmr["ti"] = 0.0
+    end end end
+    return ntw
+end
+
+"Sequence (`:positive`, `:negative` or `:zero`) of the integer harmonic order `nh`."
+harmonic_sequence(nh::Int) =
+    is_pos_sequence(nh) ? :positive : is_neg_sequence(nh) ? :negative : :zero
+
+"""
     HarmonicPowerModels.replicate
 """
 function _HPM.replicate(data::Dict{String, Any};
@@ -711,72 +794,7 @@ function _HPM.replicate(data::Dict{String, Any};
                         @warn "harmonic $nh not included in $std"
         end end end end
 
-        # re-evaluate the branch data
-        for branch in values(ntw["branch"])
-            haskey(branch, "br_r") ? branch["br_r"] *= sqrt(nh) : ~ ;
-            haskey(branch, "br_x") ? branch["br_x"] *= nh : ~ ;
-            haskey(branch, "b_fr") ? branch["b_fr"] *= nh : ~ ;
-            haskey(branch, "b_to") ? branch["b_to"] *= nh : ~ ;
-        end
-
-        # re-evaluate the bus shunt data: a shunt is a fixed physical element, so
-        # its ADMITTANCE is frequency-dependent even though its rating is not.
-        # In the MATPOWER sign convention bs > 0 is capacitive and bs < 0 is
-        # inductive, so at harmonic h
-        #   capacitor: B(h) = ω(h)·C       = bs·h
-        #   reactor:   B(h) = −1/(ω(h)·L)  = bs/h
-        # A conductive shunt (gs) is frequency-independent. Leaving bs unscaled
-        # understates a capacitor bank by a factor h and overstates a reactor by
-        # the same factor, which is exactly where harmonic resonances live.
-        for shunt in values(get(ntw, "shunt", Dict{String,Any}()))
-            haskey(shunt, "bs") || continue
-            shunt["bs"] = shunt["bs"] >= 0.0 ? shunt["bs"] * nh : shunt["bs"] / nh
-        end
-
-        # re-evaluate the gen data: the per-generator short-circuit impedance
-        # fields (rsc, xsc) are the fundamental per-unit subtransient impedance
-        # z_sc = rsc + j*xsc (see mpc.gen_sc).  At harmonic h the generator
-        # presents the harmonic-scaled impedance
-        #   z_sc(h) = rsc*sqrt(h) + j*xsc*h ,
-        # so the shunt admittance to ground used by the harmonic constraints is
-        #   Y_g(h) = gsc + j*bsc = 1/z_sc(h).
-        # rsc = xsc = 0 (clean machine, no gen_sc row) ⇒ no ground path.
-        for gen in values(ntw["gen"])
-            rsc = get(gen, "rsc", 0.0)
-            xsc = get(gen, "xsc", 0.0)
-            if !iszero(rsc) || !iszero(xsc)
-                Yh = 1 / (rsc * sqrt(nh) + im * xsc * nh)        # Y_g(h)
-                gen["gsc"] = real(Yh)
-                gen["bsc"] = imag(Yh)
-            end
-        end
-
-        # re-evaluate the transformer data
-        if haskey(ntw, "xfmr") 
-            for xfmr in values(ntw["xfmr"])
-                haskey(xfmr, "xsc") ? xfmr["xsc"] *= nh : ~ ;
-                haskey(xfmr, "r1")  ? xfmr["r1"] *= sqrt(nh) : ~ ;
-                haskey(xfmr, "r2")  ? xfmr["r2"] *= sqrt(nh) : ~ ;
-
-                haskey(xfmr, "xe1") ? xfmr["xe1"] *= nh : ~ ;
-                haskey(xfmr, "xe2") ? xfmr["xe2"] *= nh : ~ ;
-                haskey(xfmr, "re1") ? xfmr["re1"] *= sqrt(nh) : ~ ;
-                haskey(xfmr, "re2") ? xfmr["re2"] *= sqrt(nh) : ~ ;
-
-                xfmr["cnf1"] = haskey(xfmr, "vg") ? uppercase(xfmr["vg"][1]) : 'Y' ;
-                xfmr["cnf2"] = haskey(xfmr, "vg") ? uppercase(xfmr["vg"][2]) : 'Y' ;
-
-                shift = haskey(xfmr, "vg") ? parse(Int, xfmr["vg"][3:end]) : 0 ;
-                if is_pos_sequence(nh)
-                    xfmr["tr"] = cosd(-30.0 * shift)
-                    xfmr["ti"] = sind(-30.0 * shift)
-                elseif is_neg_sequence(nh)
-                    xfmr["tr"] = cosd(30.0 * shift)
-                    xfmr["ti"] = sind(30.0 * shift)
-                elseif is_zero_sequence(nh)
-                    xfmr["tr"] = 1.0
-                    xfmr["ti"] = 0.0
-        end end end
+        _scale_network_to_harmonic!(ntw, nh, harmonic_sequence(nh))
     end
 
     # warn about floating (ungrounded) harmonic components ⇒ singular Y_h

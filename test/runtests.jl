@@ -64,4 +64,7 @@ PMs.silence()
     include("shhc_independent.jl")
     include("shhc_type_germ.jl")
 
+    # Robust HHC: parametric network model
+    include("rhhc_network_model.jl")
+
 end
