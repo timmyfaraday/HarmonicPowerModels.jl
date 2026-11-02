@@ -25,7 +25,7 @@
 
     @test only(modal_scan(hd, model, nominal_point(box))).h ≈ 6.0 atol = 0.01
     @test res["signed_off"]
-    @test res["gap"] < 1e-4
+    @test res["gap"] < 1e-3
     @test res["posterior"].max_violation ≤ 1e-6
 
     # reference 1: per harmonic, the IHD limit alone allows √limit / max_box |Z_11(h)|

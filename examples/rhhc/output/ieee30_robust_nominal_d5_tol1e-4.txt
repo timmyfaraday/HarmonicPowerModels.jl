@@ -1,0 +1,22 @@
+IEEE 30-bus, inductive_cable33, 21 units, ε = 0.05; 22 cables, 12 overhead lines (one class each)
+
+== 1. nominal stochastic versus robust, box d = 5 ==
+cantelli nominal 0.034491 (violated at 98.3 % of the box, worst +2.666)
+cantelli robust  0.027876  [LB 0.027876, UB 0.027877, gap 3.2e-05]  22 iterations, 223 s, signed off
+cantelli robust  a posteriori: worst -1.79e-02 ((:ihd, (5, 30))), violated at 0.0 %
+         per harmonic, robust / nominal: h5 0.823, h7 0.478, h11 0.924, h13 0.753
+         history (v, UB, cuts): (3.36, 0.03449, 34) (0.0382, 0.02800, 2) (0.00163, 0.02790, 2) (0.00113, 0.02789, 2) (0.00194, 0.02789, 1) (0.000675, 0.02789, 1) (0.000198, 0.02788, 1) (0.000191, 0.02788, 1) (0.0002, 0.02788, 1) (0.000193, 0.02788, 1) (0.000183, 0.02788, 1) (0.000198, 0.02788, 1) (0.000187, 0.02788, 1) (0.000175, 0.02788, 1) (0.000197, 0.02788, 1) (0.000181, 0.02788, 1) (0.000183, 0.02788, 1) (0.00018, 0.02788, 1) (0.000174, 0.02788, 1) (0.000181, 0.02788, 1) (0.000121, 0.02788, 1) (6.31e-05, 0.02788, 0)
+gaussian nominal 0.035686 (violated at 98.3 % of the box, worst +2.665)
+gaussian robust  0.028898  [LB 0.028898, UB 0.028899, gap 3.6e-05]  7 iterations, 71 s, signed off
+gaussian robust  a posteriori: worst -1.72e-02 ((:ihd, (5, 30))), violated at 0.0 %
+         per harmonic, robust / nominal: h5 0.823, h7 0.478, h11 0.926, h13 0.755
+         history (v, UB, cuts): (3.36, 0.03569, 35) (0.0442, 0.02904, 2) (0.00119, 0.02891, 2) (0.0021, 0.02891, 2) (0.00144, 0.02890, 1) (0.000645, 0.02890, 1) (7.18e-05, 0.02890, 0)
+
+== 2. ablation of the dictionary (Cantelli) ==
+box     seeds  background  iterations  robust(LB)   gap      time[s]  posterior worst  violated
+d=5     no              0           5  0.027877  3.1e-05       57        -1.79e-02      0.0 %
+d=5     yes             0          22  0.027877  3.2e-05      246        -1.79e-02      0.0 %
+d=5     no             64           5  0.027877  3.1e-05       58        -1.79e-02      0.0 %
+d=5     yes            64          22  0.027877  3.2e-05      246        -1.79e-02      0.0 %
+d=5     no           1024          15  0.027876  3.2e-05      212        -1.79e-02      0.0 %
+d=5     yes          1024          22  0.027876  3.2e-05      218        -1.79e-02      0.0 %
