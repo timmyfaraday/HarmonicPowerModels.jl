@@ -98,14 +98,15 @@ function modal_scan(hdata::Dict, model::AbstractNetworkModel, p;
                     hmin::Real = 1.0, hmax::Real = 1.25 * _max_harmonic(hdata),
                     step::Real = 0.02)
     hs = collect(hmin:step:hmax)
-    Y, buses = reduced_admittance(hdata, model, p, hs[1])
-    η, T = _modes(Y)
+    buses = last(reduced_admittance(hdata, model, p, hs[1]))
+    dec = _tmap(h -> _modes(first(reduced_admittance(hdata, model, p, h))), hs)  # in parallel
+    η, T = dec[1]
     nm = length(η)
     E  = zeros(ComplexF64, nm, length(hs))      # η of each tracked mode over hs
     V  = Array{ComplexF64}(undef, size(T, 1), nm, length(hs))
     E[:, 1] = η; V[:, :, 1] = T
-    for k in 2:length(hs)
-        ηk, Tk = _modes(first(reduced_admittance(hdata, model, p, hs[k])))
+    for k in 2:length(hs)                        # continuation by eigenvector overlap: serial
+        ηk, Tk = dec[k]
         free = collect(1:nm)
         for m in 1:nm                            # greedy continuation by eigenvector overlap
             j = free[argmax([_overlap(Tk[:, j], V[:, m, k-1]) for j in free])]
@@ -133,11 +134,12 @@ eigenvector continues `r.t`, searched within `r.h ± window`.
 function locate_resonance(hdata::Dict, model::AbstractNetworkModel, p, r::Resonance;
                           window::Real = 0.5, step::Real = 0.01)
     hs = collect(max(r.h - window, step):step:r.h + window)
+    dec = _tmap(h -> _modes(first(reduced_admittance(hdata, model, p, h))), hs)  # in parallel
     tr = r.t
     ηs = ComplexF64[]; ts = Vector{ComplexF64}[]
-    for h in hs
-        η, t = _track(first(reduced_admittance(hdata, model, p, h)), tr)
-        push!(ηs, η); push!(ts, t); tr = t
+    for (η, T) in dec                            # continuation by eigenvector overlap: serial
+        m = argmax([_overlap(T[:, j], tr) for j in axes(T, 2)])
+        push!(ηs, η[m]); push!(ts, T[:, m]); tr = T[:, m]
     end
     k = argmin(abs.(ηs))
     hk = 1 < k < length(hs) ? _parabola_min(hs[k], step, abs(ηs[k-1]), abs(ηs[k]), abs(ηs[k+1])) : hs[k]
@@ -160,14 +162,12 @@ sensitivity of its own, Huang, Cui & Xu 2007; this is its finite-difference coun
 function resonance_sensitivity(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox,
                                r::Resonance; δ::Real = 0.25)
     d = length(box)
-    s = zeros(d)
-    for i in 1:d
+    return _tmap(1:d) do i                       # the coordinates are independent
         e = zeros(d); e[i] = δ
         h₊ = locate_resonance(hdata, model, latent(box, e), r).h
         h₋ = locate_resonance(hdata, model, latent(box, -e), r).h
-        s[i] = (h₊ - h₋) / (2δ)
+        (h₊ - h₋) / (2δ)
     end
-    return s
 end
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -350,6 +350,15 @@ function _compact(cons, moments, H)
     return μ, M
 end
 
+# compact constraints at the latent point ξ, checked against the dictionary's constraint set
+function _compact_point(dict::ParameterDictionary, hdata, model, ξ)
+    m = moments_at(hdata, model, latent(dict.box, ξ))
+    c = shhc_constraints(hdata, m)
+    [(x.kind, x.key) for x in c] == dict.keys ||
+        error("add_point!: the constraint set changed at ξ = $ξ")
+    return _compact(c, m, dict.harmonics)
+end
+
 """
     add_point!(dict, hdata, model, ξ, label) -> Int
 
@@ -358,14 +367,25 @@ returns its index.
 """
 function add_point!(dict::ParameterDictionary, hdata::Dict, model::AbstractNetworkModel,
                     ξ::AbstractVector, label::Symbol)
-    m = moments_at(hdata, model, latent(dict.box, ξ))
-    c = shhc_constraints(hdata, m)
-    [(x.kind, x.key) for x in c] == dict.keys ||
-        error("add_point!: the constraint set changed at ξ = $ξ")
-    μ, M = _compact(c, m, dict.harmonics)
-    push!(dict.points, collect(Float64, ξ)); push!(dict.labels, label)
-    push!(dict.μ, μ); push!(dict.M, M)
-    return length(dict.points)
+    return only(add_points!(dict, hdata, model, [ξ], label))
+end
+
+"""
+    add_points!(dict, hdata, model, points, label) -> Vector{Int}
+
+Evaluate the constraints at the latent `points` in parallel and append them to `dict`, in
+the order given, with `label`; returns their indices.
+"""
+function add_points!(dict::ParameterDictionary, hdata::Dict, model::AbstractNetworkModel,
+                     points::AbstractVector, label::Symbol)
+    data = _tmap(ξ -> _compact_point(dict, hdata, model, ξ), points)
+    idx  = Int[]
+    for (ξ, (μ, M)) in zip(points, data)
+        push!(dict.points, collect(Float64, ξ)); push!(dict.labels, label)
+        push!(dict.μ, μ); push!(dict.M, M)
+        push!(idx, length(dict.points))
+    end
+    return idx
 end
 
 """
@@ -387,16 +407,12 @@ function build_dictionary(hdata::Dict, model::AbstractNetworkModel, box::Paramet
                                Vector{Float64}[], Symbol[], Matrix{Float64}[], Array{Float64,3}[])
     add_point!(dict, hdata, model, zeros(d), :nominal)
     if vertices
-        for v in Iterators.product(ntuple(_ -> (-1.0, 1.0), d)...)
-            add_point!(dict, hdata, model, collect(v), :vertex)
-        end
+        add_points!(dict, hdata, model,
+                    [collect(v) for v in Iterators.product(ntuple(_ -> (-1.0, 1.0), d)...)][:],
+                    :vertex)
     end
-    for s in seeds
-        add_point!(dict, hdata, model, s.ξ, :seed)
-    end
-    for ξ in background_points(box, nbackground; seed)
-        add_point!(dict, hdata, model, ξ, :background)
-    end
+    add_points!(dict, hdata, model, [s.ξ for s in seeds], :seed)
+    add_points!(dict, hdata, model, background_points(box, nbackground; seed), :background)
     return dict
 end
 

@@ -69,6 +69,7 @@ module HarmonicPowerModels
     include("prob/hhc.jl")
     include("prob/shhc.jl")
 
+    include("robust/threads.jl")
     include("robust/network_model.jl")
     include("robust/sampling.jl")
     include("robust/oracle.jl")
@@ -102,7 +103,7 @@ module HarmonicPowerModels
     export networks_at, harmonic_network, harmonic_sequence, admittance_at, moments_at
     export Resonance, reduced_admittance, modal_scan, locate_resonance, resonance_sensitivity
     export Seed, resonance_seeds, background_points
-    export ParameterDictionary, build_dictionary, dictionary_violations, add_point!
+    export ParameterDictionary, build_dictionary, dictionary_violations, add_point!, add_points!
     export OracleResult, pessimize!, max_violation
     export solve_rhhc, posterior_check
     export compute_C_coefficients, compute_alpha, compute_C_scalar

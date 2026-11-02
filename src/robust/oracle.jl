@@ -44,7 +44,7 @@ function _ascend(f, ξ0::AbstractVector; iters::Int, fd::Real)
     d = length(ξ)
     for _ in 1:iters
         g = zeros(d)
-        for i in 1:d
+        _tforeach(1:d) do i                     # the 2d evaluations are independent
             e = zeros(d); e[i] = fd
             g[i] = (f(clamp.(ξ .+ e, -1, 1)) - f(clamp.(ξ .- e, -1, 1))) / (2fd)
         end
@@ -80,6 +80,9 @@ Approximate pessimizing oracle for the hosting variables `g` (h ⇒ g_h = I_h²)
    dictionary keeps what the oracle learned, and update every constraint's worst value with
    it.
 
+The ascents, and the finite differences within each ascent step, run in parallel on the
+available threads; the result does not depend on the number of threads.
+
 The effort parameters are `ncons`, `margin`, `starts` and `iters`; the sign-off of the
 cutting-set method should run at maximum effort (Mutapcic & Boyd 2009, §5.1).
 """
@@ -92,19 +95,21 @@ function pessimize!(dict::ParameterDictionary, hdata::Dict, model::AbstractNetwo
     best = [maximum(view(V, j, :)) for j in 1:nc]
     arg  = [argmax(view(V, j, :)) for j in 1:nc]
 
-    cache = Dict{Vector{Float64},Vector{Float64}}()
-    viol(ξ) = get!(() -> _violations_at(hdata, model, dict.box, ξ, g), cache, collect(Float64, ξ))
+    cache = Dict{Vector{Float64},Vector{Float64}}(); lk = ReentrantLock()
+    viol(ξ) = _cached(x -> _violations_at(hdata, model, dict.box, x, g), cache, lk,
+                      collect(Float64, ξ))
 
-    near = [j for j in sortperm(best; rev = true) if best[j] >= -margin]
-    for j in near[1:min(ncons, length(near))]
-        for s in sortperm(V[j, :]; rev = true)[1:min(starts, size(V, 2))]
-            ξ, f = _ascend(x -> viol(x)[j], dict.points[s]; iters, fd)
-            f > best[j] || continue
-            idx = add_point!(dict, hdata, model, ξ, :refined)
-            for i in 1:nc                       # the new point may raise other constraints
-                v = _compact_violation(dict, i, dict.μ[idx], dict.M[idx], gv)
-                v > best[i] && (best[i] = v; arg[i] = idx)
-            end
+    # the ascents are independent: run them in parallel, then add the improving points in
+    # the order of `pairs`, so the result does not depend on the scheduling
+    near  = [j for j in sortperm(best; rev = true) if best[j] >= -margin]
+    pairs = [(j, s) for j in near[1:min(ncons, length(near))]
+                    for s in sortperm(V[j, :]; rev = true)[1:min(starts, size(V, 2))]]
+    asc   = _tmap(js -> _ascend(x -> viol(x)[js[1]], dict.points[js[2]]; iters, fd), pairs)
+    new   = [ξ for ((j, _), (ξ, f)) in zip(pairs, asc) if f > best[j]]
+    for idx in add_points!(dict, hdata, model, new, :refined)
+        for i in 1:nc                           # a new point may raise every constraint
+            v = _compact_violation(dict, i, dict.μ[idx], dict.M[idx], gv)
+            v > best[i] && (best[i] = v; arg[i] = idx)
         end
     end
     return OracleResult(best, arg, argmax(best))

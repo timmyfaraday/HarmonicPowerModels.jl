@@ -41,6 +41,10 @@ method, for the uncertain branches of `model` over the parameter box `box`.
   tighter `tol` mainly makes the method chase violations at the resolution of the oracle's
   finite differences, one cut per iteration, with no visible change in the bounds.
 
+Runs the oracle, the dictionary and the posterior check on the threads Julia was started
+with (`julia -t auto`); the result does not depend on their number. The matrices are small,
+so set `LinearAlgebra.BLAS.set_num_threads(1)` to keep BLAS threads from competing.
+
 Returns a Dict with `"termination_status"` of the last master, `"upper_bound"` (the master
 value), `"lower_bound"` and `"solution"` (I_h of the scaled, robust-feasible decision),
 `"master_solution"` (the master's I_h), `"max_violation"` (the oracle's last v at the master
@@ -183,9 +187,9 @@ function posterior_check(hdata::Dict, model::AbstractNetworkModel, box::Paramete
     c0   = shhc_constraints(hdata, m0)
     pos  = [c.limit > 0.0 for c in c0]
     keys = [(c.kind, c.key) for c in c0]
+    vs   = _tmap(ξ -> _violations_at(hdata, model, box, ξ, g), pts)     # in parallel
     vmax, jmax, smax, nviol = -Inf, 0, 0, 0
-    for (s, ξ) in enumerate(pts)
-        v = _violations_at(hdata, model, box, ξ, g)
+    for (s, v) in enumerate(vs)
         j = argmax(ifelse.(pos, v, -Inf))
         v[j] > tol && (nviol += 1)
         v[j] > vmax && ((vmax, jmax, smax) = (v[j], j, s))

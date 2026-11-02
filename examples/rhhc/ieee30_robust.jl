@@ -13,13 +13,15 @@
 #                                                                               #
 # The network model is analytic (ScaledBranchModel); the cable and line data  #
 # of LineCableModels.jl replace it once the IEEE30 mapping is available.      #
-# Parts: `julia ieee30_robust.jl [nominal] [d5] [d25]` (default: all three).  #
+# Parts: `julia -t auto ieee30_robust.jl [nominal] [d5] [d25]` (default: all  #
+# three); `-t auto` runs the oracle on every core.                             #
 # Output: examples/rhhc/output/ieee30_robust_<parts>.txt                      #
 ################################################################################
 
-using HarmonicPowerModels, PowerModels, JuMP, Ipopt, MosekTools, Printf
+using HarmonicPowerModels, PowerModels, JuMP, Ipopt, MosekTools, Printf, LinearAlgebra
 const HPM = HarmonicPowerModels
 PowerModels.silence()
+BLAS.set_num_threads(1)     # small matrices: BLAS threads only compete with the oracle's tasks
 
 const EX = joinpath(@__DIR__, "..", "shhc")
 include(joinpath(EX, "pce_params.jl"))
