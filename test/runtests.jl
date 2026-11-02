@@ -69,5 +69,6 @@ PMs.silence()
     include("rhhc_moments.jl")
     include("rhhc_sampling.jl")
     include("rhhc_oracle.jl")
+    include("rhhc_cutting_set.jl")
 
 end

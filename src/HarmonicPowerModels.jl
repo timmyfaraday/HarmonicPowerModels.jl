@@ -72,6 +72,7 @@ module HarmonicPowerModels
     include("robust/network_model.jl")
     include("robust/sampling.jl")
     include("robust/oracle.jl")
+    include("robust/cutting_set.jl")
 
     include("util/imp.jl")
     include("util/init.jl")
@@ -103,6 +104,7 @@ module HarmonicPowerModels
     export Seed, resonance_seeds, background_points
     export ParameterDictionary, build_dictionary, dictionary_violations, add_point!
     export OracleResult, pessimize!, max_violation
+    export solve_rhhc
     export compute_C_coefficients, compute_alpha, compute_C_scalar
     export lp_solution, compare_shared_vs_independent
     
