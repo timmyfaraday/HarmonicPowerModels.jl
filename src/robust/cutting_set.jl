@@ -24,7 +24,7 @@
 """
     solve_rhhc(hdata, model, box, optimizer; pce_params, hpf_optimizer = optimizer,
                nbackground = 1024, use_seeds = true, effort = (ncons = 5, starts = 3, iters = 10),
-               signoff = (ncons = typemax(Int), starts = 5, iters = 30), tol = 1e-4,
+               signoff = (ncons = typemax(Int), margin = 0.1, starts = 3, iters = 20), tol = 1e-4,
                maxiter = 50, verbose = false) -> Dict
 
 Robust (stochastic-angle, worst-case-network) harmonic hosting capacity by the cutting-set
@@ -35,7 +35,8 @@ method, for the uncertain branches of `model` over the parameter box `box`.
 - The dictionary of the oracle holds the nominal point, the vertices (d ≤ 10), the modal seeds
   (`use_seeds`) and `nbackground` Sobol points.
 - Each iteration runs the oracle at `effort`; when it finds no violation above `tol`, the
-  sign-off reruns it at `signoff` effort before stopping.
+  sign-off reruns it at `signoff` effort before stopping: by default every constraint within
+  10 % of its limit somewhere in the dictionary is refined.
 
 Returns a Dict with `"termination_status"` of the last master, `"upper_bound"` (the master
 value), `"lower_bound"` and `"solution"` (I_h of the scaled, robust-feasible decision),
@@ -48,7 +49,7 @@ function solve_rhhc(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox,
                     pce_params::Dict, hpf_optimizer = optimizer, nbackground::Int = 1024,
                     use_seeds::Bool = true,
                     effort = (ncons = 5, starts = 3, iters = 10),
-                    signoff = (ncons = typemax(Int), starts = 5, iters = 30),
+                    signoff = (ncons = typemax(Int), margin = 0.1, starts = 3, iters = 20),
                     tol::Real = 1e-4, maxiter::Int = 50, posterior::Int = 0,
                     verbose::Bool = false)
     principle = get(hdata, "principle", "absolute equality")

@@ -302,6 +302,16 @@ end
 
 # ── Solver entry point ─────────────────────────────────────────────────────────
 
+# ar[n,k] += Re(z)·cos_k − Im(z)·sin_k and ai[n,k] += Im(z)·cos_k + Re(z)·sin_k; a function
+# barrier, so the loop specialises on the coefficient vectors read from untyped dictionaries
+function _accumulate_response!(ar, ai, n, nk, rz, iz, cp_d, sp_d)
+    @inbounds for k_idx in 1:nk
+        ar[n, k_idx] += rz * cp_d[k_idx] - iz * sp_d[k_idx]
+        ai[n, k_idx] += iz * cp_d[k_idx] + rz * sp_d[k_idx]
+    end
+    return nothing
+end
+
 """
     shhc_moments(hdata; networks = hdata["nw"]) -> NamedTuple
 
@@ -399,10 +409,7 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
                 sp_d   = sph[d]
                 w_d    = get(wts, d, 0.0)        # normal loads inject nothing anyway
                 rz, iz = w_d * rz, w_d * iz
-                for (k_idx, _) in enumerate(K)
-                    ar[n, k_idx] += rz * cp_d[k_idx] - iz * sp_d[k_idx]
-                    ai[n, k_idx] += iz * cp_d[k_idx] + rz * sp_d[k_idx]
-                end
+                _accumulate_response!(ar, ai, n, length(K), rz, iz, cp_d, sp_d)
             end
         end
 

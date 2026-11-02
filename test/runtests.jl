@@ -70,5 +70,6 @@ PMs.silence()
     include("rhhc_sampling.jl")
     include("rhhc_oracle.jl")
     include("rhhc_cutting_set.jl")
+    include("rhhc_minimal.jl")
 
 end

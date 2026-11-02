@@ -65,24 +65,27 @@ function _ascend(f, ξ0::AbstractVector; iters::Int, fd::Real)
 end
 
 """
-    pessimize!(dict, hdata, model, g; ncons = 5, starts = 3, iters = 10, fd = 1e-3)
-        -> OracleResult
+    pessimize!(dict, hdata, model, g; ncons = 5, starts = 3, iters = 10, fd = 1e-3,
+               margin = Inf) -> OracleResult
 
 Approximate pessimizing oracle for the hosting variables `g` (h ⇒ g_h = I_h²):
 
 1. evaluate every constraint at every point of `dict` (compact form);
-2. for the `ncons` constraints with the largest violation, start a projected-gradient
-   ascent on that constraint's normalized violation from its `starts` best points
-   (`iters` steps, finite-difference step `fd` in latent coordinates);
+2. for the `ncons` constraints with the largest violation, among those whose dictionary
+   violation exceeds `-margin` (i.e., within `margin` of their limit somewhere in the
+   dictionary), start a projected-gradient ascent on that constraint's normalized violation
+   from its `starts` best points (`iters` steps, finite-difference step `fd` in latent
+   coordinates);
 3. append every point that improves on the dictionary to `dict` (label `:refined`), so the
    dictionary keeps what the oracle learned, and update every constraint's worst value with
    it.
 
-The effort parameters are `ncons`, `starts` and `iters`; the sign-off of the cutting-set
-method should run at maximum effort (Mutapcic & Boyd 2009, §5.1).
+The effort parameters are `ncons`, `margin`, `starts` and `iters`; the sign-off of the
+cutting-set method should run at maximum effort (Mutapcic & Boyd 2009, §5.1).
 """
 function pessimize!(dict::ParameterDictionary, hdata::Dict, model::AbstractNetworkModel, g;
-                    ncons::Int = 5, starts::Int = 3, iters::Int = 10, fd::Real = 1e-3)
+                    ncons::Int = 5, starts::Int = 3, iters::Int = 10, fd::Real = 1e-3,
+                    margin::Real = Inf)
     gv  = [g[h] for h in dict.harmonics]
     V   = dictionary_violations(dict, g)
     nc  = length(dict.keys)
@@ -92,7 +95,8 @@ function pessimize!(dict::ParameterDictionary, hdata::Dict, model::AbstractNetwo
     cache = Dict{Vector{Float64},Vector{Float64}}()
     viol(ξ) = get!(() -> _violations_at(hdata, model, dict.box, ξ, g), cache, collect(Float64, ξ))
 
-    for j in sortperm(best; rev = true)[1:min(ncons, nc)]
+    near = [j for j in sortperm(best; rev = true) if best[j] >= -margin]
+    for j in near[1:min(ncons, length(near))]
         for s in sortperm(V[j, :]; rev = true)[1:min(starts, size(V, 2))]
             ξ, f = _ascend(x -> viol(x)[j], dict.points[s]; iters, fd)
             f > best[j] || continue
