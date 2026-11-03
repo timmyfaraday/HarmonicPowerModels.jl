@@ -35,13 +35,13 @@ julia -t 10 --project=<env> HarmonicPowerModels.jl/examples/rhhc/ieee30_lcm.jl
 
 `ieee30_lcm.jl` runs as is. It uses an 18/30 kV XLPE 1x630 Al cable in trefoil (my placeholder design) for all 22 cables, and a box over the XLPE permittivity, the insulation thickness, the core radius and the earth resistivity. It prints the nominal and robust capacities and writes them to `output/ieee30_lcm.txt`. Use `-t` with your number of cores: the search over the box is multithreaded.
 
-With the placeholder design (10 threads, about 20,000 LineCableModels solves, under a minute including compilation):
+With the placeholder design (10 threads, about 13,000 LineCableModels solves, under a minute including compilation):
 
 | result | value |
 |---|---|
 | resonance at the nominal point | h = 6.86 |
 | nominal stochastic capacity | 0.0502 pu |
-| robust capacity | 0.0437 pu (−13 %; 2 iterations, 13 s; gap 4.6e-4) |
+| robust capacity | 0.0437 pu (−13 %; 2 iterations, 7 s; gap 4.4e-4) |
 | robust / nominal per harmonic | 5th 0.83, 7th 0.90, 11th 0.87, 13th 0.91 |
 | a-posteriori check, 1024 random points | no violation |
 
