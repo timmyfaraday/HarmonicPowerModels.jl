@@ -1,0 +1,7 @@
+IEEE 30-bus, inductive_cable33, 22 cables from LineCableModels, 21 units, ε = 0.05, Cantelli, 10 threads
+nominal stochastic: 0.050179 (OPTIMAL)
+resonances at the nominal point: h = 6.86
+robust: 0.043699  [LB 0.043699, UB 0.043720, gap 4.6e-04], 2 iterations, 13 s, signed off
+per harmonic, robust / nominal: h5 0.834, h7 0.895, h11 0.867, h13 0.905
+a posteriori (1024 random points): worst -1.16e-03 ((:ihd, (7, 30))), violated at 0.0 %
+LineCableModels solves: 19976
