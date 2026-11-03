@@ -107,7 +107,7 @@ module HarmonicPowerModels
     export ParameterDictionary, build_dictionary, dictionary_violations, add_point!, add_points!
     export OracleResult, pessimize!, max_violation
     export solve_rhhc, posterior_check
-    export NetworkCache, ConstraintEvaluator, fast_admittance, fast_violation
+    export NetworkCache, ConstraintEvaluator, fast_admittance, fast_violation, fast_violation_gradient
     export compute_C_coefficients, compute_alpha, compute_C_scalar
     export lp_solution, compare_shared_vs_independent
     

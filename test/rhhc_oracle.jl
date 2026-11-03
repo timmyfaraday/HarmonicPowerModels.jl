@@ -33,6 +33,16 @@
             full = HPM._violations_at(hd, model, box, ξ, g)
             @test maximum(abs.(full .- [fast_violation(ce, j, ξ, g) for j in eachindex(full)])) < 1e-10
         end
+        # the adjoint gradient equals central finite differences, for every constraint kind
+        for kind in (:ihd, :thd, :rmsv, :rmsi), ξ in ([0.2, -0.4, 0.6], [-0.7, 0.5, -0.1])
+            j = findfirst(c -> c.kind === kind, ce.cons)
+            j === nothing && continue
+            v, gr = fast_violation_gradient(ce, j, ξ, g)
+            @test v ≈ fast_violation(ce, j, ξ, g)
+            fdg = [(fast_violation(ce, j, ξ .+ 1e-6 .* (1:3 .== i), g) -
+                    fast_violation(ce, j, ξ .- 1e-6 .* (1:3 .== i), g)) / 2e-6 for i in 1:3]
+            @test isapprox(gr, fdg; rtol = 1e-4, atol = 1e-8)
+        end
         # the cached admittance equals the assembled one, between harmonics too
         nc = NetworkCache(hd, model)
         for h in (5, 6.37)

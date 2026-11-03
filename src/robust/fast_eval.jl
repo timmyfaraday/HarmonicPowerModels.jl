@@ -103,6 +103,7 @@ struct ConstraintEvaluator{M<:AbstractNetworkModel}
     pos::Dict{Int,Int}                         # matrix index => position in the reduced Y
     cons::Vector{ShhcConstraint}               # nominal records (kind, key, harmonics, limit, λ)
     brinfo::Dict{Int,Tuple{Int,Int,ComplexF64}}   # branch => (from, to, tap) for :rmsi
+    deps::Vector{Vector{Int}}                  # coordinate => uncertain branches it changes
 end
 
 function ConstraintEvaluator(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox)
@@ -127,8 +128,9 @@ function ConstraintEvaluator(hdata::Dict, model::AbstractNetworkModel, box::Para
     fund   = hdata["nw"]["1"]["branch"]
     brinfo = Dict(parse(Int, k) => (nc.bus_idx[b["f_bus"]], nc.bus_idx[b["t_bus"]], _tap(b))
                   for (k, b) in fund)
+    deps   = _dependencies(nc, box, minimum(m0.harm_nw_ints))
     return ConstraintEvaluator(nc, box, m0.pb, collect(m0.K), collect(Float64, m0.psi_norms), E,
-                               upos, pos, shhc_constraints(hdata, m0), brinfo)
+                               upos, pos, shhc_constraints(hdata, m0), brinfo, deps)
 end
 
 # PCE coefficients (re, im) of the voltage response at matrix index n, from the factorised
@@ -185,4 +187,155 @@ function fast_violation(ce::ConstraintEvaluator, j::Int, ξ, g)
     end
     F = ShhcConstraint(c.kind, c.key, coef, c.limit, c.λ)
     return normalized_violation(F, g, (K = ce.K, psi_norms = ce.psi_norms))
+end
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Analytic gradient (adjoint)
+# ──────────────────────────────────────────────────────────────────────────────
+#
+# For a constraint whose response at harmonic h is C = Σ_d z_d E_d, with z the row of
+# Z = Y⁻¹ of its bus (or, for a branch current, y_s·(t⁻¹·z_f − z_t)), the derivative of
+# F along a parameter follows from dZ = −Z dY Z:
+#
+#     dF = Σ_h −Re(rᵀ (∂Y/∂p) v) [+ Re(dy_s · Σ_k conj(G_k) D_k) for an uncertain branch]
+#
+# with r the response row, G = ∂F/∂C (complex, from the PCE square), q = E·conj(G) and the
+# adjoint v = Y⁻¹ s, s the scatter of q onto the unit buses. One LU and two solves per
+# harmonic give the whole gradient; ∂Y/∂p only involves the stamps of the uncertain
+# branches the parameter changes, whose data are differentiated by central differences
+# (no linear algebra).
+
+# ∂(z_k)/∂x of z = galerkin_product(pb, x, x), contracted with β: Σ_k β_k ∂z_k/∂x
+function _galerkin_grad(pb, β::AbstractVector, x::AbstractVector)
+    gr = zeros(length(x))
+    for (j, l, k, v) in pb.M_nz
+        if j == l
+            gr[j] += 2v * β[k] * x[j]
+        else
+            gr[j] += 2v * β[k] * x[l]
+            gr[l] += 2v * β[k] * x[j]
+        end
+    end
+    return gr
+end
+
+# uncertain branches whose data change with each latent coordinate (probed at the nominal point)
+function _dependencies(nc::NetworkCache, box::ParameterBox, h::Int)
+    d   = length(box)
+    deps = [Int[] for _ in 1:d]
+    p0  = latent(box, zeros(d))
+    for i in 1:d
+        e = zeros(d); e[i] = 0.5
+        p₊, p₋ = latent(box, e), latent(box, -e)
+        for b in nc.unc
+            seq = harmonic_sequence(h)
+            branch_data(nc.model, b, p₊, h, seq) == branch_data(nc.model, b, p₋, h, seq) &&
+                branch_data(nc.model, b, p₊, h, seq) == branch_data(nc.model, b, p0, h, seq) ||
+                push!(deps[i], b)
+        end
+    end
+    return deps
+end
+
+"""
+    fast_violation_gradient(ce, j, ξ, g; δ = 1e-6) -> (value, gradient)
+
+Normalized violation of constraint `j` at the latent point `ξ` and its gradient with respect
+to `ξ`, by the adjoint of the transfer impedances (see the comment above). The branch data of
+the uncertain branches are differentiated by central differences with step `δ`.
+"""
+function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVector, g; δ::Real = 1e-6)
+    c   = ce.cons[j]
+    nc  = ce.nc
+    d   = length(ξ)
+    p   = latent(ce.box, ξ)
+    hs  = sort(collect(keys(c.coef)))
+    nk  = length(ce.K)
+    deps = ce.deps
+
+    # forward pass per harmonic: response row r, PCE response C and, for a branch, D
+    fw = Dict{Int,Any}()
+    coef = Dict{Int,Vector{Float64}}()
+    for h in hs
+        seq = harmonic_sequence(h)
+        bd  = Dict(b => branch_data(nc.model, b, p, h, seq) for b in nc.unc)
+        Y   = copy(_yfix(nc, h, seq))
+        for b in nc.unc
+            f, t, tc = nc.ubr[b]; x = bd[b]
+            _stamp_branch!(Y, f, t, x.br_r, x.br_x, complex(x.g_fr, x.b_fr), complex(x.g_to, x.b_to), tc)
+        end
+        F   = lu(Y[nc.keep, nc.keep])
+        row(n) = haskey(ce.pos, n) ? (e = zeros(ComplexF64, length(ce.pos)); e[ce.pos[n]] = 1.0;
+                                       transpose(F) \ e) : zeros(ComplexF64, length(ce.pos))
+        resp(rv) = isempty(ce.upos[h]) ? zeros(ComplexF64, nk) : vec(transpose(rv[ce.upos[h]]) * ce.E[h])
+        if c.kind === :rmsi
+            f, t, tc = ce.brinfo[c.key]
+            ys = c.key in nc.unc ? 1.0 / (bd[c.key].br_r + im * bd[c.key].br_x) :
+                 (br = nc.hdata["nw"]["$h"]["branch"]["$(c.key)"]; 1.0 / (br["br_r"] + im * br["br_x"]))
+            ct = 1.0 / tc
+            xf, xt = row(f), row(t)
+            r  = ys .* (ct .* xf .- xt)
+            D  = resp(ct .* xf .- xt)
+            fw[h] = (F = F, r = r, C = ys .* D, D = D, ys = ys, bd = bd)
+        else
+            bus = c.kind === :ihd ? c.key[2] : c.key
+            r   = row(nc.bus_idx[bus])
+            fw[h] = (F = F, r = r, C = resp(r), D = nothing, ys = nothing, bd = bd)
+        end
+        C = fw[h].C
+        coef[h] = galerkin_product(ce.pb, real.(C), real.(C)) .+ galerkin_product(ce.pb, imag.(C), imag.(C))
+    end
+
+    # value and ∂F/∂α_h
+    ES  = sum(coef[h][1] * g[h] for h in hs)
+    Kh  = [k for k in ce.K if k != 0]
+    S   = Dict(k => sum(coef[h][k+1] * g[h] for h in hs) for k in Kh)
+    var = sum(ce.psi_norms[k+1] * S[k]^2 for k in Kh; init = 0.0)
+    sd  = sqrt(var)
+    Fv  = c.λ <= 0.0 ? ES : ES + c.λ * sd
+    L   = c.limit
+    val = L > 0.0 ? Fv / L - 1.0 : Fv - L
+    scale = L > 0.0 ? 1.0 / L : 1.0
+
+    grad = zeros(d)
+    for h in hs
+        β = zeros(nk); β[1] = g[h]
+        if c.λ > 0.0 && sd > 0.0
+            for k in Kh
+                β[k+1] = c.λ * ce.psi_norms[k+1] * S[k] * g[h] / sd
+            end
+        end
+        C  = fw[h].C
+        G  = _galerkin_grad(ce.pb, β, real.(C)) .+ im .* _galerkin_grad(ce.pb, β, imag.(C))
+        q  = ce.E[h] * conj.(G)
+        s  = zeros(ComplexF64, length(ce.pos))
+        for (a, pa) in enumerate(ce.upos[h]); s[pa] += q[a]; end
+        v  = fw[h].F \ s
+        r  = fw[h].r
+        seq = harmonic_sequence(h)
+        for i in 1:d, b in deps[i]
+            e = zeros(d); e[i] = δ
+            x₊ = branch_data(nc.model, b, latent(ce.box, ξ .+ e), h, seq)
+            x₋ = branch_data(nc.model, b, latent(ce.box, ξ .- e), h, seq)
+            x  = fw[h].bd[b]
+            ys = 1.0 / (x.br_r + im * x.br_x)
+            dys  = -ys^2 * ((x₊.br_r - x₋.br_r) + im * (x₊.br_x - x₋.br_x)) / (2δ)
+            dyfr = ((x₊.g_fr - x₋.g_fr) + im * (x₊.b_fr - x₋.b_fr)) / (2δ)
+            dyto = ((x₊.g_to - x₋.g_to) + im * (x₊.b_to - x₋.b_to)) / (2δ)
+            f, t, tc = nc.ubr[b]
+            # rᵀ dY v over the four stamp entries, kept buses only
+            acc = zero(ComplexF64)
+            for (a, bb, dy) in ((f, f, (dys + dyfr) / abs2(tc)), (t, t, dys + dyto),
+                                (f, t, -dys / conj(tc)), (t, f, -dys / tc))
+                (haskey(ce.pos, a) && haskey(ce.pos, bb)) || continue
+                acc += r[ce.pos[a]] * dy * v[ce.pos[bb]]
+            end
+            grad[i] -= real(acc)
+            # a branch-current constraint on an uncertain branch: its own y_s moves too
+            if c.kind === :rmsi && b == c.key
+                grad[i] += real(dys * sum(conj.(G) .* fw[h].D))
+            end
+        end
+    end
+    return val, scale .* grad
 end

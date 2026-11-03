@@ -36,17 +36,21 @@ function _violations_at(hdata, model, box, ξ, g)
     return [normalized_violation(c, g, m) for c in shhc_constraints(hdata, m)]
 end
 
-# Projected-gradient ascent of f over [-1, 1]^d from ξ0: central finite differences (step
-# `fd`), a normalised step halved until f improves; stops after `iters` steps or when no
-# step improves.
-function _ascend(f, ξ0::AbstractVector; iters::Int, fd::Real)
+# Projected-gradient ascent of f over [-1, 1]^d from ξ0: the gradient from `grad` (ξ ↦ ∇f)
+# or, without it, from central finite differences (step `fd`); a normalised step halved
+# until f improves; stops after `iters` steps or when no step improves.
+function _ascend(f, ξ0::AbstractVector; iters::Int, fd::Real, grad = nothing)
     ξ, fξ = collect(Float64, ξ0), f(ξ0)
     d = length(ξ)
     for _ in 1:iters
-        g = zeros(d)
-        _tforeach(1:d) do i                     # the 2d evaluations are independent
-            e = zeros(d); e[i] = fd
-            g[i] = (f(clamp.(ξ .+ e, -1, 1)) - f(clamp.(ξ .- e, -1, 1))) / (2fd)
+        if grad === nothing
+            g = zeros(d)
+            _tforeach(1:d) do i                 # the 2d evaluations are independent
+                e = zeros(d); e[i] = fd
+                g[i] = (f(clamp.(ξ .+ e, -1, 1)) - f(clamp.(ξ .- e, -1, 1))) / (2fd)
+            end
+        else
+            g = grad(ξ)
         end
         norm(g) > 0 || break
         α, improved = 0.5, false
@@ -66,7 +70,7 @@ end
 
 """
     pessimize!(dict, hdata, model, g; ncons = 5, starts = 3, iters = 10, fd = 1e-3,
-               margin = Inf, ce = nothing) -> OracleResult
+               margin = Inf, ce = nothing, gradient = :adjoint) -> OracleResult
 
 Approximate pessimizing oracle for the hosting variables `g` (h ⇒ g_h = I_h²):
 
@@ -80,7 +84,9 @@ Approximate pessimizing oracle for the hosting variables `g` (h ⇒ g_h = I_h²)
    dictionary keeps what the oracle learned, and update every constraint's worst value with
    it.
 
-Each ascent evaluates only its own constraint, through a [`ConstraintEvaluator`](@ref)
+The ascent's gradient is analytic (`gradient = :adjoint`, see
+[`fast_violation_gradient`](@ref)) or by central finite differences of step `fd`
+(`gradient = :fd`). Each ascent evaluates only its own constraint, through a [`ConstraintEvaluator`](@ref)
 (`ce`, built here when not given): its harmonics and the transfer-impedance rows it needs,
 with the admittance of the fixed network elements cached. The ascents, and the finite
 differences within each ascent step, run in parallel on the available threads; the result
@@ -91,7 +97,7 @@ cutting-set method should run at maximum effort (Mutapcic & Boyd 2009, §5.1).
 """
 function pessimize!(dict::ParameterDictionary, hdata::Dict, model::AbstractNetworkModel, g;
                     ncons::Int = 5, starts::Int = 3, iters::Int = 10, fd::Real = 1e-3,
-                    margin::Real = Inf, ce = nothing)
+                    margin::Real = Inf, ce = nothing, gradient::Symbol = :adjoint)
     gv  = [g[h] for h in dict.harmonics]
     V   = dictionary_violations(dict, g)
     nc  = length(dict.keys)
@@ -106,8 +112,10 @@ function pessimize!(dict::ParameterDictionary, hdata::Dict, model::AbstractNetwo
     near  = [j for j in sortperm(best; rev = true) if best[j] >= -margin]
     pairs = [(j, s) for j in near[1:min(ncons, length(near))]
                     for s in sortperm(V[j, :]; rev = true)[1:min(starts, size(V, 2))]]
-    asc   = _tmap(js -> _ascend(x -> fast_violation(ce, js[1], x, g), dict.points[js[2]];
-                                iters, fd), pairs)
+    asc   = _tmap(pairs) do (j, s)
+        _ascend(x -> fast_violation(ce, j, x, g), dict.points[s]; iters, fd,
+                grad = gradient === :adjoint ? (x -> last(fast_violation_gradient(ce, j, x, g))) : nothing)
+    end
     new   = [ξ for ((j, _), (ξ, f)) in zip(pairs, asc) if f > best[j]]
     for idx in add_points!(dict, hdata, model, new, :refined)
         for i in 1:nc                           # a new point may raise every constraint

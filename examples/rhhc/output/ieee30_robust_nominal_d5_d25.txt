@@ -1,0 +1,26 @@
+IEEE 30-bus, inductive_cable33, 21 units, ε = 0.05; 22 cables, 12 overhead lines (one class each)
+
+== 1. nominal stochastic versus robust, box d = 5 ==
+cantelli nominal 0.034491 (violated at 98.3 % of the box, worst +2.666)
+cantelli robust  0.027879  [LB 0.027879, UB 0.027881, gap 5.3e-05]  8 iterations, 9 s, signed off
+cantelli robust  a posteriori: worst -1.80e-02 ((:ihd, (5, 30))), violated at 0.0 %
+         per harmonic, robust / nominal: h5 0.823, h7 0.478, h11 0.924, h13 0.754
+         history (v, UB, cuts): (3.35, 0.03449, 34) (0.0374, 0.02800, 2) (0.00111, 0.02790, 1) (0.00165, 0.02790, 1) (0.00247, 0.02790, 2) (0.00203, 0.02789, 1) (0.00147, 0.02788, 1) (0.000105, 0.02788, 0)
+gaussian nominal 0.035686 (violated at 98.3 % of the box, worst +2.665)
+gaussian robust  0.028897  [LB 0.028897, UB 0.028899, gap 5.1e-05]  7 iterations, 5 s, signed off
+gaussian robust  a posteriori: worst -1.72e-02 ((:ihd, (5, 30))), violated at 0.0 %
+         per harmonic, robust / nominal: h5 0.823, h7 0.478, h11 0.926, h13 0.755
+         history (v, UB, cuts): (3.35, 0.03569, 35) (0.0435, 0.02904, 2) (0.0011, 0.02892, 1) (0.00168, 0.02892, 1) (0.00252, 0.02891, 2) (0.00188, 0.02890, 1) (0.000101, 0.02890, 0)
+
+== 2. ablation of the dictionary (Cantelli) ==
+box     seeds  background  iterations  robust(LB)   gap      time[s]  posterior worst  violated
+d5      no              0           4  0.027864  5.0e-04        2        -1.88e-02      0.0 %
+d5      yes             0           4  0.027873  5.0e-04        3        -1.88e-02      0.0 %
+d5      no             64           4  0.027864  5.0e-04        2        -1.88e-02      0.0 %
+d5      yes            64           4  0.027873  5.0e-04        3        -1.88e-02      0.0 %
+d5      no           1024           4  0.027870  5.0e-04        4        -1.88e-02      0.0 %
+d5      yes          1024           8  0.027879  5.3e-05        5        -1.80e-02      0.0 %
+d25     no             64          49  0.025559  4.1e-04       11        -1.31e-01      0.0 %
+d25     yes            64          42  0.025566  4.3e-04       11        -1.30e-01      0.0 %
+d25     no            512          37  0.025578  4.1e-04        9        -1.31e-01      0.0 %
+d25     yes           512          33  0.025581  4.2e-04        9        -1.30e-01      0.0 %
