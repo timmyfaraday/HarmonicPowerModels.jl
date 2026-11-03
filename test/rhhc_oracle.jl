@@ -27,6 +27,21 @@
     G     = [HPM._violations_at(hd, model, box, [a, b, c], g) for a in grid, b in grid, c in grid]
     gridmax(j) = maximum(v[j] for v in G)
 
+    @testset "targeted evaluation equals the full evaluation" begin
+        ce = ConstraintEvaluator(hd, model, box)
+        for ξ in ([0.0, 0.0, 0.0], [0.7, -0.3, 1.0], [-1.0, 1.0, -0.4])
+            full = HPM._violations_at(hd, model, box, ξ, g)
+            @test maximum(abs.(full .- [fast_violation(ce, j, ξ, g) for j in eachindex(full)])) < 1e-10
+        end
+        # the cached admittance equals the assembled one, between harmonics too
+        nc = NetworkCache(hd, model)
+        for h in (5, 6.37)
+            seq = isinteger(h) ? harmonic_sequence(Int(h)) : :positive
+            p   = latent(box, [0.5, -0.5, 0.2])
+            @test fast_admittance(nc, p, h; sequence = seq) ≈ first(admittance_at(hd, model, p, h; sequence = seq))
+        end
+    end
+
     @testset "default effort" begin
         dict = build_dictionary(hd, model, box; seeds, nbackground = 64)
         pre  = vec(maximum(dictionary_violations(dict, g); dims = 2))

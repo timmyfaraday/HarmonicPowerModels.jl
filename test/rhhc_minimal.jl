@@ -23,7 +23,7 @@
     res   = solve_rhhc(hd, model, box, solver_soc; pce_params = deepcopy(pp),
                        hpf_optimizer = solver_nlp, nbackground = 64, posterior = 256)
 
-    @test only(modal_scan(hd, model, nominal_point(box))).h ≈ 6.0 atol = 0.01
+    @test isapprox(only(modal_scan(hd, model, nominal_point(box))).h, 6.0; atol = 0.01)
     @test res["signed_off"]
     @test res["gap"] < 1e-3
     @test res["posterior"].max_violation ≤ 1e-6

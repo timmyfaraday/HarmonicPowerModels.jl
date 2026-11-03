@@ -7,8 +7,8 @@
 # the threads Julia was started with (`julia -t auto`) and return the results  #
 # in input order, so every result is independent of the scheduling. The       #
 # evaluations only read the shared network and PCE data; their only shared    #
-# writes (caches, the dictionary) go through `_cached` or happen after the    #
-# parallel part, in a fixed order.                                             #
+# writes (the admittance cache, under a lock, and the dictionary, after the   #
+# parallel part, in a fixed order) do not depend on the scheduling.          #
 #                                                                               #
 # The matrices are small (one row per bus), so BLAS threads only compete with #
 # these tasks: run with `LinearAlgebra.BLAS.set_num_threads(1)`.              #
@@ -31,14 +31,4 @@ function _tforeach(f, xs)
         foreach(wait, [Threads.@spawn f(x) for x in xs])
     end
     return nothing
-end
-
-# value of f at x from `cache`, computed outside the lock on a miss; the cached values are
-# deterministic, so a concurrent duplicate computation only costs time
-function _cached(f, cache::Dict, lk::ReentrantLock, x)
-    v = lock(() -> get(cache, x, nothing), lk)
-    v === nothing || return v
-    v = f(x)
-    lock(() -> (cache[x] = v), lk)
-    return v
 end

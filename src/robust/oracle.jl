@@ -66,7 +66,7 @@ end
 
 """
     pessimize!(dict, hdata, model, g; ncons = 5, starts = 3, iters = 10, fd = 1e-3,
-               margin = Inf) -> OracleResult
+               margin = Inf, ce = nothing) -> OracleResult
 
 Approximate pessimizing oracle for the hosting variables `g` (h ⇒ g_h = I_h²):
 
@@ -80,31 +80,34 @@ Approximate pessimizing oracle for the hosting variables `g` (h ⇒ g_h = I_h²)
    dictionary keeps what the oracle learned, and update every constraint's worst value with
    it.
 
-The ascents, and the finite differences within each ascent step, run in parallel on the
-available threads; the result does not depend on the number of threads.
+Each ascent evaluates only its own constraint, through a [`ConstraintEvaluator`](@ref)
+(`ce`, built here when not given): its harmonics and the transfer-impedance rows it needs,
+with the admittance of the fixed network elements cached. The ascents, and the finite
+differences within each ascent step, run in parallel on the available threads; the result
+does not depend on the number of threads.
 
 The effort parameters are `ncons`, `margin`, `starts` and `iters`; the sign-off of the
 cutting-set method should run at maximum effort (Mutapcic & Boyd 2009, §5.1).
 """
 function pessimize!(dict::ParameterDictionary, hdata::Dict, model::AbstractNetworkModel, g;
                     ncons::Int = 5, starts::Int = 3, iters::Int = 10, fd::Real = 1e-3,
-                    margin::Real = Inf)
+                    margin::Real = Inf, ce = nothing)
     gv  = [g[h] for h in dict.harmonics]
     V   = dictionary_violations(dict, g)
     nc  = length(dict.keys)
     best = [maximum(view(V, j, :)) for j in 1:nc]
     arg  = [argmax(view(V, j, :)) for j in 1:nc]
 
-    cache = Dict{Vector{Float64},Vector{Float64}}(); lk = ReentrantLock()
-    viol(ξ) = _cached(x -> _violations_at(hdata, model, dict.box, x, g), cache, lk,
-                      collect(Float64, ξ))
+    # each ascent evaluates its own constraint only (harmonics and impedance rows it needs)
+    ce === nothing && (ce = ConstraintEvaluator(hdata, model, dict.box))
 
     # the ascents are independent: run them in parallel, then add the improving points in
     # the order of `pairs`, so the result does not depend on the scheduling
     near  = [j for j in sortperm(best; rev = true) if best[j] >= -margin]
     pairs = [(j, s) for j in near[1:min(ncons, length(near))]
                     for s in sortperm(V[j, :]; rev = true)[1:min(starts, size(V, 2))]]
-    asc   = _tmap(js -> _ascend(x -> viol(x)[js[1]], dict.points[js[2]]; iters, fd), pairs)
+    asc   = _tmap(js -> _ascend(x -> fast_violation(ce, js[1], x, g), dict.points[js[2]];
+                                iters, fd), pairs)
     new   = [ξ for ((j, _), (ξ, f)) in zip(pairs, asc) if f > best[j]]
     for idx in add_points!(dict, hdata, model, new, :refined)
         for i in 1:nc                           # a new point may raise every constraint

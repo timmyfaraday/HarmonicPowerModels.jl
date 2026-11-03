@@ -212,6 +212,22 @@ end
 
 # ── Internal: build numeric harmonic admittance matrix ────────────────────────
 
+# π-model stamp of one branch (series r + jx, shunts y_fr and y_to, complex tap tc on the
+# from side) into Yh; shared by `_harmonic_admittance` and the robust fast evaluator
+function _stamp_branch!(Yh, f, t, r, x, y_fr, y_to, tc)
+    if abs(r) + abs(x) > 0.0
+        y_s  = 1 / (r + im * x)
+        Yh[f, f] += (y_s + y_fr) / abs2(tc)
+        Yh[t, t] += y_s + y_to
+        Yh[f, t] -= y_s / conj(tc)
+        Yh[t, f] -= y_s / tc
+    else
+        Yh[f, f] += y_fr / abs2(tc)
+        Yh[t, t] += y_to
+    end
+    return Yh
+end
+
 """
     _harmonic_admittance(nw_data)
 
@@ -249,16 +265,7 @@ function _harmonic_admittance(nw_data::Dict, bus_idx::Dict{Int,Int})
         # QCQP's KCL, where its current enters as (g_fr*vr − b_fr*vi)/tm².
         y_fr = get(branch, "g_fr", 0.0) + im * get(branch, "b_fr", 0.0)
         y_to = get(branch, "g_to", 0.0) + im * get(branch, "b_to", 0.0)
-        if abs(r) + abs(x) > 0.0
-            y_s  = 1 / (r + im * x)
-            Yh[f, f] += (y_s + y_fr) / abs2(tc)
-            Yh[t, t] += y_s + y_to
-            Yh[f, t] -= y_s / conj(tc)
-            Yh[t, f] -= y_s / tc
-        else
-            Yh[f, f] += y_fr / abs2(tc)
-            Yh[t, t] += y_to
-        end
+        _stamp_branch!(Yh, f, t, r, x, y_fr, y_to, tc)
     end
 
     # Bus shunt stamp: a bus shunt (capacitor bank, shunt filter, shunt reactor)

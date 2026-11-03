@@ -82,6 +82,7 @@ function solve_rhhc(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox,
     # oracle dictionary
     seeds = use_seeds ? resonance_seeds(hdata, model, box) : Seed[]
     dict  = build_dictionary(hdata, model, box; seeds, nbackground)
+    ce    = ConstraintEvaluator(hdata, model, box)      # targeted evaluation for the ascents
     pos   = dict.limit .> 0.0
 
     # scenario sets: point indices per constraint; the nominal point (index 1) holds already
@@ -99,10 +100,10 @@ function solve_rhhc(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox,
         Iv = Dict(h => max(JuMP.value(I_h[h]), 0.0) for h in H)
         g  = Dict(h => Iv[h]^2 for h in H)
 
-        r  = pessimize!(dict, hdata, model, g; effort...)
+        r  = pessimize!(dict, hdata, model, g; ce, effort...)
         v  = maximum(r.violation[pos]; init = 0.0)
         if v <= tol
-            r = pessimize!(dict, hdata, model, g; signoff...)     # sign-off at maximum effort
+            r = pessimize!(dict, hdata, model, g; ce, signoff...) # sign-off at maximum effort
             v = maximum(r.violation[pos]; init = 0.0)
             signed_off = v <= tol
         end

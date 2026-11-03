@@ -96,10 +96,10 @@ resonance just above the band can still move onto a harmonic inside the paramete
 """
 function modal_scan(hdata::Dict, model::AbstractNetworkModel, p;
                     hmin::Real = 1.0, hmax::Real = 1.25 * _max_harmonic(hdata),
-                    step::Real = 0.02)
+                    step::Real = 0.02, nc::NetworkCache = NetworkCache(hdata, model))
     hs = collect(hmin:step:hmax)
-    buses = last(reduced_admittance(hdata, model, p, hs[1]))
-    dec = _tmap(h -> _modes(first(reduced_admittance(hdata, model, p, h))), hs)  # in parallel
+    buses = nc.buses
+    dec = _tmap(h -> _modes(first(reduced_admittance(nc, p, h))), hs)  # in parallel
     η, T = dec[1]
     nm = length(η)
     E  = zeros(ComplexF64, nm, length(hs))      # η of each tracked mode over hs
@@ -132,9 +132,10 @@ Follow the resonance `r` to the parameter point `p`: the minimum of |η| of the 
 eigenvector continues `r.t`, searched within `r.h ± window`.
 """
 function locate_resonance(hdata::Dict, model::AbstractNetworkModel, p, r::Resonance;
-                          window::Real = 0.5, step::Real = 0.01)
+                          window::Real = 0.5, step::Real = 0.01,
+                          nc::NetworkCache = NetworkCache(hdata, model))
     hs = collect(max(r.h - window, step):step:r.h + window)
-    dec = _tmap(h -> _modes(first(reduced_admittance(hdata, model, p, h))), hs)  # in parallel
+    dec = _tmap(h -> _modes(first(reduced_admittance(nc, p, h))), hs)  # in parallel
     tr = r.t
     ηs = ComplexF64[]; ts = Vector{ComplexF64}[]
     for (η, T) in dec                            # continuation by eigenvector overlap: serial
@@ -160,12 +161,13 @@ h_res ± Σ_i |∂h_res/∂ξ_i|. (Admittance-based analysis has no resonance-fr
 sensitivity of its own, Huang, Cui & Xu 2007; this is its finite-difference counterpart.)
 """
 function resonance_sensitivity(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox,
-                               r::Resonance; δ::Real = 0.25)
+                               r::Resonance; δ::Real = 0.25,
+                               nc::NetworkCache = NetworkCache(hdata, model))
     d = length(box)
     return _tmap(1:d) do i                       # the coordinates are independent
         e = zeros(d); e[i] = δ
-        h₊ = locate_resonance(hdata, model, latent(box, e), r).h
-        h₋ = locate_resonance(hdata, model, latent(box, -e), r).h
+        h₊ = locate_resonance(hdata, model, latent(box, e), r; nc).h
+        h₋ = locate_resonance(hdata, model, latent(box, -e), r; nc).h
         (h₊ - h₋) / (2δ)
     end
 end
@@ -191,16 +193,17 @@ struct Seed
 end
 
 # |η| of the mode continuing `t` at (ξ, h), and its eigenvector
-function _mode_at(hdata, model, box, ξ, h, t)
-    return _track(first(reduced_admittance(hdata, model, latent(box, ξ), h;
+function _mode_at(hdata, model, box, ξ, h, t; nc::NetworkCache = NetworkCache(hdata, model))
+    return _track(first(reduced_admittance(nc, latent(box, ξ), h;
                                            sequence = harmonic_sequence(h))), t)
 end
 
 # Projected gradient descent of |η_m(h; ξ)| over the coordinates `active`, central
 # finite differences, backtracking; ξ stays in [-1, 1].
-function _min_eta(hdata, model, box, ξ0, h, t; active, iters = 12, fd = 1e-3)
+function _min_eta(hdata, model, box, ξ0, h, t; active, iters = 12, fd = 1e-3,
+                  nc::NetworkCache = NetworkCache(hdata, model))
     ξ = copy(ξ0)
-    f(x) = abs(first(_mode_at(hdata, model, box, x, h, t)))
+    f(x) = abs(first(_mode_at(hdata, model, box, x, h, t; nc)))
     fξ = f(ξ)
     for _ in 1:iters
         g = zeros(length(ξ))
@@ -243,13 +246,14 @@ function resonance_seeds(hdata::Dict, model::AbstractNetworkModel, box::Paramete
                          harmonics = sort([parse(Int, nw) for nw in keys(hdata["nw"]) if nw != "1"]),
                          top::Int = 3, units = nothing)
     d    = length(box)
-    res  = modal_scan(hdata, model, nominal_point(box))
+    nc   = NetworkCache(hdata, model)               # one admittance cache for the whole seeding
+    res  = modal_scan(hdata, model, nominal_point(box); nc)
     ubus = units === nothing ?
            unique(ld["load_bus"] for ld in values(hdata["nw"]["1"]["load"])) :
            unique(hdata["nw"]["1"]["load"]["$u"]["load_bus"] for u in units)
     seeds = Seed[]
     for r in res
-        s     = resonance_sensitivity(hdata, model, box, r)
+        s     = resonance_sensitivity(hdata, model, box, r; nc)
         reach = sum(abs, s)
         order = sortperm(abs.(s); rev = true)
         act   = order[1:min(top, d)]
@@ -259,7 +263,7 @@ function resonance_seeds(hdata::Dict, model::AbstractNetworkModel, box::Paramete
             cands = Vector{Float64}[]
             if crosses
                 ξ = norm(s) > 0 ? clamp.(s .* (h - r.h) ./ sum(abs2, s), -1, 1) : zeros(d)
-                push!(cands, _min_eta(hdata, model, box, ξ, h, r.t; active = act))
+                push!(cands, _min_eta(hdata, model, box, ξ, h, r.t; active = act, nc))
             else
                 # the frequency coordinates push the resonance towards h; the coordinates
                 # that hardly move it (e.g., resistance: damping, not tuning) are then set by
@@ -268,12 +272,12 @@ function resonance_seeds(hdata::Dict, model::AbstractNetworkModel, box::Paramete
                 tune = [i for i in 1:d if abs(s[i]) > 1e-3 * maximum(abs, s)]
                 rest = setdiff(1:d, tune)
                 v = zeros(d); v[tune] = dir .* sign.(s[tune])
-                isempty(rest) || (v = _min_eta(hdata, model, box, v, h, r.t; active = rest))
+                isempty(rest) || (v = _min_eta(hdata, model, box, v, h, r.t; active = rest, nc))
                 push!(cands, v)
                 f = zeros(d); f[act] = dir .* sign.(s[act]); push!(cands, f)
             end
             for ξ in unique(cands)
-                η, t = _mode_at(hdata, model, box, ξ, h, r.t)
+                η, t = _mode_at(hdata, model, box, ξ, h, r.t; nc)
                 sc = isempty(upos) ? 0.0 : maximum(abs, t) * maximum(abs.(t[upos])) / abs(η)
                 push!(seeds, Seed(ξ, r, h, crosses, sc))
             end
