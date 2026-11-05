@@ -362,6 +362,21 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
     # λ for a given constraint: per-constraint empirical value if available, else scalar
     λfor(kind, key) = (lambdas !== nothing && haskey(lambdas[kind], key)) ?
                        lambdas[kind][key] : lambda
+    # With empirical_moments = "pce", λ is recalibrated so that the bound built on the
+    # expansion's own mean and standard deviation equals the sampled (1−ε) quantile;
+    # the aggregates are evaluated at the hosting decision g of the calibration.
+    pce_moments = get(pce, "empirical_moments", "pce") == "pce" &&
+                  lambdas !== nothing && haskey(lambdas, :q)
+    used = Dict(:ihd => Dict{Any,Float64}(), :agg => Dict{Any,Float64}(), :rmsi => Dict{Any,Float64}())
+    λfor(kind, key, coef) = (used[kind][key] = _λfor(kind, key, coef))
+    function _λfor(kind, key, coef)
+        pce_moments && haskey(lambdas[:q][kind], key) || return λfor(kind, key)
+        g  = lambdas[:g]; gv(h) = kind == :ihd ? 1.0 : get(g, h, 0.0)
+        E  = sum(coef[h][1] * gv(h) for h in keys(coef))
+        σ  = sqrt(sum(psi_norms[k+1] * sum(coef[h][k+1] * gv(h) for h in keys(coef))^2
+                      for k in K if k != 0; init = 0.0))
+        return σ > 0.0 ? max((lambdas[:q][kind][key] - E) / σ, 0.0) : 0.0
+    end
     psi_norms = pce["psi_norms"]
     K        = pce["K"]
     cos_phi  = pce["cos_phi"]
@@ -588,7 +603,7 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
             haskey(bus, "ihdmax") || continue
             n      = bus_idx[bus["bus_i"]]
             v_fund = fund_nw["bus"][bi_str]["vm"]
-            λ      = λfor(:ihd, (nw_int, bus["bus_i"]))
+            λ      = λfor(:ihd, (nw_int, bus["bus_i"]), Dict(nw_int => view(A, n, :)))
             Cscal  = A[n, 1] + λ * sqrt(sum(psi_norms[k+1] * A[n, idx]^2
                                             for (idx, k) in enumerate(K) if k != 0; init=0.0))
             L      = (bus["ihdmax"] * v_fund)^2
@@ -602,7 +617,7 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
         n in ref_bus_ids && continue
         coef   = Dict(h => view(alpha_V[h], n, :) for h in harm_nw_ints if haskey(alpha_V, h))
         v_fund = fbus["vm"]
-        λ      = λfor(:agg, fbus["bus_i"])
+        λ      = λfor(:agg, fbus["bus_i"], coef)
         haskey(fbus, "thdmax")  && _cantelli_soc!(coef, (fbus["thdmax"] * v_fund)^2, λ)
         haskey(fbus, "vmaxrms") && _cantelli_soc!(coef, fbus["vmaxrms"]^2 - v_fund^2, λ)
     end
@@ -614,7 +629,7 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
         coef = Dict(h => alpha_I[h][b] for h in harm_nw_ints
                     if haskey(alpha_I, h) && haskey(alpha_I[h], b))
         isempty(coef) && continue
-        _cantelli_soc!(coef, fbr["c_rating"]^2 - get(fbr, "cm_fr", 0.0)^2, λfor(:rmsi, b))
+        _cantelli_soc!(coef, fbr["c_rating"]^2 - get(fbr, "cm_fr", 0.0)^2, λfor(:rmsi, b, coef))
     end
 
     # objective normalised by S = Σ_h U_h·s_h; the reported value is rescaled
@@ -630,6 +645,7 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
         "termination_status" => JuMP.termination_status(model),
         "objective_value"    => JuMP.has_values(model) ? S * JuMP.objective_value(model) : NaN,
         "solve_time"         => JuMP.solve_time(model),
+        "lambdas_used"       => used,     # λ per constraint as applied (:ihd, :agg, :rmsi)
         "solution"           => JuMP.has_values(model) ?
                                     Dict(h => JuMP.value(I_h[h]) for h in harm_nw_ints) :
                                     Dict{Int, Float64}(),

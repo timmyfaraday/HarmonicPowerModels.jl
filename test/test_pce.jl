@@ -245,4 +245,28 @@ end
         @test _HPMt.cached_pce_basis(3, _α̂, _β̂, _δ) === _HPMt.cached_pce_basis(3, _α̂, _β̂, _δ)
     end
 
+    # Germs with their own Beta shape (a mix of converter types): the tensor must
+    # still equal PolyChaos's quadrature, and each germ its own Beta moments.
+    @testset "per-germ Beta shapes" begin
+        shapes = [(_α̂, _β̂), (4.139, 3.659), (_α̂, _β̂)]
+        pb  = _HPMt.PCEBasis(shapes, _δ)
+        t3  = Tensor(3, pb.mop)
+        ref = Dict{Tuple{Int,Int,Int},Float64}()
+        for j in 1:pb.dim, l in j:pb.dim, k in 1:pb.dim
+            v = t3.get([j - 1, l - 1, k - 1])
+            abs(v) > 1e-14 && (ref[(j, l, k)] = v / pb.sp2[k])
+        end
+        got = Dict((j, l, k) => v for (j, l, k, v) in pb.M_nz)
+        @test keys(got) == keys(ref)
+        @test all(isapprox(got[key], ref[key]; rtol=1e-12, atol=1e-14) for key in keys(ref))
+
+        for (u, (a, b)) in enumerate(shapes)
+            c = _HPMt.affine_pce(pb, u, 0.0, 1.0)
+            @test isapprox(_HPMt.pce_mean(c), a / (a + b); rtol=1e-12)
+            @test isapprox(_HPMt.pce_variance(c, pb), a * b / ((a + b)^2 * (a + b + 1)); rtol=1e-12)
+        end
+        # a single shape reproduces the scalar constructor
+        @test _HPMt.PCEBasis(fill((_α̂, _β̂), 3), _δ).M_nz == _HPMt.PCEBasis(3, _α̂, _β̂, _δ).M_nz
+    end
+
 end

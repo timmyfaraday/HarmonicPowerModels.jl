@@ -44,8 +44,12 @@ for b in ("cantelli", "gaussian")
     row("stochastic $b", 4, "sHHC_SOC", "sHHC_QCQP", s, q)
 end
 pe = paper_pce(u4, nothing)
-se = sum(values(HPM.solve_shhc_calibrated(restricted(data, u4), sHHC_SOC, mosek; pce_params = deepcopy(pe), hpf_optimizer = ipopt, nsamp = 20000)["solution"]))
-qe = HPM.solve_shhc_calibrated(restricted(data, u4), sHHC_QCQP, ipopt; pce_params = deepcopy(pe), nsamp = 20000)
+# the cone program calibrates λ* on the moments of the expansion; the quadratic
+# program is solved with the same factors, as applied by the cone program
+sce = HPM.solve_shhc_calibrated(restricted(data, u4), sHHC_SOC, mosek; pce_params = deepcopy(pe), hpf_optimizer = ipopt, nsamp = 20000)
+se  = sum(values(sce["solution"]))
+qe  = HPM.solve_shhc(restricted(data, u4), sHHC_QCQP, ipopt;
+                     pce_params = merge(deepcopy(pe), Dict("bound" => "empirical", "empirical_lambdas" => sce["lambdas_used"])))
 row("stochastic empirical", 4, "sHHC_SOC", "sHHC_QCQP", se, dhhc_total(qe, u4[1]))
 
 # ── 3. reduction, N = 21 ───────────────────────────────────────────────────────

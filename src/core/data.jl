@@ -278,6 +278,8 @@ harmonic units are "normal" loads: they receive zero trig PCE coefficients
 | `"harmonics"` | Dict{Int, T} | Maps harmonic order h to its angle range in **radians**, where `T` is either a bare `(v_min, v_max)` tuple (shared by all units) or a `Dict{unit_id => (v_min, v_max)}` (per-unit) |
 | `"angle_centre"` | String (optional) | Where each unit's angle support is centred: `"range"` (default) keeps the supplied range as given, so every unit shares one mean angle; `"ref_angle"` re-centres it on each unit's own `load["ref_angle"]` (see below) |
 | `"harmonic_units"` | Vector{Int} (optional) | Load ids designated as harmonic sources; defaults to **all** loads |
+| `"unit_shapes"` | Dict{Int, Tuple} (optional) | Per-unit Beta shape `(α̂, β̂)`, e.g., for a mix of converter types; units not listed (and type germs) take `alpha_hat`, `beta_hat` |
+| `"empirical_moments"` | String (optional) | With empirical factors: `"pce"` (default) calibrates λ* on the mean and standard deviation of the expansion, so that the bound reproduces the sampled quantile despite the truncation of the basis; `"sample"` on the sampled ones. `sHHC_SOC` only: `sHHC_QCQP` uses the factors as given (pass the SOC's `"lambdas_used"` to compare the two) |
 | `"type_germs"` | Dict{String, Dict} (optional) | Germs shared by groups of units (see below): name → `Dict("units" => Vector{Int}, "shift" => Dict{Int => (s_min, s_max)})`, shift in **radians** per harmonic |
 
 # Shared type germs
@@ -372,7 +374,11 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
     Ngerm = N + length(type_names)
 
     # ── 2. Multivariate PCE workspace (N+T germs, monic Beta01, prob. measure) ──
-    pb = cached_pce_basis(Ngerm, α̂, β̂, δ)
+    ushape = get(pce_params, "unit_shapes", Dict{Int,Any}())
+    shapes = [(Float64(a), Float64(b)) for (a, b) in
+              [get(ushape, d, (α̂, β̂)) for d in harmonic_units]]
+    append!(shapes, fill((Float64(α̂), Float64(β̂)), length(type_names)))
+    pb = cached_pce_basis(shapes, δ)
     P  = pb.dim
 
     # ── 4. Chance-constraint factor and basis norms (psi_norms[1] == 1) ───────
@@ -450,7 +456,8 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
                 # unit rather than only on average.
                 if centre_mode == "ref_angle"
                     centre = deg2rad(get(ntw["load"][d_str], "ref_angle", 0.0))
-                    v_min, v_max = recentre_range(v_min, v_max, centre, Eω)
+                    a, b = shapes[germ_dim[d_int]]
+                    v_min, v_max = recentre_range(v_min, v_max, centre, a / (a + b))
                 end
 
                 # Local angle reference: the support is given relative to the
@@ -495,8 +502,10 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
         "bound"          => bound,
         "epsilon"        => ε,
         "alpha_beta"     => (Float64(α̂), Float64(β̂)),
+        "germ_shapes"    => shapes,     # (α̂, β̂) per germ dimension
         "angle_ranges"   => angle_ranges,
         "lambdas"        => emp_lambdas,   # per-constraint λ* (or nothing)
+        "empirical_moments" => get(pce_params, "empirical_moments", "pce"),
     )
 
     return hdata
