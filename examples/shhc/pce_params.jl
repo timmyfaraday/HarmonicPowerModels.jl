@@ -30,5 +30,20 @@ const PCE_PARAMS = Dict(
     ),
 )
 
+# Phase-controlled (thyristor) bridge, §II-D, Table IV: firing delay, L_ac and L_dc
+# sampled jointly, i.e., an independent firing delay per unit. Selected with
+# ENV["SHHC_UNIT"] = "thyristor".
+const PCE_PARAMS_THYRISTOR = Dict(
+    "alpha_hat" => 4.139,
+    "beta_hat"  => 3.659,
+    "harmonics" => Dict(
+        5  => (v_min = deg2rad(-138.23), v_max = deg2rad(-10.87)),  # range = 127.37°
+        7  => (v_min = deg2rad(-265.07), v_max = deg2rad(-48.90)),  # range = 216.17°
+        11 => (v_min = deg2rad(-240.99), v_max = deg2rad( 44.65)),  # range = 285.64°
+        13 => (v_min = deg2rad(-337.52), v_max = deg2rad( 20.25)),  # range = 357.76°
+    ),
+)
+get(ENV, "SHHC_UNIT", "diode") == "thyristor" && merge!(PCE_PARAMS, PCE_PARAMS_THYRISTOR)
+
 # Risk levels for the sensitivity study in §IV.B
 const EPSILON_SENSITIVITY = [0.05, 0.10, 0.20]
