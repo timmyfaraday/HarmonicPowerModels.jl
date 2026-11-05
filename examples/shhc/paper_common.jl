@@ -13,7 +13,7 @@ include(joinpath(@__DIR__, "recomb_ieee30.jl"))
 include(joinpath(@__DIR__, "converter_types.jl"))
 
 const NS        = 21
-const PAPER_OUT = joinpath(@__DIR__, "output", "paper"); mkpath(PAPER_OUT)
+const PAPER_OUT = joinpath(@__DIR__, "output", get(ENV, "SHHC_UNIT", "diode") == "thyristor" ? "paper_thyristor" : "paper"); mkpath(PAPER_OUT)
 const PAPER_SCENARIOS = ["inductive", "inductive_bank", "inductive_cable33", "inductive_cable132c"]
 
 "The first `N` loads of `data`, sorted, as harmonic units."
