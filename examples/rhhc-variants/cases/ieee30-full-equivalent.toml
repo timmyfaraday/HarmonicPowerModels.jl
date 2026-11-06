@@ -1,0 +1,680 @@
+# Generated. Source: cases/ieee30-full.toml
+# Source commit: 85cdb95f25eb26af816314f5eadec3b86cf0e0b6
+# LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+# Method: effective coordinates, subdivision, constrained hull search, exact sharing at 1.0e-10, 0.1 percent admission
+# Regenerate: `julia --project=examples/rhhc-variants examples/rhhc-variants/reduce.jl cases/ieee30-full.toml`
+
+bound = "cantelli"
+box_names = ["width_ACSR_1", "resistance_ACSR_1", "mu_r_ACSR_1", "resistance_O132_1", "mu_r_O132_1", "y_ACSR_1", "y_O132_1", "rho_EARTH_1", "width_ACSR_2", "resistance_ACSR_2", "mu_r_ACSR_2", "y_ACSR_2", "width_ACSR_3", "resistance_ACSR_3", "mu_r_ACSR_3", "y_ACSR_3", "width_ACSR_4", "resistance_ACSR_4", "mu_r_ACSR_4", "y_ACSR_4", "width_U33_1", "resistance_U33_1", "resistance_U33_2", "width_U33_3", "eps_r_U33_1", "width_U33_4", "eps_r_U33_2", "width_U33_5", "width_U33_6", "resistance_U33_3", "width_U33_8", "resistance_U33_4", "width_U33_10", "resistance_U33_5", "width_U33_12"]
+equivalent_data = "data/equivalent/ieee30-full.toml"
+model = "exact"
+note = "Generated equivalent intervals with solid grounding and ideal transposition. Source correlations are dropped between independent coordinates. Five screened radial widths keep their nominal values."
+
+[bindings.ACSR]
+mu_r_ACSR_1 = "mu_r_ACSR_1"
+mu_r_ACSR_2 = "mu_r_ACSR_2"
+mu_r_ACSR_3 = "mu_r_ACSR_3"
+mu_r_ACSR_4 = "mu_r_ACSR_4"
+resistance_ACSR_1 = "resistance_ACSR_1"
+resistance_ACSR_2 = "resistance_ACSR_2"
+resistance_ACSR_3 = "resistance_ACSR_3"
+resistance_ACSR_4 = "resistance_ACSR_4"
+width_ACSR_1 = "width_ACSR_1"
+width_ACSR_2 = "width_ACSR_2"
+width_ACSR_3 = "width_ACSR_3"
+width_ACSR_4 = "width_ACSR_4"
+y_ACSR_1 = "y_ACSR_1"
+y_ACSR_2 = "y_ACSR_2"
+y_ACSR_3 = "y_ACSR_3"
+y_ACSR_4 = "y_ACSR_4"
+
+[bindings.EARTH]
+rho_EARTH_1 = "rho_EARTH_1"
+
+[bindings.O132]
+mu_r_O132_1 = "mu_r_O132_1"
+resistance_O132_1 = "resistance_O132_1"
+y_O132_1 = "y_O132_1"
+
+[bindings.U33]
+eps_r_U33_1 = "eps_r_U33_1"
+eps_r_U33_2 = "eps_r_U33_2"
+resistance_U33_1 = "resistance_U33_1"
+resistance_U33_2 = "resistance_U33_2"
+resistance_U33_3 = "resistance_U33_3"
+resistance_U33_4 = "resistance_U33_4"
+resistance_U33_5 = "resistance_U33_5"
+width_U33_1 = "width_U33_1"
+width_U33_10 = "width_U33_10"
+width_U33_12 = "width_U33_12"
+width_U33_3 = "width_U33_3"
+width_U33_4 = "width_U33_4"
+width_U33_5 = "width_U33_5"
+width_U33_6 = "width_U33_6"
+width_U33_8 = "width_U33_8"
+
+[box.eps_r_U33_1]
+coordinate = "eps_r_U33_1"
+family = "U33"
+origin = "data/equivalent/ieee30-full.toml, coordinates.eps_r_U33_1"
+
+[box.eps_r_U33_2]
+coordinate = "eps_r_U33_2"
+family = "U33"
+origin = "data/equivalent/ieee30-full.toml, coordinates.eps_r_U33_2"
+
+[box.mu_r_ACSR_1]
+coordinate = "mu_r_ACSR_1"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full.toml, coordinates.mu_r_ACSR_1"
+
+[box.mu_r_ACSR_2]
+coordinate = "mu_r_ACSR_2"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full.toml, coordinates.mu_r_ACSR_2"
+
+[box.mu_r_ACSR_3]
+coordinate = "mu_r_ACSR_3"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full.toml, coordinates.mu_r_ACSR_3"
+
+[box.mu_r_ACSR_4]
+coordinate = "mu_r_ACSR_4"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full.toml, coordinates.mu_r_ACSR_4"
+
+[box.mu_r_O132_1]
+coordinate = "mu_r_O132_1"
+family = "O132"
+origin = "data/equivalent/ieee30-full.toml, coordinates.mu_r_O132_1"
+
+[box.resistance_ACSR_1]
+coordinate = "resistance_ACSR_1"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full.toml, coordinates.resistance_ACSR_1"
+
+[box.resistance_ACSR_2]
+coordinate = "resistance_ACSR_2"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full.toml, coordinates.resistance_ACSR_2"
+
+[box.resistance_ACSR_3]
+coordinate = "resistance_ACSR_3"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full.toml, coordinates.resistance_ACSR_3"
+
+[box.resistance_ACSR_4]
+coordinate = "resistance_ACSR_4"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full.toml, coordinates.resistance_ACSR_4"
+
+[box.resistance_O132_1]
+coordinate = "resistance_O132_1"
+family = "O132"
+origin = "data/equivalent/ieee30-full.toml, coordinates.resistance_O132_1"
+
+[box.resistance_U33_1]
+coordinate = "resistance_U33_1"
+family = "U33"
+origin = "data/equivalent/ieee30-full.toml, coordinates.resistance_U33_1"
+
+[box.resistance_U33_2]
+coordinate = "resistance_U33_2"
+family = "U33"
+origin = "data/equivalent/ieee30-full.toml, coordinates.resistance_U33_2"
+
+[box.resistance_U33_3]
+coordinate = "resistance_U33_3"
+family = "U33"
+origin = "data/equivalent/ieee30-full.toml, coordinates.resistance_U33_3"
+
+[box.resistance_U33_4]
+coordinate = "resistance_U33_4"
+family = "U33"
+origin = "data/equivalent/ieee30-full.toml, coordinates.resistance_U33_4"
+
+[box.resistance_U33_5]
+coordinate = "resistance_U33_5"
+family = "U33"
+origin = "data/equivalent/ieee30-full.toml, coordinates.resistance_U33_5"
+
+[box.rho_EARTH_1]
+coordinate = "rho_EARTH_1"
+family = "EARTH"
+origin = "data/equivalent/ieee30-full.toml, coordinates.rho_EARTH_1"
+
+[box.width_ACSR_1]
+coordinate = "width_ACSR_1"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full.toml, coordinates.width_ACSR_1"
+
+[box.width_ACSR_2]
+coordinate = "width_ACSR_2"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full.toml, coordinates.width_ACSR_2"
+
+[box.width_ACSR_3]
+coordinate = "width_ACSR_3"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full.toml, coordinates.width_ACSR_3"
+
+[box.width_ACSR_4]
+coordinate = "width_ACSR_4"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full.toml, coordinates.width_ACSR_4"
+
+[box.width_U33_1]
+coordinate = "width_U33_1"
+family = "U33"
+origin = "data/equivalent/ieee30-full.toml, coordinates.width_U33_1"
+
+[box.width_U33_10]
+coordinate = "width_U33_10"
+family = "U33"
+origin = "data/equivalent/ieee30-full.toml, coordinates.width_U33_10"
+
+[box.width_U33_12]
+coordinate = "width_U33_12"
+family = "U33"
+origin = "data/equivalent/ieee30-full.toml, coordinates.width_U33_12"
+
+[box.width_U33_3]
+coordinate = "width_U33_3"
+family = "U33"
+origin = "data/equivalent/ieee30-full.toml, coordinates.width_U33_3"
+
+[box.width_U33_4]
+coordinate = "width_U33_4"
+family = "U33"
+origin = "data/equivalent/ieee30-full.toml, coordinates.width_U33_4"
+
+[box.width_U33_5]
+coordinate = "width_U33_5"
+family = "U33"
+origin = "data/equivalent/ieee30-full.toml, coordinates.width_U33_5"
+
+[box.width_U33_6]
+coordinate = "width_U33_6"
+family = "U33"
+origin = "data/equivalent/ieee30-full.toml, coordinates.width_U33_6"
+
+[box.width_U33_8]
+coordinate = "width_U33_8"
+family = "U33"
+origin = "data/equivalent/ieee30-full.toml, coordinates.width_U33_8"
+
+[box.y_ACSR_1]
+coordinate = "y_ACSR_1"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full.toml, coordinates.y_ACSR_1"
+
+[box.y_ACSR_2]
+coordinate = "y_ACSR_2"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full.toml, coordinates.y_ACSR_2"
+
+[box.y_ACSR_3]
+coordinate = "y_ACSR_3"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full.toml, coordinates.y_ACSR_3"
+
+[box.y_ACSR_4]
+coordinate = "y_ACSR_4"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full.toml, coordinates.y_ACSR_4"
+
+[box.y_O132_1]
+coordinate = "y_O132_1"
+family = "O132"
+origin = "data/equivalent/ieee30-full.toml, coordinates.y_O132_1"
+
+[branches.1]
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "Lion"
+
+[branches.10]
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "Bear"
+
+[branches.17]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-500"
+
+[branches.18]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-500"
+
+[branches.19]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-500"
+
+[branches.2]
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "Goat"
+
+[branches.20]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-400"
+
+[branches.21]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-800"
+
+[branches.22]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-500"
+
+[branches.23]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-500"
+
+[branches.24]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-500"
+
+[branches.25]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-500"
+
+[branches.26]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-630"
+
+[branches.27]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-500"
+
+[branches.28]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-500"
+
+[branches.29]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-500"
+
+[branches.3]
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "Bear"
+
+[branches.30]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-500"
+
+[branches.31]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-400"
+
+[branches.32]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-500"
+
+[branches.33]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-400"
+
+[branches.34]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-400"
+
+[branches.35]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-500"
+
+[branches.37]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-500"
+
+[branches.38]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-500"
+
+[branches.39]
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "U33-500"
+
+[branches.4]
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "Lion"
+
+[branches.40]
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "Bear"
+
+[branches.41]
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "Goat"
+
+[branches.5]
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "Goat"
+
+[branches.6]
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "Lion"
+
+[branches.7]
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "Bear"
+
+[branches.8]
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "Panther"
+
+[branches.9]
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+spec = "Bear"
+
+[epsilon]
+origin = "examples/shhc/pce_params.jl:20"
+value = 0.05
+
+[f1]
+origin = "examples/shhc/ieee30_scenarios.jl:40"
+value = 50.0
+
+[harmonics]
+origin = "examples/rhhc/ieee30_lcm.jl:102"
+value = [5, 7, 11, 13]
+
+[network]
+kind = "scenario"
+scenario = "inductive_cable33"
+
+[posterior]
+origin = "examples/rhhc/ieee30_lcm.jl:152"
+value = 1024
+
+[transformers.11]
+note = "Three-winding unit at bus 6, star point 9. The 132 kV winding is YN, solidly earthed. Bus 9 represents the star point."
+vg = "Yy0"
+
+    [transformers.11.f_bus]
+    origin = "Tom Van Acker transformer proposal"
+    value = 6
+
+    [transformers.11.gnd1]
+    origin = "Tom Van Acker transformer proposal"
+    value = 1
+
+    [transformers.11.gnd2]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0
+
+    [transformers.11.re1_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+    [transformers.11.re2_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+    [transformers.11.t_bus]
+    origin = "Tom Van Acker transformer proposal"
+    value = 9
+
+    [transformers.11.xe1_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+    [transformers.11.xe2_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+[transformers.12]
+note = "YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance."
+resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
+vg = "Yy0"
+
+    [transformers.12.f_bus]
+    origin = "Tom Van Acker transformer proposal"
+    value = 6
+
+    [transformers.12.gnd1]
+    origin = "Tom Van Acker transformer proposal"
+    value = 1
+
+    [transformers.12.gnd2]
+    origin = "Tom Van Acker transformer proposal"
+    value = 1
+
+    [transformers.12.re1_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+    [transformers.12.re2_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 19.05
+
+    [transformers.12.t_bus]
+    origin = "Tom Van Acker transformer proposal"
+    value = 10
+
+    [transformers.12.xe1_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+    [transformers.12.xe2_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+[transformers.13]
+note = "Three-winding unit, star point 9. The 11 kV winding is delta and supplies the condenser at bus 11."
+vg = "Yd11"
+
+    [transformers.13.f_bus]
+    origin = "Tom Van Acker transformer proposal"
+    value = 9
+
+    [transformers.13.gnd1]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0
+
+    [transformers.13.gnd2]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0
+
+    [transformers.13.re1_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+    [transformers.13.re2_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+    [transformers.13.t_bus]
+    origin = "Tom Van Acker transformer proposal"
+    value = 11
+
+    [transformers.13.xe1_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+    [transformers.13.xe2_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+[transformers.14]
+note = "Three-winding unit, star point 9. The 33 kV winding is yn, earthed through a resistance."
+resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
+vg = "Yy0"
+
+    [transformers.14.f_bus]
+    origin = "Tom Van Acker transformer proposal"
+    value = 9
+
+    [transformers.14.gnd1]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0
+
+    [transformers.14.gnd2]
+    origin = "Tom Van Acker transformer proposal"
+    value = 1
+
+    [transformers.14.re1_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+    [transformers.14.re2_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 19.05
+
+    [transformers.14.t_bus]
+    origin = "Tom Van Acker transformer proposal"
+    value = 10
+
+    [transformers.14.xe1_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+    [transformers.14.xe2_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+[transformers.15]
+note = "YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance."
+resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
+vg = "Yy0"
+
+    [transformers.15.f_bus]
+    origin = "Tom Van Acker transformer proposal"
+    value = 4
+
+    [transformers.15.gnd1]
+    origin = "Tom Van Acker transformer proposal"
+    value = 1
+
+    [transformers.15.gnd2]
+    origin = "Tom Van Acker transformer proposal"
+    value = 1
+
+    [transformers.15.re1_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+    [transformers.15.re2_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 19.05
+
+    [transformers.15.t_bus]
+    origin = "Tom Van Acker transformer proposal"
+    value = 12
+
+    [transformers.15.xe1_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+    [transformers.15.xe2_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+[transformers.16]
+note = "YNd11 step-up of the condenser at bus 13. The delta is on the 11 kV side. The 33 kV YN neutral is earthed through a resistance."
+resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
+vg = "Yd11"
+
+    [transformers.16.f_bus]
+    origin = "Tom Van Acker transformer proposal"
+    value = 12
+
+    [transformers.16.gnd1]
+    origin = "Tom Van Acker transformer proposal"
+    value = 1
+
+    [transformers.16.gnd2]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0
+
+    [transformers.16.re1_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 19.05
+
+    [transformers.16.re2_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+    [transformers.16.t_bus]
+    origin = "Tom Van Acker transformer proposal"
+    value = 13
+
+    [transformers.16.xe1_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+    [transformers.16.xe2_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+[transformers.36]
+note = "YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance."
+resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
+vg = "Yy0"
+
+    [transformers.36.f_bus]
+    origin = "Tom Van Acker transformer proposal"
+    value = 28
+
+    [transformers.36.gnd1]
+    origin = "Tom Van Acker transformer proposal"
+    value = 1
+
+    [transformers.36.gnd2]
+    origin = "Tom Van Acker transformer proposal"
+    value = 1
+
+    [transformers.36.re1_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+    [transformers.36.re2_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 19.05
+
+    [transformers.36.t_bus]
+    origin = "Tom Van Acker transformer proposal"
+    value = 27
+
+    [transformers.36.xe1_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+    [transformers.36.xe2_ohm]
+    origin = "Tom Van Acker transformer proposal"
+    value = 0.0
+
+[units]
+origin = "examples/rhhc/ieee30_lcm.jl:106"
+value = 21

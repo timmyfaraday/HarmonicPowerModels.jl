@@ -1,4 +1,4 @@
-include(joinpath(@__DIR__, "builders.jl"))
+isdefined(@__MODULE__, :STUDIES) || include(joinpath(@__DIR__, "builders.jl"))
 
 function report(io, args...)
     println(io, args...)
@@ -32,7 +32,8 @@ function runstudy(s, io)
              for r in modal_scan(deepcopy(s.hd), s.model, nominal_point(box))],
             ", "))
     flush(io)
-    t = @elapsed res = solve_rhhc(deepcopy(s.hd), s.model, box, s.conic;
+    prepared = deepcopy(s.hd)
+    t = @elapsed res = solve_rhhc(prepared, s.model, box, s.conic;
         pce_params = deepcopy(s.pce), hpf_optimizer = s.ipopt,
         posterior = s.config.posterior, verbose = true)
     report(io,
@@ -50,10 +51,10 @@ function runstudy(s, io)
         @sprintf("a posteriori (%d random points): worst %+.2e (%s), violated at %.1f %%",
             s.config.posterior, pr.max_violation, string(pr.constraint),
             100pr.violated_fraction))
-    report(io, "LineCableModels solves (sum of circuit table sizes): ",
-        sum((length(s.model.branches[b].zy.sequences) for b in circuits(s)); init = 0))
+    solves = sum((length(s.model.branches[b].zy.sequences) for b in circuits(s)); init = 0)
+    report(io, "LineCableModels solves (sum of circuit table sizes): ", solves)
     flush(io)
-    return res
+    return (; robust = res, nominal = nom, hdata = prepared, elapsed = t, solves)
 end
 
 function main(path)
@@ -76,5 +77,7 @@ function main(path)
     return failed
 end
 
-length(ARGS) == 1 || error("usage: run.jl cases/<case>.toml")
-main(only(ARGS)) && exit(1)
+if abspath(PROGRAM_FILE) == @__FILE__
+    length(ARGS) == 1 || error("usage: run.jl cases/<case>.toml")
+    main(only(ARGS)) && exit(1)
+end

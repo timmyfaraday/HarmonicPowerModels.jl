@@ -1,0 +1,3455 @@
+# Generated. Source: cases/ieee30-full.toml
+# Source commit: 85cdb95f25eb26af816314f5eadec3b86cf0e0b6
+# LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+# Method: effective coordinates, subdivision, constrained hull search, exact sharing at 1.0e-10, 0.1 percent admission
+# Regenerate: `julia --project=examples/rhhc-variants examples/rhhc-variants/reduce.jl cases/ieee30-full.toml`
+
+lcm_commit = "59cc3f2329e5df9b33929f52009e996cee1d4784"
+lcm_source_diff_sha256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+method = "effective coordinates, subdivision, constrained hull search, exact sharing at 1.0e-10, 0.1 percent admission"
+regenerate = "julia --project=examples/rhhc-variants examples/rhhc-variants/reduce.jl cases/ieee30-full.toml"
+source_case = "cases/ieee30-full.toml"
+source_commit = "85cdb95f25eb26af816314f5eadec3b86cf0e0b6"
+
+[circuits."Bear/O132-D"]
+family_name = "ACSR"
+id = "ACSR"
+phase_x = [-2.5, 0.0, 2.5]
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls, nominal circuit Bear/O132-D"
+shield_x = 0.0
+
+    [circuits."Bear/O132-D".earth.eps]
+    nominal = 10.0
+
+    [circuits."Bear/O132-D".earth.rho]
+    coordinate = "rho_EARTH_1"
+    lower = 9.999999999985445
+    nominal = 100.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 1000.0000000000148
+
+    [[circuits."Bear/O132-D".parts]]
+    T0 = 20.0
+    alpha = 0.004015385504973014
+    key = "tube.1"
+    kind = "conductor"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    terminal = "core"
+    theta_max = 90.0
+
+        [circuits."Bear/O132-D".parts.eps_r]
+        nominal = 1.0
+
+        [circuits."Bear/O132-D".parts.hole]
+        nominal = 0.0
+
+        [circuits."Bear/O132-D".parts.mu_r]
+        coordinate = "mu_r_ACSR_1"
+        lower = 0.793811124835649
+        nominal = 0.8183086667192967
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.8745211544125697
+
+        [circuits."Bear/O132-D".parts.resistance]
+        coordinate = "resistance_ACSR_1"
+        lower = 9.176931151412696e-5
+        nominal = 0.00010653238344224915
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.00013526925858673306
+
+        [circuits."Bear/O132-D".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."Bear/O132-D".parts.width]
+        coordinate = "width_ACSR_1"
+        lower = 0.011607749999999717
+        nominal = 0.011725000000000001
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.011842250000000283
+
+    [[circuits."Bear/O132-D".phase_y]]
+    coordinate = "y_ACSR_1"
+    lower = 12.739237485120668
+    nominal = 14.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 14.601707149929336
+    [[circuits."Bear/O132-D".phase_y]]
+    coordinate = "y_ACSR_1"
+    lower = 17.06923748512055
+    nominal = 18.33
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 18.93170714992945
+    [[circuits."Bear/O132-D".phase_y]]
+    coordinate = "y_ACSR_1"
+    lower = 12.739237485120668
+    nominal = 14.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 14.601707149929336
+
+    [circuits."Bear/O132-D".shield]
+    id = "GW-7x3.15"
+
+        [[circuits."Bear/O132-D".shield.parts]]
+        T0 = 20.0
+        alpha = 0.0036000000000000008
+        key = "tube.1"
+        kind = "conductor"
+        rho_thermal = 0.0
+        sigma_solar = 0.0
+        terminal = "core"
+        theta_max = 90.0
+
+            [circuits."Bear/O132-D".shield.parts.eps_r]
+            nominal = 1.0
+
+            [circuits."Bear/O132-D".shield.parts.hole]
+            nominal = 0.0
+
+            [circuits."Bear/O132-D".shield.parts.mu_r]
+            coordinate = "mu_r_O132_1"
+            lower = 8.28610280082756
+            nominal = 15.429067910490257
+            provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+            upper = 44.000928349138334
+
+            [circuits."Bear/O132-D".shield.parts.resistance]
+            coordinate = "resistance_O132_1"
+            lower = 0.002920941551938134
+            nominal = 0.003545151439459886
+            provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+            upper = 0.004488268037748529
+
+            [circuits."Bear/O132-D".shield.parts.tan_delta]
+            nominal = 0.0
+
+            [circuits."Bear/O132-D".shield.parts.width]
+            nominal = 0.004725
+
+    [circuits."Bear/O132-D".shield_y]
+    coordinate = "y_O132_1"
+    lower = 24.995792827757814
+    nominal = 25.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 25.805456600107856
+
+[circuits."Goat/O132-D"]
+family_name = "ACSR"
+id = "ACSR"
+phase_x = [-2.5, 0.0, 2.5]
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls, nominal circuit Goat/O132-D"
+shield_x = 0.0
+
+    [circuits."Goat/O132-D".earth.eps]
+    nominal = 10.0
+
+    [circuits."Goat/O132-D".earth.rho]
+    coordinate = "rho_EARTH_1"
+    lower = 9.999999999985445
+    nominal = 100.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 1000.0000000000148
+
+    [[circuits."Goat/O132-D".parts]]
+    T0 = 20.0
+    alpha = 0.004015385504973013
+    key = "tube.1"
+    kind = "conductor"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    terminal = "core"
+    theta_max = 90.0
+
+        [circuits."Goat/O132-D".parts.eps_r]
+        nominal = 1.0
+
+        [circuits."Goat/O132-D".parts.hole]
+        nominal = 0.0
+
+        [circuits."Goat/O132-D".parts.mu_r]
+        coordinate = "mu_r_ACSR_2"
+        lower = 0.793455560186789
+        nominal = 0.8183086667192221
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.8746559128135554
+
+        [circuits."Goat/O132-D".parts.resistance]
+        coordinate = "resistance_ACSR_2"
+        lower = 7.48237152060291e-5
+        nominal = 8.686072269023333e-5
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.00011029121079399282
+
+        [circuits."Goat/O132-D".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."Goat/O132-D".parts.width]
+        coordinate = "width_ACSR_2"
+        lower = 0.012855149999999718
+        nominal = 0.012985
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.013114850000000282
+
+    [[circuits."Goat/O132-D".phase_y]]
+    coordinate = "y_ACSR_2"
+    lower = 12.739320088966986
+    nominal = 14.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 14.601639607944133
+    [[circuits."Goat/O132-D".phase_y]]
+    coordinate = "y_ACSR_2"
+    lower = 17.069320088966865
+    nominal = 18.33
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 18.93163960794425
+    [[circuits."Goat/O132-D".phase_y]]
+    coordinate = "y_ACSR_2"
+    lower = 12.739320088966986
+    nominal = 14.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 14.601639607944133
+
+    [circuits."Goat/O132-D".shield]
+    id = "GW-7x3.15"
+
+        [[circuits."Goat/O132-D".shield.parts]]
+        T0 = 20.0
+        alpha = 0.0036000000000000008
+        key = "tube.1"
+        kind = "conductor"
+        rho_thermal = 0.0
+        sigma_solar = 0.0
+        terminal = "core"
+        theta_max = 90.0
+
+            [circuits."Goat/O132-D".shield.parts.eps_r]
+            nominal = 1.0
+
+            [circuits."Goat/O132-D".shield.parts.hole]
+            nominal = 0.0
+
+            [circuits."Goat/O132-D".shield.parts.mu_r]
+            coordinate = "mu_r_O132_1"
+            lower = 8.28610280082756
+            nominal = 15.429067910490257
+            provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+            upper = 44.000928349138334
+
+            [circuits."Goat/O132-D".shield.parts.resistance]
+            coordinate = "resistance_O132_1"
+            lower = 0.002920941551938134
+            nominal = 0.003545151439459886
+            provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+            upper = 0.004488268037748529
+
+            [circuits."Goat/O132-D".shield.parts.tan_delta]
+            nominal = 0.0
+
+            [circuits."Goat/O132-D".shield.parts.width]
+            nominal = 0.004725
+
+    [circuits."Goat/O132-D".shield_y]
+    coordinate = "y_O132_1"
+    lower = 24.995792827757814
+    nominal = 25.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 25.805456600107856
+
+[circuits."Lion/O132-D"]
+family_name = "ACSR"
+id = "ACSR"
+phase_x = [-2.5, 0.0, 2.5]
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls, nominal circuit Lion/O132-D"
+shield_x = 0.0
+
+    [circuits."Lion/O132-D".earth.eps]
+    nominal = 10.0
+
+    [circuits."Lion/O132-D".earth.rho]
+    coordinate = "rho_EARTH_1"
+    lower = 9.999999999985445
+    nominal = 100.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 1000.0000000000148
+
+    [[circuits."Lion/O132-D".parts]]
+    T0 = 20.0
+    alpha = 0.004015385504973013
+    key = "tube.1"
+    kind = "conductor"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    terminal = "core"
+    theta_max = 90.0
+
+        [circuits."Lion/O132-D".parts.eps_r]
+        nominal = 1.0
+
+        [circuits."Lion/O132-D".parts.hole]
+        nominal = 0.0
+
+        [circuits."Lion/O132-D".parts.mu_r]
+        coordinate = "mu_r_ACSR_3"
+        lower = 0.7935835510064775
+        nominal = 0.8183086667192363
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.874607182495087
+
+        [circuits."Lion/O132-D".parts.resistance]
+        coordinate = "resistance_ACSR_3"
+        lower = 0.00010184339014153841
+        nominal = 0.00011822709477281764
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.00015011859246960238
+
+        [circuits."Lion/O132-D".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."Lion/O132-D".parts.width]
+        coordinate = "width_ACSR_3"
+        lower = 0.01101869999999972
+        nominal = 0.011130000000000001
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.011241300000000282
+
+    [[circuits."Lion/O132-D".phase_y]]
+    coordinate = "y_ACSR_3"
+    lower = 12.739599111764623
+    nominal = 14.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 14.601411546601426
+    [[circuits."Lion/O132-D".phase_y]]
+    coordinate = "y_ACSR_3"
+    lower = 17.069599111764504
+    nominal = 18.33
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 18.931411546601545
+    [[circuits."Lion/O132-D".phase_y]]
+    coordinate = "y_ACSR_3"
+    lower = 12.739599111764623
+    nominal = 14.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 14.601411546601426
+
+    [circuits."Lion/O132-D".shield]
+    id = "GW-7x3.15"
+
+        [[circuits."Lion/O132-D".shield.parts]]
+        T0 = 20.0
+        alpha = 0.0036000000000000008
+        key = "tube.1"
+        kind = "conductor"
+        rho_thermal = 0.0
+        sigma_solar = 0.0
+        terminal = "core"
+        theta_max = 90.0
+
+            [circuits."Lion/O132-D".shield.parts.eps_r]
+            nominal = 1.0
+
+            [circuits."Lion/O132-D".shield.parts.hole]
+            nominal = 0.0
+
+            [circuits."Lion/O132-D".shield.parts.mu_r]
+            coordinate = "mu_r_O132_1"
+            lower = 8.28610280082756
+            nominal = 15.429067910490257
+            provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+            upper = 44.000928349138334
+
+            [circuits."Lion/O132-D".shield.parts.resistance]
+            coordinate = "resistance_O132_1"
+            lower = 0.002920941551938134
+            nominal = 0.003545151439459886
+            provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+            upper = 0.004488268037748529
+
+            [circuits."Lion/O132-D".shield.parts.tan_delta]
+            nominal = 0.0
+
+            [circuits."Lion/O132-D".shield.parts.width]
+            nominal = 0.004725
+
+    [circuits."Lion/O132-D".shield_y]
+    coordinate = "y_O132_1"
+    lower = 24.995792827757814
+    nominal = 25.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 25.805456600107856
+
+[circuits."Panther/O132-D"]
+family_name = "ACSR"
+id = "ACSR"
+phase_x = [-2.5, 0.0, 2.5]
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls, nominal circuit Panther/O132-D"
+shield_x = 0.0
+
+    [circuits."Panther/O132-D".earth.eps]
+    nominal = 10.0
+
+    [circuits."Panther/O132-D".earth.rho]
+    coordinate = "rho_EARTH_1"
+    lower = 9.999999999985445
+    nominal = 100.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 1000.0000000000148
+
+    [[circuits."Panther/O132-D".parts]]
+    T0 = 20.0
+    alpha = 0.004015385504973013
+    key = "tube.1"
+    kind = "conductor"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    terminal = "core"
+    theta_max = 90.0
+
+        [circuits."Panther/O132-D".parts.eps_r]
+        nominal = 1.0
+
+        [circuits."Panther/O132-D".parts.hole]
+        nominal = 0.0
+
+        [circuits."Panther/O132-D".parts.mu_r]
+        coordinate = "mu_r_ACSR_4"
+        lower = 0.7933148858577395
+        nominal = 0.8183086667192221
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.874709761046603
+
+        [circuits."Panther/O132-D".parts.resistance]
+        coordinate = "resistance_ACSR_4"
+        lower = 0.00011443123316303307
+        nominal = 0.00013283996368673788
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.00016867325049884488
+
+        [circuits."Panther/O132-D".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."Panther/O132-D".parts.width]
+        coordinate = "width_ACSR_4"
+        lower = 0.010394999999999719
+        nominal = 0.0105
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.010605000000000281
+
+    [[circuits."Panther/O132-D".phase_y]]
+    coordinate = "y_ACSR_4"
+    lower = 12.739363600844237
+    nominal = 14.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 14.601604034573727
+    [[circuits."Panther/O132-D".phase_y]]
+    coordinate = "y_ACSR_4"
+    lower = 17.069363600844117
+    nominal = 18.33
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 18.931604034573844
+    [[circuits."Panther/O132-D".phase_y]]
+    coordinate = "y_ACSR_4"
+    lower = 12.739363600844237
+    nominal = 14.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 14.601604034573727
+
+    [circuits."Panther/O132-D".shield]
+    id = "GW-7x3.15"
+
+        [[circuits."Panther/O132-D".shield.parts]]
+        T0 = 20.0
+        alpha = 0.0036000000000000008
+        key = "tube.1"
+        kind = "conductor"
+        rho_thermal = 0.0
+        sigma_solar = 0.0
+        terminal = "core"
+        theta_max = 90.0
+
+            [circuits."Panther/O132-D".shield.parts.eps_r]
+            nominal = 1.0
+
+            [circuits."Panther/O132-D".shield.parts.hole]
+            nominal = 0.0
+
+            [circuits."Panther/O132-D".shield.parts.mu_r]
+            coordinate = "mu_r_O132_1"
+            lower = 8.28610280082756
+            nominal = 15.429067910490257
+            provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+            upper = 44.000928349138334
+
+            [circuits."Panther/O132-D".shield.parts.resistance]
+            coordinate = "resistance_O132_1"
+            lower = 0.002920941551938134
+            nominal = 0.003545151439459886
+            provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+            upper = 0.004488268037748529
+
+            [circuits."Panther/O132-D".shield.parts.tan_delta]
+            nominal = 0.0
+
+            [circuits."Panther/O132-D".shield.parts.width]
+            nominal = 0.004725
+
+    [circuits."Panther/O132-D".shield_y]
+    coordinate = "y_O132_1"
+    lower = 24.995792827757814
+    nominal = 25.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 25.805456600107856
+
+[circuits."U33-400/trefoil"]
+family_name = "U33"
+id = "U33"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls, nominal circuit U33-400/trefoil"
+
+    [circuits."U33-400/trefoil".center_y]
+    nominal = -0.8
+
+    [circuits."U33-400/trefoil".earth.eps]
+    nominal = 10.0
+
+    [circuits."U33-400/trefoil".earth.rho]
+    coordinate = "rho_EARTH_1"
+    lower = 9.999999999985445
+    nominal = 100.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 1000.0000000000148
+
+    [[circuits."U33-400/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.00403
+    key = "tube.1"
+    kind = "conductor"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    terminal = "core"
+    theta_max = 90.0
+
+        [circuits."U33-400/trefoil".parts.eps_r]
+        nominal = 1.0
+
+        [circuits."U33-400/trefoil".parts.hole]
+        nominal = 0.0
+
+        [circuits."U33-400/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-400/trefoil".parts.resistance]
+        coordinate = "resistance_U33_1"
+        lower = 6.871451999999824e-5
+        nominal = 7.780000000000001e-5
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 9.974738000000178e-5
+
+        [circuits."U33-400/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-400/trefoil".parts.width]
+        coordinate = "width_U33_1"
+        lower = 0.011499999999999774
+        nominal = 0.0115
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.011700000000000226
+    [[circuits."U33-400/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.0
+    key = "layer.1"
+    kind = "semicon"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    theta_max = 90.0
+
+        [circuits."U33-400/trefoil".parts.eps_r]
+        coordinate = "eps_r_U33_1"
+        lower = 99.99999999976714
+        nominal = 1000.0
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 10000.000000000236
+
+        [circuits."U33-400/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-400/trefoil".parts.rho]
+        nominal = 1000.0
+
+        [circuits."U33-400/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-400/trefoil".parts.width]
+        coordinate = "width_U33_3"
+        lower = 0.000764999999999986
+        nominal = 0.0008500000000000001
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.0009350000000000142
+    [[circuits."U33-400/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.0
+    key = "layer.2"
+    kind = "insulator"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    theta_max = 90.0
+
+        [circuits."U33-400/trefoil".parts.eps_r]
+        coordinate = "eps_r_U33_2"
+        lower = 2.0999999999999424
+        nominal = 2.4
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 2.5000000000000577
+
+        [circuits."U33-400/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-400/trefoil".parts.rho]
+        nominal = 1.1e14
+
+        [circuits."U33-400/trefoil".parts.tan_delta]
+        nominal = 0.0003
+
+        [circuits."U33-400/trefoil".parts.width]
+        coordinate = "width_U33_4"
+        lower = 0.007599999999999775
+        nominal = 0.008
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.008400000000000227
+    [[circuits."U33-400/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.0
+    key = "layer.3"
+    kind = "semicon"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    theta_max = 90.0
+
+        [circuits."U33-400/trefoil".parts.eps_r]
+        coordinate = "eps_r_U33_1"
+        lower = 99.99999999976714
+        nominal = 1000.0
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 10000.000000000236
+
+        [circuits."U33-400/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-400/trefoil".parts.rho]
+        nominal = 500.0
+
+        [circuits."U33-400/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-400/trefoil".parts.width]
+        coordinate = "width_U33_5"
+        lower = 0.0008099999999999737
+        nominal = 0.0009000000000000015
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.0009900000000000295
+    [[circuits."U33-400/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.00393
+    key = "tube.2"
+    kind = "conductor"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    terminal = "sheath"
+    theta_max = 90.0
+
+        [circuits."U33-400/trefoil".parts.eps_r]
+        nominal = 1.0
+
+        [circuits."U33-400/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-400/trefoil".parts.resistance]
+        coordinate = "resistance_U33_2"
+        lower = 0.00024113569999999256
+        nominal = 0.0002629999999999996
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.0003353513000000066
+
+        [circuits."U33-400/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-400/trefoil".parts.width]
+        nominal = 0.0004854398839639236
+    [[circuits."U33-400/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.0
+    key = "layer.4"
+    kind = "insulator"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    theta_max = 90.0
+
+        [circuits."U33-400/trefoil".parts.eps_r]
+        nominal = 8.0
+
+        [circuits."U33-400/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-400/trefoil".parts.rho]
+        nominal = 1.0e14
+
+        [circuits."U33-400/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-400/trefoil".parts.width]
+        coordinate = "width_U33_6"
+        lower = 0.003677828251621335
+        nominal = 0.0037145601160360753
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.004731279277331539
+
+[circuits."U33-500/trefoil"]
+family_name = "U33"
+id = "U33"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls, nominal circuit U33-500/trefoil"
+
+    [circuits."U33-500/trefoil".center_y]
+    nominal = -0.8
+
+    [circuits."U33-500/trefoil".earth.eps]
+    nominal = 10.0
+
+    [circuits."U33-500/trefoil".earth.rho]
+    coordinate = "rho_EARTH_1"
+    lower = 9.999999999985445
+    nominal = 100.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 1000.0000000000148
+
+    [[circuits."U33-500/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.00403
+    key = "tube.1"
+    kind = "conductor"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    terminal = "core"
+    theta_max = 90.0
+
+        [circuits."U33-500/trefoil".parts.eps_r]
+        nominal = 1.0
+
+        [circuits."U33-500/trefoil".parts.hole]
+        nominal = 0.0
+
+        [circuits."U33-500/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-500/trefoil".parts.resistance]
+        coordinate = "resistance_U33_3"
+        lower = 5.345528999999825e-5
+        nominal = 6.05e-5
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 7.756705000000176e-5
+
+        [circuits."U33-500/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-500/trefoil".parts.width]
+        coordinate = "width_U33_1"
+        lower = 0.013249999999999774
+        nominal = 0.01325
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.013450000000000226
+    [[circuits."U33-500/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.0
+    key = "layer.1"
+    kind = "semicon"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    theta_max = 90.0
+
+        [circuits."U33-500/trefoil".parts.eps_r]
+        coordinate = "eps_r_U33_1"
+        lower = 99.99999999976714
+        nominal = 1000.0
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 10000.000000000236
+
+        [circuits."U33-500/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-500/trefoil".parts.rho]
+        nominal = 1000.0
+
+        [circuits."U33-500/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-500/trefoil".parts.width]
+        coordinate = "width_U33_3"
+        lower = 0.000764999999999986
+        nominal = 0.0008500000000000001
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.0009350000000000142
+    [[circuits."U33-500/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.0
+    key = "layer.2"
+    kind = "insulator"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    theta_max = 90.0
+
+        [circuits."U33-500/trefoil".parts.eps_r]
+        coordinate = "eps_r_U33_2"
+        lower = 2.0999999999999424
+        nominal = 2.4
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 2.5000000000000577
+
+        [circuits."U33-500/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-500/trefoil".parts.rho]
+        nominal = 1.1e14
+
+        [circuits."U33-500/trefoil".parts.tan_delta]
+        nominal = 0.0003
+
+        [circuits."U33-500/trefoil".parts.width]
+        coordinate = "width_U33_4"
+        lower = 0.007599999999999777
+        nominal = 0.008000000000000002
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.008400000000000225
+    [[circuits."U33-500/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.0
+    key = "layer.3"
+    kind = "semicon"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    theta_max = 90.0
+
+        [circuits."U33-500/trefoil".parts.eps_r]
+        coordinate = "eps_r_U33_1"
+        lower = 99.99999999976714
+        nominal = 1000.0
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 10000.000000000236
+
+        [circuits."U33-500/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-500/trefoil".parts.rho]
+        nominal = 500.0
+
+        [circuits."U33-500/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-500/trefoil".parts.width]
+        coordinate = "width_U33_5"
+        lower = 0.0008099999999999737
+        nominal = 0.0009000000000000015
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.0009900000000000295
+    [[circuits."U33-500/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.00393
+    key = "tube.2"
+    kind = "conductor"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    terminal = "sheath"
+    theta_max = 90.0
+
+        [circuits."U33-500/trefoil".parts.eps_r]
+        nominal = 1.0
+
+        [circuits."U33-500/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-500/trefoil".parts.resistance]
+        coordinate = "resistance_U33_2"
+        lower = 0.00024113569999999312
+        nominal = 0.0002630000000000003
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.00033535130000000754
+
+        [circuits."U33-500/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-500/trefoil".parts.width]
+        nominal = 0.00044923979470144065
+    [[circuits."U33-500/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.0
+    key = "layer.4"
+    kind = "insulator"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    theta_max = 90.0
+
+        [circuits."U33-500/trefoil".parts.eps_r]
+        nominal = 8.0
+
+        [circuits."U33-500/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-500/trefoil".parts.rho]
+        nominal = 1.0e14
+
+        [circuits."U33-500/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-500/trefoil".parts.width]
+        coordinate = "width_U33_8"
+        lower = 0.0038176847900007463
+        nominal = 0.003850760205298561
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.004895136887016394
+
+[circuits."U33-630/trefoil"]
+family_name = "U33"
+id = "U33"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls, nominal circuit U33-630/trefoil"
+
+    [circuits."U33-630/trefoil".center_y]
+    nominal = -0.8
+
+    [circuits."U33-630/trefoil".earth.eps]
+    nominal = 10.0
+
+    [circuits."U33-630/trefoil".earth.rho]
+    coordinate = "rho_EARTH_1"
+    lower = 9.999999999985445
+    nominal = 100.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 1000.0000000000148
+
+    [[circuits."U33-630/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.00403
+    key = "tube.1"
+    kind = "conductor"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    terminal = "core"
+    theta_max = 90.0
+
+        [circuits."U33-630/trefoil".parts.eps_r]
+        nominal = 1.0
+
+        [circuits."U33-630/trefoil".parts.hole]
+        nominal = 0.0
+
+        [circuits."U33-630/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-630/trefoil".parts.resistance]
+        coordinate = "resistance_U33_4"
+        lower = 4.1363069999999114e-5
+        nominal = 4.69e-5
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 6.013049000000089e-5
+
+        [circuits."U33-630/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-630/trefoil".parts.width]
+        coordinate = "width_U33_1"
+        lower = 0.014949999999999774
+        nominal = 0.01495
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.015150000000000226
+    [[circuits."U33-630/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.0
+    key = "layer.1"
+    kind = "semicon"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    theta_max = 90.0
+
+        [circuits."U33-630/trefoil".parts.eps_r]
+        coordinate = "eps_r_U33_1"
+        lower = 99.99999999976714
+        nominal = 1000.0
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 10000.000000000236
+
+        [circuits."U33-630/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-630/trefoil".parts.rho]
+        nominal = 1000.0
+
+        [circuits."U33-630/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-630/trefoil".parts.width]
+        coordinate = "width_U33_3"
+        lower = 0.0009449999999999717
+        nominal = 0.0010500000000000006
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.0011550000000000297
+    [[circuits."U33-630/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.0
+    key = "layer.2"
+    kind = "insulator"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    theta_max = 90.0
+
+        [circuits."U33-630/trefoil".parts.eps_r]
+        coordinate = "eps_r_U33_2"
+        lower = 2.0999999999999424
+        nominal = 2.4
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 2.5000000000000577
+
+        [circuits."U33-630/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-630/trefoil".parts.rho]
+        nominal = 1.1e14
+
+        [circuits."U33-630/trefoil".parts.tan_delta]
+        nominal = 0.0003
+
+        [circuits."U33-630/trefoil".parts.width]
+        coordinate = "width_U33_4"
+        lower = 0.007599999999999775
+        nominal = 0.008
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.008400000000000227
+    [[circuits."U33-630/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.0
+    key = "layer.3"
+    kind = "semicon"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    theta_max = 90.0
+
+        [circuits."U33-630/trefoil".parts.eps_r]
+        coordinate = "eps_r_U33_1"
+        lower = 99.99999999976714
+        nominal = 1000.0
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 10000.000000000236
+
+        [circuits."U33-630/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-630/trefoil".parts.rho]
+        nominal = 500.0
+
+        [circuits."U33-630/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-630/trefoil".parts.width]
+        coordinate = "width_U33_5"
+        lower = 0.0008099999999999737
+        nominal = 0.0009000000000000015
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.0009900000000000295
+    [[circuits."U33-630/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.00393
+    key = "tube.2"
+    kind = "conductor"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    terminal = "sheath"
+    theta_max = 90.0
+
+        [circuits."U33-630/trefoil".parts.eps_r]
+        nominal = 1.0
+
+        [circuits."U33-630/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-630/trefoil".parts.resistance]
+        coordinate = "resistance_U33_2"
+        lower = 0.00024113569999999193
+        nominal = 0.0002630000000000017
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.00033535130000000927
+
+        [circuits."U33-630/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-630/trefoil".parts.width]
+        nominal = 0.0004155455589921961
+    [[circuits."U33-630/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.0
+    key = "layer.4"
+    kind = "insulator"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    theta_max = 90.0
+
+        [circuits."U33-630/trefoil".parts.eps_r]
+        nominal = 8.0
+
+        [circuits."U33-630/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-630/trefoil".parts.rho]
+        nominal = 1.0e14
+
+        [circuits."U33-630/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-630/trefoil".parts.width]
+        coordinate = "width_U33_10"
+        lower = 0.0039542931387755425
+        nominal = 0.003984454441007805
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.00506710981804461
+
+[circuits."U33-800/trefoil"]
+family_name = "U33"
+id = "U33"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls, nominal circuit U33-800/trefoil"
+
+    [circuits."U33-800/trefoil".center_y]
+    nominal = -0.8
+
+    [circuits."U33-800/trefoil".earth.eps]
+    nominal = 10.0
+
+    [circuits."U33-800/trefoil".earth.rho]
+    coordinate = "rho_EARTH_1"
+    lower = 9.999999999985445
+    nominal = 100.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    upper = 1000.0000000000148
+
+    [[circuits."U33-800/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.00403
+    key = "tube.1"
+    kind = "conductor"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    terminal = "core"
+    theta_max = 90.0
+
+        [circuits."U33-800/trefoil".parts.eps_r]
+        nominal = 1.0
+
+        [circuits."U33-800/trefoil".parts.hole]
+        nominal = 0.0
+
+        [circuits."U33-800/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-800/trefoil".parts.resistance]
+        coordinate = "resistance_U33_5"
+        lower = 3.243785999999912e-5
+        nominal = 3.669999999999999e-5
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 4.705307000000087e-5
+
+        [circuits."U33-800/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-800/trefoil".parts.width]
+        coordinate = "width_U33_1"
+        lower = 0.01709999999999955
+        nominal = 0.0171
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.01730000000000045
+    [[circuits."U33-800/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.0
+    key = "layer.1"
+    kind = "semicon"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    theta_max = 90.0
+
+        [circuits."U33-800/trefoil".parts.eps_r]
+        coordinate = "eps_r_U33_1"
+        lower = 99.99999999976714
+        nominal = 1000.0
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 10000.000000000236
+
+        [circuits."U33-800/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-800/trefoil".parts.rho]
+        nominal = 1000.0
+
+        [circuits."U33-800/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-800/trefoil".parts.width]
+        coordinate = "width_U33_3"
+        lower = 0.0009449999999999734
+        nominal = 0.0010499999999999989
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.001155000000000028
+    [[circuits."U33-800/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.0
+    key = "layer.2"
+    kind = "insulator"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    theta_max = 90.0
+
+        [circuits."U33-800/trefoil".parts.eps_r]
+        coordinate = "eps_r_U33_2"
+        lower = 2.0999999999999424
+        nominal = 2.4
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 2.5000000000000577
+
+        [circuits."U33-800/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-800/trefoil".parts.rho]
+        nominal = 1.1e14
+
+        [circuits."U33-800/trefoil".parts.tan_delta]
+        nominal = 0.0003
+
+        [circuits."U33-800/trefoil".parts.width]
+        coordinate = "width_U33_4"
+        lower = 0.007599999999999775
+        nominal = 0.008
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.008400000000000227
+    [[circuits."U33-800/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.0
+    key = "layer.3"
+    kind = "semicon"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    theta_max = 90.0
+
+        [circuits."U33-800/trefoil".parts.eps_r]
+        coordinate = "eps_r_U33_1"
+        lower = 99.99999999976714
+        nominal = 1000.0
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 10000.000000000236
+
+        [circuits."U33-800/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-800/trefoil".parts.rho]
+        nominal = 500.0
+
+        [circuits."U33-800/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-800/trefoil".parts.width]
+        coordinate = "width_U33_5"
+        lower = 0.0008099999999999737
+        nominal = 0.0009000000000000015
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.0009900000000000295
+    [[circuits."U33-800/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.00393
+    key = "tube.2"
+    kind = "conductor"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    terminal = "sheath"
+    theta_max = 90.0
+
+        [circuits."U33-800/trefoil".parts.eps_r]
+        nominal = 1.0
+
+        [circuits."U33-800/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-800/trefoil".parts.resistance]
+        coordinate = "resistance_U33_2"
+        lower = 0.00024113569999999193
+        nominal = 0.0002630000000000003
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.00033535130000000754
+
+        [circuits."U33-800/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-800/trefoil".parts.width]
+        nominal = 0.0003829974109540134
+    [[circuits."U33-800/trefoil".parts]]
+    T0 = 20.0
+    alpha = 0.0
+    key = "layer.4"
+    kind = "insulator"
+    rho_thermal = 0.0
+    sigma_solar = 0.0
+    theta_max = 90.0
+
+        [circuits."U33-800/trefoil".parts.eps_r]
+        nominal = 8.0
+
+        [circuits."U33-800/trefoil".parts.mu_r]
+        nominal = 1.0
+
+        [circuits."U33-800/trefoil".parts.rho]
+        nominal = 1.0e14
+
+        [circuits."U33-800/trefoil".parts.tan_delta]
+        nominal = 0.0
+
+        [circuits."U33-800/trefoil".parts.width]
+        coordinate = "width_U33_12"
+        lower = 0.004239939230847362
+        nominal = 0.0042670025890459845
+        provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+        upper = 0.005437791209097187
+
+[coordinates.eps_r_U33_1]
+definition = "Relative permittivity of an annular layer"
+family = "U33"
+lower = -1.0
+nominal = 0.0
+physical_unit = "1"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.1.layer.1.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.1.layer.3.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.2.layer.1.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.2.layer.3.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.3.layer.1.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.3.layer.3.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.1.layer.1.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.1.layer.3.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.2.layer.1.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.2.layer.3.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.3.layer.1.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.3.layer.3.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.1.layer.1.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.1.layer.3.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.2.layer.1.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.2.layer.3.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.3.layer.1.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.3.layer.3.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.1.layer.1.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.1.layer.3.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.2.layer.1.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.2.layer.3.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.3.layer.1.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+    [[coordinates.eps_r_U33_1.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.3.layer.3.eps_r"
+    lower = 99.99999999976714
+    nominal = 1000.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 10000.000000000236
+
+[coordinates.eps_r_U33_2]
+definition = "Relative permittivity of an annular layer"
+family = "U33"
+lower = -1.0
+nominal = 0.0
+physical_unit = "1"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.eps_r_U33_2.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.1.layer.2.eps_r"
+    lower = 2.0999999999999424
+    nominal = 2.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 2.5000000000000577
+    [[coordinates.eps_r_U33_2.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.2.layer.2.eps_r"
+    lower = 2.0999999999999424
+    nominal = 2.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 2.5000000000000577
+    [[coordinates.eps_r_U33_2.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.3.layer.2.eps_r"
+    lower = 2.0999999999999424
+    nominal = 2.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 2.5000000000000577
+    [[coordinates.eps_r_U33_2.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.1.layer.2.eps_r"
+    lower = 2.0999999999999424
+    nominal = 2.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 2.5000000000000577
+    [[coordinates.eps_r_U33_2.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.2.layer.2.eps_r"
+    lower = 2.0999999999999424
+    nominal = 2.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 2.5000000000000577
+    [[coordinates.eps_r_U33_2.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.3.layer.2.eps_r"
+    lower = 2.0999999999999424
+    nominal = 2.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 2.5000000000000577
+    [[coordinates.eps_r_U33_2.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.1.layer.2.eps_r"
+    lower = 2.0999999999999424
+    nominal = 2.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 2.5000000000000577
+    [[coordinates.eps_r_U33_2.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.2.layer.2.eps_r"
+    lower = 2.0999999999999424
+    nominal = 2.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 2.5000000000000577
+    [[coordinates.eps_r_U33_2.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.3.layer.2.eps_r"
+    lower = 2.0999999999999424
+    nominal = 2.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 2.5000000000000577
+    [[coordinates.eps_r_U33_2.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.1.layer.2.eps_r"
+    lower = 2.0999999999999424
+    nominal = 2.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 2.5000000000000577
+    [[coordinates.eps_r_U33_2.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.2.layer.2.eps_r"
+    lower = 2.0999999999999424
+    nominal = 2.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 2.5000000000000577
+    [[coordinates.eps_r_U33_2.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.3.layer.2.eps_r"
+    lower = 2.0999999999999424
+    nominal = 2.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 2.5000000000000577
+
+[coordinates.mu_r_ACSR_1]
+definition = "Relative permeability of an equivalent tube"
+family = "ACSR"
+lower = -1.0
+nominal = 0.0
+physical_unit = "1"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.mu_r_ACSR_1.members]]
+    circuit = "Bear/O132-D"
+    field = "cable.1.tube.1.mu_r"
+    lower = 0.793811124835649
+    nominal = 0.8183086667192967
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 0.8745211544125697
+    [[coordinates.mu_r_ACSR_1.members]]
+    circuit = "Bear/O132-D"
+    field = "cable.2.tube.1.mu_r"
+    lower = 0.793811124835649
+    nominal = 0.8183086667192967
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 0.8745211544125697
+    [[coordinates.mu_r_ACSR_1.members]]
+    circuit = "Bear/O132-D"
+    field = "cable.3.tube.1.mu_r"
+    lower = 0.793811124835649
+    nominal = 0.8183086667192967
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 0.8745211544125697
+
+[coordinates.mu_r_ACSR_2]
+definition = "Relative permeability of an equivalent tube"
+family = "ACSR"
+lower = -1.0
+nominal = 0.0
+physical_unit = "1"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.mu_r_ACSR_2.members]]
+    circuit = "Goat/O132-D"
+    field = "cable.1.tube.1.mu_r"
+    lower = 0.793455560186789
+    nominal = 0.8183086667192221
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 0.8746559128135554
+    [[coordinates.mu_r_ACSR_2.members]]
+    circuit = "Goat/O132-D"
+    field = "cable.2.tube.1.mu_r"
+    lower = 0.793455560186789
+    nominal = 0.8183086667192221
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 0.8746559128135554
+    [[coordinates.mu_r_ACSR_2.members]]
+    circuit = "Goat/O132-D"
+    field = "cable.3.tube.1.mu_r"
+    lower = 0.793455560186789
+    nominal = 0.8183086667192221
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 0.8746559128135554
+
+[coordinates.mu_r_ACSR_3]
+definition = "Relative permeability of an equivalent tube"
+family = "ACSR"
+lower = -1.0
+nominal = 0.0
+physical_unit = "1"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.mu_r_ACSR_3.members]]
+    circuit = "Lion/O132-D"
+    field = "cable.1.tube.1.mu_r"
+    lower = 0.7935835510064775
+    nominal = 0.8183086667192363
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 0.874607182495087
+    [[coordinates.mu_r_ACSR_3.members]]
+    circuit = "Lion/O132-D"
+    field = "cable.2.tube.1.mu_r"
+    lower = 0.7935835510064775
+    nominal = 0.8183086667192363
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 0.874607182495087
+    [[coordinates.mu_r_ACSR_3.members]]
+    circuit = "Lion/O132-D"
+    field = "cable.3.tube.1.mu_r"
+    lower = 0.7935835510064775
+    nominal = 0.8183086667192363
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 0.874607182495087
+
+[coordinates.mu_r_ACSR_4]
+definition = "Relative permeability of an equivalent tube"
+family = "ACSR"
+lower = -1.0
+nominal = 0.0
+physical_unit = "1"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.mu_r_ACSR_4.members]]
+    circuit = "Panther/O132-D"
+    field = "cable.1.tube.1.mu_r"
+    lower = 0.7933148858577395
+    nominal = 0.8183086667192221
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 0.874709761046603
+    [[coordinates.mu_r_ACSR_4.members]]
+    circuit = "Panther/O132-D"
+    field = "cable.2.tube.1.mu_r"
+    lower = 0.7933148858577395
+    nominal = 0.8183086667192221
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 0.874709761046603
+    [[coordinates.mu_r_ACSR_4.members]]
+    circuit = "Panther/O132-D"
+    field = "cable.3.tube.1.mu_r"
+    lower = 0.7933148858577395
+    nominal = 0.8183086667192221
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 0.874709761046603
+
+[coordinates.mu_r_O132_1]
+definition = "Relative permeability of an equivalent tube"
+family = "O132"
+lower = -1.0
+nominal = 0.0
+physical_unit = "1"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.mu_r_O132_1.members]]
+    circuit = "Bear/O132-D"
+    field = "cable.4.tube.1.mu_r"
+    lower = 8.28610280082756
+    nominal = 15.429067910490257
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 44.000928349138334
+    [[coordinates.mu_r_O132_1.members]]
+    circuit = "Goat/O132-D"
+    field = "cable.4.tube.1.mu_r"
+    lower = 8.28610280082756
+    nominal = 15.429067910490257
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 44.000928349138334
+    [[coordinates.mu_r_O132_1.members]]
+    circuit = "Lion/O132-D"
+    field = "cable.4.tube.1.mu_r"
+    lower = 8.28610280082756
+    nominal = 15.429067910490257
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 44.000928349138334
+    [[coordinates.mu_r_O132_1.members]]
+    circuit = "Panther/O132-D"
+    field = "cable.4.tube.1.mu_r"
+    lower = 8.28610280082756
+    nominal = 15.429067910490257
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "1"
+    upper = 44.000928349138334
+
+[coordinates.resistance_ACSR_1]
+definition = "Operating DC resistance per unit length of an equivalent tube"
+family = "ACSR"
+lower = -1.0
+nominal = 0.0
+physical_unit = "ohm/m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.resistance_ACSR_1.members]]
+    circuit = "Bear/O132-D"
+    field = "cable.1.tube.1.resistance"
+    lower = 9.176931151412696e-5
+    nominal = 0.00010653238344224915
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00013526925858673306
+    [[coordinates.resistance_ACSR_1.members]]
+    circuit = "Bear/O132-D"
+    field = "cable.2.tube.1.resistance"
+    lower = 9.176931151412696e-5
+    nominal = 0.00010653238344224915
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00013526925858673306
+    [[coordinates.resistance_ACSR_1.members]]
+    circuit = "Bear/O132-D"
+    field = "cable.3.tube.1.resistance"
+    lower = 9.176931151412696e-5
+    nominal = 0.00010653238344224915
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00013526925858673306
+
+[coordinates.resistance_ACSR_2]
+definition = "Operating DC resistance per unit length of an equivalent tube"
+family = "ACSR"
+lower = -1.0
+nominal = 0.0
+physical_unit = "ohm/m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.resistance_ACSR_2.members]]
+    circuit = "Goat/O132-D"
+    field = "cable.1.tube.1.resistance"
+    lower = 7.48237152060291e-5
+    nominal = 8.686072269023333e-5
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00011029121079399282
+    [[coordinates.resistance_ACSR_2.members]]
+    circuit = "Goat/O132-D"
+    field = "cable.2.tube.1.resistance"
+    lower = 7.48237152060291e-5
+    nominal = 8.686072269023333e-5
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00011029121079399282
+    [[coordinates.resistance_ACSR_2.members]]
+    circuit = "Goat/O132-D"
+    field = "cable.3.tube.1.resistance"
+    lower = 7.48237152060291e-5
+    nominal = 8.686072269023333e-5
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00011029121079399282
+
+[coordinates.resistance_ACSR_3]
+definition = "Operating DC resistance per unit length of an equivalent tube"
+family = "ACSR"
+lower = -1.0
+nominal = 0.0
+physical_unit = "ohm/m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.resistance_ACSR_3.members]]
+    circuit = "Lion/O132-D"
+    field = "cable.1.tube.1.resistance"
+    lower = 0.00010184339014153841
+    nominal = 0.00011822709477281764
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00015011859246960238
+    [[coordinates.resistance_ACSR_3.members]]
+    circuit = "Lion/O132-D"
+    field = "cable.2.tube.1.resistance"
+    lower = 0.00010184339014153841
+    nominal = 0.00011822709477281764
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00015011859246960238
+    [[coordinates.resistance_ACSR_3.members]]
+    circuit = "Lion/O132-D"
+    field = "cable.3.tube.1.resistance"
+    lower = 0.00010184339014153841
+    nominal = 0.00011822709477281764
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00015011859246960238
+
+[coordinates.resistance_ACSR_4]
+definition = "Operating DC resistance per unit length of an equivalent tube"
+family = "ACSR"
+lower = -1.0
+nominal = 0.0
+physical_unit = "ohm/m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.resistance_ACSR_4.members]]
+    circuit = "Panther/O132-D"
+    field = "cable.1.tube.1.resistance"
+    lower = 0.00011443123316303307
+    nominal = 0.00013283996368673788
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00016867325049884488
+    [[coordinates.resistance_ACSR_4.members]]
+    circuit = "Panther/O132-D"
+    field = "cable.2.tube.1.resistance"
+    lower = 0.00011443123316303307
+    nominal = 0.00013283996368673788
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00016867325049884488
+    [[coordinates.resistance_ACSR_4.members]]
+    circuit = "Panther/O132-D"
+    field = "cable.3.tube.1.resistance"
+    lower = 0.00011443123316303307
+    nominal = 0.00013283996368673788
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00016867325049884488
+
+[coordinates.resistance_O132_1]
+definition = "Operating DC resistance per unit length of an equivalent tube"
+family = "O132"
+lower = -1.0
+nominal = 0.0
+physical_unit = "ohm/m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.resistance_O132_1.members]]
+    circuit = "Bear/O132-D"
+    field = "cable.4.tube.1.resistance"
+    lower = 0.002920941551938134
+    nominal = 0.003545151439459886
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.004488268037748529
+    [[coordinates.resistance_O132_1.members]]
+    circuit = "Goat/O132-D"
+    field = "cable.4.tube.1.resistance"
+    lower = 0.002920941551938134
+    nominal = 0.003545151439459886
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.004488268037748529
+    [[coordinates.resistance_O132_1.members]]
+    circuit = "Lion/O132-D"
+    field = "cable.4.tube.1.resistance"
+    lower = 0.002920941551938134
+    nominal = 0.003545151439459886
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.004488268037748529
+    [[coordinates.resistance_O132_1.members]]
+    circuit = "Panther/O132-D"
+    field = "cable.4.tube.1.resistance"
+    lower = 0.002920941551938134
+    nominal = 0.003545151439459886
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.004488268037748529
+
+[coordinates.resistance_U33_1]
+definition = "Operating DC resistance per unit length of an equivalent tube"
+family = "U33"
+lower = -1.0
+nominal = 0.0
+physical_unit = "ohm/m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.resistance_U33_1.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.1.tube.1.resistance"
+    lower = 6.871451999999824e-5
+    nominal = 7.780000000000001e-5
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 9.974738000000178e-5
+    [[coordinates.resistance_U33_1.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.2.tube.1.resistance"
+    lower = 6.871451999999824e-5
+    nominal = 7.780000000000001e-5
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 9.974738000000178e-5
+    [[coordinates.resistance_U33_1.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.3.tube.1.resistance"
+    lower = 6.871451999999824e-5
+    nominal = 7.780000000000001e-5
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 9.974738000000178e-5
+
+[coordinates.resistance_U33_2]
+definition = "Operating DC resistance per unit length of an equivalent tube"
+family = "U33"
+lower = -1.0
+nominal = 0.0
+physical_unit = "ohm/m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 2.350203365253378e-13
+unit = "1"
+upper = 1.0
+
+    [[coordinates.resistance_U33_2.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.1.tube.2.resistance"
+    lower = 0.00024113569999999256
+    nominal = 0.0002629999999999996
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.0003353513000000066
+    [[coordinates.resistance_U33_2.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.2.tube.2.resistance"
+    lower = 0.00024113569999999256
+    nominal = 0.0002629999999999996
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.0003353513000000066
+    [[coordinates.resistance_U33_2.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.3.tube.2.resistance"
+    lower = 0.00024113569999999256
+    nominal = 0.0002629999999999996
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.0003353513000000066
+    [[coordinates.resistance_U33_2.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.1.tube.2.resistance"
+    lower = 0.00024113569999999312
+    nominal = 0.0002630000000000003
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00033535130000000754
+    [[coordinates.resistance_U33_2.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.2.tube.2.resistance"
+    lower = 0.00024113569999999312
+    nominal = 0.0002630000000000003
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00033535130000000754
+    [[coordinates.resistance_U33_2.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.3.tube.2.resistance"
+    lower = 0.00024113569999999312
+    nominal = 0.0002630000000000003
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00033535130000000754
+    [[coordinates.resistance_U33_2.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.1.tube.2.resistance"
+    lower = 0.00024113569999999193
+    nominal = 0.0002630000000000017
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00033535130000000927
+    [[coordinates.resistance_U33_2.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.2.tube.2.resistance"
+    lower = 0.00024113569999999193
+    nominal = 0.0002630000000000017
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00033535130000000927
+    [[coordinates.resistance_U33_2.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.3.tube.2.resistance"
+    lower = 0.00024113569999999193
+    nominal = 0.0002630000000000017
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00033535130000000927
+    [[coordinates.resistance_U33_2.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.1.tube.2.resistance"
+    lower = 0.00024113569999999193
+    nominal = 0.0002630000000000003
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00033535130000000754
+    [[coordinates.resistance_U33_2.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.2.tube.2.resistance"
+    lower = 0.00024113569999999193
+    nominal = 0.0002630000000000003
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00033535130000000754
+    [[coordinates.resistance_U33_2.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.3.tube.2.resistance"
+    lower = 0.00024113569999999193
+    nominal = 0.0002630000000000003
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 0.00033535130000000754
+
+[coordinates.resistance_U33_3]
+definition = "Operating DC resistance per unit length of an equivalent tube"
+family = "U33"
+lower = -1.0
+nominal = 0.0
+physical_unit = "ohm/m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.resistance_U33_3.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.1.tube.1.resistance"
+    lower = 5.345528999999825e-5
+    nominal = 6.05e-5
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 7.756705000000176e-5
+    [[coordinates.resistance_U33_3.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.2.tube.1.resistance"
+    lower = 5.345528999999825e-5
+    nominal = 6.05e-5
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 7.756705000000176e-5
+    [[coordinates.resistance_U33_3.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.3.tube.1.resistance"
+    lower = 5.345528999999825e-5
+    nominal = 6.05e-5
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 7.756705000000176e-5
+
+[coordinates.resistance_U33_4]
+definition = "Operating DC resistance per unit length of an equivalent tube"
+family = "U33"
+lower = -1.0
+nominal = 0.0
+physical_unit = "ohm/m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.resistance_U33_4.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.1.tube.1.resistance"
+    lower = 4.1363069999999114e-5
+    nominal = 4.69e-5
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 6.013049000000089e-5
+    [[coordinates.resistance_U33_4.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.2.tube.1.resistance"
+    lower = 4.1363069999999114e-5
+    nominal = 4.69e-5
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 6.013049000000089e-5
+    [[coordinates.resistance_U33_4.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.3.tube.1.resistance"
+    lower = 4.1363069999999114e-5
+    nominal = 4.69e-5
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 6.013049000000089e-5
+
+[coordinates.resistance_U33_5]
+definition = "Operating DC resistance per unit length of an equivalent tube"
+family = "U33"
+lower = -1.0
+nominal = 0.0
+physical_unit = "ohm/m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.resistance_U33_5.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.1.tube.1.resistance"
+    lower = 3.243785999999912e-5
+    nominal = 3.669999999999999e-5
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 4.705307000000087e-5
+    [[coordinates.resistance_U33_5.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.2.tube.1.resistance"
+    lower = 3.243785999999912e-5
+    nominal = 3.669999999999999e-5
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 4.705307000000087e-5
+    [[coordinates.resistance_U33_5.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.3.tube.1.resistance"
+    lower = 3.243785999999912e-5
+    nominal = 3.669999999999999e-5
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm/m"
+    upper = 4.705307000000087e-5
+
+[coordinates.rho_EARTH_1]
+definition = "Homogeneous earth resistivity"
+family = "EARTH"
+lower = -1.0
+nominal = 0.0
+physical_unit = "ohm*m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.rho_EARTH_1.members]]
+    circuit = "Bear/O132-D"
+    field = "earth.rho"
+    lower = 9.999999999985445
+    nominal = 100.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm*m"
+    upper = 1000.0000000000148
+    [[coordinates.rho_EARTH_1.members]]
+    circuit = "Goat/O132-D"
+    field = "earth.rho"
+    lower = 9.999999999985445
+    nominal = 100.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm*m"
+    upper = 1000.0000000000148
+    [[coordinates.rho_EARTH_1.members]]
+    circuit = "Lion/O132-D"
+    field = "earth.rho"
+    lower = 9.999999999985445
+    nominal = 100.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm*m"
+    upper = 1000.0000000000148
+    [[coordinates.rho_EARTH_1.members]]
+    circuit = "Panther/O132-D"
+    field = "earth.rho"
+    lower = 9.999999999985445
+    nominal = 100.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm*m"
+    upper = 1000.0000000000148
+    [[coordinates.rho_EARTH_1.members]]
+    circuit = "U33-400/trefoil"
+    field = "earth.rho"
+    lower = 9.999999999985445
+    nominal = 100.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm*m"
+    upper = 1000.0000000000148
+    [[coordinates.rho_EARTH_1.members]]
+    circuit = "U33-500/trefoil"
+    field = "earth.rho"
+    lower = 9.999999999985445
+    nominal = 100.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm*m"
+    upper = 1000.0000000000148
+    [[coordinates.rho_EARTH_1.members]]
+    circuit = "U33-630/trefoil"
+    field = "earth.rho"
+    lower = 9.999999999985445
+    nominal = 100.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm*m"
+    upper = 1000.0000000000148
+    [[coordinates.rho_EARTH_1.members]]
+    circuit = "U33-800/trefoil"
+    field = "earth.rho"
+    lower = 9.999999999985445
+    nominal = 100.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "ohm*m"
+    upper = 1000.0000000000148
+
+[coordinates.width_ACSR_1]
+definition = "Radial width of an equivalent tube or annular layer"
+family = "ACSR"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.width_ACSR_1.members]]
+    circuit = "Bear/O132-D"
+    field = "cable.1.tube.1.width"
+    lower = 0.011607749999999717
+    nominal = 0.011725000000000001
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.011842250000000283
+    [[coordinates.width_ACSR_1.members]]
+    circuit = "Bear/O132-D"
+    field = "cable.2.tube.1.width"
+    lower = 0.011607749999999717
+    nominal = 0.011725000000000001
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.011842250000000283
+    [[coordinates.width_ACSR_1.members]]
+    circuit = "Bear/O132-D"
+    field = "cable.3.tube.1.width"
+    lower = 0.011607749999999717
+    nominal = 0.011725000000000001
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.011842250000000283
+
+[coordinates.width_ACSR_2]
+definition = "Radial width of an equivalent tube or annular layer"
+family = "ACSR"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.width_ACSR_2.members]]
+    circuit = "Goat/O132-D"
+    field = "cable.1.tube.1.width"
+    lower = 0.012855149999999718
+    nominal = 0.012985
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.013114850000000282
+    [[coordinates.width_ACSR_2.members]]
+    circuit = "Goat/O132-D"
+    field = "cable.2.tube.1.width"
+    lower = 0.012855149999999718
+    nominal = 0.012985
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.013114850000000282
+    [[coordinates.width_ACSR_2.members]]
+    circuit = "Goat/O132-D"
+    field = "cable.3.tube.1.width"
+    lower = 0.012855149999999718
+    nominal = 0.012985
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.013114850000000282
+
+[coordinates.width_ACSR_3]
+definition = "Radial width of an equivalent tube or annular layer"
+family = "ACSR"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.width_ACSR_3.members]]
+    circuit = "Lion/O132-D"
+    field = "cable.1.tube.1.width"
+    lower = 0.01101869999999972
+    nominal = 0.011130000000000001
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.011241300000000282
+    [[coordinates.width_ACSR_3.members]]
+    circuit = "Lion/O132-D"
+    field = "cable.2.tube.1.width"
+    lower = 0.01101869999999972
+    nominal = 0.011130000000000001
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.011241300000000282
+    [[coordinates.width_ACSR_3.members]]
+    circuit = "Lion/O132-D"
+    field = "cable.3.tube.1.width"
+    lower = 0.01101869999999972
+    nominal = 0.011130000000000001
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.011241300000000282
+
+[coordinates.width_ACSR_4]
+definition = "Radial width of an equivalent tube or annular layer"
+family = "ACSR"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.width_ACSR_4.members]]
+    circuit = "Panther/O132-D"
+    field = "cable.1.tube.1.width"
+    lower = 0.010394999999999719
+    nominal = 0.0105
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.010605000000000281
+    [[coordinates.width_ACSR_4.members]]
+    circuit = "Panther/O132-D"
+    field = "cable.2.tube.1.width"
+    lower = 0.010394999999999719
+    nominal = 0.0105
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.010605000000000281
+    [[coordinates.width_ACSR_4.members]]
+    circuit = "Panther/O132-D"
+    field = "cable.3.tube.1.width"
+    lower = 0.010394999999999719
+    nominal = 0.0105
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.010605000000000281
+
+[coordinates.width_U33_1]
+definition = "Radial width of an equivalent tube or annular layer"
+family = "U33"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 1.1357581541915351e-12
+unit = "1"
+upper = 1.0
+
+    [[coordinates.width_U33_1.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.1.tube.1.width"
+    lower = 0.011499999999999774
+    nominal = 0.0115
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.011700000000000226
+    [[coordinates.width_U33_1.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.2.tube.1.width"
+    lower = 0.011499999999999774
+    nominal = 0.0115
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.011700000000000226
+    [[coordinates.width_U33_1.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.3.tube.1.width"
+    lower = 0.011499999999999774
+    nominal = 0.0115
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.011700000000000226
+    [[coordinates.width_U33_1.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.1.tube.1.width"
+    lower = 0.013249999999999774
+    nominal = 0.01325
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.013450000000000226
+    [[coordinates.width_U33_1.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.2.tube.1.width"
+    lower = 0.013249999999999774
+    nominal = 0.01325
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.013450000000000226
+    [[coordinates.width_U33_1.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.3.tube.1.width"
+    lower = 0.013249999999999774
+    nominal = 0.01325
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.013450000000000226
+    [[coordinates.width_U33_1.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.1.tube.1.width"
+    lower = 0.014949999999999774
+    nominal = 0.01495
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.015150000000000226
+    [[coordinates.width_U33_1.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.2.tube.1.width"
+    lower = 0.014949999999999774
+    nominal = 0.01495
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.015150000000000226
+    [[coordinates.width_U33_1.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.3.tube.1.width"
+    lower = 0.014949999999999774
+    nominal = 0.01495
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.015150000000000226
+    [[coordinates.width_U33_1.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.1.tube.1.width"
+    lower = 0.01709999999999955
+    nominal = 0.0171
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.01730000000000045
+    [[coordinates.width_U33_1.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.2.tube.1.width"
+    lower = 0.01709999999999955
+    nominal = 0.0171
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.01730000000000045
+    [[coordinates.width_U33_1.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.3.tube.1.width"
+    lower = 0.01709999999999955
+    nominal = 0.0171
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.01730000000000045
+
+[coordinates.width_U33_10]
+definition = "Radial width of an equivalent tube or annular layer"
+family = "U33"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.width_U33_10.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.1.layer.4.width"
+    lower = 0.0039542931387755425
+    nominal = 0.003984454441007805
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.00506710981804461
+    [[coordinates.width_U33_10.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.2.layer.4.width"
+    lower = 0.0039542931387755425
+    nominal = 0.003984454441007805
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.00506710981804461
+    [[coordinates.width_U33_10.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.3.layer.4.width"
+    lower = 0.0039542931387755425
+    nominal = 0.003984454441007805
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.00506710981804461
+
+[coordinates.width_U33_12]
+definition = "Radial width of an equivalent tube or annular layer"
+family = "U33"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.width_U33_12.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.1.layer.4.width"
+    lower = 0.004239939230847362
+    nominal = 0.0042670025890459845
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.005437791209097187
+    [[coordinates.width_U33_12.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.2.layer.4.width"
+    lower = 0.004239939230847362
+    nominal = 0.0042670025890459845
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.005437791209097187
+    [[coordinates.width_U33_12.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.3.layer.4.width"
+    lower = 0.004239939230847362
+    nominal = 0.0042670025890459845
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.005437791209097187
+
+[coordinates.width_U33_3]
+definition = "Radial width of an equivalent tube or annular layer"
+family = "U33"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 1.3433698597964394e-13
+unit = "1"
+upper = 1.0
+
+    [[coordinates.width_U33_3.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.1.layer.1.width"
+    lower = 0.000764999999999986
+    nominal = 0.0008500000000000001
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009350000000000142
+    [[coordinates.width_U33_3.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.2.layer.1.width"
+    lower = 0.000764999999999986
+    nominal = 0.0008500000000000001
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009350000000000142
+    [[coordinates.width_U33_3.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.3.layer.1.width"
+    lower = 0.000764999999999986
+    nominal = 0.0008500000000000001
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009350000000000142
+    [[coordinates.width_U33_3.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.1.layer.1.width"
+    lower = 0.000764999999999986
+    nominal = 0.0008500000000000001
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009350000000000142
+    [[coordinates.width_U33_3.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.2.layer.1.width"
+    lower = 0.000764999999999986
+    nominal = 0.0008500000000000001
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009350000000000142
+    [[coordinates.width_U33_3.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.3.layer.1.width"
+    lower = 0.000764999999999986
+    nominal = 0.0008500000000000001
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009350000000000142
+    [[coordinates.width_U33_3.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.1.layer.1.width"
+    lower = 0.0009449999999999717
+    nominal = 0.0010500000000000006
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0011550000000000297
+    [[coordinates.width_U33_3.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.2.layer.1.width"
+    lower = 0.0009449999999999717
+    nominal = 0.0010500000000000006
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0011550000000000297
+    [[coordinates.width_U33_3.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.3.layer.1.width"
+    lower = 0.0009449999999999717
+    nominal = 0.0010500000000000006
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0011550000000000297
+    [[coordinates.width_U33_3.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.1.layer.1.width"
+    lower = 0.0009449999999999734
+    nominal = 0.0010499999999999989
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.001155000000000028
+    [[coordinates.width_U33_3.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.2.layer.1.width"
+    lower = 0.0009449999999999734
+    nominal = 0.0010499999999999989
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.001155000000000028
+    [[coordinates.width_U33_3.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.3.layer.1.width"
+    lower = 0.0009449999999999734
+    nominal = 0.0010499999999999989
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.001155000000000028
+
+[coordinates.width_U33_4]
+definition = "Radial width of an equivalent tube or annular layer"
+family = "U33"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 1.3100631690576847e-14
+unit = "1"
+upper = 1.0
+
+    [[coordinates.width_U33_4.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.1.layer.2.width"
+    lower = 0.007599999999999775
+    nominal = 0.008
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.008400000000000227
+    [[coordinates.width_U33_4.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.2.layer.2.width"
+    lower = 0.007599999999999775
+    nominal = 0.008
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.008400000000000227
+    [[coordinates.width_U33_4.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.3.layer.2.width"
+    lower = 0.007599999999999775
+    nominal = 0.008
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.008400000000000227
+    [[coordinates.width_U33_4.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.1.layer.2.width"
+    lower = 0.007599999999999777
+    nominal = 0.008000000000000002
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.008400000000000225
+    [[coordinates.width_U33_4.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.2.layer.2.width"
+    lower = 0.007599999999999777
+    nominal = 0.008000000000000002
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.008400000000000225
+    [[coordinates.width_U33_4.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.3.layer.2.width"
+    lower = 0.007599999999999777
+    nominal = 0.008000000000000002
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.008400000000000225
+    [[coordinates.width_U33_4.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.1.layer.2.width"
+    lower = 0.007599999999999775
+    nominal = 0.008
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.008400000000000227
+    [[coordinates.width_U33_4.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.2.layer.2.width"
+    lower = 0.007599999999999775
+    nominal = 0.008
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.008400000000000227
+    [[coordinates.width_U33_4.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.3.layer.2.width"
+    lower = 0.007599999999999775
+    nominal = 0.008
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.008400000000000227
+    [[coordinates.width_U33_4.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.1.layer.2.width"
+    lower = 0.007599999999999775
+    nominal = 0.008
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.008400000000000227
+    [[coordinates.width_U33_4.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.2.layer.2.width"
+    lower = 0.007599999999999775
+    nominal = 0.008
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.008400000000000227
+    [[coordinates.width_U33_4.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.3.layer.2.width"
+    lower = 0.007599999999999775
+    nominal = 0.008
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.008400000000000227
+
+[coordinates.width_U33_5]
+definition = "Radial width of an equivalent tube or annular layer"
+family = "U33"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 3.863576125695545e-14
+unit = "1"
+upper = 1.0
+
+    [[coordinates.width_U33_5.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.1.layer.3.width"
+    lower = 0.0008099999999999737
+    nominal = 0.0009000000000000015
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009900000000000295
+    [[coordinates.width_U33_5.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.2.layer.3.width"
+    lower = 0.0008099999999999737
+    nominal = 0.0009000000000000015
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009900000000000295
+    [[coordinates.width_U33_5.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.3.layer.3.width"
+    lower = 0.0008099999999999737
+    nominal = 0.0009000000000000015
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009900000000000295
+    [[coordinates.width_U33_5.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.1.layer.3.width"
+    lower = 0.0008099999999999737
+    nominal = 0.0009000000000000015
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009900000000000295
+    [[coordinates.width_U33_5.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.2.layer.3.width"
+    lower = 0.0008099999999999737
+    nominal = 0.0009000000000000015
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009900000000000295
+    [[coordinates.width_U33_5.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.3.layer.3.width"
+    lower = 0.0008099999999999737
+    nominal = 0.0009000000000000015
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009900000000000295
+    [[coordinates.width_U33_5.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.1.layer.3.width"
+    lower = 0.0008099999999999737
+    nominal = 0.0009000000000000015
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009900000000000295
+    [[coordinates.width_U33_5.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.2.layer.3.width"
+    lower = 0.0008099999999999737
+    nominal = 0.0009000000000000015
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009900000000000295
+    [[coordinates.width_U33_5.members]]
+    circuit = "U33-630/trefoil"
+    field = "cable.3.layer.3.width"
+    lower = 0.0008099999999999737
+    nominal = 0.0009000000000000015
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009900000000000295
+    [[coordinates.width_U33_5.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.1.layer.3.width"
+    lower = 0.0008099999999999737
+    nominal = 0.0009000000000000015
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009900000000000295
+    [[coordinates.width_U33_5.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.2.layer.3.width"
+    lower = 0.0008099999999999737
+    nominal = 0.0009000000000000015
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009900000000000295
+    [[coordinates.width_U33_5.members]]
+    circuit = "U33-800/trefoil"
+    field = "cable.3.layer.3.width"
+    lower = 0.0008099999999999737
+    nominal = 0.0009000000000000015
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.0009900000000000295
+
+[coordinates.width_U33_6]
+definition = "Radial width of an equivalent tube or annular layer"
+family = "U33"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.width_U33_6.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.1.layer.4.width"
+    lower = 0.003677828251621335
+    nominal = 0.0037145601160360753
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.004731279277331539
+    [[coordinates.width_U33_6.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.2.layer.4.width"
+    lower = 0.003677828251621335
+    nominal = 0.0037145601160360753
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.004731279277331539
+    [[coordinates.width_U33_6.members]]
+    circuit = "U33-400/trefoil"
+    field = "cable.3.layer.4.width"
+    lower = 0.003677828251621335
+    nominal = 0.0037145601160360753
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.004731279277331539
+
+[coordinates.width_U33_8]
+definition = "Radial width of an equivalent tube or annular layer"
+family = "U33"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.width_U33_8.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.1.layer.4.width"
+    lower = 0.0038176847900007463
+    nominal = 0.003850760205298561
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.004895136887016394
+    [[coordinates.width_U33_8.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.2.layer.4.width"
+    lower = 0.0038176847900007463
+    nominal = 0.003850760205298561
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.004895136887016394
+    [[coordinates.width_U33_8.members]]
+    circuit = "U33-500/trefoil"
+    field = "cable.3.layer.4.width"
+    lower = 0.0038176847900007463
+    nominal = 0.003850760205298561
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 0.004895136887016394
+
+[coordinates.y_ACSR_1]
+definition = "Vertical placement of a circuit member"
+family = "ACSR"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 1.9051427102567686e-13
+unit = "1"
+upper = 1.0
+
+    [[coordinates.y_ACSR_1.members]]
+    circuit = "Bear/O132-D"
+    field = "cable.1.y"
+    lower = 12.739237485120668
+    nominal = 14.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 14.601707149929336
+    [[coordinates.y_ACSR_1.members]]
+    circuit = "Bear/O132-D"
+    field = "cable.2.y"
+    lower = 17.06923748512055
+    nominal = 18.33
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 18.93170714992945
+    [[coordinates.y_ACSR_1.members]]
+    circuit = "Bear/O132-D"
+    field = "cable.3.y"
+    lower = 12.739237485120668
+    nominal = 14.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 14.601707149929336
+
+[coordinates.y_ACSR_2]
+definition = "Vertical placement of a circuit member"
+family = "ACSR"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 1.9051427102567686e-13
+unit = "1"
+upper = 1.0
+
+    [[coordinates.y_ACSR_2.members]]
+    circuit = "Goat/O132-D"
+    field = "cable.1.y"
+    lower = 12.739320088966986
+    nominal = 14.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 14.601639607944133
+    [[coordinates.y_ACSR_2.members]]
+    circuit = "Goat/O132-D"
+    field = "cable.2.y"
+    lower = 17.069320088966865
+    nominal = 18.33
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 18.93163960794425
+    [[coordinates.y_ACSR_2.members]]
+    circuit = "Goat/O132-D"
+    field = "cable.3.y"
+    lower = 12.739320088966986
+    nominal = 14.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 14.601639607944133
+
+[coordinates.y_ACSR_3]
+definition = "Vertical placement of a circuit member"
+family = "ACSR"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 1.963984530561902e-13
+unit = "1"
+upper = 1.0
+
+    [[coordinates.y_ACSR_3.members]]
+    circuit = "Lion/O132-D"
+    field = "cable.1.y"
+    lower = 12.739599111764623
+    nominal = 14.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 14.601411546601426
+    [[coordinates.y_ACSR_3.members]]
+    circuit = "Lion/O132-D"
+    field = "cable.2.y"
+    lower = 17.069599111764504
+    nominal = 18.33
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 18.931411546601545
+    [[coordinates.y_ACSR_3.members]]
+    circuit = "Lion/O132-D"
+    field = "cable.3.y"
+    lower = 12.739599111764623
+    nominal = 14.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 14.601411546601426
+
+[coordinates.y_ACSR_4]
+definition = "Vertical placement of a circuit member"
+family = "ACSR"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 1.9340085088970227e-13
+unit = "1"
+upper = 1.0
+
+    [[coordinates.y_ACSR_4.members]]
+    circuit = "Panther/O132-D"
+    field = "cable.1.y"
+    lower = 12.739363600844237
+    nominal = 14.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 14.601604034573727
+    [[coordinates.y_ACSR_4.members]]
+    circuit = "Panther/O132-D"
+    field = "cable.2.y"
+    lower = 17.069363600844117
+    nominal = 18.33
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 18.931604034573844
+    [[coordinates.y_ACSR_4.members]]
+    circuit = "Panther/O132-D"
+    field = "cable.3.y"
+    lower = 12.739363600844237
+    nominal = 14.0
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 14.601604034573727
+
+[coordinates.y_O132_1]
+definition = "Vertical placement of a circuit member"
+family = "O132"
+lower = -1.0
+nominal = 0.0
+physical_unit = "m"
+provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+scale = "linear"
+sharing_error = 0.0
+unit = "1"
+upper = 1.0
+
+    [[coordinates.y_O132_1.members]]
+    circuit = "Bear/O132-D"
+    field = "cable.4.y"
+    lower = 24.995792827757814
+    nominal = 25.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 25.805456600107856
+    [[coordinates.y_O132_1.members]]
+    circuit = "Goat/O132-D"
+    field = "cable.4.y"
+    lower = 24.995792827757814
+    nominal = 25.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 25.805456600107856
+    [[coordinates.y_O132_1.members]]
+    circuit = "Lion/O132-D"
+    field = "cable.4.y"
+    lower = 24.995792827757814
+    nominal = 25.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 25.805456600107856
+    [[coordinates.y_O132_1.members]]
+    circuit = "Panther/O132-D"
+    field = "cable.4.y"
+    lower = 24.995792827757814
+    nominal = 25.4
+    provenance = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, LCM public flatten and the computed equivalent hulls"
+    scale = "linear"
+    unit = "m"
+    upper = 25.805456600107856

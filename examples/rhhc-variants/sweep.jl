@@ -43,7 +43,7 @@ function sweep(path)
                     end
                 end
             end
-            decision = best.change >= 1e-3 ? "yes" : "no"
+            decision = best.change >= METHOD.admission_threshold ? "yes" : "no"
             decision == "yes" && push!(admitted, string(key))
             @printf(io, "%s | %.12g | %s | %s | %s | %.0f | %s | %s\n",
                 key, best.change, best.circuit, best.sequence, best.quantity,

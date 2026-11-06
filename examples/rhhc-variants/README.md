@@ -20,9 +20,22 @@ uses U33-800. The other 33 kV cables use U33-500. The case files give every assi
 Cable lengths follow the scenario's retained routes. The overhead lengths follow
 `length_km = x_pu * zbase / OHL_X[132.0]`, with `OHL_X[132.0] = 0.40 Ω/km`.
 
+The uncertainty comparison has three levels. The first uses source physical inputs.
+The second uses the equivalents read by LCM's coaxial formulation. Future factors
+on per-unit-length R, L and C form the third level. The source case has 23
+coordinates, and its generated equivalent case has 35 after exact lumping,
+verified sharing and the 0.1 percent rule. Independent intervals discard the
+correlations between source inputs, and five screened widths stay nominal.
+The comparison script solves both cases and checks each solution on each box,
+with random points and an adversary that predicts corners from nominal sensitivities.
+The corner checks find violations on both solutions' own boxes despite HPM sign-off.
+These solutions do not certify the reported lower bounds.
+[Equivalent uncertainty](REDUCTION.md) documents the method,
+generated data and measured comparison.
+
 ## Dataset and construction
 
-The five LCM cases use one construction chain: `problem` resolves the family coordinates,
+The LCM cases use one construction chain: `problem` resolves the family coordinates,
 `arrangement` selects the formation's physical state, `design` builds the LCM conductors,
 and `system` places and connects them. The bindings select the coordinates of a case.
 A family input without a binding, or without a coordinate in the box, has its nominal value.
@@ -103,6 +116,7 @@ julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/run.jl cases
 
 Paths such as `cases/ieee30-tom.toml` are relative to this directory unless they already
 identify a file on disk. The solver is Clarabel. Ipopt solves the fundamental power flow.
+The studies and kit pin LCM at `59cc3f232` in `LineCableModels-hpm`.
 The scripts include the shared PCE parameters and scenario builders under `examples/shhc/`.
 
 `run.jl` writes `output/<case>.txt`. It computes the nominal stochastic capacity with a
