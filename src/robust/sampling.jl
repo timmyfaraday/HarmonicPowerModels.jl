@@ -125,26 +125,71 @@ end
 
 _max_harmonic(hdata::Dict) = maximum(parse(Int, nw) for nw in keys(hdata["nw"]))
 
+# Vertex of the parabola through three points (h1 < h2 < h3), or h2 when they are collinear
+function _parabola3(h1, f1, h2, f2, h3, f3)
+    num = (h2 - h1)^2 * (f2 - f3) - (h2 - h3)^2 * (f2 - f1)
+    den = (h2 - h1) * (f2 - f3) - (h2 - h3) * (f2 - f1)
+    return den == 0 ? h2 : h2 - num / (2den)
+end
+
 """
     locate_resonance(hdata, model, p, r; window = 0.5, step = 0.01) -> Resonance
 
 Follow the resonance `r` to the parameter point `p`: the minimum of |η| of the mode whose
-eigenvector continues `r.t`, searched within `r.h ± window`.
+eigenvector continues `r.t`, within `r.h ± window`. Starting at `r.h`, the search steps
+towards decreasing |η| with doubling steps until the minimum is bracketed, then narrows the
+bracket by parabolic interpolation to the width `2step`: typically 6–12 frequencies instead
+of a scan of the whole window. Each new frequency continues the mode from the nearest point
+already evaluated.
 """
 function locate_resonance(hdata::Dict, model::AbstractNetworkModel, p, r::Resonance;
                           window::Real = 0.5, step::Real = 0.01,
                           nc::NetworkCache = NetworkCache(hdata, model))
-    hs = collect(max(r.h - window, step):step:r.h + window)
-    dec = _tmap(h -> _modes(first(reduced_admittance(nc, p, h))), hs)  # in parallel
-    tr = r.t
-    ηs = ComplexF64[]; ts = Vector{ComplexF64}[]
-    for (η, T) in dec                            # continuation by eigenvector overlap: serial
-        m = argmax([_overlap(T[:, j], tr) for j in axes(T, 2)])
-        push!(ηs, η[m]); push!(ts, T[:, m]); tr = T[:, m]
+    ev(h, tref) = _track(first(reduced_admittance(nc, p, h)), tref)
+    best(pts) = pts[argmin([abs(q[2]) for q in pts])]
+    h0 = r.h
+    η0, t0 = ev(h0, r.t)
+    ηp, tp = ev(h0 + step, t0)
+    ηm, tm = ev(h0 - step, t0)
+    pts = [(h0 - step, ηm, tm), (h0, η0, t0), (h0 + step, ηp, tp)]
+    if !(abs(η0) <= abs(ηp) && abs(η0) <= abs(ηm))
+        dir  = abs(ηp) < abs(ηm) ? 1 : -1
+        a, b = pts[2], dir > 0 ? pts[3] : pts[1]          # b improves on a
+        s = step
+        while true
+            s *= 2
+            hn = b[1] + dir * s
+            if abs(hn - h0) > window || hn <= step         # no minimum in the window: its edge
+                return Resonance(r.mode, b[1], b[2], b[3], r.buses)
+            end
+            ηn, tn = ev(hn, b[3])
+            if abs(ηn) >= abs(b[2])
+                pts = sort([a, b, (hn, ηn, tn)]; by = first)
+                break
+            end
+            a, b = b, (hn, ηn, tn)
+        end
     end
-    k = argmin(abs.(ηs))
-    hk = 1 < k < length(hs) ? _parabola_min(hs[k], step, abs(ηs[k-1]), abs(ηs[k]), abs(ηs[k+1])) : hs[k]
-    return Resonance(r.mode, hk, ηs[k], ts[k], r.buses)
+    # narrow the bracket (h1, h2, h3), |η(h2)| smallest, by parabolic interpolation
+    for _ in 1:12
+        (h1, e1, _), (h2, e2, t2), (h3, e3, _) = pts
+        h3 - h1 <= 2step && break
+        hv = _parabola3(h1, abs(e1), h2, abs(e2), h3, abs(e3))
+        # keep the trial strictly inside, away from h2: else bisect the larger side
+        if !(h1 < hv < h3) || abs(hv - h2) < step / 2
+            hv = (h2 - h1 > h3 - h2) ? (h1 + h2) / 2 : (h2 + h3) / 2
+        end
+        ηv, tv = ev(hv, t2)
+        v = (hv, ηv, tv)
+        if abs(ηv) < abs(e2)
+            pts = hv < h2 ? [pts[1], v, pts[2]] : [pts[2], v, pts[3]]
+        else
+            pts = hv < h2 ? [v, pts[2], pts[3]] : [pts[1], pts[2], v]
+        end
+    end
+    (h1, e1, _), (h2, e2, t2), (h3, e3, _) = pts
+    hk = clamp(_parabola3(h1, abs(e1), h2, abs(e2), h3, abs(e3)), h1, h3)
+    return Resonance(r.mode, hk, e2, t2, r.buses)
 end
 
 # ──────────────────────────────────────────────────────────────────────────────
