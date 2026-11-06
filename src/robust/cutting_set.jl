@@ -34,8 +34,10 @@ method, for the uncertain branches of `model` over the parameter box `box`.
 
 - `pce_params` as for [`solve_shhc`](@ref) with `sHHC_SOC`; the bound must be `"cantelli"` or
   `"gaussian"` (the empirical λ* is calibrated on the nominal network only).
-- The dictionary of the oracle holds the nominal point, the vertices (d ≤ 10), the modal seeds
-  (`use_seeds`) and `nbackground` Sobol points.
+- The dictionary of the oracle holds the nominal point, the vertices for d ≤ 10 or the
+  sign-predicted corners otherwise, the modal seeds (`use_seeds`) and `nbackground` Sobol
+  points. Worst cases of these constraints can sit at corners, and random points in high
+  dimension rarely reach them.
 - Each iteration runs the oracle at `effort`; when it finds no violation above `tol`, the
   sign-off reruns it at `signoff` effort before stopping: by default the 20 most violated
   constraints within 10 % of their limit somewhere in the dictionary are refined.
