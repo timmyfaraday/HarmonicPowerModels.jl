@@ -1,0 +1,9 @@
+[deps]
+HarmonicPowerModels = "56365af1-a032-4c1d-861b-3c9f15bdb54e"
+LineCableModels = "dffb7669-8cd4-4628-99dd-7694e356ba37"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[sources]
+HarmonicPowerModels = {path = "../.."}
+LineCableModels = {path = "/home/amartins/Documents/KUL/LineCableModels/worktrees/LineCableModels-datamodel"}
