@@ -13,8 +13,10 @@ function runstudy(s, io)
     text = String(take!(lines))
     print(io, text)
     print(text)
-    report(io, "IEEE 30-bus, ", s.config.scenario, ", ", length(s.details),
-        " branches from LineCableModels, ", s.config.units, " units, ε = ",
+    source = s.config.network
+    label = source.kind == "scenario" ? "IEEE 30-bus, " * source.scenario : source.file
+    report(io, label, ", ", length(s.details),
+        " branches from LineCableModels, ", length(s.pce["harmonic_units"]), " units, ε = ",
         s.config.epsilon, ", Cantelli, ", Threads.nthreads(), " threads")
     box = s.box
     box0 = ParameterBox(box.names, box.nominal, box.nominal, box.nominal, box.scale)
@@ -37,6 +39,7 @@ function runstudy(s, io)
         @sprintf("robust: %.6f  [LB %.6f, UB %.6f, gap %.1e], %d iterations, %.0f s, %s",
             res["lower_bound"], res["lower_bound"], res["upper_bound"], res["gap"],
             res["iterations"], t, res["signed_off"] ? "signed off" : "NOT signed off"))
+    report(io, "robust master termination: ", res["termination_status"])
     report(io, "per harmonic, robust / nominal: ",
         join(
             [@sprintf("h%d %.3f", h, res["solution"][h] / nom["master_solution"][h])
@@ -48,7 +51,7 @@ function runstudy(s, io)
             s.config.posterior, pr.max_violation, string(pr.constraint),
             100pr.violated_fraction))
     report(io, "LineCableModels solves (sum of circuit table sizes): ",
-        sum(length(s.model.branches[b].zy.sequences) for b in circuits(s)))
+        sum((length(s.model.branches[b].zy.sequences) for b in circuits(s)); init = 0))
     flush(io)
     return res
 end
@@ -63,6 +66,8 @@ function main(path)
             return false
         catch err
             report(io, "Run failed:")
+            showerror(io, err)
+            println(io)
             showerror(stderr, err, catch_backtrace())
             println(stderr)
             return true

@@ -108,6 +108,17 @@ table of the manufacturer, not the selection.
 | 3, 7, 9, 10, 40 | 2–4, 4–6, 6–7, 6–8, 8–28 | Bear |
 | 8 | 5–7 | Panther |
 
+## Hello-world assignments
+
+Branches 2 and 3 use U33-630 in touching trefoil. Branch 4 uses Goat on O33-H.
+The routes come from `examples/rhhc/data/hello_world.m:38-40`.
+
+| Branch | Buses | Spec | Formation | Length m |
+| --- | --- | --- | --- | --- |
+| 2 | 1–2 | U33-630 | trefoil | 15000 |
+| 3 | 2–3 | U33-630 | trefoil | 10000 |
+| 4 | 1–4 | Goat | O33-H | 10000 |
+
 ## References
 
 The audit read the licensed standards in the copies of the KU Leuven license.
@@ -164,3 +175,41 @@ lacks AS/NZS 1429.1. Table 1 of IEC 60287-1-1 gives the copper value of IEC 6002
 | SUDA | Wuxi Suda copolymer-coated aluminium tape | <https://www.copolymercoatedaluminumtape.com/copolymer-coated-tape/copolymer-coated-aluminum-tape/plastic-coated-aluminum-tape.html> |
 | VIGEPD | Vig Metal EPD-IES-0028115:003 (2026) | <https://www.environdec.com/library/epd28115> |
 | ASTM B3 | the ASTM standard for annealed copper wire, by analogy only | not read |
+
+## Specs pending audit
+
+The alternative-system candidate study defines the designs below. They await audit and
+have no rows in `inputs.csv`. The pipeline cases retain their source electrical data with
+`ScaledBranchModel`. Industrial and Antwerp vary R, L and C. IEEE33, IEEE9, IEEE39
+and the stars vary R and L, with capacitance fixed. The ranges come from
+`examples/rhhc/ieee30_robust.jl:58-60`. These ranges describe network parameters. They are
+not manufacturing tolerances. Source equivalents, transformers and reactors retain their
+source data. The stars retain their identical branches.
+
+The definitions below come from an unaudited candidate study that is not part of the
+repository. The table gives the conductor and cable constructions. The following paragraph
+gives the structure geometry. These definitions await audit.
+
+| System | Cable specs pending audit | Overhead specs pending audit |
+| --- | --- | --- |
+| IEEE33 | U22-Al95, U22-Al150, U22-Al240, U22-Al300, U22-Al400, U22-Al500, U22-Al630 and U22-Al1200: 12.7/22 kV aluminum/XLPE, copper wire screens, PVC jackets, touching trefoil at 0.8 m depth | Rabbit, Dog, Bison, Weasel, Tiger and Wolf ACSR on O13-F |
+| Industrial | U36-Al400: 20.8/36 kV aluminum/XLPE, 35 mm² copper screen, PE jacket. U11-Al240: 6.35/11 kV aluminum/XLPE, copper screen, PVC jacket. Both in touching trefoil at 0.8 m depth. NYY-Cu240-120: three 240 mm² copper phases and one 120 mm² core, PVC insulation and jacket | O36-F with Goat and O10-F with Panther. The conductors are audited, the structures await audit. The elevated NYY installation at 6 m also awaits audit |
+| Antwerp | U155-Cu1600: 87/150–161 kV, five-sector copper core, 19 mm XLPE, 95 mm² screen of copper wires, aluminum barrier and PE jacket, 1 m depth | Twin Falcon ACSR on O155-D2, 0.45 m bundle spacing. Steel earth wire |
+| IEEE9 | U230-Cu1200: 127/220–230 kV, five-sector copper core, 21 mm XLPE, 150 mm² screen of copper wires, aluminum barrier and PE jacket, 1 m depth | Cardinal ACSR on O230-F, with ACS 20SA earth wires, 19 wires of 2.5 mm diameter |
+| IEEE39 | U345-Cu1600: 200/345 kV, five-sector copper core, 28 mm XLPE, 2.5 mm lead sheath and PE jacket, flat 0.45 m spacing at 1.2 m depth | Cardinal ACSR on O345-F with the same ACS earth wires as O230-F |
+| Three- and five-node stars | U155-Cu1600, as above | Falcon ACSR on O100-D, with steel earth wire |
+
+The source defines O13-F and O10-F with phase centers at horizontal coordinates
+−0.8, 0 and 0.8 m, mean height 10 m, with no earth wire. O36-F has coordinates
+−1.5, 0 and 1.5 m, mean height 10.5 m, with no earth wire. O100-D and O155-D2
+have phase centers (−2.5, 14), (0, 18.330) and (2.5, 14) m, and an earth wire at
+(0, 25.4) m. O230-F and O345-F have phase centers at −10, 0 and 10 m, mean
+height 23.333 m, and proposed earth wires at ±8 m, mean height 30.833 m.
+All of these structure definitions await audit, including their sag and support data.
+The O33-H formation used by hello-world instead cites audited rows `O33.geom` and
+`O33.sag`. Its Goat conductor and U33-630 cables already have audited specs.
+
+The candidate HV cable ratings assume cross-bonding. The pipeline cases assume solid grounding of screens and earth wires at both ends.
+They use ideal transposition and omit cross-bonding. Their electrical parameters come
+from the source files. The candidate compensation and thermal ratings also await audit. These cases keep the
+source ratings and compensation.

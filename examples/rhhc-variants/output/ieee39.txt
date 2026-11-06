@@ -1,0 +1,11 @@
+git commit: 1178aef0e0300c10aba6658494165225ff05400c
+case: examples/rhhc-variants/cases/ieee39.toml
+threads: 16; solver: Clarabel
+networks/ieee39.json, 0 branches from LineCableModels, 19 units, ε = 0.05, Cantelli, 16 threads
+nominal stochastic: 0.245875 (OPTIMAL)
+resonances at the nominal point: h = 5.42, h = 9.57, h = 14.27
+robust: 0.220481  [LB 0.220481, UB 0.220481, gap 0.0e+00], 2 iterations, 12 s, signed off
+robust master termination: OPTIMAL
+per harmonic, robust / nominal: h5 0.823, h7 0.935, h11 0.893, h13 0.774
+a posteriori (1024 random points): worst -2.92e-04 ((:ihd, (11, 45))), violated at 0.0 %
+LineCableModels solves (sum of circuit table sizes): 0

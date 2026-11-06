@@ -1,6 +1,6 @@
-# IEEE 30-bus studies with LineCableModels
+# Network studies with LineCableModels
 
-These studies use the `inductive_cable33` scenario and 21 harmonic units at the first 21 loads.
+The IEEE30 studies use the `inductive_cable33` scenario and 21 harmonic units at the first 21 loads.
 They use harmonic orders 5, 7, 11 and 13, Cantelli bounds and a risk level of 0.05. The fundamental
 network uses the nominal LCM branch parameters. HPM computes each branch's exact π-model
 from the extension's series impedance and shunt admittance per meter at each frequency.
@@ -26,7 +26,7 @@ Cable lengths follow the scenario's retained routes. The overhead lengths follow
 primary quantities of one cable or conductor. The family files declare the coordinates,
 their bounds and the fields they act on. Formation files give the placement references,
 support coordinates and sags. Numeric quantities use SI units and cite a row of the
-physical-input register in `data/register/`, or their source. Transformer assumptions cite the step's proposal.
+physical-input register in `data/register/`, or their source. Transformer assumptions cite Tom Van Acker's proposal.
 
 A compacted core has radius `(d_c + dd)/2` and equivalent resistivity
 `kR * R20 * π * radius^2`. Its diameter and resistance jointly set this resistivity
@@ -282,3 +282,106 @@ declarations remain outside the harmonic network model.
 The ACSR checks use catalogue R20 for DC and case values for X and C. The earth-wire diagnostic uses the same low-frequency method as the phase specs.
 The scan writes a text companion report for the branch table, data checks and resonances.
 The family files also give the fixed jacket factor and diameter offset. The physical inputs cite their sources.
+
+## Other test systems
+
+The case selects `network.kind`: `scenario` calls the IEEE30 scenario builder,
+`matpower` reads the declared MATPOWER file, and `converted` reads a saved PowerModels
+JSON file. Source paths are relative to this directory. The `model` field selects
+`exact` for LCM circuits or `scaled` for source branches with the case's declared factors.
+`units` is a count of the first loads, or an explicit list of load IDs.
+The case also declares its harmonic orders. Shared angle distributions come from
+`examples/shhc/pce_params.jl` for those orders.
+
+LCM branch bases come from the source bus voltage and network power base. Lengths come
+from the IEEE30 scenario routes, from route comments in MATPOWER branch rows, or from
+`length_m` in converted branch records. Physical lengths use meters.
+
+| Case | Network source | Model | Box coordinates |
+| --- | --- | --- | --- |
+| `ieee33` | `../shhc/data/33bus_network_shhc.m` | Source branches with R and L factors | `kR_ohl`, `kL_ohl` |
+| `industrial` | `../shhc/data/industrial_network_shhc.m` | Source cables with R, L and C factors | `kR_cable`, `kL_cable`, `kC_cable` |
+| `antwerp` | `../shhc/data/medium_network_shhc.m` | Source cables with R, L and C factors | `kR_cable`, `kL_cable`, `kC_cable` |
+| `hello-world` | `../rhhc/data/hello_world.m` | U33-630 on branches 2 and 3, Goat on O33-H on branch 4 | `kR_U33`, `eps_U33`, `kt_U33`, `rho_earth` |
+| `star3` | `../shhc/data/3node_test.m` | Source branches with R and L factors | `kR_ohl`, `kL_ohl` |
+| `star5` | `../shhc/data/5node_test.m` | Source branches with R and L factors | `kR_ohl`, `kL_ohl` |
+| `ieee9` | `networks/ieee9.json` | Converted source lines with R and L factors | `kR_ohl`, `kL_ohl` |
+| `ieee39` | `networks/ieee39.json` | Converted source lines with R and L factors | `kR_ohl`, `kL_ohl` |
+
+The factor ranges follow `examples/rhhc/ieee30_robust.jl:58-60`. They describe
+network parameters. The pending-audit section of `data/register/README.md` lists the
+candidate physical realizations. Hello-world uses the audited U33 and ACSR families,
+with the U33 coordinates and earth interval of `ieee30-u33`. Its overhead family
+coordinates stay at nominal values. O33-H has no earth wire.
+
+Run a new case with the same environment and solvers:
+
+```sh
+julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/scan.jl cases/hello-world.toml
+for case in ieee33 industrial antwerp hello-world star3 star5 ieee9 ieee39; do
+    julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/run.jl "cases/$case.toml"
+done
+```
+
+Only hello-world has LCM circuits among these new cases. Its scan writes the sequence
+table and modal resonances. The capacity runner also scans the nominal network for
+cases that use source branches. A failed run writes its exception message to
+`output/<case>.txt`.
+
+The source network data retain their voltage limits, ratings and transformer data.
+The study premise applies to the cases, with source electrical data kept while physical
+specs await audit. The HV candidate ratings assume cross-bonding. These cases instead
+assume solid grounding at both cable ends and ideal transposition, and omit cross-bonding.
+
+## Conversion from PowerImpedance
+
+`networks/convert.jl` reads the passive-network portions of the two source examples
+at PowerImpedance commit `c0547d03670b2ca4432459274c54b879d345d07b`. It calls
+`convert(network, ACDCPowerFlow().backend)` to obtain PowerModels data. It then adds
+HPM's ideal-source flags, the study harmonic limits and the harmonic-unit load records.
+The saved files include their commit, script and component mapping. A read of each saved
+file checks the bus, branch, generator, shunt and load tables against the conversion.
+
+To reproduce the files once, with the existing source environment available:
+
+```sh
+julia --project=<PowerImpedance checkout> examples/rhhc-variants/networks/convert.jl <PowerImpedance checkout>
+```
+
+The capacity and scan scripts read the saved files without PowerImpedance. The
+conversion keeps the passive IEEE9 network before its MMC study and the IEEE39
+network before its STATCOM study. It includes the original lines, transformers,
+source impedances and capacitors. NetworkBuilder assigns bus numbers. The saved
+`conversion_buses` and `conversion_elements` tables identify the original names.
+
+Grounded impedances with active power become HPM loads at their 50 Hz equivalents.
+Pure capacitors remain shunts. HPM then applies its own harmonic scaling to the saved
+network. This represents a test of the HPM pipeline with the source network at 50 Hz.
+It does not reproduce PowerImpedance's frequency-dependent load or transformer models.
+The source conversion's branch ratings are defaults, except for `Zg39` as stated below.
+Their origins are recorded in `networks/convert.jl`. They are not audited thermal ratings.
+
+The conversion adds the absolute-equality principle and the IEC harmonic limits
+used in `examples/shhc/data/3node_test.m:17,33-35`. These are study assumptions.
+The JSON records use HPM's native per-unit values on the 1000 MVA source power
+base. The conversion uses local voltage bases in line-to-line kV.
+It converts each voltage level to its own base, with transformer taps as off-
+nominal ratios. Physical route lengths use meters. Cases without a `principle`
+declaration keep their source fairness principle.
+Hello-world declares absolute equality for `solve_rhhc`.
+
+The conversion reports “Transformer has no open-circuit voltage ratings” twelve times,
+from `PowerImpedance src/Network/Components/transformer/transformer.jl:351`.
+
+IEEE9 uses local voltage bases at 13.8, 16.5, 18 and 230 kV. Its transformers have
+off-nominal taps near one. The conversion checks the admittance identity under the
+change of voltage bases in `networks/convert.jl, normalize`, as well as the saved tables.
+
+IEEE39 source impedance `Zg39` uses the apparent-power capability of generator 39 in
+[MATPOWER `case39.m`, tag 8.1, line 136](https://github.com/MATPOWER/matpower/blob/8.1/data/case39.m#L136).
+That row gives `Pmax = 1100 MW`, `Qmax = 300 MVAr` and `Qmin = -100 MVAr`.
+The capability is `S = sqrt(Pmax^2 + max(Qmax^2, Qmin^2)) = 1140.175425 MVA`.
+On the 1000 MVA study base, `rate_a = rate_b = rate_c = 1.140175425` pu.
+The nominal-voltage current rating `c_rating_a` has the same per-unit value.
+The row's `mBase` is the machine base. It does not set this rating.
+The other branches keep their source conversion ratings.

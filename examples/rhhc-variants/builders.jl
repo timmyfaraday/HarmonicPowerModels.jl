@@ -39,8 +39,9 @@ end
 
 function formation(name)
     row = readrecord(joinpath(STUDIES, "data", "formations", name * ".toml"))
-    return merge(row, (kind = Val(Symbol(row.kind)),
-        reference = Val(Symbol(get(row, :reference, "support")))))
+    return merge(row,
+        (name = name, kind = Val(Symbol(row.kind)),
+            reference = Val(Symbol(get(row, :reference, "support")))))
 end
 
 function coordinates(family, bindings, p)
@@ -139,14 +140,19 @@ function system(::Val{:overhead}, conductor, row, mat)
     # The parabolic span's mean height is support height minus two thirds of the sag.
     positions = [Placement(x, h - (2 / 3) * row.phase_sag)
                  for (x, h) in zip(row.phase_x, row.phase_height)]
+    if !haskey(row, :earth_wire)
+        return build(CableSystem, fill(conductor, 3), positions;
+            connections = [(core = k,) for k in 1:3], id = row.name, line_length = 1.0)
+    end
     push!(positions, Placement(row.shield_x, row.shield_height - (2 / 3) * row.shield_sag))
     return build(CableSystem, [conductor, conductor, conductor, row.shield], positions;
         connections = [(core = 1,), (core = 2,), (core = 3,), (core = 0,)],
-        id = "O132-D", line_length = 1.0)
+        id = row.name, line_length = 1.0)
 end
 
 arrangement(::Val{:trefoil}, row, mat) = row
 function arrangement(::Val{:overhead}, row, mat)
+    haskey(row, :earth_wire) || return row
     shield_spec = specification(row.earth_wire)
     return merge(row, (shield = design(shield_spec.family, shield_spec, (;), mat),))
 end
@@ -194,6 +200,39 @@ function transformers(rows, data)
     return rows
 end
 
+# MATPOWER route comments remain the source of lengths, in meters after decoding.
+function network(config, ipopt)
+    source = config.network
+    source.kind == "scenario" && return ieee30_scenario(source.scenario, ipopt)
+    file = normpath(joinpath(STUDIES, source.file))
+    data = HPM.parse_file(file)
+    if source.kind == "matpower"
+        text = read(file, String)
+        table = match(r"mpc\.branch\s*=\s*\[(.*?)\];"s, text)
+        for (id, line) in enumerate(filter(
+            l -> !isempty(strip(l)) && !startswith(strip(l), "%"),
+            split(table.captures[1], '\n')))
+            route = match(r"(?:[lL]\s*=\s*|[,;]\s*)([0-9.]+)\s*km", line)
+            if route !== nothing
+                data["branch"][string(id)]["length_m"] = 1e3parse(Float64, route.captures[1])
+            end
+        end
+    end
+    return data
+end
+
+function route_length(br, kv, zbase, config)
+    haskey(br, "length_m") && return br["length_m"]
+    haskey(br, "cable_km") && return 1e3br["cable_km"]
+    config.network.kind == "scenario" && return 1e3br["br_x"] * zbase / OHL_X[kv]
+    error("LCM branch $(br["index"]) has no route length in its source data")
+end
+
+function harmonic_units(count::Integer, data)
+    sort(parse.(Int, collect(keys(data["load"]))))[1:count]
+end
+harmonic_units(ids::Tuple, data) = collect(ids)
+
 function study(path)
     file = isfile(path) ? abspath(path) : joinpath(STUDIES, path)
     config = readrecord(file)
@@ -204,18 +243,18 @@ function study(path)
     box = parameterbox(config.box, families, config.box_names)
     ipopt = optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
     conic = optimizer_with_attributes(Clarabel.Optimizer, "verbose" => false)
-    data = ieee30_scenario(config.scenario, ipopt)
-    transformers(config.transformers, data)
+    data = network(config, ipopt)
+    haskey(config, :principle) && (data["principle"] = config.principle)
+    transformers(get(config, :transformers, (;)), data)
     definitions = Dict{Tuple{String, String}, Function}()
     details = Dict{Int, NamedTuple}()
     branches = Dict{Int, NamedTuple}()
-    for (name, row) in pairs(config.branches)
+    for (name, row) in pairs(get(config, :branches, (;)))
         b = parse(Int, string(name))
         br = data["branch"][string(b)]
         kv = data["bus"][string(br["f_bus"])]["base_kv"]
         zbase = kv^2 / data["baseMVA"]
-        len = haskey(br, "cable_km") ? 1e3 * br["cable_km"] :
-              1e3 * br["br_x"] * zbase / OHL_X[kv]
+        len = route_length(br, kv, zbase, config)
         key = (row.spec, row.formation)
         if !haskey(definitions, key)
             spec = specification(row.spec)
@@ -233,15 +272,24 @@ function study(path)
             source_x = br["br_x"] * zbase / (len / 1e3),
             source_c = (br["b_fr"] + br["b_to"]) / (2π * config.f1 * zbase * (len / 1e3)))
     end
-    formulation = CoaxialFormulation(transposition = true)
-    model = ExactPiModel(branches, formulation, box; f1 = config.f1)
-    p = nominal_point(box)
-    for b in keys(branches), (k, v) in pairs(branch_data(model, b, p, 1.0, :positive))
+    if config.model == "exact"
+        formulation = CoaxialFormulation(transposition = true)
+        model = ExactPiModel(branches, formulation, box; f1 = config.f1)
+        p = nominal_point(box)
+        for b in keys(branches), (k, v) in pairs(branch_data(model, b, p, 1.0, :positive))
 
-        data["branch"][string(b)][string(k)] = v
+            data["branch"][string(b)][string(k)] = v
+        end
     end
-    units = sort(parse.(Int, collect(keys(data["load"]))))[1:config.units]
+    units = harmonic_units(config.units, data)
+    all(id -> haskey(data["load"], string(id)), units) ||
+        error("harmonic unit is absent from the source load table")
     hd = HPM.replicate(deepcopy(data); H = [1; collect(config.harmonics)])
+    if config.model == "scaled"
+        classes = Dict(b => Symbol(name) for (name, ids) in pairs(config.classes)
+        for b in ids)
+        model = ScaledBranchModel(hd, classes)
+    end
     hd["angle_reference"] = "local"
     for h in config.harmonics, k in collect(keys(hd["nw"][string(h)]["load"]))
 
@@ -269,6 +317,7 @@ function header(io, s)
 end
 
 function declarations(io, s)
+    isempty(get(s.config, :transformers, (;))) && return
     println(io, "Transformer declarations. Not applied to the network: HPM reads vector groups")
     println(io, "from xfmr, which has no tap. IEEE30 transformers are tapped branches.")
     for (id, row) in sort(collect(pairs(s.config.transformers)); by = x -> parse(Int, string(first(x))))

@@ -1,0 +1,11 @@
+git commit: 1178aef0e0300c10aba6658494165225ff05400c
+case: examples/rhhc-variants/cases/star3.toml
+threads: 16; solver: Clarabel
+../shhc/data/3node_test.m, 0 branches from LineCableModels, 2 units, ε = 0.05, Cantelli, 16 threads
+nominal stochastic: 0.131148 (OPTIMAL)
+resonances at the nominal point: 
+robust: 0.126652  [LB 0.126652, UB 0.126652, gap 0.0e+00], 2 iterations, 2 s, signed off
+robust master termination: OPTIMAL
+per harmonic, robust / nominal: h5 0.965, h7 0.966, h11 0.966, h13 0.966
+a posteriori (1024 random points): worst -4.10e-04 ((:ihd, (13, 2))), violated at 0.0 %
+LineCableModels solves (sum of circuit table sizes): 0

@@ -1,5 +1,6 @@
 box_names = ["eps_xlpe", "t_xlpe", "r_core", "rho_earth"]
-scenario = "inductive_cable33"
+network = {kind = "scenario", scenario = "inductive_cable33"}
+model = "exact"
 bound = "cantelli"
 harmonics = {value = [5, 7, 11, 13], origin = "examples/rhhc/ieee30_lcm.jl:102"} # 1
 units = {value = 21, origin = "examples/rhhc/ieee30_lcm.jl:106"} # 1
@@ -149,88 +150,88 @@ origin = "examples/rhhc/ieee30_lcm.jl:113"
 [transformers."12"]
 vg = "Yy0"
 note = "YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance."
-f_bus = {value = 6, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-t_bus = {value = 10, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-gnd1 = {value = 1, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-gnd2 = {value = 1, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-re1_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-xe1_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-re2_ohm = {value = 19.05, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-xe2_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
+f_bus = {value = 6, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 10, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+gnd2 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+re1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 19.05, origin = "Tom Van Acker transformer proposal"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
 resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
 
 [transformers."15"]
 vg = "Yy0"
 note = "YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance."
-f_bus = {value = 4, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-t_bus = {value = 12, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-gnd1 = {value = 1, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-gnd2 = {value = 1, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-re1_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-xe1_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-re2_ohm = {value = 19.05, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-xe2_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
+f_bus = {value = 4, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 12, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+gnd2 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+re1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 19.05, origin = "Tom Van Acker transformer proposal"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
 resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
 
 [transformers."36"]
 vg = "Yy0"
 note = "YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance."
-f_bus = {value = 28, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-t_bus = {value = 27, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-gnd1 = {value = 1, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-gnd2 = {value = 1, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-re1_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-xe1_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-re2_ohm = {value = 19.05, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-xe2_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
+f_bus = {value = 28, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 27, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+gnd2 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+re1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 19.05, origin = "Tom Van Acker transformer proposal"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
 resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
 
 [transformers."11"]
 vg = "Yy0"
 note = "Three-winding unit at bus 6, star point 9. The 132 kV winding is YN, solidly earthed. Bus 9 represents the star point."
-f_bus = {value = 6, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-t_bus = {value = 9, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-gnd1 = {value = 1, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-gnd2 = {value = 0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-re1_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-xe1_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-re2_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-xe2_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
+f_bus = {value = 6, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 9, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+gnd2 = {value = 0, origin = "Tom Van Acker transformer proposal"} # 1
+re1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
 
 [transformers."14"]
 vg = "Yy0"
 note = "Three-winding unit, star point 9. The 33 kV winding is yn, earthed through a resistance."
-f_bus = {value = 9, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-t_bus = {value = 10, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-gnd1 = {value = 0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-gnd2 = {value = 1, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-re1_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-xe1_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-re2_ohm = {value = 19.05, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-xe2_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
+f_bus = {value = 9, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 10, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 0, origin = "Tom Van Acker transformer proposal"} # 1
+gnd2 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+re1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 19.05, origin = "Tom Van Acker transformer proposal"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
 resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
 
 [transformers."13"]
 vg = "Yd11"
 note = "Three-winding unit, star point 9. The 11 kV winding is delta and supplies the condenser at bus 11."
-f_bus = {value = 9, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-t_bus = {value = 11, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-gnd1 = {value = 0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-gnd2 = {value = 0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-re1_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-xe1_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-re2_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-xe2_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
+f_bus = {value = 9, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 11, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 0, origin = "Tom Van Acker transformer proposal"} # 1
+gnd2 = {value = 0, origin = "Tom Van Acker transformer proposal"} # 1
+re1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
 
 [transformers."16"]
 vg = "Yd11"
 note = "YNd11 step-up of the condenser at bus 13. The delta is on the 11 kV side. The 33 kV YN neutral is earthed through a resistance."
-f_bus = {value = 12, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-t_bus = {value = 13, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-gnd1 = {value = 1, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-gnd2 = {value = 0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # 1
-re1_ohm = {value = 19.05, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-xe1_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-re2_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
-xe2_ohm = {value = 0.0, origin = "Step 2 prompt, Tom Van Acker transformer proposal"} # Ω
+f_bus = {value = 12, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 13, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+gnd2 = {value = 0, origin = "Tom Van Acker transformer proposal"} # 1
+re1_ohm = {value = 19.05, origin = "Tom Van Acker transformer proposal"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
 resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
