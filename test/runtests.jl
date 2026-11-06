@@ -45,6 +45,7 @@ PMs.silence()
 
     # data layer
     include("test_data.jl")
+    include("branch_vector_group.jl")
 
     # models
     include("hhc.jl")

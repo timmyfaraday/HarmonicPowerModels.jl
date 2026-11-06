@@ -571,6 +571,15 @@ Scale the network elements of `ntw`, holding fundamental (50 Hz) data, to the ha
 order `nh`: branches, bus shunts, generator subtransient admittances and transformers,
 with the transformer phase shift of `sequence` (`:positive`, `:negative` or `:zero`).
 `nh` may be any positive real, so the same rules give the network between harmonics.
+The `shift` of a branch carrying `vg` is its own phase shift plus the derived
+`vg_shift`, including at the fundamental, while its tap magnitude is retained.
+Scaling an already scaled network (as `harmonic_network` does with the fundamental)
+replaces `vg_shift` instead of adding the vector-group phase again. Branches without
+`vg` are unchanged.
+Winding earthing (`gnd`, `re`, `xe`) enters only through the IV
+`constraint_xfmr_winding_config` constraints of `xfmr` records. The stochastic SOC
+admittance (`_harmonic_admittance`) models no zero-sequence winding configuration
+for `xfmr` records, and none is added for branches.
 This is the one copy of the scaling rules: [`replicate`](@ref) applies it per harmonic.
 """
 function _scale_network_to_harmonic!(ntw::Dict, nh::Real, sequence::Symbol)
@@ -580,6 +589,16 @@ function _scale_network_to_harmonic!(ntw::Dict, nh::Real, sequence::Symbol)
         haskey(branch, "br_x") ? branch["br_x"] *= nh : ~ ;
         haskey(branch, "b_fr") ? branch["b_fr"] *= nh : ~ ;
         haskey(branch, "b_to") ? branch["b_to"] *= nh : ~ ;
+
+        if haskey(branch, "vg")
+            # With |tc| = 1, _stamp_branch! gives I_f = y_s (V_f − tc V_t),
+            # matching the xfmr stamp I_f = y_s (V_f − a V_t), a = tr + j ti.
+            # Hence angle(tc) = angle(a); retain the off-nominal tap magnitude.
+            # Record the phase so rescaling replaces it rather than adding it again.
+            phase = deg2rad(_vector_group_angle(branch["vg"], sequence))
+            branch["shift"] += phase - get(branch, "vg_shift", 0.0)
+            branch["vg_shift"] = phase
+        end
     end
 
     # re-evaluate the bus shunt data: a shunt is a fixed physical element, so
@@ -629,23 +648,29 @@ function _scale_network_to_harmonic!(ntw::Dict, nh::Real, sequence::Symbol)
             xfmr["cnf1"] = haskey(xfmr, "vg") ? uppercase(xfmr["vg"][1]) : 'Y' ;
             xfmr["cnf2"] = haskey(xfmr, "vg") ? uppercase(xfmr["vg"][2]) : 'Y' ;
 
-            shift = haskey(xfmr, "vg") ? parse(Int, xfmr["vg"][3:end]) : 0 ;
-            if sequence === :positive
-                xfmr["tr"] = cosd(-30.0 * shift)
-                xfmr["ti"] = sind(-30.0 * shift)
-            elseif sequence === :negative
-                xfmr["tr"] = cosd(30.0 * shift)
-                xfmr["ti"] = sind(30.0 * shift)
-            elseif sequence === :zero
-                xfmr["tr"] = 1.0
-                xfmr["ti"] = 0.0
-    end end end
+            angle = _vector_group_angle(get(xfmr, "vg", "Yy0"), sequence)
+            xfmr["tr"] = cosd(angle)
+            xfmr["ti"] = sind(angle)
+    end end
     return ntw
 end
 
 "Sequence (`:positive`, `:negative` or `:zero`) of the integer harmonic order `nh`."
 harmonic_sequence(nh::Int) =
     is_pos_sequence(nh) ? :positive : is_neg_sequence(nh) ? :negative : :zero
+
+"""
+    _vector_group_angle(vg, sequence)
+
+Return the phase angle in degrees of vector group `vg` for `sequence`:
+`-30k` for `:positive`, `+30k` for `:negative`, and `0` for `:zero`,
+where the clock number `k` is parsed from `vg[3:end]`.
+"""
+function _vector_group_angle(vg::AbstractString, sequence::Symbol)
+    shift = parse(Int, vg[3:end])
+    return sequence === :positive ? -30.0 * shift :
+           sequence === :negative ? 30.0 * shift : 0.0
+end
 
 """
     HarmonicPowerModels.replicate
