@@ -32,7 +32,12 @@ OR, alternatively -- preferably:
 - x::Real [h]
 - b::Real [h]
 
+- vg::String [1] - optional vector group for a transformer branch (e.g. `"Yd11"`)
+
 - cmax_rms [1]
+
+In the zero sequence, `build_harmonic_Ybus` blocks the delta-side buses of branches carrying `vg`.
+Winding earthing (`gnd`, `re`, `xe`) enters HPM only through the IV `constraint_xfmr_winding_config` constraints of `xfmr` records; the stochastic SOC admittance (`_harmonic_admittance`) models no zero-sequence winding configuration for `xfmr` records either, and none is added for branches.
 
 ### xfmr
 
