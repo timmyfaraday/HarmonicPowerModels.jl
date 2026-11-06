@@ -30,6 +30,27 @@
         @test isapprox(res["lower_bound"], res["upper_bound"]; rtol = 1e-6)
     end
 
+    @testset "an infeasible master is not signed off" begin
+        hd  = HPM.replicate(deepcopy(data); H)
+        hd["nw"]["1"]["branch"]["2"]["c_rating"] = 0.1
+        box = ParameterBox(:kC_cable => (1.0, 1.0, 1.0), :kR_cable => (1.0, 1.0, 1.0))
+        res = solve_rhhc(hd, ScaledBranchModel(hd, classes), box, solver_soc;
+                         pce_params = deepcopy(pp), hpf_optimizer = solver_nlp,
+                         nbackground = 8, posterior = 16)
+        # the power flow gives cm_fr > 0.1 p.u. on the 15 km cable: negative RMS headroom
+        br = hd["nw"]["1"]["branch"]["2"]
+        @test br["c_rating"] < br["cm_fr"]
+        @test res["termination_status"] != JuMP.MOI.OPTIMAL
+        @test res["termination_status"] == JuMP.MOI.INFEASIBLE # Clarabel's status
+        @test !res["signed_off"]
+        @test isnan(res["upper_bound"])
+        @test isnan(res["lower_bound"])
+        @test isempty(res["solution"])
+        @test isempty(res["master_solution"])
+        @test res["iterations"] == 0
+        @test res["posterior"] === nothing
+    end
+
     @testset "cable box: convergence, bounds and an independent check" begin
         hd    = HPM.replicate(deepcopy(data); H)
         model = ScaledBranchModel(hd, classes)
