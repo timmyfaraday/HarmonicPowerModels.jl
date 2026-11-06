@@ -1,30 +1,122 @@
-[kR]
+[R20]
+scale = "registered"
 field = "R20"
-nominal = {value = 1.0, register = "U33.cond.R20.500"} # 1
-lower = {value = 0.92, register = "U33.cond.R20.500"} # 1
-upper = {value = 1.0, register = "U33.cond.R20.500"} # 1
+nominal = {value = 0.0, register = "U33.cond.R20.500"}
+lower = {value = -1.0, register = "U33.cond.R20.500"}
+upper = {value = 0.0, register = "U33.cond.R20.500"}
 
 [eps]
 field = "eps_r"
-nominal = {value = 2.4, register = "U33.ins.eps"} # 1
-lower = {value = 2.1, register = "U33.ins.eps"} # 1
-upper = {value = 2.5, register = "U33.ins.eps"} # 1
+nominal = {value = 2.4, register = "U33.ins.eps"}
+lower = {value = 2.1, register = "U33.ins.eps"}
+upper = {value = 2.5, register = "U33.ins.eps"}
 
-[kt]
-field = "t_ins"
-nominal = {value = 1.0, register = "U33.ins.t"} # 1
-lower = {value = 0.95, register = "U33.ins.t"} # 1
-upper = {value = 1.05, register = "U33.ins.t"} # 1
-
-[kj]
+[t_jkt]
+scale = "registered"
 field = "t_jkt"
-nominal = {value = 1.0, register = "U33.jkt.t.500"} # 1
-lower = {value = 1.0, register = "U33.jkt.t.500"} # 1
-upper = {value = 1.35, register = "U33.jkt.t.500"} # 1
+nominal = {value = 0.0, register = "U33.jkt.t.500"}
+lower = {value = 0.0, register = "U33.jkt.t.500"}
+upper = {value = 1.0, register = "U33.jkt.t.500"}
 
-[dd]
+[d_c]
+scale = "registered"
 field = "d_c"
-nominal = {value = 0.0, register = "U33.cond.d.500"} # m
-lower = {value = 0.0, register = "U33.cond.d.500"} # m
-upper = {value = 4.0e-4, register = "U33.cond.d.500"} # m
+nominal = {value = 0.0, register = "U33.cond.d.500"}
+lower = {value = 0.0, register = "U33.cond.d.500"}
+upper = {value = 1.0, register = "U33.cond.d.500"}
 
+[theta]
+field = "theta"
+nominal = {value = 20, register = "U33.op.theta"}
+lower = {value = 10, register = "U33.op.theta"}
+upper = {value = 90, register = "U33.op.theta"}
+
+[depth]
+field = "depth"
+nominal = {value = 0.8, register = "U33.inst.depth"}
+lower = {value = 0.7, register = "U33.inst.depth"}
+upper = {value = 1.0, register = "U33.inst.depth"}
+
+[Rscreen]
+field = "Rscreen"
+nominal = {value = 0.000263, register = "U33.scr.R20"}
+lower = {value = 0.000251, register = "U33.scr.R20"}
+upper = {value = 0.000263, register = "U33.scr.R20"}
+
+[rho_copper]
+field = "rho_copper"
+nominal = {value = 1.7241e-08, register = "U33.scr.rho"}
+lower = {value = 1.707e-08, register = "U33.scr.rho"}
+upper = {value = 1.786e-08, register = "U33.scr.rho"}
+
+[rho_inner]
+field = "rho_inner"
+nominal = {value = 1000, register = "U33.sc.rho.cond"}
+lower = {value = 14, register = "U33.sc.rho.cond"}
+upper = {value = 1000, register = "U33.sc.rho.cond"}
+scale = "log"
+
+[rho_outer]
+field = "rho_outer"
+nominal = {value = 500, register = "U33.sc.rho.ins"}
+lower = {value = 9, register = "U33.sc.rho.ins"}
+upper = {value = 500, register = "U33.sc.rho.ins"}
+scale = "log"
+
+[eps_semicon]
+field = "eps_semicon"
+nominal = {value = 1000, register = "U33.sc.eps"}
+lower = {value = 100, register = "U33.sc.eps"}
+upper = {value = 10000, register = "U33.sc.eps"}
+scale = "log"
+
+[rho_xlpe]
+field = "rho_xlpe"
+nominal = {value = 110000000000000.0, register = "U33.ins.rho"}
+lower = {value = 100000000000000.0, register = "U33.ins.rho"}
+upper = {value = 1e+16, register = "U33.ins.rho"}
+scale = "log"
+
+[tand_xlpe]
+field = "tand_xlpe"
+nominal = {value = 0.0003, register = "U33.ins.tand"}
+lower = {value = 0.00016, register = "U33.ins.tand"}
+upper = {value = 0.004, register = "U33.ins.tand"}
+
+[eps_jacket]
+field = "eps_jacket"
+nominal = {value = 8.0, register = "U33.jkt.eps"}
+lower = {value = 3.6, register = "U33.jkt.eps"}
+upper = {value = 8.0, register = "U33.jkt.eps"}
+
+[rho_jacket]
+field = "rho_jacket"
+nominal = {value = 100000000000000.0, register = "U33.jkt.rho"}
+lower = {value = 100000000000000.0, register = "U33.jkt.rho"}
+upper = {value = 1e+16, register = "U33.jkt.rho"}
+scale = "log"
+
+[t_sc1]
+scale = "registered"
+field = "t_sc1"
+nominal = {value = 0.0, register = "U33.sc1.t.500"}
+lower = {value = -1.0, register = "U33.sc1.t.500"}
+upper = {value = 1.0, register = "U33.sc1.t.500"}
+
+[t_ins]
+field = "t"
+nominal = {value = 0.008, register = "U33.ins.t"}
+lower = {value = 0.0076, register = "U33.ins.t"}
+upper = {value = 0.008400000000000001, register = "U33.ins.t"}
+
+[t_sc2]
+field = "t"
+nominal = {value = 0.0009, register = "U33.sc2.t"}
+lower = {value = 0.0008100000000000001, register = "U33.sc2.t"}
+upper = {value = 0.00099, register = "U33.sc2.t"}
+
+[d_wire]
+field = "d"
+nominal = {value = 0.00135, register = "U33.scr.d"}
+lower = {value = 0.0013365, register = "U33.scr.d"}
+upper = {value = 0.0013635, register = "U33.scr.d"}

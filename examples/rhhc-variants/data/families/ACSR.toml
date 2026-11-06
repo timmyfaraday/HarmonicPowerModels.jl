@@ -1,6 +1,67 @@
-[kR]
-field = "R20"
-nominal = {value = 1.0, register = "ACSR.R20"} # 1
-lower = {value = 0.968, register = "ACSR.R20"} # 1
-upper = {value = 1.02, register = "ACSR.R20"} # 1
+[theta]
+field = "theta"
+nominal = {value = 20, register = "ACSR.op.theta"}
+lower = {value = -5, register = "ACSR.op.theta"}
+upper = {value = 75, register = "ACSR.op.theta"}
 
+[E]
+field = "E"
+nominal = {value = 80.41453, register = "ACSR.E"}
+lower = {value = 80.41453, register = "ACSR.E"}
+upper = {value = 82, register = "ACSR.E"}
+
+[expansion]
+field = "expansion"
+nominal = {value = 1.78e-05, register = "ACSR.expansion"}
+lower = {value = 1.78e-05, register = "ACSR.expansion"}
+upper = {value = 1.92e-05, register = "ACSR.expansion"}
+
+[rho_aluminium]
+field = "rho_aluminium"
+nominal = {value = 2.8264e-08, register = "ACSR.al.rho"}
+lower = {value = 2.79e-08, register = "ACSR.al.rho"}
+upper = {value = 2.8264e-08, register = "ACSR.al.rho"}
+
+[rho_steel]
+field = "rho_steel"
+nominal = {value = 1.9157e-07, register = "ACSR.st.rho"}
+lower = {value = 1.79e-07, register = "ACSR.st.rho"}
+upper = {value = 2.155e-07, register = "ACSR.st.rho"}
+
+[mu_steel]
+field = "mu_steel"
+nominal = {value = 100, register = "ACSR.st.mu"}
+lower = {value = 50, register = "ACSR.st.mu"}
+upper = {value = 300, register = "ACSR.st.mu"}
+
+[lay_steel]
+field = "lay_steel"
+nominal = {value = 21, register = "ACSR.lay.st6"}
+lower = {value = 16, register = "ACSR.lay.st6"}
+upper = {value = 26, register = "ACSR.lay.st6"}
+
+[lay_inner]
+field = "lay_inner"
+nominal = {value = 13, register = "ACSR.lay.alin"}
+lower = {value = 10, register = "ACSR.lay.alin"}
+upper = {value = 16, register = "ACSR.lay.alin"}
+
+[lay_outer]
+field = "lay_outer"
+nominal = {value = 12, register = "ACSR.lay.alout"}
+lower = {value = 10, register = "ACSR.lay.alout"}
+upper = {value = 14, register = "ACSR.lay.alout"}
+
+[d_aluminium]
+scale = "registered"
+field = "d_aluminium"
+nominal = {value = 0.0, register = "ACSR.al.d"}
+lower = {value = -1.0, register = "ACSR.al.d"}
+upper = {value = 1.0, register = "ACSR.al.d"}
+
+[d_steel]
+scale = "registered"
+field = "d_steel"
+nominal = {value = 0.0, register = "ACSR.st.d"}
+lower = {value = -1.0, register = "ACSR.st.d"}
+upper = {value = 1.0, register = "ACSR.st.d"}

@@ -1,0 +1,77 @@
+[ambient]
+field = "ambient"
+nominal = {value = 20, register = "O132.ambient.theta"}
+lower = {value = -5, register = "O132.ambient.theta"}
+upper = {value = 45, register = "O132.ambient.theta"}
+
+[phase_sag]
+field = "phase_sag"
+nominal = {value = 6, register = "O132.phase.reference"}
+lower = {value = 6, register = "O132.phase.reference"}
+upper = {value = 6.06, register = "O132.phase.reference"}
+
+[shield_sag]
+field = "shield_sag"
+nominal = {value = 5.4, register = "O132.gw.reference"}
+lower = {value = 5.4, register = "O132.gw.reference"}
+upper = {value = 5.454, register = "O132.gw.reference"}
+
+[diameter]
+field = "diameter"
+nominal = {value = 0.00315, register = "O132.gw.d"}
+lower = {value = 0.0031000000000000003, register = "O132.gw.d"}
+upper = {value = 0.0032, register = "O132.gw.d"}
+
+[lay]
+field = "lay"
+nominal = {value = 21, register = "O132.gw.lay"}
+lower = {value = 16, register = "O132.gw.lay"}
+upper = {value = 26, register = "O132.gw.lay"}
+
+[E]
+field = "E"
+nominal = {value = 196.133, register = "O132.gw.E"}
+lower = {value = 190, register = "O132.gw.E"}
+upper = {value = 196.133, register = "O132.gw.E"}
+
+[expansion]
+field = "expansion"
+nominal = {value = 1.15e-05, register = "O132.gw.expansion"}
+lower = {value = 1.15e-05, register = "O132.gw.expansion"}
+upper = {value = 1.15e-05, register = "O132.gw.expansion"}
+
+[rho_steel]
+field = "rho_steel"
+nominal = {value = 1.9157e-07, register = "ACSR.st.rho"}
+lower = {value = 1.79e-07, register = "ACSR.st.rho"}
+upper = {value = 2.155e-07, register = "ACSR.st.rho"}
+
+[mu_steel]
+field = "mu_steel"
+nominal = {value = 100, register = "ACSR.st.mu"}
+lower = {value = 50, register = "ACSR.st.mu"}
+upper = {value = 300, register = "ACSR.st.mu"}
+
+[span]
+field = "span"
+nominal = {value = 300, register = "O132.span"}
+lower = {value = 300, register = "O132.span"}
+upper = {value = 300, register = "O132.span"}
+
+[reference_theta]
+field = "reference_theta"
+nominal = {value = 20, register = "O132.reference.theta"}
+lower = {value = 20, register = "O132.reference.theta"}
+upper = {value = 20, register = "O132.reference.theta"}
+
+[gravity]
+field = "gravity"
+nominal = {value = 9.80665, register = "O132.gravity"}
+lower = {value = 9.80665, register = "O132.gravity"}
+upper = {value = 9.80665, register = "O132.gravity"}
+
+[density]
+field = "density"
+nominal = {value = 7780, register = "O132.gw.density"}
+lower = {value = 7780, register = "O132.gw.density"}
+upper = {value = 7780, register = "O132.gw.density"}

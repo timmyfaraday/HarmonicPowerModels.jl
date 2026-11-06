@@ -10,14 +10,20 @@ const OLEX = Dict("U33-400" => (0.101, 0.116, 0.267),
 function checkmodel(s, specname, formname, temperature)
     spec = specification(specname)
     family_name = spec.family_name
-    family = get(s.families, family_name, (;))
+    family = getproperty(s.families, family_name)
+    key = haskey(family, :theta) ? :theta : :ambient
+    coordinate = Symbol(key, "_", family_name)
     bindings = (;
-        (k => Symbol(v) for (k, v) in pairs(get(s.config.bindings, family_name, (;))))...)
-    fn = problem(
-        spec, family, formation(formname), s.mat, s.config.earth, temperature, bindings)
+        (name => (; (k => Symbol(v) for (k, v) in pairs(row))...)
+    for (name, row) in pairs(s.config.bindings))...)
+    thermal = NamedTuple{(key,)}((coordinate,))
+    bindings = merge(bindings, NamedTuple{(family_name,)}((
+        merge(get(bindings, family_name, (;)), thermal),)))
+    fn = problem(spec, s.families, formation(formname), s.mat, bindings)
     model = ExactPiModel(Dict(1 => (problem = fn, len = 1.0, zbase = 1.0)),
         CoaxialFormulation(transposition = true), s.box; f1 = s.config.f1)
-    return model.branches[1].zy
+    return (point, frequency) -> model.branches[1].zy(
+        merge(point, NamedTuple{(coordinate,)}((temperature,))), frequency)
 end
 
 function checks(io, s)
@@ -29,7 +35,7 @@ function checks(io, s)
     for name in ("TOM-630", "U33-400", "U33-500", "U33-630", "U33-800")
         spec = specification(name)
         form = name == "TOM-630" ? "trefoil-tom" : "trefoil"
-        c = checkmodel(s, name, form, 20.0)
+        c = checkmodel(s, name, form, s.mat.reference.temperature)
         low = c(p, 0.01).positive
         v = c(p, 50.0).positive
         family = name == "TOM-630" ? s.families.TOM : s.families.U33
@@ -38,23 +44,30 @@ function checks(io, s)
         q = coordinates(family, (; (k => Symbol(v) for (k, v) in pairs(bindings))...), p)
         outer = 2r_ex(design(spec.family, spec, q, s.mat).outer) * 1e3
         if haskey(OLEX, name)
-            hot = checkmodel(s, name, form, 90.0)(p, 50.0).positive
+            hot = checkmodel(s, name, form, family.theta.upper)(p, 50.0).positive
             ref = OLEX[name]
             @printf(io,
                 "%s | %.6f | %.6f | %.6f | %.6f | %.6f | %.6f | %.6f | %.6f | %.6f | %.3f | %.3f\n",
-                name, 1e3real(low.z), 1e3spec.R20, 1e3real(v.z), 1e3real(hot.z), ref[1],
+                name, 1e3real(low.z), 1e3spec.R20.nominal, 1e3real(v.z), 1e3real(hot.z), ref[1],
                 1e3imag(v.z), ref[2], 1e9imag(v.y) / (2π * 50), ref[3], outer,
                 1e3spec.diameter)
             spacing = outer / 1e3
-            screen_diameter = spec.d_c + 2(spec.t_sc1 + spec.t_ins + spec.t_sc2) +
-                              spec.d_wire
+            screen_diameter = spec.d_c.nominal +
+                              2(spec.t_sc1.nominal + family.t_ins.nominal +
+                                family.t_sc2.nominal) +
+                              family.d_wire.nominal
             omega = 2π * 50
-            screen_resistance = spec.R20_screen * (1 + s.mat.copper.alpha * (90 - 20))
+            screen_resistance = family.Rscreen.nominal *
+                                (1 +
+                                 s.mat.copper.alpha *
+                                 (family.theta.upper - s.mat.reference.temperature))
             # IEC 60287-1-1:2006, Section 2.3.1 gives the mutual reactance and circulating-current loss factor.
-            mutual = omega * 2e-7 * log(2spacing / screen_diameter)
+            mutual = omega * LineCableModels.μ₀ / (2π) * log(2spacing / screen_diameter)
             loss = screen_resistance * mutual^2 / (screen_resistance^2 + mutual^2)
             corrected_r = ref[1] + 1e3loss
-            classical_x = omega * (0.05 + 0.2log(2spacing / spec.d_c)) * 1e-3
+            classical_x = omega * LineCableModels.μ₀ / (2π) *
+                          (1 / 4 + log(2spacing / spec.d_c.nominal)) *
+                          1e3
             reduction = 1e3mutual^3 / (screen_resistance^2 + mutual^2)
             corrected_x = classical_x - reduction
             @printf(io,
@@ -72,19 +85,21 @@ function checks(io, s)
         "ACSR: spec | DC LCM | catalogue R20 | R50 at 20 °C | X50 LCM | source X50 | C50 LCM | scenario C50")
     for name in ("Panther", "Lion", "Bear", "Goat")
         spec = specification(name)
-        c = checkmodel(s, name, "O132-D", 20.0)
+        c = checkmodel(s, name, "O132-D", s.mat.reference.temperature)
         v = c(p, 50.0).positive
         @printf(io, "%s | %.6f | %.6f | %.6f | %.6f | %.6f | %.6f | %.6f\n",
             name, 1e3real(c(p, 0.01).positive.z), 1e3specification(name).R20,
             1e3real(v.z), 1e3imag(v.z), OHL_X[132.0], 1e9imag(v.y) / (2π * 50), 0.0)
         # BS EN 50182:2001, Section 5.10 excludes galvanized steel from nominal DC resistance.
-        steel = spec.n_steel * π * (spec.d_steel / 2)^2 / s.mat.s1a.rho
-        aluminum = spec.n_aluminium * π * (spec.d_aluminium / 2)^2 / s.mat.al1.rho
+        steel = spec.n_steel * π * (spec.d_steel.nominal / 2)^2 /
+                s.families.ACSR.rho_steel.nominal
+        aluminum = spec.n_aluminium * π * (spec.d_aluminium.nominal / 2)^2 /
+                   s.families.ACSR.rho_aluminium.nominal
         @printf(io,
             "ACSR steel conductance share %s: %.6f %% (wire areas and resistivities).\n",
             name, 100steel / (steel + aluminum))
     end
-    gw = checkmodel(s, "GW-7x3.15", "O132-D", 20.0)
+    gw = checkmodel(s, "GW-7x3.15", "O132-D", s.mat.reference.temperature)
     @printf(io,
         "GW-7x3.15 DC LCM %.6f Ω/km. Register O132.gw.R20: 3.55 Ω/km, interval 3.30–4.01 Ω/km.\n",
         1e3real(gw(p, 0.01).positive.z))

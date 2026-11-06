@@ -6,6 +6,8 @@ It writes `derived.json` beside this file and prints a summary.
 Every value of class DER in `inputs.csv` comes from this script.
 """
 
+import csv
+import itertools
 import json
 import math
 import os
@@ -217,6 +219,157 @@ r1 = 34.2 / 2 + 1.0
 corners = {f"eps{e}_t{t}": coax_c(e, r1 * 1e-3, (r1 + t) * 1e-3) * 1e9 / 0.212
            for e in (2.10, 2.50) for t in (15.2, 16.8)}
 OUT["U132_C_over_declared_at_box_corners"] = corners
+
+# 9. Full IEEE30 intervals and elastic sag, using the register as the input record.
+# The parabolic arc length is L + 8*f**2/(3*L), H = m*g*L**2/(8*f).
+# Equal unstressed lengths at two states, with small elastic and thermal strains, give
+# 8*(f**2-f0**2)/(3*L**2) = (H-H0)/(E*A) + alpha*(theta-theta0).
+# This study uses level supports in still air and an elastic conductor state.
+here = os.path.dirname(os.path.abspath(__file__))
+with open(os.path.join(here, "inputs.csv"), newline="") as source:
+    rows = {row["id"]: row for row in csv.DictReader(source)}
+
+
+def number(name, column="nominal"):
+    """Read a numerical register value in its stated unit."""
+    return float(rows[name][column])
+
+
+def sag(span, mass, area, modulus, expansion, reference, theta, theta0):
+    """Solve the elastic state equation for positive sag in meters."""
+    load = mass * number("O132.gravity")
+    tension0 = load * span**2 / (8 * reference)
+    low, high = 1e-9, span
+    for _ in range(100):
+        value = (low + high) / 2
+        tension = load * span**2 / (8 * value)
+        residual = (8 * (value**2 - reference**2) / (3 * span**2)
+                    - (tension - tension0) / (modulus * area)
+                    - expansion * (theta - theta0))
+        if residual > 0:
+            high = value
+        else:
+            low = value
+    return (low + high) / 2
+
+
+full = {"core_resistivity_ohm_m": {}, "cable_diameter_mm": {},
+        "acsr": {}, "earthwire": {}, "screen_tube_mm": {}, "jacket_model_mm": {}}
+for size in (400, 500, 630, 800):
+    diameter = "U33.cond.d." + str(size)
+    resistance = "U33.cond.R20." + str(size)
+    full["core_resistivity_ohm_m"][str(size)] = [
+        number(resistance, end) * 1e-3 * math.pi * (number(diameter, end) * 1e-3 / 2)**2
+        for end in ("lower", "upper")]
+    full["cable_diameter_mm"][str(size)] = [
+        number(diameter, end) + 2 * (number("U33.sc1.t." + str(size), end)
+        + number("U33.ins.t", end) + number("U33.sc2.t", end)
+        + number("U33.scr.d", end) + number("U33.jkt.t." + str(size), end))
+        for end in ("lower", "upper")]
+
+    tubes, jackets = [], []
+    for column in ("nominal", "lower", "upper"):
+        dimensions = []
+        for ends in itertools.product((column,) if column == "nominal" else ("lower", "upper"), repeat=8):
+            core, inner, ins, outer, copper, screen_r, jacket, wire = [
+                number(name, end) for name, end in zip(
+                    (diameter, "U33.sc1.t." + str(size), "U33.ins.t", "U33.sc2.t",
+                     "U33.scr.rho", "U33.scr.R20", "U33.jkt.t." + str(size), "U33.scr.d"), ends)]
+            radius = core / 2 + inner + ins + outer
+            tube = math.sqrt(radius**2 + copper * 1e9 / (math.pi * screen_r)) - radius
+            dimensions.append((tube, jacket + wire - tube))
+        if column == "nominal":
+            tubes.append(dimensions[0][0])
+            jackets.append(dimensions[0][1])
+        else:
+            select = min if column == "lower" else max
+            tubes.append(select(item[0] for item in dimensions))
+            jackets.append(select(item[1] for item in dimensions))
+    full["screen_tube_mm"][str(size)] = tubes
+    full["jacket_model_mm"][str(size)] = jackets
+
+
+def states(prefix, mass, area, reference, temperature, areas):
+    """Return reference tension, temperature endpoints and the joint interval."""
+    span = number("O132.span")
+    modulus = number(prefix + ".E") * 1e9
+    expansion = number(prefix + ".expansion")
+    f0 = number(reference)
+    t0 = number("O132.reference.theta")
+    nominal = [sag(span, mass, area, modulus, expansion, f0,
+                   number(temperature, end), t0) for end in ("lower", "upper")]
+    bounds = []
+    # Enclose mass and area independently here. The result is a conservative bound,
+    # not an instruction to split their shared physical causes into coordinates.
+    for length, factor, section, elastic, thermal, initial, theta in itertools.product(
+            (number("O132.span", end) for end in ("lower", "upper")),
+            (0.98, 1.02), areas,
+            (number(prefix + ".E", end) * 1e9 for end in ("lower", "upper")),
+            (number(prefix + ".expansion", end) for end in ("lower", "upper")),
+            (number(reference, end) for end in ("lower", "upper")),
+            (number(temperature, end) for end in ("lower", "upper"))):
+        bounds.append(sag(length, mass * factor, section, elastic, thermal,
+                          initial, theta, t0))
+    return {"area_m2": area, "mass_kg_per_m": mass,
+            "H0_N": mass * number("O132.gravity") * span**2 / (8 * f0),
+            "H0_interval_N": [mass * factor * number("O132.gravity")
+                * number("O132.span", end)**2 / (8 * number(reference, other))
+                for factor, end, other in ((0.98, "lower", "upper"), (1.02, "upper", "lower"))],
+            "temperature_end_sag_m": nominal, "joint_sag_interval_m": [min(bounds), max(bounds)]}
+
+
+for code in ("Bear", "Goat", "Lion", "Panther"):
+    d = float(rows["ACSR." + code + ".al"]["nominal"].split(" x ")[1]) * 1e-3
+    area = 37 * math.pi * d**2 / 4
+    areas = [sum(int(rows["ACSR." + code + "." + metal][end].split(" x ")[0])
+        * math.pi * (float(rows["ACSR." + code + "." + metal][end].split(" x ")[1]) * 1e-3)**2 / 4
+        for metal in ("al", "st")) for end in ("lower", "upper")]
+    full["acsr"][code] = states("ACSR", number("ACSR." + code + ".mass"), area,
+                                "O132.phase.reference", "ACSR.op.theta", areas)
+    full["acsr"][code]["area_interval_m2"] = areas
+# Earthwire area and mass use the same wire diameter and lay, not an extra mass factor.
+gw = full["earthwire"]
+d = number("O132.gw.d") * 1e-3
+area = 7 * math.pi * d**2 / 4
+mass = number("O132.gw.density") * math.pi * d**2 / 4 * (1 + 6 * lay_factor(21))
+gw.update(states("O132.gw", mass, area, "O132.gw.reference", "O132.ambient.theta", (area,)))
+# Recompute its joint interval with diameter and lay tied to its actual steel area and mass.
+values = []
+weights = []
+tensions = []
+for length, diameter, lay, elastic, thermal, initial, theta in itertools.product(
+        (number("O132.span", end) for end in ("lower", "upper")),
+        (number("O132.gw.d", end) * 1e-3 for end in ("lower", "upper")),
+        (16, 26),
+        (number("O132.gw.E", end) * 1e9 for end in ("lower", "upper")),
+        (number("O132.gw.expansion", end) for end in ("lower", "upper")),
+        (number("O132.gw.reference", end) for end in ("lower", "upper")),
+        (number("O132.ambient.theta", end) for end in ("lower", "upper"))):
+    wire_area = math.pi * diameter**2 / 4
+    weight = number("O132.gw.density") * wire_area * (1 + 6 * lay_factor(lay))
+    weights.append(weight)
+    tensions.append(weight * number("O132.gravity") * length**2 / (8 * initial))
+    values.append(sag(length, weight, 7 * wire_area, elastic, thermal, initial, theta,
+                      number("O132.reference.theta")))
+gw["joint_sag_interval_m"] = [min(values), max(values)]
+gw["mass_interval_kg_per_m"] = [min(weights), max(weights)]
+gw["H0_interval_N"] = [min(tensions), max(tensions)]
+gw["R20_interval_ohm_per_km"] = [
+    number("ACSR.st.rho", end) / (math.pi * (number("O132.gw.d", opposite) * 1e-3)**2 / 4
+    * (1 + 6 / lay_factor(number("O132.gw.lay", opposite)))) * 1e3
+    for end, opposite in (("lower", "upper"), ("upper", "lower"))]
+# Reproduce the arithmetic of the corpus transfers, distinct from production limits.
+full["corpus_interval_derivations"] = {
+    "span_m": [300, 300],  # ETHEKWINI 4.5.2 standard span.
+    "phase_reference_sag_m": [6.0, 6.0 + min(0.01 * 6.0, 0.100)],
+    "earthwire_reference_sag_m": [5.4, 5.4 + min(0.01 * 5.4, 0.100)],
+    "ACSR_modulus_GPa": [8200 * number("O132.gravity") / 1000, 82000 / 1000],
+    "ACSR_expansion_per_K": [17.8e-6, 19.2e-6],
+    "earthwire_modulus_GPa": [190000 / 1000, 20000 * number("O132.gravity") / 1000],
+    "earthwire_expansion_per_K": [11.5e-6, 11.5e-6],
+    "ambient_C": [-5, 45],  # ETHEKWINI 4.7.2 and APAR rating-table notes.
+}
+OUT["full_uncertainty_ieee30"] = full
 
 here = os.path.dirname(os.path.abspath(__file__))
 with open(os.path.join(here, "derived.json"), "w") as f:

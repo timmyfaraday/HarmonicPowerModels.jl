@@ -1,73 +1,56 @@
 [copper]
 kind = "conductor"
-rho = {value = 1.7241e-8, register = "U33.scr.rho"} # Ω·m
-alpha = {value = 3.93e-3, register = "U132.cond.alpha"} # 1/K
+alpha = {value = 0.00393, register = "U33.scr.alpha"}
 
 [aluminium]
 kind = "conductor"
-alpha = {value = 4.03e-3, register = "U33.cond.alpha"} # 1/K
-mu_r = {value = 1.0, register = "U33.cond.mu"} # 1
+alpha = {value = 0.00403, register = "U33.cond.alpha"}
 
 [semicon_inner]
 kind = "semicon"
-rho = {value = 1000.0, register = "U33.sc.rho.cond"} # Ω·m
-eps_r = {value = 1000.0, register = "U33.sc.eps"} # 1
 
 [semicon_outer]
 kind = "semicon"
-rho = {value = 500.0, register = "U33.sc.rho.ins"} # Ω·m
-eps_r = {value = 1000.0, register = "U33.sc.eps"} # 1
 
 [xlpe]
 kind = "insulator"
-rho = {value = 1.1e14, register = "U33.ins.rho"} # Ω·m
-eps_r = {value = 2.4, register = "U33.ins.eps"} # 1
-tan_delta = {value = 3.0e-4, register = "U33.ins.tand"} # 1
 
 [pvc]
 kind = "insulator"
-eps_r = {value = 8.0, register = "U33.jkt.eps"} # 1
-rho = {value = 1.0e14, origin = "LineCableModels examples/cable_30kv_630mm2_trefoil.jl:35"} # Ω·m. Inactive with the lossless law.
 
 [al1]
 kind = "conductor"
-rho = {value = 2.8264e-8, register = "ACSR.al.rho"} # Ω·m
-alpha = {value = 4.03e-3, register = "U33.cond.alpha"} # 1/K
+alpha = {value = 0.00403, register = "U33.cond.alpha"}
 
 [s1a]
 kind = "conductor"
-rho = {value = 1.9157e-7, register = "ACSR.st.rho"} # Ω·m
-mu_r = {value = 100.0, register = "ACSR.st.mu"} # 1
-alpha = {value = 3.6e-3, register = "ACSR.st.rho"} # 1/K
+alpha = {value = 0.0036, register = "ACSR.st.alpha"}
 
 [tom_aluminium]
 kind = "conductor"
-rho = {value = 2.8264e-8, origin = "examples/rhhc/ieee30_lcm.jl:50"} # Ω·m
-eps_r = {value = 1.0, origin = "examples/rhhc/ieee30_lcm.jl:50"} # 1
-mu_r = {value = 1.0, origin = "examples/rhhc/ieee30_lcm.jl:50"} # 1
-T0 = {value = 20.0, origin = "examples/rhhc/ieee30_lcm.jl:50"} # °C
-alpha = {value = 4.03e-3, origin = "examples/rhhc/ieee30_lcm.jl:50"} # 1/K
+rho = {value = 2.8264e-08, origin = "examples/rhhc/ieee30_lcm.jl:50"}
+alpha = {value = 0.00403, origin = "examples/rhhc/ieee30_lcm.jl:50"}
 
 [tom_semicon]
 kind = "semicon"
-rho = {value = 1000.0, origin = "examples/rhhc/ieee30_lcm.jl:51"} # Ω·m
-eps_r = {value = 1000.0, origin = "examples/rhhc/ieee30_lcm.jl:51"} # 1
+rho = {value = 1000.0, origin = "examples/rhhc/ieee30_lcm.jl:51"}
+eps_r = {value = 1000.0, origin = "examples/rhhc/ieee30_lcm.jl:51"}
 
 [tom_xlpe]
 kind = "insulator"
-rho = {value = 1.0e14, origin = "examples/rhhc/ieee30_lcm.jl:52"} # Ω·m
-eps_r = {value = 2.3, origin = "examples/rhhc/ieee30_lcm.jl:52"} # 1
+rho = {value = 100000000000000.0, origin = "examples/rhhc/ieee30_lcm.jl:52"}
 
 [tom_copper]
 kind = "conductor"
-rho = {value = 1.7241e-8, origin = "examples/rhhc/ieee30_lcm.jl:53"} # Ω·m
-eps_r = {value = 1.0, origin = "examples/rhhc/ieee30_lcm.jl:53"} # 1
-mu_r = {value = 1.0, origin = "examples/rhhc/ieee30_lcm.jl:53"} # 1
-T0 = {value = 20.0, origin = "examples/rhhc/ieee30_lcm.jl:53"} # °C
-alpha = {value = 3.93e-3, origin = "examples/rhhc/ieee30_lcm.jl:53"} # 1/K
+rho = {value = 1.7241e-08, origin = "examples/rhhc/ieee30_lcm.jl:53"}
+alpha = {value = 0.00393, origin = "examples/rhhc/ieee30_lcm.jl:53"}
 
 [tom_pe]
 kind = "insulator"
-rho = {value = 1.0e14, origin = "examples/rhhc/ieee30_lcm.jl:54"} # Ω·m
-eps_r = {value = 2.3, origin = "examples/rhhc/ieee30_lcm.jl:54"} # 1
+rho = {value = 100000000000000.0, origin = "examples/rhhc/ieee30_lcm.jl:54"}
+eps_r = {value = 2.3, origin = "examples/rhhc/ieee30_lcm.jl:54"}
 
+[reference]
+temperature = {value = 20.0, register = "MATERIAL.T0"}
+eps_r = {value = 1.0, register = "MATERIAL.metal.eps"}
+mu_r = {value = 1.0, register = "MATERIAL.nonmagnetic.mu"}

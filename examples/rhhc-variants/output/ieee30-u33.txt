@@ -1,4 +1,4 @@
-git commit: 1178aef0e0300c10aba6658494165225ff05400c
+git commit: 28bec0e0b3c587af92c56df9adffd889e611d9c1
 case: examples/rhhc-variants/cases/ieee30-u33.toml
 threads: 16; solver: Clarabel
 Transformer declarations. Not applied to the network: HPM reads vector groups
@@ -25,8 +25,8 @@ assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA
 IEEE 30-bus, inductive_cable33, 22 branches from LineCableModels, 21 units, ε = 0.05, Cantelli, 16 threads
 nominal stochastic: 0.049971 (OPTIMAL)
 resonances at the nominal point: h = 6.95
-robust: 0.042918  [LB 0.042918, UB 0.042927, gap 2.0e-04], 3 iterations, 26 s, signed off
+robust: 0.042919  [LB 0.042919, UB 0.042927, gap 2.0e-04], 3 iterations, 30 s, signed off
 robust master termination: OPTIMAL
 per harmonic, robust / nominal: h5 0.906, h7 0.966, h11 0.785, h13 0.859
-a posteriori (1024 random points): worst -7.52e-03 ((:ihd, (11, 30))), violated at 0.0 %
-LineCableModels solves (sum of circuit table sizes): 50440
+a posteriori (1024 random points): worst -7.51e-03 ((:ihd, (11, 30))), violated at 0.0 %
+LineCableModels solves (sum of circuit table sizes): 51044

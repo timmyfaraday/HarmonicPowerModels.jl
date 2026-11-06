@@ -12,7 +12,7 @@ Every circuit uses `CoaxialFormulation(transposition = true)`. The studies omit 
 | Case | 33 kV cables | 132 kV lines | Box |
 | --- | --- | --- | --- |
 | `ieee30-tom` | Tom's placeholder `TOM-630`, trefoil in contact, lower cables at 1 m depth | Scenario data, zero shunt capacitance | Tom's permittivity, insulation thickness, core radius and earth resistivity |
-| `ieee30-u33` | Four Olex U33 sizes, trefoil in contact, group center at 0.8 m depth | Scenario data, zero shunt capacitance | Family resistance factor, permittivity, insulation thickness factor and earth resistivity |
+| `ieee30-u33` | Four Olex U33 sizes, trefoil in contact, group center at 0.8 m depth | Scenario data, zero shunt capacitance | Normalized family resistance, permittivity, insulation thickness and earth resistivity |
 | `ieee30-physical` | As `ieee30-u33` | Lion, Goat, Bear and Panther ACSR on `O132-D`, with one steel earth wire | As `ieee30-u33` |
 
 The cables on branches 20, 31, 33 and 34 use U33-400. Branch 26 uses U33-630 and branch 21
@@ -22,37 +22,47 @@ Cable lengths follow the scenario's retained routes. The overhead lengths follow
 
 ## Dataset and construction
 
-`data/materials.toml` holds the material properties. Each file under `data/specs/` holds the
-primary quantities of one cable or conductor. The family files declare the coordinates,
-their bounds and the fields they act on. Formation files give the placement references,
-support coordinates and sags. Numeric quantities use SI units and cite a row of the
-physical-input register in `data/register/`, or their source. Transformer assumptions cite Tom Van Acker's proposal.
+The five LCM cases use one construction chain: `problem` resolves the family coordinates,
+`arrangement` selects the formation's physical state, `design` builds the LCM conductors,
+and `system` places and connects them. The bindings select the coordinates of a case.
+A family input without a binding, or without a coordinate in the box, has its nominal value.
+TOM, U33, ACSR and the earthwire use this same chain.
 
-A compacted core has radius `(d_c + dd)/2` and equivalent resistivity
-`kR * R20 * π * radius^2`. Its diameter and resistance jointly set this resistivity
-(Gustavsen 2005, Section III-A). The copper screen is a tube with area `rho_Cu / R20_screen`
-(TB 531, Section 4.2.2.5 and Gustavsen 2016, conclusion 4). The jacket thickness is
-`kj * t_jkt + d_wire - t_tube`. These expressions preserve the coupling of the inputs.
-Tom's placeholder retains his core resistivity and varies the radius directly.
+Family files own the shared varying inputs and their nominal values and intervals.
+`EARTH.toml` owns earth resistivity, permittivity and the logarithmic resistivity scale.
+`U33.toml` owns cable temperature, burial depth, screen resistance and material properties.
+`O132.toml` owns ambient temperature, reference sags, earthwire dimensions and mechanics.
+`ACSR.toml` owns wire materials, temperatures and lay ratios. `TOM.toml` defines the placeholder
+radius, insulation thickness and permittivity. Materials contain fixed properties and the
+common electrical reference temperature. Formation files contain fixed coordinates and
+placement conventions. A formation with `structure = "O132"` selects that structure's
+mechanics. O33-H has fixed sag and uses the ACSR phase temperature.
 
-HPM evaluates the exact π-model's hyperbolic functions in
-`branch_data(model::ExactPiModel, ...)`, in `src/robust/network_model.jl`:
+Each family field specifies a physical quantity. Case coordinates use the form
+`<field>_<FAMILY>`, including `eps_xlpe_TOM`, `t_xlpe_TOM` and `r_core_TOM`.
+A per-size spec contains each nominal and its registered physical bounds.
+`interpolate` maps the signed normalized coordinate to this interval, with nominal at
+zero and the registered endpoints at minus one and plus one. A one-sided interval uses [-1, 0] or [0, 1].
+A family row with `scale = "registered"` marks this normalized convention. HPM
+samples these normalized positions on its linear scale. This applies to U33 resistance, jacket thickness, conductor diameter, inner semiconductor
+thickness and ACSR wire diameters. The box names `t_ins_U33`, `t_sc2_U33` and `d_wire_U33`
+bind the shared physical thicknesses and screen-wire diameter in meters. All bounds and
+aggregate projection limits come from the family or spec records.
+
+The compacted U33 core has radius equal to half the resolved conductor diameter and
+resistivity `R20 * π * radius^2`, with the resolved R20. The copper screen tube has area
+`rho_Cu / R20_screen`. Its jacket correction preserves the physical outside diameter.
+The TOM design retains its fixed metal resistivities and its family geometry.
+LCM computes ACSR resistance from the realized wires. The aggregate projection and
+thermal sag model use the same realized mass and metal area.
+
+The cases supply series impedance and shunt admittance per meter through the extension.
+HPM computes the exact π-model in `branch_data` of `ExactPiModel`:
 
 ```math
 Z = Z_c \sinh(\gamma\ell), \qquad Y/2 = \tanh(\gamma\ell/2)/Z_c,
 \qquad \gamma = \sqrt{zy}, \qquad Z_c = \sqrt{z/y}.
 ```
-
-The studies and the extension supply only `z` in Ω/m and `y` in S/m.
-
-An ACSR terminal contains the steel core from `stranded` and two aluminum wire courses.
-LCM's `flatten` reduces them together. The family factor multiplies both metals' resistivities.
-Their relative conductance is unchanged. These cases fix the factor at its nominal value. The overhead mean height is the support height minus two thirds of the
-sag, the mean of the parabolic span profile.
-
-`builders.jl` lifts TOML records into typed named tuples. It creates one problem function per
-spec, formation and earth combination. Every branch of that circuit receives the same
-function. The extension computes the sequences and stores the shared results.
 
 ## Transformers
 
@@ -122,10 +132,10 @@ Add a spec with its family, primary quantities, SI units and a source for every 
 value.
 
 Use the audited register to source physical inputs. Select a formation
-or add sourced placement data. A new case lists its branches, formation, earth, temperature,
-family bindings, ordered box names and transformer declarations. A family coordinate that
-the case does not bind stays at its nominal value. The U33 family defines the jacket factor and diameter
-offset. These cases fix both at their nominal values.
+or add sourced placement data. A new case lists its branches, formation, family bindings, ordered box names and
+transformer declarations. The family records define its environment and temperatures. A family coordinate that
+the case does not bind stays at its nominal value. The U33 family defines the normalized jacket and diameter
+coordinates. A case without those coordinates uses their nominal values.
 
 ## Checks and results
 
@@ -256,13 +266,13 @@ The reports below use 16 Julia threads and Clarabel. Each posterior check uses 1
 | Case | Nominal pu | `lower_bound` pu | Upper bound pu | Gap | Iterations | Time s | Sign-off | Posterior violated | Stored pairs |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | ieee30-tom | 0.050179 | 0.043700 | 0.043720 | 4.4e-04 | 2 | 25 | signed off | 0.0% | 12228 |
-| ieee30-u33 | 0.049971 | 0.042918 | 0.042927 | 2.0e-04 | 3 | 40 | signed off | 0.0% | 50440 |
+| ieee30-u33 | 0.049971 | 0.042919 | 0.042927 | 2.0e-04 | 3 | 30 | signed off | 0.0% | 51044 |
 | ieee30-physical | 0.051871 | 0.041474 | 0.041474 | 0.0e+00 | 2 | 48 | signed off | 0.0% | 85584 |
 
 | Case | h5 ratio | h7 ratio | h11 ratio | h13 ratio | Posterior worst | Constraint |
 | --- | --- | --- | --- | --- | --- | --- |
 | ieee30-tom | 0.834 | 0.895 | 0.867 | 0.905 | -1.12e-3 | IHD, h7, bus 30 |
-| ieee30-u33 | 0.906 | 0.966 | 0.785 | 0.859 | -7.52e-3 | IHD, h11, bus 30 |
+| ieee30-u33 | 0.906 | 0.966 | 0.785 | 0.859 | -7.51e-3 | IHD, h11, bus 30 |
 | ieee30-physical | 0.884 | 0.483 | 0.914 | 0.623 | -1.91e-3 | IHD, h11, bus 7 |
 
 Tom's saved report uses Mosek, an earlier LCM and 10 threads. Its nominal capacity, lower
@@ -281,7 +291,7 @@ declarations remain outside the harmonic network model.
 
 The ACSR checks use catalogue R20 for DC and case values for X and C. The earth-wire diagnostic uses the same low-frequency method as the phase specs.
 The scan writes a text companion report for the branch table, data checks and resonances.
-The family files also give the fixed jacket factor and diameter offset. The physical inputs cite their sources.
+The family files also define normalized jacket and diameter coordinates, held at nominal when absent from the box. The physical inputs cite their sources.
 
 ## Other test systems
 
@@ -302,7 +312,7 @@ from the IEEE30 scenario routes, from route comments in MATPOWER branch rows, or
 | `ieee33` | `../shhc/data/33bus_network_shhc.m` | Source branches with R and L factors | `kR_ohl`, `kL_ohl` |
 | `industrial` | `../shhc/data/industrial_network_shhc.m` | Source cables with R, L and C factors | `kR_cable`, `kL_cable`, `kC_cable` |
 | `antwerp` | `../shhc/data/medium_network_shhc.m` | Source cables with R, L and C factors | `kR_cable`, `kL_cable`, `kC_cable` |
-| `hello-world` | `../rhhc/data/hello_world.m` | U33-630 on branches 2 and 3, Goat on O33-H on branch 4 | `kR_U33`, `eps_U33`, `kt_U33`, `rho_earth` |
+| `hello-world` | `../rhhc/data/hello_world.m` | U33-630 on branches 2 and 3, Goat on O33-H on branch 4 | `R20_U33`, `eps_U33`, `t_ins_U33`, `rho_EARTH` |
 | `star3` | `../shhc/data/3node_test.m` | Source branches with R and L factors | `kR_ohl`, `kL_ohl` |
 | `star5` | `../shhc/data/5node_test.m` | Source branches with R and L factors | `kR_ohl`, `kL_ohl` |
 | `ieee9` | `networks/ieee9.json` | Converted source lines with R and L factors | `kR_ohl`, `kL_ohl` |
@@ -385,3 +395,147 @@ On the 1000 MVA study base, `rate_a = rate_b = rate_c = 1.140175425` pu.
 The nominal-voltage current rating `c_rating_a` has the same per-unit value.
 The row's `mBase` is the machine base. It does not set this rating.
 The other branches keep their source conversion ratings.
+
+## Full-uncertainty IEEE30 case
+
+`cases/ieee30-full.toml` uses the physical case's 22 U33 cables and 12 ACSR lines.
+The cable screens and the earthwire have solid connections to ground, and the circuits use ideal
+transposition. Each input has one coordinate per family, shared by its branches.
+The case declares 39 wire and material candidates under `box`. The sweep admits 23 into
+`box_names`. The separate ACSR resistance factor has been removed.
+With more than 10 coordinates, HPM omits the vertices from its oracle dictionary.
+
+The full case selects the ACSR wire inputs. LCM computes their resistance, and the
+catalogue R20 remains a check value. The derived resistance envelope is absorbed by
+those wire inputs and has no additional coordinate.
+
+EN 50182:2001 5.4 limits conductor diameter to ±1 percent at these sizes, and 5.7.3
+limits total mass to ±2 percent. The mass includes the helical wire-length increments.
+For a requested point, the builder first applies 5.5.6 with
+`lay_outer_eff = min(lay_outer, lay_inner)`. The inner aluminum range ends at 16 and
+the steel range starts at 16. Their ordering cannot bind within the registered ranges
+except at equality.
+
+A feasible wire realization maps to itself. Otherwise, the builder finds the largest
+t in [0, 1] for which both aggregate limits hold along
+`d_eff = d_nom + t * (d - d_nom)`. Bisection reduces both diameter deviations along
+the same direction. The realized mass and metal area also enter the sag equation.
+The input coordinates retain their rectangular bounds. This mapping couples the
+physical wires inside the builder, so HPM can keep its parameter box without an
+additional constrained-domain protocol.
+
+The U33 coordinates describe core resistance, conductor diameter, insulation thickness,
+permittivity, jacket thickness, conductor temperature, screen resistance, both semiconductor
+thicknesses and semiconductor permittivity. ACSR coordinates describe
+phase temperature, aluminum and steel wire dimensions, their resistivities, steel
+permeability and the two aluminum lay ratios. The O132 coordinates describe ambient
+temperature and earthwire diameter, resistivity and permeability. Earth resistivity has
+one coordinate. The normalized per-size coordinates interpolate the individual products' registered
+limits. Shared physical inputs take their values directly from the family records.
+
+LCM's public `LineParametersProblem` provides one temperature for every component.
+The full-case builder evaluates each metal's resistivity using its own temperature and
+registered electrical temperature coefficient. It passes the reference temperature of
+20 °C to LCM, which applies no further correction. The cable core and screen use the
+U33 temperature. ACSR phases use the maximum of their temperature and ambient, while
+the earthwire uses ambient. The other cases use the same temperature evaluation with their own nominal family inputs.
+
+The phase and earthwire sag follow the register's elastic thermal state equation at each
+evaluation, with a fixed 300 m span. The positive sag root uses bisection in the input
+number type. Phase mass follows the catalogue component masses, wire areas and helical
+lengths. The earthwire uses its steel density and helical wire lengths. The lay ratio of the outer aluminum layer
+is capped by the inner ratio, as EN 50182 requires. The endpoint checks agree
+with `derived.json` within 1e-6 m, and the sag calculation preserves `BigFloat`.
+
+Each sweep moves one candidate to each endpoint with all others nominal. It evaluates
+every affected circuit at 50 and 650 Hz through the extension's `zy(p, f)` protocol.
+The maximum of |Δ|/|nominal| over z, y and all three sequences admits the coordinate
+when it reaches 0.001. This rule applies equally to the previously recommended inputs.
+The table records the endpoint and result that give that maximum. The complete report
+is `output/ieee30-full-sweep.txt`, and the register records each decision.
+
+| Coordinate | Maximum change % | Circuit | Sequence | Quantity | Hz | End | Admitted |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `Rscreen_U33` | 3.78283 | U33-800/trefoil | zero | z | 50 | lower | yes |
+| `theta_ACSR` | 6.93177 | Panther/O132-D | positive | z | 50 | upper | yes |
+| `eps_semicon_U33` | 0.554279 | U33-630/trefoil | positive | y | 50 | lower | yes |
+| `t_ins_U33` | 4.40394 | U33-800/trefoil | zero | y | 650 | lower | yes |
+| `rho_inner_U33` | 0 | U33-500/trefoil | zero | z | 50 | lower | no |
+| `rho_EARTH` | 14.5575 | Goat/O132-D | zero | z | 50 | upper | yes |
+| `rho_copper_U33` | 0.0355754 | U33-400/trefoil | negative | z | 650 | upper | no |
+| `t_sc1_U33` | 0.538328 | U33-400/trefoil | zero | y | 50 | lower | yes |
+| `eps_U33` | 12.494 | U33-500/trefoil | negative | y | 650 | lower | yes |
+| `eps_jacket_U33` | 4.61172e-14 | U33-800/trefoil | zero | y | 50 | lower | no |
+| `lay_steel_ACSR` | 0.00724018 | Panther/O132-D | negative | z | 50 | lower | no |
+| `E_O132` | 0 | Lion/O132-D | zero | z | 50 | lower | no |
+| `ambient_O132` | 3.15003 | Panther/O132-D | positive | z | 50 | upper | yes |
+| `R20_U33` | 4.38329 | U33-400/trefoil | negative | z | 50 | lower | yes |
+| `tand_xlpe_U33` | 0 | U33-500/trefoil | zero | z | 50 | lower | no |
+| `rho_aluminium_ACSR` | 0.390942 | Panther/O132-D | positive | z | 50 | lower | yes |
+| `lay_outer_ACSR` | 0.254882 | Panther/O132-D | positive | z | 50 | lower | yes |
+| `rho_outer_U33` | 0 | U33-500/trefoil | zero | z | 50 | lower | no |
+| `d_wire_U33` | 0.0241173 | U33-630/trefoil | positive | z | 50 | lower | no |
+| `lay_inner_ACSR` | 0.483406 | Panther/O132-D | positive | z | 50 | lower | yes |
+| `expansion_ACSR` | 0 | Lion/O132-D | zero | z | 50 | lower | no |
+| `depth_U33` | 0.000618794 | U33-800/trefoil | zero | z | 50 | upper | no |
+| `theta_U33` | 25.9813 | U33-400/trefoil | zero | z | 50 | upper | yes |
+| `d_steel_ACSR` | 0.128726 | Goat/O132-D | positive | z | 50 | lower | yes |
+| `diameter_O132` | 0.150977 | Goat/O132-D | zero | z | 50 | upper | yes |
+| `E_ACSR` | 0 | Lion/O132-D | zero | z | 50 | lower | no |
+| `rho_steel_ACSR` | 0.120517 | Panther/O132-D | negative | z | 50 | upper | yes |
+| `rho_xlpe_U33` | 0 | U33-500/trefoil | zero | z | 50 | lower | no |
+| `mu_steel_ACSR` | 0.129885 | Goat/O132-D | positive | z | 50 | upper | yes |
+| `rho_steel_O132` | 0.530452 | Goat/O132-D | zero | z | 50 | upper | yes |
+| `shield_sag_O132` | 0.0298361 | Goat/O132-D | zero | z | 650 | upper | no |
+| `rho_jacket_U33` | 0 | U33-500/trefoil | zero | z | 50 | lower | no |
+| `d_c_U33` | 1.27447 | U33-400/trefoil | zero | y | 50 | upper | yes |
+| `t_sc2_U33` | 0.458577 | U33-500/trefoil | zero | z | 650 | lower | yes |
+| `mu_steel_O132` | 3.11603 | Goat/O132-D | zero | z | 650 | upper | yes |
+| `t_jkt_U33` | 2.0171 | U33-800/trefoil | positive | z | 50 | upper | yes |
+| `lay_O132` | 0.0316726 | Goat/O132-D | zero | z | 50 | lower | no |
+| `phase_sag_O132` | 0.0296214 | Goat/O132-D | zero | z | 650 | upper | no |
+| `d_aluminium_ACSR` | 0.619491 | Panther/O132-D | negative | z | 50 | lower | yes |
+
+Loss tangent and dielectric DC resistivities have zero effect under the selected lossless
+laws. Jacket permittivity has no measurable effect with the screen grounded. The copper
+resistivity, screen wire diameter, burial depth, steel lay ratio, earthwire lay ratio and
+reference sags have changes smaller than the threshold. They remain at nominal. Modulus and expansion
+also remain nominal because the sweep changes them at the reference temperature, where
+the thermal strain is zero. Their effects at other temperatures are interactions that
+this prescribed sweep does not test. Fixed support dimensions, earth permittivity and
+other fixed register inputs remain nominal for their documented reasons.
+
+The old cases' nominal sequence results are bit-identical to HEAD at 50 and 650 Hz.
+The sag endpoint checks agree with the register within 1e-6 m.
+
+
+The Bear corner with both wire diameters at their upper tolerance maps with
+`t = 0.825704225352`. Its conductor diameter is 23.6845 mm, 1 percent above nominal,
+and its mass is 1.23708333959 kg/m, 1.985436 percent above nominal. The sweep checks
+these values through the realized LCM design. All 128 endpoint combinations of wire
+diameters and lay ratios satisfy the aggregate limits and lay order.
+
+Removing the separate ACSR resistance coordinate reduces the selected box from 24 to 23 coordinates. The remaining
+sweep decisions are unchanged. The inner-lay maximum changes from 0.115048 percent
+to 0.483406 percent with the outer-lay cap, and remains above the threshold.
+
+The capacity run uses 16 Julia threads and Clarabel. The nominal stochastic capacity
+is 0.051871 pu with OPTIMAL termination. The capacity calculation signs off after five
+iterations in 316 s, with lower bound 0.039870 pu, upper bound 0.039882 pu and gap
+2.9e-4. The final master status is OPTIMAL. The 1024-point posterior check reports
+zero violations and a worst metric of -3.48e-2 for IHD at harmonic 11, bus 7.
+The first nominal resonances are h = 6.2720 and h = 12.3169. The coordinate count
+is 23, so HPM omits the vertices from its dictionary. The reports are
+`output/ieee30-full.txt`, `output/ieee30-full-scan.txt` and
+`output/ieee30-full-sweep.txt`.
+
+The normalized coordinates preserve the full case's physical intervals. Matching points
+under the previous and current coordinate representations agree within 1.5e-14 relative
+in cable sequence impedance and admittance. Floating-point evaluation order changes the
+oracle search trajectory: the reported lower and upper bounds remain 0.039870 and
+0.039882 pu, while the final gap and stored-pair count change. The earlier U33 boxes now
+reach each size's own registered resistance lower bound.
+
+The scan binds the thermal coordinate and evaluates a point at the electrical reference
+temperature or the family's registered upper temperature. It leaves family nominals unchanged.
+Strand spans, steel-layer counts and earthwire identity come from the specs.

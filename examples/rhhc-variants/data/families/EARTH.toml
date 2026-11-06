@@ -1,0 +1,12 @@
+[rho]
+field = "rho"
+nominal = {value = 100, register = "EARTH.rho"}
+lower = {value = 10, register = "EARTH.rho"}
+upper = {value = 1000, register = "EARTH.rho"}
+scale = "log"
+
+[eps]
+field = "eps"
+nominal = {value = 10, register = "EARTH.eps"}
+lower = {value = 10, register = "EARTH.eps"}
+upper = {value = 10, register = "EARTH.eps"}

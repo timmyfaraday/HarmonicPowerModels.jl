@@ -1,7 +1,5 @@
 family = "TOM"
-r_core = {value = 0.01416, origin = "examples/rhhc/ieee30_lcm.jl:46"} # m
-t_sc1 = {value = 8.0e-4, origin = "examples/rhhc/ieee30_lcm.jl:59"} # m
-t_ins = {value = 8.0e-3, origin = "examples/rhhc/ieee30_lcm.jl:60"} # m
-t_sc2 = {value = 8.0e-4, origin = "examples/rhhc/ieee30_lcm.jl:61"} # m
-t_tube = {value = 3.0e-4, origin = "examples/rhhc/ieee30_lcm.jl:63"} # m
-t_jkt = {value = 2.5e-3, origin = "examples/rhhc/ieee30_lcm.jl:65"} # m
+t_sc1 = {value = 0.0008, origin = "examples/rhhc/ieee30_lcm.jl:59"}
+t_sc2 = {value = 0.0008, origin = "examples/rhhc/ieee30_lcm.jl:61"}
+t_tube = {value = 0.0003, origin = "examples/rhhc/ieee30_lcm.jl:63"}
+t_jkt = {value = 0.0025, origin = "examples/rhhc/ieee30_lcm.jl:65"}

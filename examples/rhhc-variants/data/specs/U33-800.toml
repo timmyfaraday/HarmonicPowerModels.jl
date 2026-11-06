@@ -1,10 +1,22 @@
 family = "U33"
-d_c = {value = 0.0342, register = "U33.cond.d.800"} # m
-R20 = {value = 3.67e-5, register = "U33.cond.R20.800"} # Ω/m
-t_sc1 = {value = 1.05e-3, register = "U33.sc1.t.800"} # m
-t_ins = {value = 8.0e-3, register = "U33.ins.t"} # m
-t_sc2 = {value = 9.0e-4, register = "U33.sc2.t"} # m
-R20_screen = {value = 2.63e-4, register = "U33.scr.R20"} # Ω/m
-d_wire = {value = 1.35e-3, register = "U33.scr.d"} # m
-t_jkt = {value = 3.3e-3, register = "U33.jkt.t.800"} # m
-diameter = {value = 0.0634, register = "U33.od"} # m
+diameter = {value = 0.0634, register = "U33.od"}
+
+[d_c]
+nominal = {value = 0.0342, register = "U33.cond.d.800"}
+lower = {value = 0.0342, register = "U33.cond.d.800"}
+upper = {value = 0.0346, register = "U33.cond.d.800"}
+
+[R20]
+nominal = {value = 3.67e-05, register = "U33.cond.R20.800"}
+lower = {value = 3.3799999999999995e-05, register = "U33.cond.R20.800"}
+upper = {value = 3.67e-05, register = "U33.cond.R20.800"}
+
+[t_sc1]
+nominal = {value = 0.00105, register = "U33.sc1.t.800"}
+lower = {value = 0.000945, register = "U33.sc1.t.800"}
+upper = {value = 0.001155, register = "U33.sc1.t.800"}
+
+[t_jkt]
+nominal = {value = 0.0033, register = "U33.jkt.t.800"}
+lower = {value = 0.0033, register = "U33.jkt.t.800"}
+upper = {value = 0.00446, register = "U33.jkt.t.800"}

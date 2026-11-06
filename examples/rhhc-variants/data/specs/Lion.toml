@@ -1,11 +1,27 @@
 family = "ACSR"
-n_steel = {value = 7, register = "ACSR.Lion.st"} # 1
-n_aluminium = {value = 30, register = "ACSR.Lion.al"} # 1
-d_steel = {value = 3.18e-3, register = "ACSR.Lion.st"} # m
-d_aluminium = {value = 3.18e-3, register = "ACSR.Lion.al"} # m
-diameter = {value = 0.02226, register = "ACSR.Lion.d"} # m
-R20 = {value = 1.212e-4, register = "ACSR.Lion.R20"} # Ω/m
-lay_steel = {value = 21.0, register = "ACSR.lay.st6"} # 1
-lay_inner = {value = 13.0, register = "ACSR.lay.alin"} # 1
-lay_outer = {value = 12.0, register = "ACSR.lay.alout"} # 1
-courses = {value = [12, 18], register = "ACSR.courses"} # 1
+n_steel = {value = 7, register = "ACSR.Lion.st"}
+n_aluminium = {value = 30, register = "ACSR.Lion.al"}
+R20 = {value = 0.0001212, register = "ACSR.Lion.R20"}
+courses = {value = [12, 18], register = "ACSR.courses"}
+mass_al = {value = 0.659, register = "ACSR.Lion.mass.al"}
+mass_st = {value = 0.436, register = "ACSR.Lion.mass.st"}
+
+[d_steel]
+nominal = {value = 0.00318, register = "ACSR.Lion.st"}
+lower = {value = 0.00313, register = "ACSR.Lion.st"}
+upper = {value = 0.0032300000000000002, register = "ACSR.Lion.st"}
+
+[d_aluminium]
+nominal = {value = 0.00318, register = "ACSR.Lion.al"}
+lower = {value = 0.0031482000000000003, register = "ACSR.Lion.al"}
+upper = {value = 0.0032118000000000003, register = "ACSR.Lion.al"}
+
+[diameter]
+nominal = {value = 0.02226, register = "ACSR.Lion.d"}
+lower = {value = 0.022037400000000002, register = "ACSR.Lion.d"}
+upper = {value = 0.022482600000000002, register = "ACSR.Lion.d"}
+
+[mass]
+nominal = {value = 1.095, register = "ACSR.Lion.mass"}
+lower = {value = 1.0731, register = "ACSR.Lion.mass"}
+upper = {value = 1.1169, register = "ACSR.Lion.mass"}
