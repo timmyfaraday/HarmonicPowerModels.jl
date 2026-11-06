@@ -417,7 +417,7 @@ function dependence(inputs, destination)
                 " ", row.effective_minimum, " ", row.effective_maximum)
         end
         isempty(intrinsic) ||
-            println(io, "STOP after full analysis. Hulls and proposal await review.")
+            println(io, "STOP after full analysis.")
     end
     return results
 end
@@ -433,6 +433,11 @@ function observations(problem, kind)
            ["eq." * first(p) => last(p) for p in equivalent_values(problem, kind)]
 end
 
+function observations(problem, row::NamedTuple)
+    haskey(row, :measure) ? row.measure(problem) :
+    observations(problem, row.layout.kind)
+end
+
 """
     derivative(inputs, row, physical, axis, metric, fraction)
 
@@ -442,14 +447,8 @@ feasible. A blocked direction returns zero and contributes no sign evidence.
 function derivative(inputs, row, physical, axis, metric, fraction)
     lo, hi = effective_interval(row, physical, axis, fraction)
     hi > lo || return 0.0
-    a = observations(
-        effective_problem(row.spec, effective_point(row, physical, axis, lo),
-            row.layout, inputs.mat, 50.0),
-        row.layout.kind)[metric].second
-    b = observations(
-        effective_problem(row.spec, effective_point(row, physical, axis, hi),
-            row.layout, inputs.mat, 50.0),
-        row.layout.kind)[metric].second
+    a = metric_value(inputs, row, effective_point(row, physical, axis, lo), metric)
+    b = metric_value(inputs, row, effective_point(row, physical, axis, hi), metric)
     return (b - a) / (hi - lo) * (axis.upper - axis.lower)
 end
 
@@ -633,8 +632,10 @@ function golden(function_value, lower, upper)
 end
 
 function metric_value(inputs, row, state, metric)
-    return observations(effective_problem(row.spec, state, row.layout, inputs.mat, 50.0),
-        row.layout.kind)[metric].second
+    haskey(row, :state_metric) && return row.state_metric(state, metric)
+    problem = effective_problem(row.spec, state, row.layout, inputs.mat, 50.0)
+    return haskey(row, :metric) ? row.metric(problem, metric) :
+           observations(problem, row)[metric].second
 end
 
 """
@@ -839,15 +840,17 @@ with their source and effective sensitivities. Keep physical samples for searche
 """
 function reduction_data(inputs, row)
     points = source_points(inputs.box)
-    source = sensitivities(inputs, row, points, :source, METHOD.difference_step,
-        p -> observations(p, row.layout.kind))
+    source = haskey(row, :measure) ?
+             (reference = observations(row.problem(nominal_point(inputs.box), 50.0), row),) :
+             sensitivities(inputs, row, points, :source, METHOD.difference_step,
+        p -> observations(p, row))
     effective = sensitivities(inputs, row, points, :effective, METHOD.difference_step,
-        p -> observations(p, row.layout.kind))
+        p -> observations(p, row))
     physical = [physical_inputs(row.spec, inputs.families, row.layout, inputs.bindings, p)
                 for p in points]
     positions = [a.group == :unread ? 0.0 : effective_value(state, a)
                  for a in effective.axes, state in physical]
-    observed = reduce(hcat, [last.(observations(row.problem(p, 50.0), row.layout.kind))
+    observed = reduce(hcat, [last.(observations(row.problem(p, 50.0), row))
                              for p in points])
     return (;
         points, source, effective, physical, positions, observed, axes = effective.axes)
@@ -886,6 +889,132 @@ function metric_classes(data)
     return classes
 end
 
+function projected_cell(row, data, cell, anchor, target, drivers)
+    feasible(row, target) && return target
+    inside, outside = 0.0, 1.0
+    for _ in 1:48
+        fraction = (inside + outside) / 2
+        trial = anchor
+        for j in drivers
+            value = (1 - fraction) * effective_value(anchor, data.axes[j]) +
+                    fraction * effective_value(target, data.axes[j])
+            trial = effective_point(row, trial, data.axes[j], value)
+        end
+        if feasible(row, trial)
+            inside = fraction
+        else
+            outside = fraction
+        end
+    end
+    trial = anchor
+    for j in drivers
+        value = (1 - inside) * effective_value(anchor, data.axes[j]) +
+                inside * effective_value(target, data.axes[j])
+        trial = effective_point(row, trial, data.axes[j], value)
+    end
+    return trial
+end
+
+function golden(function_value, lower, upper, tolerance, iterations)
+    ratio = (sqrt(5.0) - 1) / 2
+    a, b = lower, upper
+    c, d = b - ratio * (b - a), a + ratio * (b - a)
+    fc, fd = function_value(c), function_value(d)
+    for _ in 1:iterations
+        b - a <= tolerance * (upper - lower) && break
+        if fc <= fd
+            b, d, fd = d, c, fc
+            c = b - ratio * (b - a)
+            fc = function_value(c)
+        else
+            a, c, fc = c, d, fd
+            d = a + ratio * (b - a)
+            fd = function_value(d)
+        end
+    end
+    candidates = [
+        (lower, function_value(lower)), (upper, function_value(upper)), (c, fc), (d, fd)]
+    return candidates[argmin(last.(candidates))]
+end
+
+function interior_minimum(inputs, row, data, metric, cell, start, orientation, drivers)
+    state = start
+    objective = orientation * metric_value(inputs, row, state, metric)
+    for _ in 1:METHOD.interior_iterations
+        previous = objective
+        for j in drivers
+            lo, hi = cell_interval(row, state, data.axes[j], cell.lower[j], cell.upper[j])
+            hi > lo || continue
+            value, trial = golden(
+                x -> orientation * metric_value(inputs, row,
+                    effective_point(row, state, data.axes[j], x), metric),
+                lo,
+                hi,
+                METHOD.interior_tolerance, METHOD.interior_iterations)
+            if trial < objective
+                state = effective_point(row, state, data.axes[j], value)
+                objective = trial
+            end
+        end
+        previous - objective <= METHOD.interior_tolerance * max(abs(objective), eps()) &&
+            break
+    end
+    return state, objective
+end
+
+function interior_hull(inputs, row, data, metric, cell)
+    drivers = findall(
+        j -> maximum(abs, data.effective.values[metric, j, :]) > METHOD.zero_band,
+        eachindex(data.axes))
+    for group in constraint_groups(row, data.axes)
+        isempty(intersect(drivers, group)) || (drivers = union(drivers, group))
+    end
+    sort!(drivers)
+    anchor = data.physical[first(cell.indices)]
+    starts = typeof(anchor)[]
+    if METHOD.interior_starts.corners
+        for mask in 0:(2 ^ length(drivers) - 1)
+            target = anchor
+            for (n, j) in enumerate(drivers)
+                value = iszero(mask & (1 << (n - 1))) ? cell.lower[j] : cell.upper[j]
+                target = effective_point(row, target, data.axes[j], value)
+            end
+            push!(starts, projected_cell(row, data, cell, anchor, target, drivers))
+        end
+    end
+    if METHOD.interior_starts.center
+        target = anchor
+        for j in drivers
+            target = effective_point(row, target, data.axes[j], (cell.lower[j] +
+                                                                 cell.upper[j]) / 2)
+        end
+        push!(starts, projected_cell(row, data, cell, anchor, target, drivers))
+    end
+    values = Float64[]
+    states = typeof(anchor)[]
+    for orientation in (1, -1)
+        best_state = anchor
+        best = orientation * metric_value(inputs, row, anchor, metric)
+        states_by_start = Vector{typeof(anchor)}(undef, length(starts))
+        objectives = Vector{Float64}(undef, length(starts))
+        Threads.@threads for index in eachindex(starts)
+            states_by_start[index], objectives[index] = interior_minimum(inputs, row,
+                data, metric, cell, starts[index], orientation, drivers)
+        end
+        for index in eachindex(starts)
+            if objectives[index] < best
+                best_state, best = states_by_start[index], objectives[index]
+            end
+        end
+        push!(values, orientation * best)
+        push!(states, best_state)
+    end
+    lo, hi = values
+    rounding = 64eps(max(abs(lo), abs(hi)))
+    return (lower = prevfloat(lo - rounding), upper = nextfloat(hi + rounding),
+        low_state = first(states), high_state = last(states), candidates = length(starts))
+end
+
 """
     quantity_hulls(inputs, row, data)
 
@@ -901,45 +1030,61 @@ function quantity_hulls(inputs, row, data)
     methods = fill("fixed", n)
     lower = [a.lower for a in data.axes]
     upper = [a.upper for a in data.axes]
-    for group in metric_classes(data)
-        k = group.representative
-        partition = split_cell(
-            inputs, row, data, k, collect(eachindex(data.points)), lower, upper, 0)
-        all(c -> c.consistent, partition) ||
-            error("depth six remains inconsistent: $(row.name) $(first(data.source.reference[k]))")
-        searched = [cell_hull(inputs, row, data, k, cell) for cell in partition]
-        lo = minimum(h -> h.lower, searched)
-        hi = maximum(h -> h.upper, searched)
-        reference_min, reference_max = extrema(data.observed[k, :])
-        for (index, member) in enumerate(group.members)
-            member_min, member_max = extrema(data.observed[member, :])
-            ratio = (member_max - member_min) / (reference_max - reference_min)
-            allowance = group.errors[index] * (member_max - member_min)
-            a = member_min + ratio * (lo - reference_min) - allowance
-            b = member_min + ratio * (hi - reference_min) + allowance
-            rounding = 64eps(max(abs(a), abs(b)))
-            bounds[member] = (;
-                lower = prevfloat(a - rounding), upper = nextfloat(b + rounding))
-            cells[member] = [merge(cell,
-                                 (
-                                     value_lower = prevfloat(member_min +
-                                                             ratio *
-                                                             (bound.lower - reference_min) -
-                                                             allowance - rounding),
-                                     value_upper = nextfloat(member_min +
-                                                             ratio *
-                                                             (bound.upper - reference_min) +
-                                                             allowance + rounding),
-                                     candidates = bound.candidates))
-                             for (cell, bound) in zip(partition, searched)]
-            methods[member] = member == k ?
-                              "corners, projected aggregate faces, golden face search" :
-                              "verified affine alias"
+    tasks = map(metric_classes(data)) do group
+        Threads.@spawn begin
+            k = group.representative
+            partition = split_cell(
+                inputs, row, data, k, collect(eachindex(data.points)), lower, upper, 0)
+            if all(c -> c.consistent, partition)
+                searched = [cell_hull(inputs, row, data, k, cell) for cell in partition]
+            else
+                searches = map(partition) do cell
+                    Threads.@spawn cell.consistent ? cell_hull(inputs, row, data, k, cell) :
+                                   interior_hull(inputs, row, data, k, cell)
+                end
+                searched = fetch.(searches)
+            end
+            lo = minimum(h -> h.lower, searched)
+            hi = maximum(h -> h.upper, searched)
+            reference_min, reference_max = extrema(data.observed[k, :])
+            for (index, member) in enumerate(group.members)
+                member_min, member_max = extrema(data.observed[member, :])
+                ratio = (member_max - member_min) / (reference_max - reference_min)
+                allowance = group.errors[index] * (member_max - member_min)
+                a = member_min + ratio * (lo - reference_min) - allowance
+                b = member_min + ratio * (hi - reference_min) + allowance
+                rounding = 64eps(max(abs(a), abs(b)))
+                bounds[member] = (;
+                    lower = prevfloat(a - rounding), upper = nextfloat(b + rounding))
+                cells[member] = [merge(cell,
+                                     (
+                                         value_lower = prevfloat(member_min +
+                                                                 ratio *
+                                                                 (bound.lower -
+                                                                  reference_min) -
+                                                                 allowance - rounding),
+                                         value_upper = nextfloat(member_min +
+                                                                 ratio *
+                                                                 (bound.upper -
+                                                                  reference_min) +
+                                                                 allowance + rounding),
+                                         candidates = bound.candidates,
+                                         method = cell.consistent ? "monotone" :
+                                                  "interior search"))
+                                 for (cell, bound) in zip(partition, searched)]
+                methods[member] = any(c -> !c.consistent, partition) ?
+                                  (member == k ? "interior search and monotone cells" :
+                                   "verified affine alias with interior search") :
+                                  (member == k ?
+                                   "corners, projected aggregate faces, golden face search" :
+                                   "verified affine alias")
+            end
+            println("  ", first(data.source.reference[k]), " ",
+                length(partition), " cells ", lo, " ", hi)
+            flush(stdout)
         end
-        println("  ", first(data.source.reference[k]), " ",
-            length(partition), " cells ", lo, " ", hi)
-        flush(stdout)
     end
+    fetch.(tasks)
     for k in 1:n
         methods[k] == "fixed" || continue
         nominal = last(data.source.reference[k])
@@ -949,7 +1094,7 @@ function quantity_hulls(inputs, row, data)
             upper = nextfloat(bounds[k].upper + rounding))
         cells[k] = [(; lower, upper, depth = 0,
             indices = collect(eachindex(data.points)), consistent = true,
-            value_lower = bounds[k].lower, value_upper = bounds[k].upper, candidates = 0)]
+            value_lower = bounds[k].lower, value_upper = bounds[k].upper, candidates = 0, method = "fixed")]
     end
     return (; bounds, cells, methods)
 end
@@ -966,7 +1111,7 @@ function containment(inputs, row, hulls, points)
     largest = -Inf
     observed = Matrix{Float64}(undef, length(hulls.bounds), length(points))
     for (i, p) in enumerate(points)
-        values = last.(observations(row.problem(p, 50.0), row.layout.kind))
+        values = last.(observations(row.problem(p, 50.0), row))
         observed[:, i] = values
         physical = physical_inputs(
             row.spec, inputs.families, row.layout, inputs.bindings, p)
@@ -992,6 +1137,47 @@ function containment(inputs, row, hulls, points)
     return (; escaped, largest, observed)
 end
 
+function interior_checks(inputs, row, data, hulls)
+    checks = NamedTuple[]
+    axes = data.axes
+    relevant = findall(a -> a.group != :unread, axes)
+    for (k, cells) in enumerate(hulls.cells)
+        bad = findall(c -> c.method == "interior search", cells)
+        isempty(bad) && continue
+        for (order, index) in enumerate(bad)
+            cell = cells[index]
+            count = METHOD.verification_samples ÷ length(bad) +
+                    (order <= METHOD.verification_samples % length(bad) ? 1 : 0)
+            center = (cell.lower .+ cell.upper) ./ 2
+            box = ParameterBox([a.name for a in axes], center, cell.lower, cell.upper,
+                fill(:linear, length(axes)))
+            anchor = data.physical[first(cell.indices)]
+            largest, escapes = -Inf, 0
+            for ξ in background_points(box, count; seed = 7)
+                point = latent(box, ξ)
+                target = anchor
+                for j in relevant
+                    value = clamp(getproperty(point, axes[j].name), cell.lower[j], cell.upper[j])
+                    target = effective_point(row, target, axes[j], value)
+                end
+                state = projected_cell(row, data, cell, anchor, target, relevant)
+                problem = effective_problem(row.spec, state, row.layout, inputs.mat, 50.0)
+                value = haskey(row, :metric) ? row.metric(problem, k) :
+                        observations(problem, row)[k].second
+                interval = hulls.bounds[k]
+                margin = max(cell.value_lower - value, value - cell.value_upper) /
+                         max(abs(interval.lower), abs(interval.upper), eps())
+                largest = max(largest, margin)
+                escapes += margin > 0
+            end
+            push!(checks,
+                (; metric = k, quantity = first(data.source.reference[k]),
+                    cell = index, samples = count, escapes, largest))
+        end
+    end
+    return checks
+end
+
 """
     hull_study(inputs, destination)
 
@@ -1010,7 +1196,10 @@ function hull_study(inputs, destination)
         data = reduction_data(inputs, row)
         hulls = quantity_hulls(inputs, row, data)
         checked = containment(inputs, row, hulls, verification)
-        push!(results, (; row, data, hulls, checked))
+        interior = interior_checks(inputs, row, data, hulls)
+        all(c -> c.escapes == 0, interior) ||
+            error("interior containment escaped on $(row.name)")
+        push!(results, (; row, data, hulls, checked, interior))
         println("Escapes: ", length(checked.escaped), "; largest margin: ", checked.largest)
         flush(stdout)
     end
@@ -1054,6 +1243,17 @@ function hull_study(inputs, destination)
                 join(
                     (result.row.name, length(verification),
                         length(result.checked.escaped), result.checked.largest),
+                    ','))
+        end
+    end
+    open(joinpath(destination, "equivalent-interior.csv"), "w") do io
+        println(io, "circuit,quantity,cell,samples,escapes,largest_margin,method")
+        for result in results, check in result.interior
+
+            println(io,
+                join(
+                    (result.row.name, check.quantity, check.cell, check.samples,
+                        check.escapes, check.largest, "interior search"),
                     ','))
         end
     end
@@ -1330,7 +1530,7 @@ end
     proposal(study, destination)
 
 Write the coordinate definitions, sharing measurements, admission results and
-source correlations, while leaving the reduced case to the review step.
+source correlations.
 """
 function proposal(study, destination)
     any(r -> !isempty(r.checked.escaped), study.results) && error("containment failed")
@@ -1428,7 +1628,7 @@ function generated_equivalent(inputs, evidence)
     decisions = reduction_table(joinpath(evidence, "equivalent-admission.csv"))
     admitted = [r["coordinate"] for r in decisions if parse(Bool, r["admitted"])]
     source = relpath(inputs.file, STUDIES)
-    commit = readchomp(`git -C $STUDIES rev-parse HEAD`)
+    commit = readchomp(`git -C $STUDIES log -1 --format=%H -- $source`)
     command = "julia --project=examples/rhhc-variants examples/rhhc-variants/reduce.jl " *
               source
     method = "effective coordinates, subdivision, constrained hull search, exact sharing at $(METHOD.sharing_tolerance), $(100METHOD.admission_threshold) percent admission"
@@ -1450,13 +1650,13 @@ function generated_equivalent(inputs, evidence)
         coordinates_data[name] = Dict("family" => first(rows)["family"],
             "definition" => definition, "unit" => "1", "physical_unit" => unit,
             "nominal" => 0.0, "lower" => -1.0,
-            "upper" => 1.0, "scale" => "linear", "provenance" => origin,
+            "upper" => 1.0, "scale" => "linear", "origin" => origin,
             "sharing_error" => parse(Float64, first(rows)["sharing_error"]),
             "members" => [Dict("circuit" => r["circuit"], "field" => r["member"],
                  "nominal" => parse(Float64, r["nominal"]),
                  "lower" => parse(Float64, r["lower"]), "upper" =>
                      parse(Float64, r["upper"]),
-                 "scale" => "linear", "unit" => unit, "provenance" => origin)
+                 "scale" => "linear", "unit" => unit, "origin" => origin)
              for r in rows])
     end
     circuits_data = Dict{String, Any}()
@@ -1466,7 +1666,7 @@ function generated_equivalent(inputs, evidence)
         values = Dict(equivalent_values(original, row.layout.kind))
         entry = plain(specification(first(original.system.designs), 1, values))
         entry["family_name"] = string(row.spec.family_name)
-        entry["provenance"] = "$origin, nominal circuit $(row.name)"
+        entry["origin"] = "$origin, nominal circuit $(row.name)"
         entry["earth"] = Dict{String, Any}("rho" => Dict("nominal" => values["earth.rho"]),
             "eps" => Dict("nominal" => values["earth.eps_r"]))
         if haskey(values, "formation.y")
@@ -1485,7 +1685,7 @@ function generated_equivalent(inputs, evidence)
 
             member["circuit"] == row.name || continue
             physical = Dict("nominal" => member["nominal"], "lower" => member["lower"],
-                "upper" => member["upper"], "coordinate" => name, "provenance" => origin)
+                "upper" => member["upper"], "coordinate" => name, "origin" => origin)
             chunks = split(member["field"], '.')
             if first(chunks) == "earth"
                 entry["earth"][chunks[2] == "eps_r" ? "eps" : chunks[2]] = physical
@@ -1594,6 +1794,14 @@ function reduction_report(generated, evidence)
             "; ", row["second"], " = ", row["second_value"], " at ", row["second_endpoint"],
             "; shared sources ", row["shared_sources"], "; joint-search residual ", row["joint_residual"])
     end
+    interior_file = joinpath(evidence, "equivalent-interior.csv")
+    if isfile(interior_file)
+        for row in reduction_table(interior_file)
+            println(io, "interior search: ", row["circuit"], " ", row["quantity"],
+                ", cell ", row["cell"], ", ", row["samples"], " samples, ", row["escapes"],
+                " escapes, largest margin ", row["largest_margin"])
+        end
+    end
     return String(take!(io))
 end
 
@@ -1618,10 +1826,339 @@ function generate_equivalent(inputs, evidence; destination = STUDIES)
     return (; generated, files)
 end
 
+function ratio_model(problem)
+    branches = Dict(1 => (
+        problem = (p, f) -> LineParametersProblem(problem.system,
+            problem.earth; temperature = problem.temperature, frequencies = [f]),
+        len = 1.0, zbase = 1.0))
+    return ExactPiModel(branches, CoaxialFormulation(transposition = true), ParameterBox())
+end
+
+function surrogate_components(value, f)
+    (real(value.z), imag(value.z) / (2π * f), imag(value.y) / (2π * f))
+end
+
+function factor_ratios(problem, frequencies, reference)
+    model = ratio_model(problem)
+    observed = Pair{String, Float64}[]
+    for (j, f) in enumerate(frequencies)
+        values = surrogate_components(model.branches[1].zy((;), f, :positive), f)
+        for (i, quantity) in enumerate(("R", "L", "C"))
+            push!(observed, "$quantity.$f" => values[i] / reference[3(j - 1) + i])
+        end
+    end
+    return observed
+end
+
+function factor_metric(problem, k, frequencies, reference)
+    j, i = (k - 1) ÷ 3 + 1, (k - 1) % 3 + 1
+    f = frequencies[j]
+    value = ratio_model(problem).branches[1].zy((;), f, :positive)
+    return surrogate_components(value, f)[i] / reference[k]
+end
+
+function effective_model(inputs, row)
+    axes = effective_axes(inputs, row)
+    base = physical_inputs(
+        row.spec, inputs.families, row.layout, inputs.bindings, nominal_point(inputs.box))
+    names = Tuple(a.name for a in axes)
+    nominal = [a.group == :unread ? 0.0 : effective_value(base, a) for a in axes]
+    lower = [a.group == :unread ? 0.0 : a.lower for a in axes]
+    upper = [a.group == :unread ? 0.0 : a.upper for a in axes]
+    box = ParameterBox(names, nominal, lower, upper, fill(:linear, length(axes)))
+    callback = (point, f) -> begin
+        state = base
+        for axis in axes
+            axis.group == :unread && continue
+            state = effective_point(row, state, axis, getproperty(point, axis.name))
+        end
+        effective_problem(row.spec, state, row.layout, inputs.mat, f)
+    end
+    model = ExactPiModel(Dict(1 => (problem = callback, len = 1.0, zbase = 1.0)),
+        CoaxialFormulation(transposition = true), box)
+    return (; model, axes, names)
+end
+
+function state_metric(state, k, evaluator, frequencies, reference)
+    point = NamedTuple{evaluator.names}(Tuple(a.group == :unread ? 0.0 :
+                                              effective_value(state, a)
+    for a in evaluator.axes))
+    j, i = (k - 1) ÷ 3 + 1, (k - 1) % 3 + 1
+    f = frequencies[j]
+    return surrogate_components(evaluator.model.branches[1].zy(point, f, :positive), f)[i] /
+           reference[k]
+end
+
+function factor_row(inputs, row, frequencies)
+    problem = row.problem(nominal_point(inputs.box), first(frequencies))
+    model = ratio_model(problem)
+    reference = [value for f in frequencies
+                 for value in surrogate_components(model.branches[1].zy((;), f, :positive), f)]
+    evaluator = effective_model(inputs, row)
+    return merge(row,
+        (measure = p -> factor_ratios(p, frequencies, reference),
+            metric = (p, k) -> factor_metric(p, k, frequencies, reference),
+            state_metric = (state, k) -> state_metric(
+                state, k, evaluator, frequencies, reference),
+            reference = reference))
+end
+
+function factor_study(inputs, destination)
+    mkpath(destination)
+    frequencies = Float64.(inputs.config.f1 .* [1; collect(inputs.config.harmonics)])
+    verification = [latent(inputs.box, p)
+                    for p in background_points(inputs.box, METHOD.verification_samples; seed = 3)]
+    tasks = map(inputs.definitions) do original
+        Threads.@spawn begin
+            row = factor_row(inputs, original, frequencies)
+            println("Factor hulls: ", row.name)
+            flush(stdout)
+            data = reduction_data(inputs, row)
+            hulls = quantity_hulls(inputs, row, data)
+            checked = containment(inputs, row, hulls, verification)
+            interior = interior_checks(inputs, row, data, hulls)
+            all(c -> c.escapes == 0, interior) ||
+                error("interior containment escaped on $(row.name)")
+            isempty(checked.escaped) || error("factor containment escaped on $(row.name)")
+            println("Factor containment: ", row.name, ", zero escapes, margin ", checked.largest)
+            flush(stdout)
+            (; row, data, hulls, checked, interior)
+        end
+    end
+    results = fetch.(tasks)
+    open(joinpath(destination, "factor-hulls.csv"), "w") do io
+        println(io, "circuit,quantity,nominal,lower,upper,cells,method,escapes")
+        for result in results, k in eachindex(result.hulls.bounds)
+
+            bound = result.hulls.bounds[k]
+            println(io,
+                join(
+                    (result.row.name, first(result.data.source.reference[k]),
+                        1.0, bound.lower, bound.upper, length(result.hulls.cells[k]),
+                        replace(result.hulls.methods[k], ',' => ';'), length(result.checked.escaped)),
+                    ','))
+        end
+    end
+    open(joinpath(destination, "factor-cells.csv"), "w") do io
+        println(io, "circuit,quantity,cell,depth,method,starts,coordinate,lower,upper")
+        for r in results, (k, cells) in enumerate(r.hulls.cells),
+            (i, cell) in enumerate(cells)
+            for (j, axis) in enumerate(r.data.axes)
+                axis.group == :unread && continue
+                println(io,
+                    join(
+                        (r.row.name, first(r.data.source.reference[k]), i, cell.depth,
+                            cell.method, cell.candidates, axis.name, cell.lower[j], cell.upper[j]),
+                        ','))
+            end
+        end
+    end
+    return (; inputs, frequencies, verification, results)
+end
+
+function screen_loss_evidence(inputs, results)
+    evidence = NamedTuple[]
+    for r in results
+        axis_index = findfirst(a -> a.group != :unread && a.field == :Rscreen, r.data.axes)
+        axis_index === nothing && continue
+        axis = r.data.axes[axis_index]
+        for k in eachindex(r.hulls.cells)
+            startswith(first(r.data.source.reference[k]), "R.") || continue
+            any(c -> c.method == "interior search", r.hulls.cells[k]) || continue
+            frequency = parse(Float64, split(first(r.data.source.reference[k]), '.'; limit = 2)[2])
+            found = false
+            for state in r.data.physical
+                lo, hi = axis.lower, axis.upper
+                left = metric_value(inputs, r.row, effective_point(r.row, state, axis, lo), k)
+                right = metric_value(inputs, r.row, effective_point(r.row, state, axis, hi), k)
+                position, negative_peak = golden(
+                    x -> -metric_value(inputs, r.row,
+                        effective_point(r.row, state, axis, x), k),
+                    lo,
+                    hi,
+                    METHOD.interior_tolerance, METHOD.interior_iterations)
+                peak = -negative_peak
+                lo < position < hi && peak > max(left, right) + 64eps(peak) || continue
+                physical = effective_point(r.row, state, axis, position)
+                problem = effective_problem(
+                    r.row.spec, physical, r.row.layout, inputs.mat, frequency)
+                blueprint = LineCableModels.flatten(first(problem.system.designs))
+                length(blueprint.conductors) >= 2 || continue
+                values = Dict(equivalent_values(problem, r.row.layout.kind))
+                screen = blueprint.conductors[2]
+                a, b = problem.system.placements[1:2]
+                spacing = hypot(a.x - b.x, a.y - b.y)
+                estimate = LineCableModels.μ₀ * frequency * log(spacing / screen.r_ex)
+                resistance = values["cable.1.tube.2.resistance"]
+                range_values = Float64[]
+                temperature = findfirst(
+                    a -> a.group != :unread &&
+                         (a.field == :theta || a.group == :temperature),
+                    r.data.axes)
+                for screen_value in (axis.lower, axis.upper)
+                    point = effective_point(r.row, first(r.data.physical), axis, screen_value)
+                    temperatures = temperature === nothing ? (0.0,) :
+                                   (
+                        r.data.axes[temperature].lower, r.data.axes[temperature].upper)
+                    for theta in temperatures
+                        varied = temperature === nothing ? point :
+                                 effective_point(r.row, point, r.data.axes[temperature], theta)
+                        trial = effective_problem(
+                            r.row.spec, varied, r.row.layout, inputs.mat, frequency)
+                        push!(range_values,
+                            Dict(equivalent_values(trial, r.row.layout.kind))["cable.1.tube.2.resistance"])
+                    end
+                end
+                push!(evidence,
+                    (; circuit = r.row.name, frequency,
+                        screen_reference = position, operating_screen_resistance = resistance,
+                        estimated_mutual_reactance = estimate, screen_lower = minimum(range_values),
+                        screen_upper = maximum(range_values), lower_ratio = left, peak_ratio = peak,
+                        upper_ratio = right, spacing, screen_radius = screen.r_ex,
+                        relative_peak_location_error = resistance / estimate - 1))
+                found = true
+                break
+            end
+            found || println("No simple screen-loss maximum located for ",
+                r.row.name, " at ", frequency, " Hz")
+        end
+    end
+    return evidence
+end
+
+function generate_surrogates(result; destination = STUDIES)
+    inputs = result.inputs
+    source = relpath(inputs.file, STUDIES)
+    commit = readchomp(`git -C $STUDIES log -1 --format=%H -- $source`)
+    lcm_commit = readchomp(`git -C $(pkgdir(LineCableModels)) rev-parse HEAD`)
+    command = "julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/reduce.jl $source"
+    method = "effective coordinates, subdivision, constrained hull search, positive-sequence R/L/C ratios at case frequencies, $(METHOD.verification_samples) mapped verification samples"
+    header = "# Generated. Source: $source\n# Source commit: $commit\n# LCM commit: $lcm_commit\n# Method: $method\n# Regenerate: `$command`\n\n"
+    stem = splitext(basename(inputs.file))[1]
+    data_path = "data/surrogate/$stem.toml"
+    families = sort(unique(string(r.row.spec.family_name) for r in result.results))
+    coordinates_data = Dict{String, Any}()
+    for family in families, (i, quantity) in enumerate(("R", "L", "C"))
+
+        members = Dict{String, Any}[]
+        for r in result.results
+            string(r.row.spec.family_name) == family || continue
+            for (j, frequency) in enumerate(result.frequencies)
+                k = 3(j - 1) + i
+                bound = r.hulls.bounds[k]
+                push!(members,
+                    Dict("circuit" => r.row.name, "frequency" => frequency,
+                        "nominal_value" => r.row.reference[k], "lower" => bound.lower,
+                        "upper" => bound.upper, "cells" => length(r.hulls.cells[k]),
+                        "method" => r.hulls.methods[k],
+                        "interior_cells" =>
+                            count(c -> c.method == "interior search", r.hulls.cells[k])))
+            end
+        end
+        name = "k$(quantity)_$family"
+        coordinates_data[name] = Dict("nominal" => 1.0,
+            "lower" => minimum(m["lower"] for m in members),
+            "upper" => maximum(m["upper"] for m in members), "scale" => "linear",
+            "definition" => "Positive-sequence $quantity relative to its nominal value at the same frequency",
+            "family" => family, "quantity" => quantity, "members" => members,
+            "origin" => "$source at $commit, public LCM callable through the HPM extension, constrained hull search")
+    end
+    physics = screen_loss_evidence(inputs, result.results)
+    data = Dict("source_case" => source, "source_commit" => commit,
+        "lcm_commit" => lcm_commit, "method" => method, "regenerate" => command,
+        "screen_loss_evidence" => [plain(e) for e in physics],
+        "frequencies" => result.frequencies, "coordinates" => coordinates_data,
+        "verification" =>
+            [Dict("circuit" => r.row.name, "source_samples" => length(result.verification),
+                 "source_escapes" => length(r.checked.escaped), "source_largest_margin" =>
+                     r.checked.largest,
+                 "interior" => [plain(c) for c in r.interior]) for r in result.results])
+    files = Dict(data_path => header * toml_text(data))
+    for kind in ("factor", "scaled")
+        config = TOML.parsefile(inputs.file)
+        config["model"] = kind == "factor" ? "exact" : "scaled"
+        config["factor_data"] = data_path
+        config["source_case"] = source
+        config["box_names"] = ["k$(q)_$family" for family in families
+                               for q in ("R", "L", "C")]
+        config["box"] = Dict(name =>
+                                 Dict("coordinate" => name, "origin" => "$data_path, coordinates.$name")
+        for name in config["box_names"])
+        config["classes"] = Dict(family => sort([parse(Int, b)
+                                       for (b, branch) in config["branches"]
+                                       if string(specification(branch["spec"]).family_name) ==
+                                          family]) for family in families)
+        config["note"] = "Generated $kind surrogate. One factor moves every design of a family at every frequency. The surrogate is neither an inner nor an outer approximation of the source set."
+        files["cases/$stem-$kind.toml"] = header * toml_text(config)
+    end
+    io = IOBuffer()
+    println(io, "Surrogate uncertainty reduction")
+    println(io, "Source: ", source, "; commit: ", commit, "; LCM commit: ", lcm_commit)
+    println(io, "Method: ", method, "; parameters: ", METHOD)
+    println(io, "Frequencies: ", result.frequencies, " Hz. Positive sequence defines the intervals.")
+    println(io,
+        "Harmonics 5, 7, 11 and 13 are negative or positive sequence. No zero-sequence harmonic enters.")
+    println(io,
+        "Factor: exact nominal frequency dependence; family factors multiply nominal R, omega L and omega C, including zero sequence if requested.")
+    println(io,
+        "Scaled: LCM nominal fundamental exact pi data, then HPM frequency scaling; no zero-sequence data.")
+    println(io,
+        "One factor moves every design of a family at every frequency. Neither variant is an inner or outer approximation.")
+    println(io, "coordinate | nominal | lower | upper | contributing ratios")
+    for name in sort(collect(keys(coordinates_data)))
+        row = coordinates_data[name]
+        println(io, name, " | 1 | ", row["lower"], " | ",
+            row["upper"], " | ", length(row["members"]))
+    end
+    println(io, "Containment and cells:")
+    for r in result.results
+        println(io, r.row.name, ": ", length(result.verification), " mapped samples, ",
+            length(r.checked.escaped), " escapes, largest normalized outward margin ", r.checked.largest)
+        for k in eachindex(r.hulls.cells)
+            println(io, "  ", first(r.data.source.reference[k]), ": ",
+                length(r.hulls.cells[k]), " cells; ", r.hulls.methods[k])
+            for (index, cell) in enumerate(r.hulls.cells[k])
+                cell.method == "interior search" || continue
+                println(io, "    cell ", index, ": interior search, depth ", cell.depth,
+                    ", starts per extreme ", cell.candidates)
+            end
+        end
+    end
+    println(io, "Additional samples within inconsistent cells (per quantity): ", METHOD.verification_samples)
+    for r in result.results, check in r.interior
+
+        println(io, r.row.name, " ", check.quantity, ", interior search cell ", check.cell,
+            ": ", check.samples, " feasible projected Sobol samples, ", check.escapes,
+            " escapes, largest normalized outward margin ", check.largest)
+    end
+    println(io,
+        "Interior screen-loss evidence. The approximate term Rs * Xm^2 / (Rs^2 + Xm^2) peaks at Rs = Xm.")
+    println(io,
+        "Xm below is the geometric estimate mu0 * f * log(spacing / screen outer radius), not a replacement for LCM.")
+    for row in physics
+        println(io, row.circuit, " at ", row.frequency, " Hz: operating screen range [",
+            row.screen_lower, ", ", row.screen_upper, "] ohm/m; peak screen resistance ",
+            row.operating_screen_resistance, " ohm/m; estimated Xm ", row.estimated_mutual_reactance,
+            " ohm/m; relative location difference ", row.relative_peak_location_error)
+        println(
+            io, "  R ratios at lower screen bound, interior peak and upper screen bound: ",
+            row.lower_ratio, ", ", row.peak_ratio, ", ", row.upper_ratio)
+    end
+    files["output/$stem-surrogate-reduction.txt"] = String(take!(io))
+    for (path, contents) in files
+        target = joinpath(destination, path)
+        mkpath(dirname(target))
+        write(target, contents)
+    end
+    return (; files, data)
+end
+
 if abspath(PROGRAM_FILE) == @__FILE__
     inputs = reduction_inputs(isempty(ARGS) ? "cases/ieee30-full.toml" : first(ARGS))
-    destination = length(ARGS) > 1 ? ARGS[2] : "/tmp/hpm-equivalent-step3"
+    destination = length(ARGS) > 1 ? ARGS[2] : "/tmp/hpm-equivalent"
     study_result = hull_study(inputs, destination)
     proposal(study_result, destination)
     generate_equivalent(inputs, destination)
+    factors = factor_study(inputs, destination)
+    generate_surrogates(factors)
 end

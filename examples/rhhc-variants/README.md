@@ -20,18 +20,17 @@ uses U33-800. The other 33 kV cables use U33-500. The case files give every assi
 Cable lengths follow the scenario's retained routes. The overhead lengths follow
 `length_km = x_pu * zbase / OHL_X[132.0]`, with `OHL_X[132.0] = 0.40 Ω/km`.
 
-The uncertainty comparison has three levels. The first uses source physical inputs.
-The second uses the equivalents read by LCM's coaxial formulation. Future factors
-on per-unit-length R, L and C form the third level. The source case has 23
-coordinates, and its generated equivalent case has 35 after exact lumping,
-verified sharing and the 0.1 percent rule. Independent intervals discard the
-correlations between source inputs, and five screened widths stay nominal.
-The comparison script solves both cases and checks each solution on each box,
-with random points and an adversary that predicts corners from nominal sensitivities.
-The corner checks find violations on both solutions' own boxes despite HPM sign-off.
-These solutions do not certify the reported lower bounds.
-[Equivalent uncertainty](REDUCTION.md) documents the method,
-generated data and measured comparison.
+The [uncertainty comparison](REDUCTION.md) has three levels. The source box has
+23 physical coordinates. Exact lumping and verified sharing give 35 coaxial
+equivalent coordinates. The surrogate uses six family factors on R, L and C. Independent equivalent
+intervals discard source correlations, and five screened widths stay nominal
+under the 0.1 percent rule. The factor surrogate keeps the nominal LCM frequency
+behavior, and the scaled surrogate adds HPM's frequency scaling to the nominal
+fundamental π data. Both surrogate sets are neither inner nor outer
+approximations of the source set. The factor solution passes the source random
+and corner checks, and the scaled solution violates source IHD limits at
+harmonic 13, bus 30. The source and equivalent own-case corner violations refute
+their reported feasibility certificates.
 
 ## Dataset and construction
 

@@ -107,7 +107,7 @@ end
 
 @testset "Subdivision and containment" begin
     inputs = reduction_inputs("cases/ieee30-full.toml")
-    result = hull_study(inputs, "/tmp/hpm-equivalent-step3-tests")
+    result = hull_study(inputs, "/tmp/hpm-equivalent-tests")
     global tested_hulls = result
     for circuit in result.results
         @testset "$(circuit.row.name)" begin
@@ -159,13 +159,13 @@ end
 
 @testset "Generated equivalent case" begin
     inputs = tested_hulls.inputs
-    evidence = "/tmp/hpm-equivalent-step3-tests"
+    evidence = "/tmp/hpm-equivalent-tests"
     proposal(tested_hulls, evidence)
     fresh = generate_equivalent(inputs, evidence;
-        destination = "/tmp/hpm-equivalent-step3-regenerated")
+        destination = "/tmp/hpm-equivalent-regenerated")
     for path in keys(fresh.files)
         @test read(joinpath(STUDIES, path)) ==
-              read(joinpath("/tmp/hpm-equivalent-step3-regenerated", path))
+              read(joinpath("/tmp/hpm-equivalent-regenerated", path))
     end
     equivalent_inputs = reduction_inputs("cases/ieee30-full-equivalent.toml")
     source_case = TOML.parsefile(inputs.file)
@@ -262,3 +262,5 @@ include(joinpath(@__DIR__, "..", "compare.jl"))
     for (h, current) in solution))
     @test doubled.max_violation ≈ 4(stationary.max_violation + 1) - 1 rtol = 1e-12
 end
+
+include("surrogates.jl")

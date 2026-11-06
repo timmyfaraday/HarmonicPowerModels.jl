@@ -1,38 +1,50 @@
-Source and equivalent uncertainty comparison
-HPM commit: 85cdb95f25eb26af816314f5eadec3b86cf0e0b6
+Uncertainty levels and transfer to the source case
+HPM commit: 226224607218e87a40c5bcddb28609457212ca9f
 LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
-Source: cases/ieee30-full.toml; equivalent: cases/ieee30-full-equivalent.toml
+Cases: cases/ieee30-full.toml, cases/ieee30-full-equivalent.toml, cases/ieee30-full-factor.toml, cases/ieee30-full-scaled.toml
 Threads: 16; solver: Clarabel; unchanged runner settings.
-Method parameters: (difference_step = 0.0001, zero_band = 1.0e-6, subdivision_depth = 6, sharing_tolerance = 1.0e-10, verification_samples = 4096, admission_threshold = 0.001)
-quantity | source | equivalent
-lower_bound | 0.039870207018462354 | 0.03987987018820758
-upper_bound | 0.03988194247283263 | 0.03988961135660159
-gap | 0.0002942548342090026 | 0.00024420314118692345
-iterations | 5 | 2
-signed_off | true | true
-termination_status | OPTIMAL | OPTIMAL
-LCM solves (stored point-frequency pairs) | 659896 | 311792
-solve seconds | 283.896182958 | 141.785721646
-harmonic | source robust / nominal | equivalent robust / nominal | source current | equivalent current
-5 | 0.8270837646338188 | 0.8257543415792253 | 0.0005088129574580382 | 0.0005079951108202419
-7 | 0.448395564919753 | 0.4452780439265531 | 0.000134515112062297 | 0.0001335798804976565
-11 | 0.9037133074593884 | 0.9062954415660026 | 0.000986960415464092 | 0.0009897804073016594
-13 | 0.5797748424874606 | 0.5784636416511583 | 0.0002682928016090185 | 0.00026768603891413645
+Method parameters: (difference_step = 0.0001, zero_band = 1.0e-6, subdivision_depth = 6, sharing_tolerance = 1.0e-10, verification_samples = 4096, admission_threshold = 0.001, interior_starts = (corners = true, center = true), interior_tolerance = 1.0e-10, interior_iterations = 32)
+level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination
+ieee30-full | 0.05187107889675221 | 0.039870207018462354 | 0.03988194247283263 | 0.0002942548342090026 | 5 | 659896 | 282.779629618 | true | OPTIMAL
+ieee30-full-equivalent | 0.051871078896749905 | 0.03987987018820758 | 0.03988961135660159 | 0.00024420314118692345 | 2 | 311792 | 155.068624618 | true | OPTIMAL
+ieee30-full-factor | 0.05187107889675221 | 0.03833781037162834 | 0.03833781037162834 | 0.0 | 2 | 7720 | 9.24357309 | true | OPTIMAL
+ieee30-full-scaled | 0.039578313850434046 | 0.02593756407717371 | 0.02593756407717371 | 0.0 | 2 | 8 | 9.503212659 | true | OPTIMAL
+level | harmonic | robust / nominal | robust current
+ieee30-full | 5 | 0.8270837646338188 | 0.0005088129574580382
+ieee30-full | 7 | 0.448395564919753 | 0.000134515112062297
+ieee30-full | 11 | 0.9037133074593884 | 0.000986960415464092
+ieee30-full | 13 | 0.5797748424874606 | 0.0002682928016090185
+ieee30-full-equivalent | 5 | 0.8257543415792253 | 0.0005079951108202419
+ieee30-full-equivalent | 7 | 0.4452780439265531 | 0.0001335798804976565
+ieee30-full-equivalent | 11 | 0.9062954415660026 | 0.0009897804073016594
+ieee30-full-equivalent | 13 | 0.5784636416511583 | 0.00026768603891413645
+ieee30-full-factor | 5 | 0.8006460117029484 | 0.0004925487387265089
+ieee30-full-factor | 7 | 0.421842240164027 | 0.00012654932530037333
+ieee30-full-factor | 11 | 0.8751125687571223 | 0.0009557250704501679
+ieee30-full-factor | 13 | 0.5419449379354543 | 0.00025078688321953773
+ieee30-full-scaled | 5 | 0.7698705458355135 | 0.00042253978263219455
+ieee30-full-scaled | 7 | 0.48771231171795104 | 0.00015721700117602013
+ieee30-full-scaled | 11 | 0.5927871973053326 | 0.00029840979418350197
+ieee30-full-scaled | 13 | 0.6998041952686793 | 0.0003569555209213172
 Posterior checks: 1024 random points, public HPM defaults (seed 2, tolerance 0.0001).
-solution | case | maximum normalized violation | constraint | violated fraction
-source | source | -0.034793666857628414 | (:ihd, (11, 7)) | 0.0
-equivalent | equivalent | -0.021024816158380477 | (:ihd, (11, 7)) | 0.0
-equivalent | source | -0.02927011702843263 | (:ihd, (11, 7)) | 0.0
-source | equivalent | -0.0265952825716963 | (:ihd, (11, 7)) | 0.0
+solution | target case | maximum normalized violation | constraint | violated fraction
+ieee30-full | ieee30-full | -0.034793666857628414 | (:ihd, (11, 7)) | 0.0
+ieee30-full-equivalent | ieee30-full-equivalent | -0.021024816158380477 | (:ihd, (11, 7)) | 0.0
+ieee30-full-equivalent | ieee30-full | -0.02927011702843263 | (:ihd, (11, 7)) | 0.0
+ieee30-full-factor | ieee30-full-factor | -0.036824145508270845 | (:ihd, (5, 30)) | 0.0
+ieee30-full-factor | ieee30-full | -0.0949206614721585 | (:ihd, (11, 7)) | 0.0
+ieee30-full-scaled | ieee30-full-scaled | -0.04753487570661785 | (:ihd, (5, 30)) | 0.0
+ieee30-full-scaled | ieee30-full | 0.40618284392359993 | (:ihd, (13, 30)) | 0.12109375
 Corner adversary: nominal finite-difference signs, unique predicted corners.
-Positive values violate the constraint. The sign test is not a proof of monotonicity.
-A source-on-source violation refutes the source solution's reported feasibility.
-An equivalent-on-equivalent violation refutes the equivalent solution's reported feasibility.
-An equivalent-on-source violation refutes its transfer to the source case.
-A source-on-equivalent violation refutes its transfer to the independent equivalent box.
-Cross-case violations alone do not refute a solution's own-case certificate.
-solution | case | corners evaluated | maximum normalized violation | constraint | physical corner
-source | source | 88 | 0.002937446266801702 | (:ihd, (5, 30)) | (Rscreen_U33 = 0.000263, theta_ACSR = -5.0, eps_semicon_U33 = 10000.0, t_ins_U33 = 0.0076, rho_EARTH = 1000.0, t_sc1_U33 = 1.0, eps_U33 = 2.5, ambient_O132 = 45.0, R20_U33 = 0.0, rho_aluminium_ACSR = 2.8264e-8, lay_outer_ACSR = 10.0, lay_inner_ACSR = 16.0, theta_U33 = 90.0, d_steel_ACSR = -1.0, diameter_O132 = 0.0031000000000000003, rho_steel_ACSR = 1.79e-7, mu_steel_ACSR = 300.0, rho_steel_O132 = 2.155e-7, d_c_U33 = 1.0, t_sc2_U33 = 0.00099, mu_steel_O132 = 300.0, t_jkt_U33 = 1.0, d_aluminium_ACSR = -1.0)
-equivalent | equivalent | 134 | 0.009217241127088771 | (:ihd, (11, 7)) | (width_ACSR_1 = 1.0, resistance_ACSR_1 = -1.0, mu_r_ACSR_1 = 1.0, resistance_O132_1 = 1.0, mu_r_O132_1 = 1.0, y_ACSR_1 = 1.0, y_O132_1 = -1.0, rho_EARTH_1 = 1.0, width_ACSR_2 = 1.0, resistance_ACSR_2 = 1.0, mu_r_ACSR_2 = 1.0, y_ACSR_2 = -1.0, width_ACSR_3 = 1.0, resistance_ACSR_3 = 1.0, mu_r_ACSR_3 = 1.0, y_ACSR_3 = -1.0, width_ACSR_4 = 1.0, resistance_ACSR_4 = 1.0, mu_r_ACSR_4 = 1.0, y_ACSR_4 = 1.0, width_U33_1 = -1.0, resistance_U33_1 = -1.0, resistance_U33_2 = -1.0, width_U33_3 = -1.0, eps_r_U33_1 = -1.0, width_U33_4 = 1.0, eps_r_U33_2 = -1.0, width_U33_5 = -1.0, width_U33_6 = 1.0, resistance_U33_3 = -1.0, width_U33_8 = -1.0, resistance_U33_4 = 1.0, width_U33_10 = 1.0, resistance_U33_5 = -1.0, width_U33_12 = 1.0)
-equivalent | source | 90 | 0.007534865169110505 | (:ihd, (11, 7)) | (Rscreen_U33 = 0.000251, theta_ACSR = -5.0, eps_semicon_U33 = 100.0, t_ins_U33 = 0.008400000000000001, rho_EARTH = 1000.0, t_sc1_U33 = -1.0, eps_U33 = 2.1, ambient_O132 = 45.0, R20_U33 = -1.0, rho_aluminium_ACSR = 2.8264e-8, lay_outer_ACSR = 12.0, lay_inner_ACSR = 16.0, theta_U33 = 10.0, d_steel_ACSR = 1.0, diameter_O132 = 0.00315, rho_steel_ACSR = 1.79e-7, mu_steel_ACSR = 300.0, rho_steel_O132 = 1.9157e-7, d_c_U33 = 0.0, t_sc2_U33 = 0.0008100000000000001, mu_steel_O132 = 300.0, t_jkt_U33 = 1.0, d_aluminium_ACSR = 1.0)
-source | equivalent | 134 | 0.012961966592131224 | (:ihd, (7, 30)) | (width_ACSR_1 = -1.0, resistance_ACSR_1 = -1.0, mu_r_ACSR_1 = -1.0, resistance_O132_1 = -1.0, mu_r_O132_1 = -1.0, y_ACSR_1 = -1.0, y_O132_1 = 1.0, rho_EARTH_1 = -1.0, width_ACSR_2 = 1.0, resistance_ACSR_2 = -1.0, mu_r_ACSR_2 = -1.0, y_ACSR_2 = 1.0, width_ACSR_3 = 1.0, resistance_ACSR_3 = -1.0, mu_r_ACSR_3 = -1.0, y_ACSR_3 = 1.0, width_ACSR_4 = -1.0, resistance_ACSR_4 = -1.0, mu_r_ACSR_4 = -1.0, y_ACSR_4 = 0.0, width_U33_1 = -1.0, resistance_U33_1 = -1.0, resistance_U33_2 = -1.0, width_U33_3 = -1.0, eps_r_U33_1 = -1.0, width_U33_4 = 1.0, eps_r_U33_2 = -1.0, width_U33_5 = -1.0, width_U33_6 = -1.0, resistance_U33_3 = -1.0, width_U33_8 = -1.0, resistance_U33_4 = 0.0, width_U33_10 = 0.0, resistance_U33_5 = -1.0, width_U33_12 = 0.0)
+Positive own-case violations refute reported feasibility and its lower-bound certificate.
+Positive transfer violations refute feasibility of the level's solution on the source box.
+A transfer failure alone does not refute an own-case certificate.
+The adversary is not a proof of feasibility: resonance constraints can be nonmonotone.
+solution | target case | corners evaluated | maximum normalized violation | constraint | case-coordinate point
+ieee30-full | ieee30-full | 88 | 0.002937446266801702 | (:ihd, (5, 30)) | (Rscreen_U33 = 0.000263, theta_ACSR = -5.0, eps_semicon_U33 = 10000.0, t_ins_U33 = 0.0076, rho_EARTH = 1000.0, t_sc1_U33 = 1.0, eps_U33 = 2.5, ambient_O132 = 45.0, R20_U33 = 0.0, rho_aluminium_ACSR = 2.8264e-8, lay_outer_ACSR = 10.0, lay_inner_ACSR = 16.0, theta_U33 = 90.0, d_steel_ACSR = -1.0, diameter_O132 = 0.0031000000000000003, rho_steel_ACSR = 1.79e-7, mu_steel_ACSR = 300.0, rho_steel_O132 = 2.155e-7, d_c_U33 = 1.0, t_sc2_U33 = 0.00099, mu_steel_O132 = 300.0, t_jkt_U33 = 1.0, d_aluminium_ACSR = -1.0)
+ieee30-full-equivalent | ieee30-full-equivalent | 134 | 0.009217241127088771 | (:ihd, (11, 7)) | (width_ACSR_1 = 1.0, resistance_ACSR_1 = -1.0, mu_r_ACSR_1 = 1.0, resistance_O132_1 = 1.0, mu_r_O132_1 = 1.0, y_ACSR_1 = 1.0, y_O132_1 = -1.0, rho_EARTH_1 = 1.0, width_ACSR_2 = 1.0, resistance_ACSR_2 = 1.0, mu_r_ACSR_2 = 1.0, y_ACSR_2 = -1.0, width_ACSR_3 = 1.0, resistance_ACSR_3 = 1.0, mu_r_ACSR_3 = 1.0, y_ACSR_3 = -1.0, width_ACSR_4 = 1.0, resistance_ACSR_4 = 1.0, mu_r_ACSR_4 = 1.0, y_ACSR_4 = 1.0, width_U33_1 = -1.0, resistance_U33_1 = -1.0, resistance_U33_2 = -1.0, width_U33_3 = -1.0, eps_r_U33_1 = -1.0, width_U33_4 = 1.0, eps_r_U33_2 = -1.0, width_U33_5 = -1.0, width_U33_6 = 1.0, resistance_U33_3 = -1.0, width_U33_8 = -1.0, resistance_U33_4 = 1.0, width_U33_10 = 1.0, resistance_U33_5 = -1.0, width_U33_12 = 1.0)
+ieee30-full-equivalent | ieee30-full | 90 | 0.007534865169110505 | (:ihd, (11, 7)) | (Rscreen_U33 = 0.000251, theta_ACSR = -5.0, eps_semicon_U33 = 100.0, t_ins_U33 = 0.008400000000000001, rho_EARTH = 1000.0, t_sc1_U33 = -1.0, eps_U33 = 2.1, ambient_O132 = 45.0, R20_U33 = -1.0, rho_aluminium_ACSR = 2.8264e-8, lay_outer_ACSR = 12.0, lay_inner_ACSR = 16.0, theta_U33 = 10.0, d_steel_ACSR = 1.0, diameter_O132 = 0.00315, rho_steel_ACSR = 1.79e-7, mu_steel_ACSR = 300.0, rho_steel_O132 = 1.9157e-7, d_c_U33 = 0.0, t_sc2_U33 = 0.0008100000000000001, mu_steel_O132 = 300.0, t_jkt_U33 = 1.0, d_aluminium_ACSR = 1.0)
+ieee30-full-factor | ieee30-full-factor | 28 | -8.790634886679527e-12 | (:ihd, (11, 30)) | (kR_ACSR = 1.2682189163872188, kL_ACSR = 0.9962618928782407, kC_ACSR = 0.9981387764988817, kR_U33 = 0.9031342364062734, kL_U33 = 1.1543234302904137, kC_U33 = 1.10520498539662)
+ieee30-full-factor | ieee30-full | 87 | -0.06015562995946422 | (:ihd, (5, 30)) | (Rscreen_U33 = 0.000263, theta_ACSR = -5.0, eps_semicon_U33 = 10000.0, t_ins_U33 = 0.0076, rho_EARTH = 1000.0, t_sc1_U33 = 1.0, eps_U33 = 2.5, ambient_O132 = 45.0, R20_U33 = 0.0, rho_aluminium_ACSR = 2.8264e-8, lay_outer_ACSR = 10.0, lay_inner_ACSR = 16.0, theta_U33 = 90.0, d_steel_ACSR = -1.0, diameter_O132 = 0.0031000000000000003, rho_steel_ACSR = 1.79e-7, mu_steel_ACSR = 300.0, rho_steel_O132 = 2.155e-7, d_c_U33 = 1.0, t_sc2_U33 = 0.00099, mu_steel_O132 = 300.0, t_jkt_U33 = 1.0, d_aluminium_ACSR = -1.0)
+ieee30-full-scaled | ieee30-full-scaled | 25 | -4.468392322820591e-11 | (:ihd, (11, 30)) | (kR_ACSR = 0.8623096825708542, kL_ACSR = 1.005315726528468, kC_ACSR = 1.0018618770161116, kR_U33 = 0.9031342364062734, kL_U33 = 1.1543234302904137, kC_U33 = 1.10520498539662)
+ieee30-full-scaled | ieee30-full | 82 | 0.7690405532092484 | (:ihd, (13, 30)) | (Rscreen_U33 = 0.000251, theta_ACSR = -5.0, eps_semicon_U33 = 100.0, t_ins_U33 = 0.008400000000000001, rho_EARTH = 1000.0, t_sc1_U33 = -1.0, eps_U33 = 2.1, ambient_O132 = -5.0, R20_U33 = -1.0, rho_aluminium_ACSR = 2.79e-8, lay_outer_ACSR = 14.0, lay_inner_ACSR = 13.0, theta_U33 = 10.0, d_steel_ACSR = -1.0, diameter_O132 = 0.00315, rho_steel_ACSR = 2.155e-7, mu_steel_ACSR = 50.0, rho_steel_O132 = 1.79e-7, d_c_U33 = 0.0, t_sc2_U33 = 0.0008100000000000001, mu_steel_O132 = 50.0, t_jkt_U33 = 1.0, d_aluminium_ACSR = -1.0)

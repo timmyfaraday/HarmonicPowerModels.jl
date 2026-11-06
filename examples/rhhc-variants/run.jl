@@ -51,7 +51,7 @@ function runstudy(s, io)
         @sprintf("a posteriori (%d random points): worst %+.2e (%s), violated at %.1f %%",
             s.config.posterior, pr.max_violation, string(pr.constraint),
             100pr.violated_fraction))
-    solves = sum((length(s.model.branches[b].zy.sequences) for b in circuits(s)); init = 0)
+    solves = lcm_solves(s)
     report(io, "LineCableModels solves (sum of circuit table sizes): ", solves)
     flush(io)
     return (; robust = res, nominal = nom, hdata = prepared, elapsed = t, solves)

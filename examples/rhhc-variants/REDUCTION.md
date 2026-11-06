@@ -1,4 +1,4 @@
-# Equivalent uncertainty
+# Uncertainty levels
 
 The generated independent equivalent box has **35 coordinates**, compared with
 23 source coordinates. It does not reach HPM's vertex threshold of ten.
@@ -20,7 +20,8 @@ table, sharing groups, subdivision cells, containment and five largest added
 extremes. The separate comparison script computes the capacity checks. Raw numerical tables and logs stay in
 `/tmp`.
 
-The study uses HPM base `85cdb95` and LCM pinned at
+The generated data identify source-case revision `85cdb95`. The capacity
+comparison uses HPM `2262246` and LCM pinned at
 `59cc3f2329e5df9b33929f52009e996cee1d4784` in the detached
 `LineCableModels-hpm` worktree. The study and kit environments declare that
 source path. Generated data and reports record the pin. Each case has eight
@@ -51,7 +52,8 @@ For a cell with conflicting signs, `split_cell` tests splits on its driving
 effective coordinates. Its score counts disagreeing derivative pairs left in
 the children. It chooses the smallest score, then bisects a bracketed derivative
 zero when the witnesses permit that refinement. The recursion stops at depth
-six and reports an unresolved quantity. The algorithm uses measured values and
+six and sends a still inconsistent cell to the interior search described below.
+The algorithm uses measured values and
 sensitivities to select its coordinate and threshold.
 
 The phase heights split once at **20.000000178892172 °C**, within
@@ -226,74 +228,91 @@ search. The raw pair table retains the closest source points in `/tmp`.
 
 ## Capacity comparison
 
-Both cases use 16 Julia threads and Clarabel with the unchanged runner settings.
-HPM returns OPTIMAL and signs off both runs. The own-case corner violations
-refute the reported feasibility of both solutions.
-The source column is a fresh run with the same loaded LCM code as the equivalent
-run. Its bounds and stored-pair count agree with the earlier source report.
+All four cases use 16 Julia threads and Clarabel with the unchanged runner
+settings. HPM returns OPTIMAL and signs off all runs. The independent corner
+checks refute the own-case feasibility reported for the source and equivalent
+solutions. The surrogate solutions pass the sampled own-case checks.
 
-| Quantity | Source | Equivalent |
-| --- | ---: | ---: |
-| Coordinates | 23 | 35 |
-| Nominal stochastic capacity, pu | 0.051871078897 | 0.051871078897 |
-| Reported lower bound, pu | 0.039870207018 | 0.039879870188 |
-| Reported upper bound, pu | 0.039881942473 | 0.039889611357 |
-| Relative gap | 0.000294255 | 0.000244203 |
-| Iterations | 5 | 2 |
-| Stored LCM point-frequency pairs | 659896 | 311792 |
-| Robust solve time, s | 283.896 | 141.786 |
+| Quantity | Source | Equivalent | Factor | Scaled |
+| --- | ---: | ---: | ---: | ---: |
+| Coordinates | 23 | 35 | 6 | 6 |
+| Nominal stochastic capacity, pu | 0.0518710788968 | 0.0518710788967 | 0.0518710788968 | 0.0395783138504 |
+| Reported lower bound, pu | 0.0398702070185 | 0.0398798701882 | 0.0383378103716 | 0.0259375640772 |
+| Reported upper bound, pu | 0.0398819424728 | 0.0398896113566 | 0.0383378103716 | 0.0259375640772 |
+| Relative gap | 0.000294254834209 | 0.000244203141187 | 0 | 0 |
+| Iterations | 5 | 2 | 2 | 2 |
+| Stored LCM point-frequency pairs | 659896 | 311792 | 7720 | 8 |
+| Robust solve time, s | 282.779629618 | 155.068624618 | 9.24357309 | 9.503212659 |
 
 The runner labels the stored-pair count as LCM solves. It sums the circuit table
-sizes. Solve time covers the capacity calculation. The reported intervals overlap.
-The measured difference does not establish an increase in capacity from boxing.
+sizes. Solve time covers the capacity calculation with uncertainty. These wall
+times include concurrent studies checks. The reported source and equivalent
+intervals overlap, and their measured difference does not establish an increase
+in capacity from boxing.
 
-| Harmonic | Source robust HHC / nominal | Equivalent robust HHC / nominal |
-| --- | ---: | ---: |
-| 5 | 0.827084 | 0.825754 |
-| 7 | 0.448396 | 0.445278 |
-| 11 | 0.903713 | 0.906295 |
-| 13 | 0.579775 | 0.578464 |
+The ratios below compare each level's harmonic current with its own nominal
+current. The factor nominal capacity equals the source nominal capacity. The
+scaled nominal capacity changes because its frequency law changes the networks.
+
+| Harmonic | Source robust HHC / nominal | Equivalent robust HHC / nominal | Factor robust HHC / nominal | Scaled robust HHC / nominal |
+| --- | ---: | ---: | ---: | ---: |
+| 5 | 0.827083765 | 0.825754342 | 0.800646012 | 0.769870546 |
+| 7 | 0.448395565 | 0.445278044 | 0.421842240 | 0.487712312 |
+| 11 | 0.903713307 | 0.906295442 | 0.875112569 | 0.592787197 |
+| 13 | 0.579774842 | 0.578463642 | 0.541944938 | 0.699804195 |
 
 Each `posterior_check` uses 1024 random points, seed 2 and tolerance 0.0001.
-Negative maxima satisfy the checked constraints. All four checks report zero
-violated points. Their worst constraint is IHD at harmonic 11, bus 7.
+Negative maxima satisfy the checked constraints. The scaled solution violates
+source limits at 124 sampled points, or 12.109375 percent of the sample.
 
-| Solution | Model and box checked | Maximum normalized violation |
-| --- | --- | ---: |
-| Source | Source | -0.034793667 |
-| Equivalent | Equivalent | -0.021024816 |
-| Equivalent | Source | -0.029270117 |
-| Source | Equivalent | -0.026595283 |
+| Solution | Model and box checked | Maximum normalized violation | Constraint | Violated points |
+| --- | --- | ---: | --- | ---: |
+| Source | Source | -0.0347936668576 | IHD, harmonic 11, bus 7 | 0 |
+| Equivalent | Equivalent | -0.0210248161584 | IHD, harmonic 11, bus 7 | 0 |
+| Equivalent | Source | -0.0292701170284 | IHD, harmonic 11, bus 7 | 0 |
+| Factor | Factor | -0.0368241455083 | IHD, harmonic 5, bus 30 | 0 |
+| Factor | Source | -0.0949206614722 | IHD, harmonic 11, bus 7 | 0 |
+| Scaled | Scaled | -0.0475348757066 | IHD, harmonic 5, bus 30 | 0 |
+| Scaled | Source | 0.406182843924 | IHD, harmonic 13, bus 30 | 124 |
 
-The random cross-checks do not detect a sampled violation due to decorrelation. They test the
-reported solutions at the sampled points. The independent intervals still admit
-the 181 added pairwise extremes found by the source searches.
+The factor solution passes both source transfer checks. This measured result
+establishes feasibility only at the checked source points. The family-factor
+set remains neither an inner nor an outer approximation of the source set.
+The scaled solution fails transfer despite its lower total capacity. Its
+harmonic-13 current is 0.0003569555 pu, compared with 0.0002682928 pu for the
+source solution. The different harmonic allocation violates source IHD limits.
 
 The [scan report](output/ieee30-full-equivalent-scan.txt) and
 [sequence table](output/ieee30-full-equivalent-sequences.csv) retain the electrical
-checks. The nominal first resonances are harmonic orders 6.27 and 12.32.
-The [capacity report](output/ieee30-full-equivalent.txt) contains only the output
-of `run.jl`. The [comparison report](output/ieee30-full-comparison.txt) contains
-both solves, decision vectors, the four posterior checks and the corner adversary.
+checks. The source, equivalent and factor nominal first resonances are harmonic
+orders 6.27 and 12.32. Each capacity report contains only the output of `run.jl`.
+The [comparison report](output/ieee30-full-comparison.txt) contains all levels,
+decision vectors, posterior checks and the corner adversary.
 The script `compare.jl` writes that report directly.
 
 ## Corner adversary
 
-HPM omits dictionary vertices for these boxes because their dimensions exceed ten.
-The nominal-sign adversary evaluates the following distinct predicted points.
+HPM omits dictionary vertices for the source and equivalent boxes because their
+dimensions exceed ten. It keeps the 64 vertices of each six-coordinate surrogate
+box. The nominal-sign adversary evaluates the distinct predicted points below.
 Positive maxima violate the indicated constraints.
 
 | Solution | Case | Corners | Maximum normalized violation | Constraint |
 | --- | --- | ---: | ---: | --- |
-| Source | Source | 88 | 0.002937446267 | IHD, harmonic 5, bus 30 |
-| Equivalent | Equivalent | 134 | 0.009217241127 | IHD, harmonic 11, bus 7 |
-| Equivalent | Source | 90 | 0.007534865169 | IHD, harmonic 11, bus 7 |
-| Source | Equivalent | 134 | 0.012961966592 | IHD, harmonic 7, bus 30 |
+| Source | Source | 88 | 0.0029374462668 | IHD, harmonic 5, bus 30 |
+| Equivalent | Equivalent | 134 | 0.00921724112709 | IHD, harmonic 11, bus 7 |
+| Equivalent | Source | 90 | 0.00753486516911 | IHD, harmonic 11, bus 7 |
+| Factor | Factor | 28 | -8.79063488668e-12 | IHD, harmonic 11, bus 30 |
+| Factor | Source | 87 | -0.0601556299595 | IHD, harmonic 5, bus 30 |
+| Scaled | Scaled | 25 | -4.46839232282e-11 | IHD, harmonic 11, bus 30 |
+| Scaled | Source | 82 | 0.769040553209 | IHD, harmonic 13, bus 30 |
 
-Both own-case certificates fail this check. Both transfers also fail. A clean
-1024-point random check did not establish feasibility on either box. The
-comparison report gives every coordinate of each worst point. These are case
-coordinate values, including signed positions for registered intervals.
+The source and equivalent own-case certificates fail this check. The equivalent
+and scaled transfers to the source also fail. Both surrogate own-case checks
+have negative maxima. The factor solution passes the source corner check.
+A clean sampled check does not establish feasibility throughout a box. The
+comparison report gives every coordinate of each worst point, including signed
+positions for registered source intervals.
 
 For each solution and target case, the adversary evaluates every positive-limit
 constraint at the case's nominal point. It uses `moments_at`, `shhc_constraints`
@@ -308,13 +327,11 @@ removes duplicate points and evaluates all remaining points with `posterior_chec
 on a zero-width `ParameterBox`, with one sample per point. The source builders
 apply the same physical maps as at every other source point. The report gives
 the count, maximum normalized violation, constraint and physical point for each
-of the four solution and case combinations.
+of the own-case and source-transfer combinations.
 
 A positive own-case violation refutes the reported feasibility of that solution
-on its own box. A positive equivalent-on-source violation refutes transfer of the
-equivalent solution to the source case. A positive source-on-equivalent violation
-refutes transfer of the source solution to the independent equivalent box.
-Cross-case violations alone do not refute either own-case certificate.
+on its own box. A positive transfer violation refutes feasibility of the level's
+solution on the source box, without by itself refuting its own-case certificate.
 The adversary is not a proof: resonance constraints can change sensitivity sign
 and have larger violations away from the predicted corners.
 
@@ -331,15 +348,15 @@ and connects the conductors. All runners consume the same construction chain.
 From the repository root:
 
 ```sh
-julia --project=examples/rhhc-variants examples/rhhc-variants/reduce.jl cases/ieee30-full.toml
-julia --project=examples/rhhc-variants examples/rhhc-variants/test/runtests.jl
+julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/reduce.jl cases/ieee30-full.toml
+julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/test/runtests.jl
 julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/scan.jl cases/ieee30-full-equivalent.toml
 julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/run.jl cases/ieee30-full-equivalent.toml
-julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/compare.jl cases/ieee30-full.toml cases/ieee30-full-equivalent.toml
+julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/compare.jl cases/ieee30-full.toml cases/ieee30-full-equivalent.toml cases/ieee30-full-factor.toml cases/ieee30-full-scaled.toml
 ```
 
 Reduction writes the case, coordinate data and compact report. Its temporary
-evidence directory defaults to `/tmp/hpm-equivalent-step3`. A second argument
+evidence directory defaults to `/tmp/hpm-equivalent`. A second argument
 selects another directory. It recomputes subdivision, hulls, sharing, admission and
 decorrelation. Sorted TOML output and a fixed table order make regeneration
 deterministic. The source commit and LCM source fingerprint identify the input code.
@@ -347,7 +364,7 @@ deterministic. The source commit and LCM source fingerprint identify the input c
 The reduction report depends only on the generated reduction evidence.
 `compare.jl` calls the runner's solve routine for each case with its nominal,
 resonance and capacity settings. It captures the prepared network data through
-that routine, then calls public HPM functions for all four posterior and corner
+that routine, then calls public HPM functions for the posterior and corner
 checks. The runner's standalone report contains no comparison section.
 
 `METHOD` in `builders.jl` defines the method parameters once. Reduction,
@@ -365,6 +382,151 @@ and a boxed resistance and height combination. They regenerate all three files
 into `/tmp` and compare their bytes. They also load the generated case, compare
 its nominal sequences with the source, check containment against its saved members
 and exercise its coordinate interpolation away from nominal.
+
+## Surrogate factors on resistance, inductance and capacitance
+
+The depth cap remains six. A cell that still has conflicting sensitivity signs
+uses an interior search. Every driving-coordinate corner and the center starts
+both a minimum and a maximum search. Infeasible starts project toward a feasible
+sample within the cell. Bounded coordinate sweeps use golden-section steps and
+retain the best values found. Monotone cells retain the earlier search unchanged.
+
+`METHOD.interior_starts` selects the corners and center. The relative search
+tolerance is 1e-10 and the iteration limit is 32 for coordinate sweeps and scalar
+golden-section searches. The cells retain the label `interior search` in the
+reduction report, with their depths and starts per extreme. Each affected
+quantity also receives 4096 additional Sobol samples distributed among its
+inconsistent cells. Sampling projects onto the cell's effective feasible set
+when necessary. The report gives each cell's sample count and largest normalized
+outward margin. These numerical searches and containment checks do not prove a
+global extremum.
+
+Both-end-bonded screens give a physical reason for an interior resistance
+maximum. The circulating-current contribution is about
+`R_s * X_m^2 / (R_s^2 + X_m^2)`. Its derivative changes sign at `R_s = X_m`.
+The operating screen resistance depends on reference resistance and temperature,
+while mutual reactance depends on geometry and frequency. The peak condition
+defines a curved surface in the effective coordinates.
+
+At any finite subdivision depth, a cell can retain points on both sides of
+`R_s = X_m`. The numerical screen-loss evidence below compares an LCM resistance
+peak with this estimate.
+
+The generated cases [ieee30-full-factor](cases/ieee30-full-factor.toml) and
+[ieee30-full-scaled](cases/ieee30-full-scaled.toml) use six
+coordinates: `kR`, `kL` and `kC` for each of U33 and ACSR. HPM keeps the vertices
+for these six-dimensional boxes. Both cases use the same generated
+data file [data/surrogate/ieee30-full.toml](data/surrogate/ieee30-full.toml),
+family classes and factor intervals.
+The source case defines the physical designs and the fundamental branch data.
+
+| Coordinate | Nominal | Lower | Upper |
+| --- | ---: | ---: | ---: |
+| `kR_ACSR` | 1 | 0.8623096825708542 | 1.2682189163872188 |
+| `kL_ACSR` | 1 | 0.9962618928782407 | 1.005315726528468 |
+| `kC_ACSR` | 1 | 0.9981387764988817 | 1.0018618770161116 |
+| `kR_U33` | 1 | 0.9031342364062734 | 1.2323618743221811 |
+| `kL_U33` | 1 | 0.9205434341153378 | 1.1543234302904137 |
+| `kC_U33` | 1 | 0.8324072347466105 | 1.10520498539662 |
+
+Each interval combines twenty design-frequency ratios.
+Panther at 50 Hz sets both endpoints of `kR_ACSR`, and U33-400 at 50 Hz sets
+both endpoints of `kR_U33`. Interior maxima at other frequencies still enter the
+individual design-frequency hulls.
+
+The source verification
+has zero escapes at 4096 mapped points on each of eight designs. Its largest
+normalized outward margin is -2.549795008242146e-6. The interior search handles
+Bear R at 350 Hz, Goat R at 250 Hz and U33-400 R at 250 Hz. Other quantities use
+the earlier cell hull search or its verified affine alias. The inconsistent
+cells have depth six.
+
+| Design | Quantity | Cell | Starts per extreme | Extra samples | Escapes | Largest margin |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| Bear | R at 350 Hz | 6 | 8193 | 2048 | 0 | -0.016144699608372805 |
+| Bear | R at 350 Hz | 7 | 8193 | 2048 | 0 | -0.016157598092505998 |
+| Goat | R at 250 Hz | 7 | 8193 | 4096 | 0 | -0.008530009161791089 |
+| U33-400 | R at 250 Hz | 5 | 513 | 2048 | 0 | -0.0033373622757674084 |
+| U33-400 | R at 250 Hz | 9 | 513 | 2048 | 0 | -0.003105966575570989 |
+
+The additional checks total 4096 feasible cell samples per affected quantity,
+with zero escapes. Their largest normalized outward margin is
+-0.003105966575570989. The unchanged equivalent case, coordinate data and
+reduction report regenerate byte-identically under the LCM pin.
+
+At 250 Hz, LCM gives an interior R-ratio maximum for U33-400 as screen resistance
+varies with the other effective inputs fixed. The operating screen-resistance
+range is [0.0002411357, 0.0003353513] Ω/m. The peak occurs at
+0.0002735974623 Ω/m, compared with the geometric mutual-reactance estimate
+0.0002687993415 Ω/m, a 1.785 percent difference. The estimate uses
+`μ₀ * f * log(spacing / screen_outer_radius)`. The R ratios at the two reference
+screen-resistance bounds are 1.0125457752 and 1.0126164850. The interior peak is
+1.0127378077. These observations support the circulating-current explanation.
+The approximate loss term does not replace LCM in the hull computation.
+
+For each source design and frequency, the positive-sequence per-meter quantities
+are `R = real(z)`, `L = imag(z)/(2πf)` and `C = imag(y)/(2πf)`. A ratio divides
+each quantity by its nominal value at the same frequency. Each family interval
+is the hull over all its designs and the case frequencies: 50, 250, 350, 550 and
+650 Hz. The extension's callable evaluates every physical point through LCM.
+
+The ratio observations use the same effective axes, feasible-set constraints,
+sensitivity parameters, subdivision and scalar hull search as the equivalent
+reduction. The face search remains active on order ties and aggregate limits.
+Containment checks 4096 additional Sobol points per design, mapped through the
+physical source maps. The generated reduction report records the cells, search
+methods and containment results. The raw hull table stays in `/tmp`.
+
+The factor case uses the existing `exact` model kind. HPM's public
+`ExactPiModel(branches; f1)` receives callables that scale the extension's nominal
+per-meter data at each requested frequency:
+
+```text
+z = kR * real(z_nominal) + im * kL * imag(z_nominal)
+y = real(y_nominal) + im * kC * imag(y_nominal)
+```
+
+The real shunt conductance stays nominal. At factors of one, the frequency
+behavior is exact. This variant approximates only the uncertainty by the family
+factors. Its LCM calls always use the source nominal point. The extension owns
+the table of those nominal results.
+
+The scaled case uses the existing `scaled` kind and HPM's `ScaledBranchModel`.
+Its base is the LCM nominal exact π data at 50 Hz, as the source builder writes
+them into the fundamental network. HPM then scales resistance by `sqrt(h)` and
+reactance and shunt susceptance by `h`, with the same family factors. This variant
+adds frequency approximation to the uncertainty approximation. The builders need
+no additional model kind.
+
+Harmonics 5 and 11 have negative sequence, and 7 and 13 have positive sequence.
+With ideal transposition, those two sequence impedances and admittances agree.
+The fitted hulls use positive sequence because the harmonic set omits zero sequence. If requested, the factor callable applies the same factors to LCM's nominal
+zero sequence, without a zero-sequence containment claim. `ScaledBranchModel`
+rejects zero sequence because its base contains only positive-sequence data.
+
+One factor moves every design of a family together, at every frequency. The
+surrogate sets are neither inner nor outer approximations of the source set.
+A family ratio hull does not preserve the source dependence between designs,
+frequencies or R, L and C. Transfers to the source box need their own checks.
+
+`reduce.jl` generates both cases, their shared data and the
+surrogate [reduction report](output/ieee30-full-surrogate-reduction.txt).
+The source commit in generated headers identifies the last revision of the
+source case file. A studies commit that leaves the source case unchanged does not change these headers.
+`compare.jl <source> <level>...` runs each level with the runner's settings and
+writes each standalone report through `runstudy`. The comparison contains each
+level's own random and corner checks and its transfer to the source case.
+
+The factor variant gives a reported capacity of 0.03833781037 pu and passes the
+sampled source transfer checks. The scaled variant gives 0.02593756408 pu but
+fails source transfer at harmonic 13, bus 30, in both checks. Its lower total
+capacity does not make its harmonic allocation feasible on the source box.
+
+The surrogate tests compare factor sequences exactly with source values on
+every circuit at 50 and 650 Hz when all factors equal one. Scaled fundamental
+branch data must also agree exactly. Tests exercise factors away from nominal
+and check source and interior-cell containment. Regeneration tests compare the
+bytes of both cases, the shared coordinate data and the reduction report.
 
 ## Quantities and consumers
 

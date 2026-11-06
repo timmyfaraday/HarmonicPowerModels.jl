@@ -64,74 +64,77 @@ function corner_adversary(hdata, model, box, solution)
         count = length(corners), corners, observations, sensitivities)
 end
 
-function comparison(io, source_path, equivalent_path)
-    println(io, "Source and equivalent uncertainty comparison")
+function comparison(io, paths...)
+    println(io, "Uncertainty levels and transfer to the source case")
     println(io, "HPM commit: ", readchomp(`git -C $STUDIES rev-parse HEAD`))
     println(io, "LCM commit: ", readchomp(`git -C $(pkgdir(LineCableModels)) rev-parse HEAD`))
-    println(io, "Source: ", source_path, "; equivalent: ", equivalent_path)
+    println(io, "Cases: ", join(paths, ", "))
     println(io, "Threads: ", Threads.nthreads(), "; solver: Clarabel; unchanged runner settings.")
     println(io, "Method parameters: ", METHOD)
-    flush(io)
-    source = study(source_path)
-    equivalent = study(equivalent_path)
-    println("Solving source case")
-    first_run = runstudy(source, IOBuffer())
-    println("Solving equivalent case")
-    second_run = runstudy(equivalent, IOBuffer())
-    println(io, "quantity | source | equivalent")
-    for key in ("lower_bound", "upper_bound", "gap", "iterations", "signed_off", "termination_status")
-        println(io, key, " | ", first_run.robust[key], " | ", second_run.robust[key])
-    end
-    println(io, "LCM solves (stored point-frequency pairs) | ",
-        first_run.solves, " | ", second_run.solves)
-    println(io, "solve seconds | ", first_run.elapsed, " | ", second_run.elapsed)
     println(io,
-        "harmonic | source robust / nominal | equivalent robust / nominal | source current | equivalent current")
-    for h in source.config.harmonics
-        println(io, h, " | ",
-            first_run.robust["solution"][h] / first_run.nominal["master_solution"][h],
-            " | ", second_run.robust["solution"][h] /
-                   second_run.nominal["master_solution"][h],
-            " | ", first_run.robust["solution"][h], " | ", second_run.robust["solution"][h])
-    end
+        "level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination")
     flush(io)
+    cases = [study(path) for path in paths]
+    runs = NamedTuple[]
+    for case in cases
+        label = splitext(basename(case.file))[1]
+        println("Solving ", label)
+        flush(stdout)
+        own_report = joinpath(STUDIES, "output", label * ".txt")
+        result = open(own_report, "w") do own_io
+            runstudy(case, own_io)
+        end
+        push!(runs, result)
+        res = result.robust
+        println(io, label, " | ", result.nominal["upper_bound"],
+            " | ", res["lower_bound"], " | ",
+            res["upper_bound"], " | ", res["gap"], " | ", res["iterations"], " | ",
+            result.solves, " | ", result.elapsed, " | ", res["signed_off"],
+            " | ", res["termination_status"])
+        flush(io)
+    end
+    println(io, "level | harmonic | robust / nominal | robust current")
+    for (case, result) in zip(cases, runs), h in case.config.harmonics
+
+        println(io, splitext(basename(case.file))[1], " | ", h, " | ",
+            result.robust["solution"][h] / result.nominal["master_solution"][h], " | ",
+            result.robust["solution"][h])
+    end
     println(io, "Posterior checks: 1024 random points, public HPM defaults (seed 2, tolerance 0.0001).")
-    println(io, "solution | case | maximum normalized violation | constraint | violated fraction")
-    combinations = (("source", "source", first_run, source, first_run),
-        ("equivalent", "equivalent", second_run, equivalent, second_run),
-        ("equivalent", "source", second_run, source, first_run),
-        ("source", "equivalent", first_run, equivalent, second_run))
-    for (label, target, solved, case, prepared) in combinations
-        checked = posterior_check(prepared.hdata, case.model, case.box,
-            solved.robust["solution"]; n = 1024)
-        println(io, label, " | ", target, " | ",
-            checked.max_violation, " | ", checked.constraint,
+    println(io, "solution | target case | maximum normalized violation | constraint | violated fraction")
+    for i in eachindex(cases), j in unique((i, 1))
+
+        checked = posterior_check(runs[j].hdata, cases[j].model, cases[j].box,
+            runs[i].robust["solution"]; n = 1024)
+        println(io, splitext(basename(cases[i].file))[1],
+            " | ", splitext(basename(cases[j].file))[1],
+            " | ", checked.max_violation, " | ", checked.constraint,
             " | ", checked.violated_fraction)
         flush(io)
     end
     println(io, "Corner adversary: nominal finite-difference signs, unique predicted corners.")
-    println(io, "Positive values violate the constraint. The sign test is not a proof of monotonicity.")
-    println(io, "A source-on-source violation refutes the source solution's reported feasibility.")
-    println(io, "An equivalent-on-equivalent violation refutes the equivalent solution's reported feasibility.")
-    println(io, "An equivalent-on-source violation refutes its transfer to the source case.")
-    println(io, "A source-on-equivalent violation refutes its transfer to the independent equivalent box.")
-    println(io, "Cross-case violations alone do not refute a solution's own-case certificate.")
+    println(io, "Positive own-case violations refute reported feasibility and its lower-bound certificate.")
+    println(io, "Positive transfer violations refute feasibility of the level's solution on the source box.")
+    println(io, "A transfer failure alone does not refute an own-case certificate.")
+    println(io, "The adversary is not a proof of feasibility: resonance constraints can be nonmonotone.")
     println(io,
-        "solution | case | corners evaluated | maximum normalized violation | constraint | physical corner")
-    for (label, target, solved, case, prepared) in combinations
-        println("Corner adversary: ", label, " on ", target)
-        adversary = corner_adversary(prepared.hdata, case.model, case.box, solved.robust["solution"])
-        println(io, label, " | ", target, " | ",
-            adversary.count, " | ", adversary.max_violation,
-            " | ", adversary.constraint, " | ", adversary.point)
+        "solution | target case | corners evaluated | maximum normalized violation | constraint | case-coordinate point")
+    for i in eachindex(cases), j in unique((i, 1))
+
+        println("Corner adversary: ", basename(cases[i].file), " on ", basename(cases[j].file))
+        flush(stdout)
+        result = corner_adversary(runs[j].hdata, cases[j].model, cases[j].box, runs[i].robust["solution"])
+        println(io, splitext(basename(cases[i].file))[1],
+            " | ", splitext(basename(cases[j].file))[1],
+            " | ", result.count, " | ", result.max_violation,
+            " | ", result.constraint, " | ", result.point)
         flush(io)
     end
     return nothing
 end
 
 if abspath(PROGRAM_FILE) == @__FILE__
-    length(ARGS) == 2 ||
-        error("usage: compare.jl cases/<source>.toml cases/<equivalent>.toml")
+    isempty(ARGS) && error("usage: compare.jl cases/<source>.toml cases/<level>.toml ...")
     path = joinpath(STUDIES, "output", splitext(basename(first(ARGS)))[1] *
                                        "-comparison.txt")
     open(path, "w") do io

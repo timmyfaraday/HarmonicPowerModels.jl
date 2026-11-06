@@ -1,0 +1,1257 @@
+# Generated. Source: cases/ieee30-full.toml
+# Source commit: 85cdb95f25eb26af816314f5eadec3b86cf0e0b6
+# LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+# Method: effective coordinates, subdivision, constrained hull search, positive-sequence R/L/C ratios at case frequencies, 4096 mapped verification samples
+# Regenerate: `julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/reduce.jl cases/ieee30-full.toml`
+
+frequencies = [50.0, 250.0, 350.0, 550.0, 650.0]
+lcm_commit = "59cc3f2329e5df9b33929f52009e996cee1d4784"
+method = "effective coordinates, subdivision, constrained hull search, positive-sequence R/L/C ratios at case frequencies, 4096 mapped verification samples"
+regenerate = "julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/reduce.jl cases/ieee30-full.toml"
+source_case = "cases/ieee30-full.toml"
+source_commit = "85cdb95f25eb26af816314f5eadec3b86cf0e0b6"
+
+[coordinates.kC_ACSR]
+definition = "Positive-sequence C relative to its nominal value at the same frequency"
+family = "ACSR"
+lower = 0.9981387764988817
+nominal = 1.0
+origin = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, public LCM callable through the HPM extension, constrained hull search"
+quantity = "C"
+scale = "linear"
+upper = 1.0018618770161116
+
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Bear/O132-D"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.9981701228737201
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.227562634739096e-12
+    upper = 1.0018299359328977
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Bear/O132-D"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.9981701228697135
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.227562638173793e-12
+    upper = 1.0018299359609637
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Bear/O132-D"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.9981701228667101
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.22756264010805e-12
+    upper = 1.0018299359798146
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Bear/O132-D"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9981701228590918
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.227562643901206e-12
+    upper = 1.0018299360238503
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Bear/O132-D"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9981701228545479
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.227562645670658e-12
+    upper = 1.0018299360484275
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Goat/O132-D"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.9981387765180432
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.386480812559476e-12
+    upper = 1.0018618768970968
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Goat/O132-D"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.9981387765140397
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.38648081611783e-12
+    upper = 1.0018618769259924
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Goat/O132-D"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.998138776511038
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.386480818122334e-12
+    upper = 1.0018618769454093
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Goat/O132-D"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9981387765034238
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.386480822054671e-12
+    upper = 1.001861876990781
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Goat/O132-D"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9981387764988817
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.386480823889857e-12
+    upper = 1.0018618770161116
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Lion/O132-D"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.998185712242094
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.148534553391114e-12
+    upper = 1.001813991948804
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Lion/O132-D"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.9981857122380867
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.148534556765154e-12
+    upper = 1.0018139919764484
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Lion/O132-D"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.9981857122350821
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.148534558664972e-12
+    upper = 1.001813991995011
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Lion/O132-D"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9981857122274616
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.148534562389906e-12
+    upper = 1.0018139920383686
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Lion/O132-D"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9981857122229167
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.148534564127139e-12
+    upper = 1.0018139920625646
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Panther/O132-D"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.9982028418706943
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.061703078693999e-12
+    upper = 1.0017965486253042
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Panther/O132-D"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.9982028418666846
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.061703082002047e-12
+    upper = 1.0017965486524987
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Panther/O132-D"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.9982028418636795
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.06170308386438e-12
+    upper = 1.0017965486707565
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Panther/O132-D"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9982028418560559
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.061703087515108e-12
+    upper = 1.0017965487133909
+    [[coordinates.kC_ACSR.members]]
+    cells = 9
+    circuit = "Panther/O132-D"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9982028418515101
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 9.06170308921732e-12
+    upper = 1.0017965487371794
+
+[coordinates.kC_U33]
+definition = "Positive-sequence C relative to its nominal value at the same frequency"
+family = "U33"
+lower = 0.8324072347466105
+nominal = 1.0
+origin = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, public LCM callable through the HPM extension, constrained hull search"
+quantity = "C"
+scale = "linear"
+upper = 1.10520498539662
+
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-400/trefoil"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.8343796000043778
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 2.6719640979382927e-10
+    upper = 1.1052049853966193
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-400/trefoil"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.8343796000043765
+    method = "verified affine alias"
+    nominal_value = 2.671964097938294e-10
+    upper = 1.1052049853966197
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-400/trefoil"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.8343796000043772
+    method = "verified affine alias"
+    nominal_value = 2.671964097938293e-10
+    upper = 1.1052049853966197
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-400/trefoil"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.8343796000043768
+    method = "verified affine alias"
+    nominal_value = 2.6719640979382937e-10
+    upper = 1.10520498539662
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-400/trefoil"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.8343796000043772
+    method = "verified affine alias"
+    nominal_value = 2.6719640979382927e-10
+    upper = 1.10520498539662
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-500/trefoil"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.8341136623341078
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 2.969390617490952e-10
+    upper = 1.1041557851049213
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-500/trefoil"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.8341136623341071
+    method = "verified affine alias"
+    nominal_value = 2.969390617490951e-10
+    upper = 1.1041557851049222
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-500/trefoil"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.8341136623341073
+    method = "verified affine alias"
+    nominal_value = 2.969390617490952e-10
+    upper = 1.1041557851049222
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-500/trefoil"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.8341136623341072
+    method = "verified affine alias"
+    nominal_value = 2.9693906174909513e-10
+    upper = 1.1041557851049224
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-500/trefoil"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.8341136623341073
+    method = "verified affine alias"
+    nominal_value = 2.969390617490951e-10
+    upper = 1.1041557851049224
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-630/trefoil"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.832571704261825
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 3.2909198978213554e-10
+    upper = 1.104480504637119
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-630/trefoil"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.832571704261824
+    method = "verified affine alias"
+    nominal_value = 3.2909198978213554e-10
+    upper = 1.1044805046371196
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-630/trefoil"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.8325717042618243
+    method = "verified affine alias"
+    nominal_value = 3.2909198978213564e-10
+    upper = 1.104480504637119
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-630/trefoil"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.8325717042618243
+    method = "verified affine alias"
+    nominal_value = 3.290919897821356e-10
+    upper = 1.1044805046371196
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-630/trefoil"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.8325717042618243
+    method = "verified affine alias"
+    nominal_value = 3.2909198978213543e-10
+    upper = 1.1044805046371209
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-800/trefoil"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.8324072347466116
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 3.653994554754871e-10
+    upper = 1.1035952693694522
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-800/trefoil"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.8324072347466109
+    method = "verified affine alias"
+    nominal_value = 3.65399455475487e-10
+    upper = 1.1035952693694533
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-800/trefoil"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.8324072347466106
+    method = "verified affine alias"
+    nominal_value = 3.653994554754871e-10
+    upper = 1.1035952693694533
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-800/trefoil"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.8324072347466105
+    method = "verified affine alias"
+    nominal_value = 3.653994554754872e-10
+    upper = 1.103595269369453
+    [[coordinates.kC_U33.members]]
+    cells = 1
+    circuit = "U33-800/trefoil"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.8324072347466105
+    method = "verified affine alias"
+    nominal_value = 3.65399455475487e-10
+    upper = 1.103595269369454
+
+[coordinates.kL_ACSR]
+definition = "Positive-sequence L relative to its nominal value at the same frequency"
+family = "ACSR"
+lower = 0.9962618928782407
+nominal = 1.0
+origin = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, public LCM callable through the HPM extension, constrained hull search"
+quantity = "L"
+scale = "linear"
+upper = 1.005315726528468
+
+    [[coordinates.kL_ACSR.members]]
+    cells = 6
+    circuit = "Bear/O132-D"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.9975449672847712
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2518321365300742e-6
+    upper = 1.0038348386224836
+    [[coordinates.kL_ACSR.members]]
+    cells = 3
+    circuit = "Bear/O132-D"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.9970530191866616
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2490832820059508e-6
+    upper = 1.0043907548146844
+    [[coordinates.kL_ACSR.members]]
+    cells = 1
+    circuit = "Bear/O132-D"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.9967767300777086
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2471375666653147e-6
+    upper = 1.0047055949283141
+    [[coordinates.kL_ACSR.members]]
+    cells = 1
+    circuit = "Bear/O132-D"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9964108507187197
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2430169773746641e-6
+    upper = 1.0051325945581862
+    [[coordinates.kL_ACSR.members]]
+    cells = 1
+    circuit = "Bear/O132-D"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9963251587867268
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2410852757322779e-6
+    upper = 1.0052250862877374
+    [[coordinates.kL_ACSR.members]]
+    cells = 6
+    circuit = "Goat/O132-D"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.9974708076064237
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.231368294346892e-6
+    upper = 1.0039147395778922
+    [[coordinates.kL_ACSR.members]]
+    cells = 3
+    circuit = "Goat/O132-D"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.9968719053061347
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2276900326793752e-6
+    upper = 1.004595871619794
+    [[coordinates.kL_ACSR.members]]
+    cells = 1
+    circuit = "Goat/O132-D"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.9965832354502435
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2251641869450379e-6
+    upper = 1.0049563657921075
+    [[coordinates.kL_ACSR.members]]
+    cells = 1
+    circuit = "Goat/O132-D"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9962862397957297
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.220281528164432e-6
+    upper = 1.0053025374923557
+    [[coordinates.kL_ACSR.members]]
+    cells = 3
+    circuit = "Goat/O132-D"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9962618928782407
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2181942391931815e-6
+    upper = 1.005315726528468
+    [[coordinates.kL_ACSR.members]]
+    cells = 6
+    circuit = "Lion/O132-D"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.99755266204262
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2622664938647275e-6
+    upper = 1.0038050463242096
+    [[coordinates.kL_ACSR.members]]
+    cells = 3
+    circuit = "Lion/O132-D"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.9971195071770481
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2598884648204311e-6
+    upper = 1.004301673817728
+    [[coordinates.kL_ACSR.members]]
+    cells = 1
+    circuit = "Lion/O132-D"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.9968654983946269
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2582046573591216e-6
+    upper = 1.0045850406247894
+    [[coordinates.kL_ACSR.members]]
+    cells = 1
+    circuit = "Lion/O132-D"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9964973909723706
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2545048990416447e-6
+    upper = 1.0050208277688315
+    [[coordinates.kL_ACSR.members]]
+    cells = 1
+    circuit = "Lion/O132-D"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9963859407720043
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2526954988768765e-6
+    upper = 1.005141917824997
+    [[coordinates.kL_ACSR.members]]
+    cells = 6
+    circuit = "Panther/O132-D"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.9975593301012806
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2739369322413173e-6
+    upper = 1.0037734395603144
+    [[coordinates.kL_ACSR.members]]
+    cells = 3
+    circuit = "Panther/O132-D"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.9971822581714449
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2719039654540862e-6
+    upper = 1.0042136294250579
+    [[coordinates.kL_ACSR.members]]
+    cells = 1
+    circuit = "Panther/O132-D"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.9969550376774488
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.270480540210153e-6
+    upper = 1.004465072578497
+    [[coordinates.kL_ACSR.members]]
+    cells = 1
+    circuit = "Panther/O132-D"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9965969732464438
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2672485747953927e-6
+    upper = 1.0048855353975894
+    [[coordinates.kL_ACSR.members]]
+    cells = 1
+    circuit = "Panther/O132-D"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9964730294121612
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.2655998214376836e-6
+    upper = 1.0050273379979342
+
+[coordinates.kL_U33]
+definition = "Positive-sequence L relative to its nominal value at the same frequency"
+family = "U33"
+lower = 0.9205434341153378
+nominal = 1.0
+origin = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, public LCM callable through the HPM extension, constrained hull search"
+quantity = "L"
+scale = "linear"
+upper = 1.1543234302904137
+
+    [[coordinates.kL_U33.members]]
+    cells = 1
+    circuit = "U33-400/trefoil"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.9769961452211948
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 3.4017823407869e-7
+    upper = 1.0418445230750781
+    [[coordinates.kL_U33.members]]
+    cells = 11
+    circuit = "U33-400/trefoil"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.9358998189686606
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 2.521709544428009e-7
+    upper = 1.1147058786230666
+    [[coordinates.kL_U33.members]]
+    cells = 1
+    circuit = "U33-400/trefoil"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.9272222306268564
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 2.2029356381483948e-7
+    upper = 1.1278317661996269
+    [[coordinates.kL_U33.members]]
+    cells = 1
+    circuit = "U33-400/trefoil"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9275897190329789
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.8549203831537947e-7
+    upper = 1.1217080145092615
+    [[coordinates.kL_U33.members]]
+    cells = 1
+    circuit = "U33-400/trefoil"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.929805510118316
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.759312843246537e-7
+    upper = 1.1132551691186012
+    [[coordinates.kL_U33.members]]
+    cells = 1
+    circuit = "U33-500/trefoil"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.9779226559340882
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 3.258353052296881e-7
+    upper = 1.042034119287851
+    [[coordinates.kL_U33.members]]
+    cells = 9
+    circuit = "U33-500/trefoil"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.9337359413445494
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 2.3645255573539634e-7
+    upper = 1.1228048223074694
+    [[coordinates.kL_U33.members]]
+    cells = 1
+    circuit = "U33-500/trefoil"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.9245808851283441
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 2.04028645238144e-7
+    upper = 1.138017346494566
+    [[coordinates.kL_U33.members]]
+    cells = 1
+    circuit = "U33-500/trefoil"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9257838521117643
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.69201303582843e-7
+    upper = 1.1305031400764711
+    [[coordinates.kL_U33.members]]
+    cells = 1
+    circuit = "U33-500/trefoil"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9283950490608335
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.5983122149271372e-7
+    upper = 1.1206315518661667
+    [[coordinates.kL_U33.members]]
+    cells = 1
+    circuit = "U33-630/trefoil"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.9782362564433713
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 3.1564300847730343e-7
+    upper = 1.0425154088039317
+    [[coordinates.kL_U33.members]]
+    cells = 9
+    circuit = "U33-630/trefoil"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.9314722778641363
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 2.2437875436098112e-7
+    upper = 1.1302194698145565
+    [[coordinates.kL_U33.members]]
+    cells = 1
+    circuit = "U33-630/trefoil"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.9223167401245711
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.9182214874665318e-7
+    upper = 1.1460213572523357
+    [[coordinates.kL_U33.members]]
+    cells = 1
+    circuit = "U33-630/trefoil"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9240298837085356
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.5747285683617923e-7
+    upper = 1.1368193954474166
+    [[coordinates.kL_U33.members]]
+    cells = 1
+    circuit = "U33-630/trefoil"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.926781474101957
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.4834828099521483e-7
+    upper = 1.1261209740857527
+    [[coordinates.kL_U33.members]]
+    cells = 1
+    circuit = "U33-800/trefoil"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.9787905635647822
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 3.04032804026827e-7
+    upper = 1.0438081676489859
+    [[coordinates.kL_U33.members]]
+    cells = 9
+    circuit = "U33-800/trefoil"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.929813248410475
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 2.1013374012794687e-7
+    upper = 1.1383588345645772
+    [[coordinates.kL_U33.members]]
+    cells = 1
+    circuit = "U33-800/trefoil"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.9205434341153378
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.7780223544632164e-7
+    upper = 1.1543234302904137
+    [[coordinates.kL_U33.members]]
+    cells = 1
+    circuit = "U33-800/trefoil"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9223257633280637
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.441268975607994e-7
+    upper = 1.144332512144298
+    [[coordinates.kL_U33.members]]
+    cells = 1
+    circuit = "U33-800/trefoil"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9251991447007827
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 1.3523073754299052e-7
+    upper = 1.1330793063511364
+
+[coordinates.kR_ACSR]
+definition = "Positive-sequence R relative to its nominal value at the same frequency"
+family = "ACSR"
+lower = 0.8623096825708542
+nominal = 1.0
+origin = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, public LCM callable through the HPM extension, constrained hull search"
+quantity = "R"
+scale = "linear"
+upper = 1.2682189163872188
+
+    [[coordinates.kR_ACSR.members]]
+    cells = 5
+    circuit = "Bear/O132-D"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.8627908408350806
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00010713630031502876
+    upper = 1.267430021874998
+    [[coordinates.kR_ACSR.members]]
+    cells = 33
+    circuit = "Bear/O132-D"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.8843468602584169
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.0001192613737059003
+    upper = 1.228953859975415
+    [[coordinates.kR_ACSR.members]]
+    cells = 26
+    circuit = "Bear/O132-D"
+    frequency = 350.0
+    interior_cells = 2
+    lower = 0.8969656594712496
+    method = "interior search and monotone cells"
+    nominal_value = 0.00012914276353660051
+    upper = 1.2083043345400224
+    [[coordinates.kR_ACSR.members]]
+    cells = 12
+    circuit = "Bear/O132-D"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9101992816436806
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00015154042488420424
+    upper = 1.1833416279771534
+    [[coordinates.kR_ACSR.members]]
+    cells = 11
+    circuit = "Bear/O132-D"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9125920162376858
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00016270054785090095
+    upper = 1.1773994752038135
+    [[coordinates.kR_ACSR.members]]
+    cells = 5
+    circuit = "Goat/O132-D"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.8634614524186213
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 8.758004061213248e-5
+    upper = 1.2663368974958917
+    [[coordinates.kR_ACSR.members]]
+    cells = 38
+    circuit = "Goat/O132-D"
+    frequency = 250.0
+    interior_cells = 1
+    lower = 0.8916593828914324
+    method = "interior search and monotone cells"
+    nominal_value = 0.00010165665387870033
+    upper = 1.2151755961518163
+    [[coordinates.kR_ACSR.members]]
+    cells = 14
+    circuit = "Goat/O132-D"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.9034760905010648
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00011243281599124279
+    upper = 1.1953406778154503
+    [[coordinates.kR_ACSR.members]]
+    cells = 12
+    circuit = "Goat/O132-D"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9124839628027606
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00013489123794817388
+    upper = 1.1761394686874125
+    [[coordinates.kR_ACSR.members]]
+    cells = 12
+    circuit = "Goat/O132-D"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9131870799338057
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00014534114864916473
+    upper = 1.1737381828301434
+    [[coordinates.kR_ACSR.members]]
+    cells = 5
+    circuit = "Lion/O132-D"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.8625379588552237
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00011878040879546605
+    upper = 1.267843880918615
+    [[coordinates.kR_ACSR.members]]
+    cells = 20
+    circuit = "Lion/O132-D"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.8809860958211975
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.0001299663306057263
+    upper = 1.235097205203375
+    [[coordinates.kR_ACSR.members]]
+    cells = 19
+    circuit = "Lion/O132-D"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.8930359752606508
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00013930244111865024
+    upper = 1.214860727659235
+    [[coordinates.kR_ACSR.members]]
+    cells = 12
+    circuit = "Lion/O132-D"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9081329349727143
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00016127719790986437
+    upper = 1.1885037303609711
+    [[coordinates.kR_ACSR.members]]
+    cells = 11
+    circuit = "Lion/O132-D"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9114840172372076
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00017261312081257962
+    upper = 1.1809350516536197
+    [[coordinates.kR_ACSR.members]]
+    cells = 4
+    circuit = "Panther/O132-D"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.8623096825708542
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00013334246475585733
+    upper = 1.2682189163872188
+    [[coordinates.kR_ACSR.members]]
+    cells = 20
+    circuit = "Panther/O132-D"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.8776151970531867
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00014353712876117203
+    upper = 1.241134182240283
+    [[coordinates.kR_ACSR.members]]
+    cells = 21
+    circuit = "Panther/O132-D"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.88869764943631
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00015222682840695563
+    upper = 1.2224435838408132
+    [[coordinates.kR_ACSR.members]]
+    cells = 20
+    circuit = "Panther/O132-D"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9051805424048227
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00017345786910004265
+    upper = 1.1951433037816086
+    [[coordinates.kR_ACSR.members]]
+    cells = 11
+    circuit = "Panther/O132-D"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9095167777022257
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00018481969495553986
+    upper = 1.186133033140605
+
+[coordinates.kR_U33]
+definition = "Positive-sequence R relative to its nominal value at the same frequency"
+family = "U33"
+lower = 0.9031342364062734
+nominal = 1.0
+origin = "cases/ieee30-full.toml at 85cdb95f25eb26af816314f5eadec3b86cf0e0b6, public LCM callable through the HPM extension, constrained hull search"
+quantity = "R"
+scale = "linear"
+upper = 1.2323618743221811
+
+    [[coordinates.kR_U33.members]]
+    cells = 1
+    circuit = "U33-400/trefoil"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.9031342364062734
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 8.955314917363192e-5
+    upper = 1.2323618743221811
+    [[coordinates.kR_U33.members]]
+    cells = 13
+    circuit = "U33-400/trefoil"
+    frequency = 250.0
+    interior_cells = 2
+    lower = 0.9608479487525778
+    method = "interior search and monotone cells"
+    nominal_value = 0.0002346843433454913
+    upper = 1.1045213754898888
+    [[coordinates.kR_U33.members]]
+    cells = 1
+    circuit = "U33-400/trefoil"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.9510465090873038
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.0002908428255465493
+    upper = 1.1268852430478296
+    [[coordinates.kR_U33.members]]
+    cells = 1
+    circuit = "U33-400/trefoil"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9371777406382688
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00035852687779569693
+    upper = 1.1697275373760558
+    [[coordinates.kR_U33.members]]
+    cells = 1
+    circuit = "U33-400/trefoil"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9333516241126859
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00037987167142015965
+    upper = 1.1828718107790919
+    [[coordinates.kR_U33.members]]
+    cells = 1
+    circuit = "U33-500/trefoil"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.908904738258233
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 7.236827344994569e-5
+    upper = 1.219006669700736
+    [[coordinates.kR_U33.members]]
+    cells = 10
+    circuit = "U33-500/trefoil"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.9665950845638593
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.0002190360472631759
+    upper = 1.0889945224991195
+    [[coordinates.kR_U33.members]]
+    cells = 1
+    circuit = "U33-500/trefoil"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.9534842688201537
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00027477866881695727
+    upper = 1.1187366282188222
+    [[coordinates.kR_U33.members]]
+    cells = 1
+    circuit = "U33-500/trefoil"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.937505821578845
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00033973639958280477
+    upper = 1.169754632607392
+    [[coordinates.kR_U33.members]]
+    cells = 1
+    circuit = "U33-500/trefoil"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9335705192993601
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.0003596644161871032
+    upper = 1.1842821913094108
+    [[coordinates.kR_U33.members]]
+    cells = 1
+    circuit = "U33-630/trefoil"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.9145752579674077
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 5.8963957556621415e-5
+    upper = 1.2023483401384691
+    [[coordinates.kR_U33.members]]
+    cells = 10
+    circuit = "U33-630/trefoil"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.9700300952599227
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00020631107020761626
+    upper = 1.0778655797030046
+    [[coordinates.kR_U33.members]]
+    cells = 1
+    circuit = "U33-630/trefoil"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.9545538403765204
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00026081852709009543
+    upper = 1.1142273823782898
+    [[coordinates.kR_U33.members]]
+    cells = 1
+    circuit = "U33-630/trefoil"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9377205335837143
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00032298241375263847
+    upper = 1.170037083258548
+    [[coordinates.kR_U33.members]]
+    cells = 1
+    circuit = "U33-630/trefoil"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9337355776193076
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00034181361385804057
+    upper = 1.1850879042252407
+    [[coordinates.kR_U33.members]]
+    cells = 1
+    circuit = "U33-800/trefoil"
+    frequency = 50.0
+    interior_cells = 0
+    lower = 0.9243290819291737
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 4.913135229380818e-5
+    upper = 1.182729973409653
+    [[coordinates.kR_U33.members]]
+    cells = 10
+    circuit = "U33-800/trefoil"
+    frequency = 250.0
+    interior_cells = 0
+    lower = 0.9726618699455064
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.00019651806266172457
+    upper = 1.0721127862415964
+    [[coordinates.kR_U33.members]]
+    cells = 1
+    circuit = "U33-800/trefoil"
+    frequency = 350.0
+    interior_cells = 0
+    lower = 0.9559594170691748
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.0002494622808243489
+    upper = 1.1126884513599278
+    [[coordinates.kR_U33.members]]
+    cells = 1
+    circuit = "U33-800/trefoil"
+    frequency = 550.0
+    interior_cells = 0
+    lower = 0.9387165100137533
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.0003092551524484226
+    upper = 1.1703976448023945
+    [[coordinates.kR_U33.members]]
+    cells = 1
+    circuit = "U33-800/trefoil"
+    frequency = 650.0
+    interior_cells = 0
+    lower = 0.9345732232168541
+    method = "corners, projected aggregate faces, golden face search"
+    nominal_value = 0.0003272209427819814
+    upper = 1.1857837696456812
+
+[[screen_loss_evidence]]
+circuit = "U33-400/trefoil"
+estimated_mutual_reactance = 0.0002687993414685125
+frequency = 250.0
+lower_ratio = 1.0125457751772706
+operating_screen_resistance = 0.0002735974622896923
+peak_ratio = 1.0127378076948468
+relative_peak_location_error = 0.017850195595594087
+screen_lower = 0.00024113569999999955
+screen_radius = 0.021715274998919742
+screen_reference = 0.0002576174083521149
+screen_upper = 0.00033535129999999957
+spacing = 0.051092147074900986
+upper_ratio = 1.0126164849723498
+
+[[verification]]
+circuit = "Bear/O132-D"
+source_escapes = 0
+source_largest_margin = -2.580312571196677e-6
+source_samples = 4096
+
+    [[verification.interior]]
+    cell = 6
+    escapes = 0
+    largest = -0.016144699608372805
+    metric = 7
+    quantity = "R.350.0"
+    samples = 2048
+    [[verification.interior]]
+    cell = 7
+    escapes = 0
+    largest = -0.016157598092505998
+    metric = 7
+    quantity = "R.350.0"
+    samples = 2048
+[[verification]]
+circuit = "Goat/O132-D"
+source_escapes = 0
+source_largest_margin = -2.6114463268044583e-6
+source_samples = 4096
+
+    [[verification.interior]]
+    cell = 7
+    escapes = 0
+    largest = -0.008530009161791089
+    metric = 4
+    quantity = "R.250.0"
+    samples = 4096
+[[verification]]
+circuit = "Lion/O132-D"
+interior = []
+source_escapes = 0
+source_largest_margin = -2.567118419471781e-6
+source_samples = 4096
+[[verification]]
+circuit = "Panther/O132-D"
+interior = []
+source_escapes = 0
+source_largest_margin = -2.549795008242146e-6
+source_samples = 4096
+[[verification]]
+circuit = "U33-400/trefoil"
+source_escapes = 0
+source_largest_margin = -0.004109540884489495
+source_samples = 4096
+
+    [[verification.interior]]
+    cell = 5
+    escapes = 0
+    largest = -0.0033373622757674084
+    metric = 4
+    quantity = "R.250.0"
+    samples = 2048
+    [[verification.interior]]
+    cell = 9
+    escapes = 0
+    largest = -0.003105966575570989
+    metric = 4
+    quantity = "R.250.0"
+    samples = 2048
+[[verification]]
+circuit = "U33-500/trefoil"
+interior = []
+source_escapes = 0
+source_largest_margin = -0.0036018738621172745
+source_samples = 4096
+[[verification]]
+circuit = "U33-630/trefoil"
+interior = []
+source_escapes = 0
+source_largest_margin = -0.0030613281373964496
+source_samples = 4096
+[[verification]]
+circuit = "U33-800/trefoil"
+interior = []
+source_escapes = 0
+source_largest_margin = -0.002078405745884357
+source_samples = 4096

@@ -5,7 +5,9 @@ const HPM = HarmonicPowerModels
 const STUDIES = @__DIR__
 const METHOD = (difference_step = 1e-4, zero_band = 1e-6,
     subdivision_depth = 6, sharing_tolerance = 1e-10,
-    verification_samples = 4096, admission_threshold = 1e-3)
+    verification_samples = 4096, admission_threshold = 1e-3,
+    interior_starts = (corners = true, center = true),
+    interior_tolerance = 1e-10, interior_iterations = 32)
 include(joinpath(STUDIES, "..", "shhc", "pce_params.jl"))
 include(joinpath(STUDIES, "..", "shhc", "ieee30_scenarios.jl"))
 PowerModels.silence()
@@ -420,6 +422,8 @@ harmonic_units(ids::Tuple, data) = collect(ids)
 function study(path; all_coordinates = false)
     file = isfile(path) ? abspath(path) : joinpath(STUDIES, path)
     config = readrecord(file)
+    haskey(config, :factor_data) && return study(file, config,
+        study(joinpath(STUDIES, config.source_case)))
     mat = readrecord(joinpath(STUDIES, "data", "materials.toml"))
     records = readrecord(config)
     families = records.families
@@ -485,7 +489,9 @@ function study(path; all_coordinates = false)
     pce["harmonic_units"] = units
     pce["bound"] = config.bound
     pce["epsilon"] = config.epsilon
-    return (; file, config, mat, families, box, model, details, hd, pce, ipopt, conic)
+    ids = unique(b -> details[b].circuit, sort(collect(keys(details))))
+    lcm = config.model == "exact" ? Tuple(model.branches[b].zy for b in ids) : ()
+    return (; file, config, mat, families, box, model, details, hd, pce, ipopt, conic, lcm)
 end
 
 function circuits(s)
@@ -740,3 +746,48 @@ function arrangement(::Val{:overhead}, spec, q, structure, row, mat)
         (shield_sag = 0.0,
             shield_x = spec.shield_x, shield_height = interpolate(spec.shield_y, structure), shield))
 end
+
+function factor_values(values, p, family)
+    kR, kL, kC = (get(p, Symbol("k", name, "_", family), 1.0) for name in ("R", "L", "C"))
+    return (z = complex(kR * real(values.z), kL * imag(values.z)),
+        y = complex(real(values.y), kC * imag(values.y)))
+end
+
+function factor_callable(original, nominal, family)
+    return (p, f, sequences...) -> begin
+        values = original(nominal, f)
+        if isempty(sequences)
+            return (;
+                (name => factor_values(value, p, family)
+            for (name, value) in pairs(values))...)
+        end
+        return factor_values(getproperty(values, only(sequences)), p, family)
+    end
+end
+
+function study(file, config, source)
+    dataset = readrecord(joinpath(STUDIES, config.factor_data))
+    declarations = (;
+        (name => (nominal = row.nominal, lower = row.lower,
+             upper = row.upper, scale = row.scale)
+    for (name, row) in pairs(dataset.coordinates))...)
+    box = parameterbox(declarations, source.families, config.box_names)
+    return study(file, config, source, box)
+end
+
+function study(file, config, source, box)
+    classes = Dict(b => Symbol(name) for (name, ids) in pairs(config.classes) for b in ids)
+    hd = deepcopy(source.hd)
+    if config.model == "exact"
+        p = nominal_point(source.box)
+        branches = Dict(b => (zy = factor_callable(row.zy, p, classes[b]),
+                            len = row.len, zbase = row.zbase)
+        for (b, row) in source.model.branches)
+        model = ExactPiModel(branches; f1 = config.f1)
+    else
+        model = ScaledBranchModel(hd, classes)
+    end
+    return merge(source, (; file, config, box, model, hd))
+end
+
+lcm_solves(s) = sum((length(c.sequences) for c in s.lcm); init = 0)

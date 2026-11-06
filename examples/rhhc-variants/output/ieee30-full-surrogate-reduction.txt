@@ -1,0 +1,159 @@
+Surrogate uncertainty reduction
+Source: cases/ieee30-full.toml; commit: 85cdb95f25eb26af816314f5eadec3b86cf0e0b6; LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+Method: effective coordinates, subdivision, constrained hull search, positive-sequence R/L/C ratios at case frequencies, 4096 mapped verification samples; parameters: (difference_step = 0.0001, zero_band = 1.0e-6, subdivision_depth = 6, sharing_tolerance = 1.0e-10, verification_samples = 4096, admission_threshold = 0.001, interior_starts = (corners = true, center = true), interior_tolerance = 1.0e-10, interior_iterations = 32)
+Frequencies: [50.0, 250.0, 350.0, 550.0, 650.0] Hz. Positive sequence defines the intervals.
+Harmonics 5, 7, 11 and 13 are negative or positive sequence. No zero-sequence harmonic enters.
+Factor: exact nominal frequency dependence; family factors multiply nominal R, omega L and omega C, including zero sequence if requested.
+Scaled: LCM nominal fundamental exact pi data, then HPM frequency scaling; no zero-sequence data.
+One factor moves every design of a family at every frequency. Neither variant is an inner or outer approximation.
+coordinate | nominal | lower | upper | contributing ratios
+kC_ACSR | 1 | 0.9981387764988817 | 1.0018618770161116 | 20
+kC_U33 | 1 | 0.8324072347466105 | 1.10520498539662 | 20
+kL_ACSR | 1 | 0.9962618928782407 | 1.005315726528468 | 20
+kL_U33 | 1 | 0.9205434341153378 | 1.1543234302904137 | 20
+kR_ACSR | 1 | 0.8623096825708542 | 1.2682189163872188 | 20
+kR_U33 | 1 | 0.9031342364062734 | 1.2323618743221811 | 20
+Containment and cells:
+Bear/O132-D: 4096 mapped samples, 0 escapes, largest normalized outward margin -2.580312571196677e-6
+  R.50.0: 5 cells; corners, projected aggregate faces, golden face search
+  L.50.0: 6 cells; corners, projected aggregate faces, golden face search
+  C.50.0: 9 cells; corners, projected aggregate faces, golden face search
+  R.250.0: 33 cells; corners, projected aggregate faces, golden face search
+  L.250.0: 3 cells; corners, projected aggregate faces, golden face search
+  C.250.0: 9 cells; corners, projected aggregate faces, golden face search
+  R.350.0: 26 cells; interior search and monotone cells
+    cell 6: interior search, depth 6, starts per extreme 8193
+    cell 7: interior search, depth 6, starts per extreme 8193
+  L.350.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.350.0: 9 cells; corners, projected aggregate faces, golden face search
+  R.550.0: 12 cells; corners, projected aggregate faces, golden face search
+  L.550.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.550.0: 9 cells; corners, projected aggregate faces, golden face search
+  R.650.0: 11 cells; corners, projected aggregate faces, golden face search
+  L.650.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.650.0: 9 cells; corners, projected aggregate faces, golden face search
+Goat/O132-D: 4096 mapped samples, 0 escapes, largest normalized outward margin -2.6114463268044583e-6
+  R.50.0: 5 cells; corners, projected aggregate faces, golden face search
+  L.50.0: 6 cells; corners, projected aggregate faces, golden face search
+  C.50.0: 9 cells; corners, projected aggregate faces, golden face search
+  R.250.0: 38 cells; interior search and monotone cells
+    cell 7: interior search, depth 6, starts per extreme 8193
+  L.250.0: 3 cells; corners, projected aggregate faces, golden face search
+  C.250.0: 9 cells; corners, projected aggregate faces, golden face search
+  R.350.0: 14 cells; corners, projected aggregate faces, golden face search
+  L.350.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.350.0: 9 cells; corners, projected aggregate faces, golden face search
+  R.550.0: 12 cells; corners, projected aggregate faces, golden face search
+  L.550.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.550.0: 9 cells; corners, projected aggregate faces, golden face search
+  R.650.0: 12 cells; corners, projected aggregate faces, golden face search
+  L.650.0: 3 cells; corners, projected aggregate faces, golden face search
+  C.650.0: 9 cells; corners, projected aggregate faces, golden face search
+Lion/O132-D: 4096 mapped samples, 0 escapes, largest normalized outward margin -2.567118419471781e-6
+  R.50.0: 5 cells; corners, projected aggregate faces, golden face search
+  L.50.0: 6 cells; corners, projected aggregate faces, golden face search
+  C.50.0: 9 cells; corners, projected aggregate faces, golden face search
+  R.250.0: 20 cells; corners, projected aggregate faces, golden face search
+  L.250.0: 3 cells; corners, projected aggregate faces, golden face search
+  C.250.0: 9 cells; corners, projected aggregate faces, golden face search
+  R.350.0: 19 cells; corners, projected aggregate faces, golden face search
+  L.350.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.350.0: 9 cells; corners, projected aggregate faces, golden face search
+  R.550.0: 12 cells; corners, projected aggregate faces, golden face search
+  L.550.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.550.0: 9 cells; corners, projected aggregate faces, golden face search
+  R.650.0: 11 cells; corners, projected aggregate faces, golden face search
+  L.650.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.650.0: 9 cells; corners, projected aggregate faces, golden face search
+Panther/O132-D: 4096 mapped samples, 0 escapes, largest normalized outward margin -2.549795008242146e-6
+  R.50.0: 4 cells; corners, projected aggregate faces, golden face search
+  L.50.0: 6 cells; corners, projected aggregate faces, golden face search
+  C.50.0: 9 cells; corners, projected aggregate faces, golden face search
+  R.250.0: 20 cells; corners, projected aggregate faces, golden face search
+  L.250.0: 3 cells; corners, projected aggregate faces, golden face search
+  C.250.0: 9 cells; corners, projected aggregate faces, golden face search
+  R.350.0: 21 cells; corners, projected aggregate faces, golden face search
+  L.350.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.350.0: 9 cells; corners, projected aggregate faces, golden face search
+  R.550.0: 20 cells; corners, projected aggregate faces, golden face search
+  L.550.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.550.0: 9 cells; corners, projected aggregate faces, golden face search
+  R.650.0: 11 cells; corners, projected aggregate faces, golden face search
+  L.650.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.650.0: 9 cells; corners, projected aggregate faces, golden face search
+U33-400/trefoil: 4096 mapped samples, 0 escapes, largest normalized outward margin -0.004109540884489495
+  R.50.0: 1 cells; corners, projected aggregate faces, golden face search
+  L.50.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.50.0: 1 cells; corners, projected aggregate faces, golden face search
+  R.250.0: 13 cells; interior search and monotone cells
+    cell 5: interior search, depth 6, starts per extreme 513
+    cell 9: interior search, depth 6, starts per extreme 513
+  L.250.0: 11 cells; corners, projected aggregate faces, golden face search
+  C.250.0: 1 cells; verified affine alias
+  R.350.0: 1 cells; corners, projected aggregate faces, golden face search
+  L.350.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.350.0: 1 cells; verified affine alias
+  R.550.0: 1 cells; corners, projected aggregate faces, golden face search
+  L.550.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.550.0: 1 cells; verified affine alias
+  R.650.0: 1 cells; corners, projected aggregate faces, golden face search
+  L.650.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.650.0: 1 cells; verified affine alias
+U33-500/trefoil: 4096 mapped samples, 0 escapes, largest normalized outward margin -0.0036018738621172745
+  R.50.0: 1 cells; corners, projected aggregate faces, golden face search
+  L.50.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.50.0: 1 cells; corners, projected aggregate faces, golden face search
+  R.250.0: 10 cells; corners, projected aggregate faces, golden face search
+  L.250.0: 9 cells; corners, projected aggregate faces, golden face search
+  C.250.0: 1 cells; verified affine alias
+  R.350.0: 1 cells; corners, projected aggregate faces, golden face search
+  L.350.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.350.0: 1 cells; verified affine alias
+  R.550.0: 1 cells; corners, projected aggregate faces, golden face search
+  L.550.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.550.0: 1 cells; verified affine alias
+  R.650.0: 1 cells; corners, projected aggregate faces, golden face search
+  L.650.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.650.0: 1 cells; verified affine alias
+U33-630/trefoil: 4096 mapped samples, 0 escapes, largest normalized outward margin -0.0030613281373964496
+  R.50.0: 1 cells; corners, projected aggregate faces, golden face search
+  L.50.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.50.0: 1 cells; corners, projected aggregate faces, golden face search
+  R.250.0: 10 cells; corners, projected aggregate faces, golden face search
+  L.250.0: 9 cells; corners, projected aggregate faces, golden face search
+  C.250.0: 1 cells; verified affine alias
+  R.350.0: 1 cells; corners, projected aggregate faces, golden face search
+  L.350.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.350.0: 1 cells; verified affine alias
+  R.550.0: 1 cells; corners, projected aggregate faces, golden face search
+  L.550.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.550.0: 1 cells; verified affine alias
+  R.650.0: 1 cells; corners, projected aggregate faces, golden face search
+  L.650.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.650.0: 1 cells; verified affine alias
+U33-800/trefoil: 4096 mapped samples, 0 escapes, largest normalized outward margin -0.002078405745884357
+  R.50.0: 1 cells; corners, projected aggregate faces, golden face search
+  L.50.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.50.0: 1 cells; corners, projected aggregate faces, golden face search
+  R.250.0: 10 cells; corners, projected aggregate faces, golden face search
+  L.250.0: 9 cells; corners, projected aggregate faces, golden face search
+  C.250.0: 1 cells; verified affine alias
+  R.350.0: 1 cells; corners, projected aggregate faces, golden face search
+  L.350.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.350.0: 1 cells; verified affine alias
+  R.550.0: 1 cells; corners, projected aggregate faces, golden face search
+  L.550.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.550.0: 1 cells; verified affine alias
+  R.650.0: 1 cells; corners, projected aggregate faces, golden face search
+  L.650.0: 1 cells; corners, projected aggregate faces, golden face search
+  C.650.0: 1 cells; verified affine alias
+Additional samples within inconsistent cells (per quantity): 4096
+Bear/O132-D R.350.0, interior search cell 6: 2048 feasible projected Sobol samples, 0 escapes, largest normalized outward margin -0.016144699608372805
+Bear/O132-D R.350.0, interior search cell 7: 2048 feasible projected Sobol samples, 0 escapes, largest normalized outward margin -0.016157598092505998
+Goat/O132-D R.250.0, interior search cell 7: 4096 feasible projected Sobol samples, 0 escapes, largest normalized outward margin -0.008530009161791089
+U33-400/trefoil R.250.0, interior search cell 5: 2048 feasible projected Sobol samples, 0 escapes, largest normalized outward margin -0.0033373622757674084
+U33-400/trefoil R.250.0, interior search cell 9: 2048 feasible projected Sobol samples, 0 escapes, largest normalized outward margin -0.003105966575570989
+Interior screen-loss evidence. The approximate term Rs * Xm^2 / (Rs^2 + Xm^2) peaks at Rs = Xm.
+Xm below is the geometric estimate mu0 * f * log(spacing / screen outer radius), not a replacement for LCM.
+U33-400/trefoil at 250.0 Hz: operating screen range [0.00024113569999999955, 0.00033535129999999957] ohm/m; peak screen resistance 0.0002735974622896923 ohm/m; estimated Xm 0.0002687993414685125 ohm/m; relative location difference 0.017850195595594087
+  R ratios at lower screen bound, interior peak and upper screen bound: 1.0125457751772706, 1.0127378076948468, 1.0126164849723498
