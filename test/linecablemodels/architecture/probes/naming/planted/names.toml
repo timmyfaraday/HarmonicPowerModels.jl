@@ -1,0 +1,45 @@
+[shape]
+function = 2
+type = 3
+module = 2
+constant = 2
+field = 2
+keyword = 2
+predicates = ["is", "has"]
+marker = "abstract"
+prepositions = ["in", "per", "to", "by", "of", "or", "for", "from", "with", "at", "on"]
+mandated = ["__init__"]
+
+[rejected]
+check = "validate"
+verify = "validate"
+ensure = "validate"
+require = "validate"
+assert = "validate"
+get = "the name of the quantity"
+set = "the name of the quantity, with !"
+make = "the constructor"
+create = "the constructor"
+calc = "the name of the quantity"
+calculate = "the name of the quantity"
+same = "==, isequal or isapprox"
+valid = "isvalid"
+match = "=="
+matches = "=="
+equal = "isequal"
+data = "the name of what it holds"
+info = "the name of what it holds"
+helper = "a method of the function it serves"
+util = "a method of the function it serves"
+utils = "a method of the function it serves"
+work = "workspace, plan, buffers or the component's name"
+scratch = "workspace, plan, buffers or the component's name"
+storage = "workspace, plan, buffers or the component's name"
+cache = "workspace, plan, buffers or the component's name"
+armor = "wires, with the tag :armor"
+difference = "perforated"
+hflat = "flat"
+vflat = "flat"
+
+[modules.NamingProbePlanted]
+nouns = ["circuit", "matrix", "line"]

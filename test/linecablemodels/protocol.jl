@@ -28,6 +28,6 @@
     @test_throws ArgumentError("sequence :foo is unavailable; Circuit serves :zero, :positive and :negative") zy(
         p, 50.0, :foo)
     # Olex 19/33 kV single-core, 8.0 mm XLPE, 400-800 mm²: 0.267-0.366 µF/km
-    # (`local/physical-inputs/inputs.md`, U33 family table).
+    # (`examples/rhhc-variants/data/register/README.md`, catalogue values).
     @test 0.25e-9 <= imag(zy(p, 50.0, :positive).y) / (2π * 50) <= 0.40e-9
 end

@@ -1,0 +1,1 @@
+(?i)robust\s+(?:harmonic\s+hosting\s+capacity|hosting\s+capacity|HHC|counterpart|lower\s+bound)
