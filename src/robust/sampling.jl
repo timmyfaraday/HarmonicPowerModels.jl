@@ -319,7 +319,7 @@ M[h,h'] = Σ_{k≥1} ψ_k·a_{h,k}·a_{h',k}, so
 
 which needs |H| + |H|² numbers per constraint and point instead of the full PCE
 coefficients. `keys[j]` is `(kind, key)` of constraint j, in the order of
-[`shhc_constraints`](@ref); `labels[s]` is `:nominal`, `:vertex`, `:seed`, `:background`
+[`shhc_constraints`](@ref); `labels[s]` is `:nominal`, `:vertex`, `:corner`, `:seed`, `:background`
 or `:refined` (added by the oracle). Points are appended with [`add_point!`](@ref).
 """
 struct ParameterDictionary
@@ -392,17 +392,49 @@ function add_points!(dict::ParameterDictionary, hdata::Dict, model::AbstractNetw
     return idx
 end
 
+# Sign-predicted corners of the mean coefficients, independent of the hosting decision.
+# Central differences at ξ = 0 use δ = 1e-4; sensitivities at most 1e-6 times the
+# largest magnitude for each (constraint, harmonic) are treated as zero.
+function _mean_corners(dict::ParameterDictionary, hdata, model)
+    d = length(dict.box)
+    δ = 1e-4
+    sensitivities = _tmap(1:d) do j
+        e = zeros(d); e[j] = δ
+        μ₊, _ = _compact_point(dict, hdata, model, e)
+        μ₋, _ = _compact_point(dict, hdata, model, -e)
+        (μ₊ - μ₋) / (2δ)
+    end
+    points = Vector{Float64}[]
+    for c in eachindex(dict.keys), h in eachindex(dict.harmonics)
+        dict.limit[c] > 0.0 || continue
+        s = [sensitivities[j][h, c] for j in 1:d]
+        threshold = 1e-6 * maximum(abs, s; init = 0.0)
+        push!(points, [abs(x) <= threshold ? 0.0 : sign(x) for x in s])
+    end
+    return unique(points)
+end
+
 """
     build_dictionary(hdata, model, box; seeds = Seed[], nbackground = 1024,
-                     vertices = length(box) <= 10, seed = 1) -> ParameterDictionary
+                     vertices = length(box) <= 10, corners = !vertices, seed = 1) -> ParameterDictionary
 
 Evaluate the constraints of the robust program at the nominal point, the vertices (when
-`vertices`), the `seeds` and `nbackground` Sobol points, and store them in compact form.
-`hdata` must carry the PCE data (Cantelli or Gaussian bound).
+`vertices`), the sign-predicted corners (when `corners`), the `seeds` and `nbackground` Sobol
+points, and store them in compact form. By default, use the vertices for d ≤ 10 and the
+sign-predicted corners otherwise. Worst cases of these constraints can sit at corners,
+and random points in high dimension rarely reach them.
+
+The corners follow the signs of each mean coefficient μ[h, c] for positive-limit
+constraints, independent of the hosting decision. Central differences at ξ = 0 use
+δ = 1e-4 in latent coordinates; magnitudes at most 1e-6 times the largest sensitivity
+of each (constraint, harmonic) are treated as zero and keep that coordinate nominal.
+Duplicates are removed before evaluation: 2d extra compact evaluations plus one per
+distinct corner. `hdata` must carry the PCE data (Cantelli or Gaussian bound).
 """
 function build_dictionary(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox;
                           seeds = Seed[], nbackground::Int = 1024,
-                          vertices::Bool = length(box) <= 10, seed::Integer = 1)
+                          vertices::Bool = length(box) <= 10, corners::Bool = !vertices,
+                          seed::Integer = 1)
     d  = length(box)
     m0 = moments_at(hdata, model, nominal_point(box))
     c0 = shhc_constraints(hdata, m0)
@@ -415,6 +447,7 @@ function build_dictionary(hdata::Dict, model::AbstractNetworkModel, box::Paramet
                     [collect(v) for v in Iterators.product(ntuple(_ -> (-1.0, 1.0), d)...)][:],
                     :vertex)
     end
+    corners && add_points!(dict, hdata, model, _mean_corners(dict, hdata, model), :corner)
     add_points!(dict, hdata, model, [s.ξ for s in seeds], :seed)
     add_points!(dict, hdata, model, background_points(box, nbackground; seed), :background)
     return dict
