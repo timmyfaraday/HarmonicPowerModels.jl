@@ -39,172 +39,172 @@ kt = "kt_U33"
 [branches."17"]
 spec = "U33-500"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:218"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."18"]
 spec = "U33-500"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:219"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."19"]
 spec = "U33-500"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:220"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."20"]
 spec = "U33-400"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:221"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."21"]
 spec = "U33-800"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:222"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."22"]
 spec = "U33-500"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:223"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."23"]
 spec = "U33-500"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:224"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."24"]
 spec = "U33-500"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:225"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."25"]
 spec = "U33-500"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:226"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."26"]
 spec = "U33-630"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:227"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."27"]
 spec = "U33-500"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:228"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."28"]
 spec = "U33-500"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:229"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."29"]
 spec = "U33-500"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:230"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."30"]
 spec = "U33-500"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:231"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."31"]
 spec = "U33-400"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:232"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."32"]
 spec = "U33-500"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:233"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."33"]
 spec = "U33-400"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:234"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."34"]
 spec = "U33-400"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:235"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."35"]
 spec = "U33-500"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:236"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."37"]
 spec = "U33-500"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:237"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."38"]
 spec = "U33-500"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:238"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."39"]
 spec = "U33-500"
 formation = "trefoil"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:239"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."1"]
 spec = "Lion"
 formation = "O132-D"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:247"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."2"]
 spec = "Goat"
 formation = "O132-D"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:248"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."3"]
 spec = "Bear"
 formation = "O132-D"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:249"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."4"]
 spec = "Lion"
 formation = "O132-D"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:250"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."5"]
 spec = "Goat"
 formation = "O132-D"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:251"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."6"]
 spec = "Lion"
 formation = "O132-D"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:252"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."7"]
 spec = "Bear"
 formation = "O132-D"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:253"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."8"]
 spec = "Panther"
 formation = "O132-D"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:254"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."9"]
 spec = "Bear"
 formation = "O132-D"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:255"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."10"]
 spec = "Bear"
 formation = "O132-D"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:256"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."40"]
 spec = "Bear"
 formation = "O132-D"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:257"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [branches."41"]
 spec = "Goat"
 formation = "O132-D"
-origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:258"
+origin = "data/register/README.md, IEEE 30-bus assignments"
 
 [transformers."12"]
 vg = "Yy0"

@@ -25,8 +25,8 @@ Cable lengths follow the scenario's retained routes. The overhead lengths follow
 `data/materials.toml` holds the material properties. Each file under `data/specs/` holds the
 primary quantities of one cable or conductor. The family files declare the coordinates,
 their bounds and the fields they act on. Formation files give the placement references,
-support coordinates and sags. Numeric quantities use SI units and cite a physical-input
-register row or their source. Transformer assumptions cite the step's proposal.
+support coordinates and sags. Numeric quantities use SI units and cite a row of the
+physical-input register in `data/register/`, or their source. Transformer assumptions cite the step's proposal.
 
 A compacted core has radius `(d_c + dd)/2` and equivalent resistivity
 `kR * R20 * π * radius^2`. Its diameter and resistance jointly set this resistivity

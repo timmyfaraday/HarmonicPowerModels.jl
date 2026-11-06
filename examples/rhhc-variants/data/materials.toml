@@ -27,7 +27,7 @@ tan_delta = {value = 3.0e-4, register = "U33.ins.tand"} # 1
 [pvc]
 kind = "insulator"
 eps_r = {value = 8.0, register = "U33.jkt.eps"} # 1
-rho = {value = 1.0e14, origin = "/home/amartins/Documents/KUL/LineCableModels/worktrees/LineCableModels-datamodel/examples/cable_30kv_630mm2_trefoil.jl:35"} # Ω·m. Inactive with the lossless law.
+rho = {value = 1.0e14, origin = "LineCableModels examples/cable_30kv_630mm2_trefoil.jl:35"} # Ω·m. Inactive with the lossless law.
 
 [al1]
 kind = "conductor"
@@ -38,7 +38,7 @@ alpha = {value = 4.03e-3, register = "U33.cond.alpha"} # 1/K
 kind = "conductor"
 rho = {value = 1.9157e-7, register = "ACSR.st.rho"} # Ω·m
 mu_r = {value = 100.0, register = "ACSR.st.mu"} # 1
-alpha = {value = 3.6e-3, origin = "local/physical-inputs/inputs.md:192"} # 1/K
+alpha = {value = 3.6e-3, register = "ACSR.st.rho"} # 1/K
 
 [tom_aluminium]
 kind = "conductor"

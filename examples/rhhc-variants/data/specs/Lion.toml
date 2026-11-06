@@ -1,11 +1,11 @@
 family = "ACSR"
-n_steel = {value = 7, origin = "local/codex/ieee30-physical-candidates/scratch/overhead-table.md:8"} # 1
-n_aluminium = {value = 30, origin = "local/codex/ieee30-physical-candidates/scratch/overhead-table.md:8"} # 1
-d_steel = {value = 3.18e-3, origin = "local/codex/ieee30-physical-candidates/scratch/overhead-table.md:8"} # m
-d_aluminium = {value = 3.18e-3, origin = "local/codex/ieee30-physical-candidates/scratch/overhead-table.md:8"} # m
-diameter = {value = 0.02226, origin = "local/codex/ieee30-physical-candidates/scratch/overhead-table.md:8"} # m
-R20 = {value = 1.212e-4, origin = "local/codex/ieee30-physical-candidates/scratch/overhead-table.md:8"} # Ω/m
+n_steel = {value = 7, register = "ACSR.Lion.st"} # 1
+n_aluminium = {value = 30, register = "ACSR.Lion.al"} # 1
+d_steel = {value = 3.18e-3, register = "ACSR.Lion.st"} # m
+d_aluminium = {value = 3.18e-3, register = "ACSR.Lion.al"} # m
+diameter = {value = 0.02226, register = "ACSR.Lion.d"} # m
+R20 = {value = 1.212e-4, register = "ACSR.Lion.R20"} # Ω/m
 lay_steel = {value = 21.0, register = "ACSR.lay.st6"} # 1
 lay_inner = {value = 13.0, register = "ACSR.lay.alin"} # 1
 lay_outer = {value = 12.0, register = "ACSR.lay.alout"} # 1
-courses = {value = [12, 18], origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:342"} # 1
+courses = {value = [12, 18], register = "ACSR.courses"} # 1

@@ -1,6 +1,6 @@
 include(joinpath(@__DIR__, "builders.jl"))
 
-# Olex, printed p. 13. Values transcribed in inputs.md:97–99.
+# Olex, printed pp. 12 and 13. The table is in `data/register/README.md`, catalogue values used as checks.
 # Olex resistance uses a conductor temperature of 90 °C.
 # The reactance and capacitance refer to 50 Hz.
 const OLEX = Dict("U33-400" => (0.101, 0.116, 0.267),
