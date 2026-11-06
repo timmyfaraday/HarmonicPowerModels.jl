@@ -1,0 +1,3 @@
+kind = "trefoil"
+reference = "centre"
+depth = {value = 0.8, register = "U33.inst.depth"} # m

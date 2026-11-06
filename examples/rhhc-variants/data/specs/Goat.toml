@@ -1,0 +1,11 @@
+family = "ACSR"
+n_steel = {value = 7, origin = "local/codex/ieee30-physical-candidates/scratch/overhead-table.md:10"} # 1
+n_aluminium = {value = 30, origin = "local/codex/ieee30-physical-candidates/scratch/overhead-table.md:10"} # 1
+d_steel = {value = 3.71e-3, origin = "local/codex/ieee30-physical-candidates/scratch/overhead-table.md:10"} # m
+d_aluminium = {value = 3.71e-3, origin = "local/codex/ieee30-physical-candidates/scratch/overhead-table.md:10"} # m
+diameter = {value = 0.02597, origin = "local/codex/ieee30-physical-candidates/scratch/overhead-table.md:10"} # m
+R20 = {value = 8.91e-5, origin = "local/codex/ieee30-physical-candidates/scratch/overhead-table.md:10"} # Ω/m
+lay_steel = {value = 21.0, register = "ACSR.lay.st6"} # 1
+lay_inner = {value = 13.0, register = "ACSR.lay.alin"} # 1
+lay_outer = {value = 12.0, register = "ACSR.lay.alout"} # 1
+courses = {value = [12, 18], origin = "local/codex/ieee30-physical-candidates/physical-candidates.md:344"} # 1

@@ -1,0 +1,8 @@
+kind = "overhead"
+earth_wire = "GW-7x3.15"
+phase_x = {value = [-2.5, 0.0, 2.5], register = "O132.geom"} # m
+phase_height = {value = [18.0, 22.33, 18.0], register = "O132.geom"} # m
+shield_x = {value = 0.0, register = "O132.geom"} # m
+shield_height = {value = 29.0, register = "O132.geom"} # m
+phase_sag = {value = 6.0, register = "O132.sag"} # m
+shield_sag = {value = 5.4, register = "O132.sag"} # m

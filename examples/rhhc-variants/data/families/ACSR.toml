@@ -1,0 +1,6 @@
+[kR]
+field = "R20"
+nominal = {value = 1.0, register = "ACSR.R20"} # 1
+lower = {value = 0.968, register = "ACSR.R20"} # 1
+upper = {value = 1.02, register = "ACSR.R20"} # 1
+

@@ -1,0 +1,30 @@
+[kR]
+field = "R20"
+nominal = {value = 1.0, register = "U33.cond.R20.500"} # 1
+lower = {value = 0.92, register = "U33.cond.R20.500"} # 1
+upper = {value = 1.0, register = "U33.cond.R20.500"} # 1
+
+[eps]
+field = "eps_r"
+nominal = {value = 2.4, register = "U33.ins.eps"} # 1
+lower = {value = 2.1, register = "U33.ins.eps"} # 1
+upper = {value = 2.5, register = "U33.ins.eps"} # 1
+
+[kt]
+field = "t_ins"
+nominal = {value = 1.0, register = "U33.ins.t"} # 1
+lower = {value = 0.95, register = "U33.ins.t"} # 1
+upper = {value = 1.05, register = "U33.ins.t"} # 1
+
+[kj]
+field = "t_jkt"
+nominal = {value = 1.0, register = "U33.jkt.t.500"} # 1
+lower = {value = 1.0, register = "U33.jkt.t.500"} # 1
+upper = {value = 1.35, register = "U33.jkt.t.500"} # 1
+
+[dd]
+field = "d_c"
+nominal = {value = 0.0, register = "U33.cond.d.500"} # m
+lower = {value = 0.0, register = "U33.cond.d.500"} # m
+upper = {value = 4.0e-4, register = "U33.cond.d.500"} # m
+

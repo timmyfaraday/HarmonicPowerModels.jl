@@ -1,0 +1,5 @@
+family = "steel"
+count = {value = 7, register = "O132.gw"} # 1
+diameter = {value = 3.15e-3, register = "O132.gw"} # m
+lay = {value = 21.0, register = "O132.gw.lay"} # 1
+R20 = {value = 3.55e-3, register = "O132.gw.R20"} # Ω/m

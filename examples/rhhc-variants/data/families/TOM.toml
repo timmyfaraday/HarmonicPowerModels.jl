@@ -1,0 +1,18 @@
+[eps_xlpe]
+field = "eps_r"
+nominal = {value = 2.3, origin = "examples/rhhc/ieee30_lcm.jl:80"} # 1
+lower = {value = 2.25, origin = "examples/rhhc/ieee30_lcm.jl:80"} # 1
+upper = {value = 2.5, origin = "examples/rhhc/ieee30_lcm.jl:80"} # 1
+
+[t_xlpe]
+field = "t_ins"
+nominal = {value = 8.0e-3, origin = "examples/rhhc/ieee30_lcm.jl:81"} # m
+lower = {value = 7.6e-3, origin = "examples/rhhc/ieee30_lcm.jl:81"} # m
+upper = {value = 8.8e-3, origin = "examples/rhhc/ieee30_lcm.jl:81"} # m
+
+[r_core]
+field = "r_core"
+nominal = {value = 0.01416, origin = "examples/rhhc/ieee30_lcm.jl:82"} # m
+lower = {value = 0.0140184, origin = "examples/rhhc/ieee30_lcm.jl:82"} # m
+upper = {value = 0.0143016, origin = "examples/rhhc/ieee30_lcm.jl:82"} # m
+
