@@ -41,10 +41,18 @@ The fundamental-frequency `data` values are scaled to harmonic `h` internally:
                       neg-seq (h%3==2) ∠+30·shift°,
                       zero-seq (h%3==0) ∠0°
 
-**Zero-sequence delta blocking** (h%3==0): for each transformer whose `vg`
+Branches carrying `vg` use the same unit phase factor as `xfmr` records;
+branches without `vg` retain their existing stamp. Branch shunts are unchanged.
+
+**Zero-sequence delta blocking** (h%3==0): for each transformer or branch whose `vg`
 string has 'D' (delta) on the primary or secondary side, the corresponding bus
 row and column are zeroed after all stamps, modelling the isolation of that bus
 from zero-sequence currents.
+
+Winding earthing (`gnd`, `re`, `xe`) enters HPM only through the IV
+`constraint_xfmr_winding_config` constraints of `xfmr` records. The stochastic SOC
+admittance (`_harmonic_admittance`) models no zero-sequence winding configuration
+for `xfmr` records either; none is added for branches here.
 
 The magnetising branch (gsh) and winding resistances (r1, r2) are not included.
 """
@@ -53,6 +61,8 @@ function build_harmonic_Ybus(data::Dict, h::Int)
     n_bus = length(bus_ids)
 
     Y = zeros(ComplexF64, n_bus, n_bus)
+    sequence = harmonic_sequence(h)
+    blocked = Set{Int}()
 
     # ── branches (π-model) ────────────────────────────────────────────────────
     for branch in values(data["branch"])
@@ -71,8 +81,21 @@ function build_harmonic_Ybus(data::Dict, h::Int)
         y_to = im * b_to_h
 
         Y[fr, fr] += y_s + y_fr
-        Y[fr, to] -= y_s
-        Y[to, fr] -= y_s
+        if haskey(branch, "vg")
+            vg = branch["vg"]
+            angle = _vector_group_angle(vg, sequence)
+            t = cosd(angle) + im * sind(angle)
+            Y[fr, to] -= y_s * t
+            Y[to, fr] -= conj(t) * y_s
+
+            if sequence === :zero
+                uppercase(vg[1]) == 'D' && push!(blocked, fr)
+                uppercase(vg[2]) == 'D' && push!(blocked, to)
+            end
+        else
+            Y[fr, to] -= y_s
+            Y[to, fr] -= y_s
+        end
         Y[to, to] += y_s + y_to
     end
 
@@ -90,7 +113,6 @@ function build_harmonic_Ybus(data::Dict, h::Int)
     # ── transformers ──────────────────────────────────────────────────────────
     if haskey(data, "xfmr")
         is_zero_seq  = (h % 3 == 0)
-        blocked      = Set{Int}()
 
         for xfmr in values(data["xfmr"])
             fr = bus_idx[xfmr["f_bus"]]
@@ -101,15 +123,8 @@ function build_harmonic_Ybus(data::Dict, h::Int)
             vg    = get(xfmr, "vg", "Yy0")
             cnf1  = uppercase(vg[1])
             cnf2  = uppercase(vg[2])
-            shift = parse(Int, vg[3:end])
-
-            if h % 3 == 1        # positive-sequence
-                tr = cosd(-30.0 * shift);  ti = sind(-30.0 * shift)
-            elseif h % 3 == 2    # negative-sequence
-                tr = cosd( 30.0 * shift);  ti = sind( 30.0 * shift)
-            else                 # zero-sequence
-                tr = 1.0;                  ti = 0.0
-            end
+            angle = _vector_group_angle(vg, sequence)
+            tr = cosd(angle); ti = sind(angle)
             t = tr + im * ti
 
             # Stamp (valid for |t| = 1 phase-shifting transformers)
@@ -124,12 +139,12 @@ function build_harmonic_Ybus(data::Dict, h::Int)
                 cnf2 == 'D' && push!(blocked, to)
             end
         end
+    end
 
-        # Zero rows and columns of delta-blocked buses
-        for b in blocked
-            Y[b, :] .= 0
-            Y[:, b] .= 0
-        end
+    # Zero rows and columns of delta-blocked buses
+    for b in blocked
+        Y[b, :] .= 0
+        Y[:, b] .= 0
     end
 
     return Y

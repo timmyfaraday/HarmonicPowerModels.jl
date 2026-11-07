@@ -85,4 +85,69 @@
         sv = dict.labels .== :seed; vv = dict.labels .== :vertex
         @test maximum(V[j, sv]) > maximum(V[j, vv])
     end
+
+    @testset "sign-predicted corners" begin
+        dict = build_dictionary(hd, model, box; vertices = false, seeds, nbackground = 8)
+        corners = dict.points[dict.labels .== :corner]
+        @test !isempty(corners)
+        @test length(corners) == length(unique(corners))
+        @test !(:vertex in dict.labels)
+        @test findlast(==(:corner), dict.labels) < findfirst(==(:seed), dict.labels)
+
+        # Independently difference the full constraint records, including every harmonic.
+        δ = 1e-4
+        slopes = map(1:length(box)) do j
+            e = zeros(length(box)); e[j] = δ
+            left = shhc_constraints(hd, moments_at(hd, model, latent(box, -e)))
+            right = shhc_constraints(hd, moments_at(hd, model, latent(box, e)))
+            [(get(b.coef, h, [0.0])[1] - get(a.coef, h, [0.0])[1]) / (2δ)
+             for h in dict.harmonics, (a, b) in zip(left, right)]
+        end
+        expected = unique([begin
+            sensitivity = [s[h, c] for s in slopes]
+            threshold = 1e-6 * maximum(abs, sensitivity)
+            [abs(x) <= threshold ? 0.0 : sign(x) for x in sensitivity]
+        end for c in eachindex(dict.keys) for h in eachindex(dict.harmonics)
+            if dict.limit[c] > 0.0])
+        @test Set(Tuple.(corners)) == Set(Tuple.(expected))
+        vertices = [collect(v) for v in Iterators.product(ntuple(_ -> (-1.0, 1.0), 3)...)][:]
+        matched = filter(v -> v in expected, vertices)
+        @test !isempty(matched)
+        @test all(v in corners for v in matched)
+
+        disabled = build_dictionary(hd, model, box; vertices = false, corners = false,
+                                    nbackground = 8)
+        @test disabled.labels == [:nominal; fill(:background, 8)]
+
+        # Reconstruct the dictionary before corners were introduced, in the original order.
+        legacy = HPM.ParameterDictionary(box, dict.harmonics, dict.keys, dict.limit, dict.λ,
+            Vector{Float64}[], Symbol[], Matrix{Float64}[], Array{Float64,3}[])
+        add_point!(legacy, hd, model, zeros(3), :nominal)
+        add_points!(legacy, hd, model, vertices, :vertex)
+        add_points!(legacy, hd, model, [s.ξ for s in seeds], :seed)
+        add_points!(legacy, hd, model, background_points(box, 8), :background)
+        default = build_dictionary(hd, model, box; seeds, nbackground = 8)
+        @test all(isequal(getfield(default, f), getfield(legacy, f))
+                  for f in fieldnames(HPM.ParameterDictionary))
+
+        # At h5 the box stays below resonance. Two coordinates vary; nine fixed
+        # coordinates exercise the d > 10 default without enlarging the physical box.
+        small = ParameterBox(:kC_cable => (1.0, 0.9, 1.1), :kR_cable => (1.0, 0.8, 1.2))
+        padded = ParameterBox([small.names; [Symbol("fixed_", j) for j in 1:9]],
+            [small.nominal; ones(9)], [small.lower; ones(9)], [small.upper; ones(9)],
+            [small.scale; fill(:linear, 9)])
+        prepared = HPM.replicate(deepcopy(data); H = [1, 5])
+        scaled = ScaledBranchModel(prepared, Dict(2 => :cable, 3 => :cable, 4 => :line))
+        tol = 1e-3
+        res = solve_rhhc(prepared, scaled, padded, solver_soc; pce_params = deepcopy(pp),
+                         hpf_optimizer = solver_nlp, nbackground = 8, use_seeds = false, tol)
+        @test res["signed_off"]
+        @test :corner in res["dictionary"].labels
+        g = Dict(h => I^2 for (h, I) in res["solution"])
+        pos = res["dictionary"].limit .> 0.0
+        worst = maximum(maximum(HPM._violations_at(prepared, scaled, small,
+                            collect(v), g)[pos]) for v in Iterators.product((-1.0, 1.0), (-1.0, 1.0)))
+        @test worst <= tol
+    end
+
 end

@@ -17,6 +17,8 @@
 # g/(1+v), i.e. I/√(1+v), with v the largest normalized violation, suffices.   #
 # With an approximate oracle, v and the lower bound hold relative to the       #
 # points evaluated (§5.1); the a-posteriori check is the evidence beyond them. #
+# The bounds hold for a master solved to optimality; the method stops at one   #
+# that is not.                                                                 #
 ################################################################################
 # Author: Tom Van Acker                                                         #
 ################################################################################
@@ -32,8 +34,10 @@ method, for the uncertain branches of `model` over the parameter box `box`.
 
 - `pce_params` as for [`solve_shhc`](@ref) with `sHHC_SOC`; the bound must be `"cantelli"` or
   `"gaussian"` (the empirical λ* is calibrated on the nominal network only).
-- The dictionary of the oracle holds the nominal point, the vertices (d ≤ 10), the modal seeds
-  (`use_seeds`) and `nbackground` Sobol points.
+- The dictionary of the oracle holds the nominal point, the vertices for d ≤ 10 or the
+  sign-predicted corners otherwise, the modal seeds (`use_seeds`) and `nbackground` Sobol
+  points. Worst cases of these constraints can sit at corners, and random points in high
+  dimension rarely reach them.
 - Each iteration runs the oracle at `effort`; when it finds no violation above `tol`, the
   sign-off reruns it at `signoff` effort before stopping: by default the 20 most violated
   constraints within 10 % of their limit somewhere in the dictionary are refined.
@@ -51,6 +55,11 @@ value), `"lower_bound"` and `"solution"` (I_h of the scaled, robust-feasible dec
 solution), `"gap"`, `"iterations"`, `"history"` (per iteration: v, bounds, cuts added, time),
 `"dictionary"` and, when `posterior > 0`, `"posterior"`: [`posterior_check`](@ref) of the robust
 solution on `posterior` independent random points.
+
+The master is used only when it is solved to optimality with a feasible primal point
+(`ALMOST_OPTIMAL` included). Otherwise the method stops without signing off and returns the
+bounds and the solution of the last solved iteration; when no master was solved, the bounds
+are `NaN`, the solutions are empty and `"posterior"` is `nothing`.
 """
 function solve_rhhc(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox, optimizer;
                     pce_params::Dict, hpf_optimizer = optimizer, nbackground::Int = 1024,
@@ -95,7 +104,15 @@ function solve_rhhc(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox,
     for it in 1:maxiter
         JuMP.optimize!(jm)
         status = JuMP.termination_status(jm)
-        JuMP.has_values(jm) || break
+        # has_values is not enough: solvers return iterates for programs they did not solve.
+        # The upper bound needs the master's optimum. ALMOST_OPTIMAL is accepted because
+        # the oracle re-evaluates the scaled solution; reduced accuracy only affects the gap.
+        if !JuMP.is_solved_and_feasible(jm; allow_almost = true)
+            @warn "solve_rhhc: master not solved with a feasible primal point; " *
+                  "the method stops without signing off, returning the bounds and solution " *
+                  "of the last solved iteration (none at the first)." status iteration=it
+            break
+        end
         UB = S * JuMP.objective_value(jm)
         Iv = Dict(h => max(JuMP.value(I_h[h]), 0.0) for h in H)
         g  = Dict(h => Iv[h]^2 for h in H)
@@ -126,14 +143,16 @@ function solve_rhhc(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox,
         verbose && @info "solve_rhhc" iteration=it max_violation=v upper_bound=UB lower_bound=LB cuts=ncut
         (signed_off || ncut == 0) && break
     end
-    ncut_last = isempty(history) ? 0 : last(history).cuts
-    !signed_off && ncut_last == 0 && v > tol &&
+    solved = !isempty(history) # every solved master appends to history
+    ncut_last = solved ? last(history).cuts : 0
+    solved && !signed_off && ncut_last == 0 && v > tol &&
         @warn "solve_rhhc: violations above tol remain at points already in the scenario sets " *
               "(numerical tolerance of the master); the lower bound accounts for them."
 
     scale = 1.0 / sqrt(1.0 + max(v, 0.0))
     sol   = Dict(h => scale * I for (h, I) in Iv)
-    post  = posterior > 0 ? posterior_check(hdata, model, box, sol; n = posterior, tol) : nothing
+    post  = posterior > 0 && solved ?
+            posterior_check(hdata, model, box, sol; n = posterior, tol) : nothing
     return Dict(
         "termination_status" => status,
         "upper_bound"        => UB,
