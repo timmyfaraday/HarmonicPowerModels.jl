@@ -44,15 +44,16 @@ The fundamental-frequency `data` values are scaled to harmonic `h` internally:
 Branches carrying `vg` use the same unit phase factor as `xfmr` records;
 branches without `vg` retain their existing stamp. Branch shunts are unchanged.
 
-**Zero-sequence delta blocking** (h%3==0): for each transformer or branch whose `vg`
-string has 'D' (delta) on the primary or secondary side, the corresponding bus
-row and column are zeroed after all stamps, modelling the isolation of that bus
-from zero-sequence currents.
+**Zero sequence** (h%3==0): each transformer (an `xfmr` record or a branch with `vg`)
+follows the winding rules of `_zero_sequence_view`: a series element between earthed
+stars, a shunt to earth at the earthed star of a delta–star pair, and open otherwise. A
+star side without `gnd1`/`gnd2` is taken as earthed, as this utility did before it read the
+earthing; neutral impedances (`re`, `xe`) are included. Lines keep their positive-sequence
+data. Buses with no path to earth are eliminated in `harmonic_transfer_impedance`.
 
-Winding earthing (`gnd`, `re`, `xe`) enters HPM only through the IV
-`constraint_xfmr_winding_config` constraints of `xfmr` records. The stochastic SOC
-admittance (`_harmonic_admittance`) models no zero-sequence winding configuration
-for `xfmr` records either; none is added for branches here.
+The second-order cone program uses its own admittance (`_harmonic_admittance`) with the
+full zero-sequence network of `_zero_sequence_view`, including line, cable and generator
+zero-sequence data; this utility models the transformer windings only.
 
 The magnetising branch (gsh) and winding resistances (r1, r2) are not included.
 """
@@ -62,7 +63,6 @@ function build_harmonic_Ybus(data::Dict, h::Int)
 
     Y = zeros(ComplexF64, n_bus, n_bus)
     sequence = harmonic_sequence(h)
-    blocked = Set{Int}()
 
     # ── branches (π-model) ────────────────────────────────────────────────────
     for branch in values(data["branch"])
@@ -80,6 +80,14 @@ function build_harmonic_Ybus(data::Dict, h::Int)
         y_fr = im * b_fr_h
         y_to = im * b_to_h
 
+        if haskey(branch, "vg") && sequence === :zero
+            _stamp_zero_sequence_pair!(Y, fr, to, branch, uppercase(branch["vg"][1]),
+                uppercase(branch["vg"][2]), r_h + im * x_h, h,
+                _is_star_point(data, branch["f_bus"]), _is_star_point(data, branch["t_bus"]))
+            Y[fr, fr] += y_fr
+            Y[to, to] += y_to
+            continue
+        end
         Y[fr, fr] += y_s + y_fr
         if haskey(branch, "vg")
             vg = branch["vg"]
@@ -87,11 +95,6 @@ function build_harmonic_Ybus(data::Dict, h::Int)
             t = cosd(angle) + im * sind(angle)
             Y[fr, to] -= y_s * t
             Y[to, fr] -= conj(t) * y_s
-
-            if sequence === :zero
-                uppercase(vg[1]) == 'D' && push!(blocked, fr)
-                uppercase(vg[2]) == 'D' && push!(blocked, to)
-            end
         else
             Y[fr, to] -= y_s
             Y[to, fr] -= y_s
@@ -112,8 +115,6 @@ function build_harmonic_Ybus(data::Dict, h::Int)
 
     # ── transformers ──────────────────────────────────────────────────────────
     if haskey(data, "xfmr")
-        is_zero_seq  = (h % 3 == 0)
-
         for xfmr in values(data["xfmr"])
             fr = bus_idx[xfmr["f_bus"]]
             to = bus_idx[xfmr["t_bus"]]
@@ -123,6 +124,11 @@ function build_harmonic_Ybus(data::Dict, h::Int)
             vg    = get(xfmr, "vg", "Yy0")
             cnf1  = uppercase(vg[1])
             cnf2  = uppercase(vg[2])
+            if sequence === :zero
+                _stamp_zero_sequence_pair!(Y, fr, to, xfmr, cnf1, cnf2, im * xfmr["xsc"] * h,
+                                           h, false, false)
+                continue
+            end
             angle = _vector_group_angle(vg, sequence)
             tr = cosd(angle); ti = sind(angle)
             t = tr + im * ti
@@ -132,21 +138,30 @@ function build_harmonic_Ybus(data::Dict, h::Int)
             Y[fr, to] -= y_sc * t
             Y[to, fr] -= conj(t) * y_sc
             Y[to, to] += y_sc
-
-            # Collect delta-blocked buses for zero-sequence
-            if is_zero_seq
-                cnf1 == 'D' && push!(blocked, fr)
-                cnf2 == 'D' && push!(blocked, to)
-            end
         end
     end
 
-    # Zero rows and columns of delta-blocked buses
-    for b in blocked
-        Y[b, :] .= 0
-        Y[:, b] .= 0
-    end
+    return Y
+end
 
+# Zero-sequence stamp of a transformer winding pair (`_zs_combination`) with leakage z at
+# harmonic h, from the fundamental neutral impedances re/xe of `rec`. A star side without
+# gnd is taken as earthed (the behaviour of this utility before it read the earthing).
+function _stamp_zero_sequence_pair!(Y, fr, to, rec, cnf1::Char, cnf2::Char, z, h, star1, star2)
+    s1  = _zs_side(cnf1, get(rec, "gnd1", 1), star1)
+    s2  = _zs_side(cnf2, get(rec, "gnd2", 1), star2)
+    zn1 = 3 * complex(get(rec, "re1", 0.0) * sqrt(h), get(rec, "xe1", 0.0) * h)
+    zn2 = 3 * complex(get(rec, "re2", 0.0) * sqrt(h), get(rec, "xe2", 0.0) * h)
+    kind, zeq = _zs_combination(s1, s2, complex(z), zn1, zn2)
+    kind === :open && return Y
+    y = 1 / zeq
+    if kind === :series
+        Y[fr, fr] += y; Y[to, to] += y; Y[fr, to] -= y; Y[to, fr] -= y
+    elseif kind === :shunt_fr
+        Y[fr, fr] += y
+    else
+        Y[to, to] += y
+    end
     return Y
 end
 
@@ -187,11 +202,18 @@ function harmonic_transfer_impedance(data::Dict, h::Int,
 
     Y_full = build_harmonic_Ybus(data, h)
 
-    # Buses to eliminate: slack + any bus whose Y row is entirely zero
-    # (delta-blocked buses in zero-sequence, isolated buses, etc.)
+    # Buses to eliminate: slack + any bus whose Y row is entirely zero (isolated buses)
+    # and, in zero sequence, the parts of the network with no path to earth
     elim = Set{Int}([slack_mat])
     for i in 1:n_bus
         all(iszero, Y_full[i, :]) && push!(elim, i)
+    end
+    if harmonic_sequence(h) === :zero
+        rest = [i for i in 1:n_bus if i ∉ elim]
+        _, floating = _earth_floating(Y_full[rest, rest])
+        for idx in floating, i in idx
+            push!(elim, rest[i])
+        end
     end
 
     active  = [i for i in 1:n_bus if i ∉ elim]

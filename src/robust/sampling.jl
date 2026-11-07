@@ -38,7 +38,9 @@ function reduced_admittance(hdata::Dict, model::AbstractNetworkModel, p, h::Real
     fund   = hdata["nw"]["1"]["bus"]
     buses  = sort([b["bus_i"] for b in values(fund) if !get(b, "is_clean", false)])
     keep   = [idx[b] for b in buses]
-    return Y[keep, keep], buses
+    Yr     = Y[keep, keep]
+    sequence === :zero && (Yr = first(_earth_floating(Yr)))
+    return Yr, buses
 end
 
 # Eigenpairs of the complex symmetric Y, with eigenvectors normalised as tᵀt = 1 (Huang,
