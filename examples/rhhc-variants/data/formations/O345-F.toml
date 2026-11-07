@@ -1,0 +1,8 @@
+kind = "overhead"
+earth_wire = "GW-7x3.15"
+phase_x = {value = [-10.0, 0.0, 10.0], register = "O230.geom"}
+phase_height = {value = [30.0, 30.0, 30.0], register = "O230.geom"}
+shield_x = {value = [-3.25, 3.25], register = "O230.geom"}
+shield_height = {value = [37.5, 37.5], register = "O230.geom"}
+structure = "O230"
+# Assumption: two GW-7x3.15 wires replace the source's unspecified earth wires.

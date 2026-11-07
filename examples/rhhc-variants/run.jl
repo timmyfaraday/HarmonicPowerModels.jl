@@ -25,6 +25,7 @@ function runstudy(s, io)
         nbackground = 0, use_seeds = false)
     report(io, @sprintf("nominal stochastic: %.6f (%s)",
         nom["upper_bound"], nom["termination_status"]))
+    isempty(nom["solution"]) && report(io, "nominal solution: ", nom["solution"])
     flush(io)
     report(io, "resonances at the nominal point: ",
         join(
@@ -41,16 +42,24 @@ function runstudy(s, io)
             res["lower_bound"], res["lower_bound"], res["upper_bound"], res["gap"],
             res["iterations"], t, res["signed_off"] ? "signed off" : "NOT signed off"))
     report(io, "robust master termination: ", res["termination_status"])
-    report(io, "per harmonic, robust / nominal: ",
-        join(
-            [@sprintf("h%d %.3f", h, res["solution"][h] / nom["master_solution"][h])
-             for h in s.config.harmonics],
-            ", "))
-    pr = res["posterior"]
-    report(io,
-        @sprintf("a posteriori (%d random points): worst %+.2e (%s), violated at %.1f %%",
-            s.config.posterior, pr.max_violation, string(pr.constraint),
-            100pr.violated_fraction))
+    isempty(res["solution"]) && report(io, "solution: ", res["solution"])
+    if isempty(res["solution"]) || isempty(nom["master_solution"])
+        report(io, "Harmonic ratios not evaluated: an empty solution has no harmonic currents.")
+    else
+        report(io, "per harmonic, robust / nominal: ",
+            join(
+                [@sprintf("h%d %.3f", h, res["solution"][h] / nom["master_solution"][h])
+                 for h in s.config.harmonics], ", "))
+    end
+    if isempty(res["solution"])
+        report(io, "Posterior check not evaluated: the solution is empty.")
+    else
+        pr = res["posterior"]
+        report(io,
+            @sprintf("a posteriori (%d random points): worst %+.2e (%s), violated at %.1f %%",
+                s.config.posterior, pr.max_violation, string(pr.constraint),
+                100pr.violated_fraction))
+    end
     solves = lcm_solves(s)
     report(io, "LineCableModels solves (sum of circuit table sizes): ", solves)
     flush(io)

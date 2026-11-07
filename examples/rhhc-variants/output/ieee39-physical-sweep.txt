@@ -1,0 +1,32 @@
+git commit: 35666069f36bb22eff730b0fa11822dc11814443
+LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+case: examples/rhhc-variants/cases/ieee39-physical.toml
+threads: 16; solver: Clarabel
+Relative changes compare each endpoint with the nominal value.
+coordinate | maximum relative change | circuit | sequence | quantity | Hz | end | decision
+theta_ACSR | 0.029136267605 | Cardinal/O345-F | positive | z | 50 | upper | yes
+lay_O230 | 0.000642571174054 | Cardinal/O345-F | zero | z | 50 | lower | no
+rho_steel_O230 | 0.0108213387982 | Cardinal/O345-F | zero | z | 50 | upper | yes
+rho_EARTH | 0.150728483809 | Cardinal/O345-F | zero | z | 50 | upper | yes
+lay_steel_ACSR | 1.76749878353e-05 | Cardinal/O345-F | positive | z | 50 | lower | no
+mu_steel_O230 | 0.0505925969225 | Cardinal/O345-F | zero | z | 650 | upper | yes
+E_O230 | 0 | Cardinal/O345-F | zero | z | 50 | lower | no
+rho_aluminium_ACSR | 0.00166713367446 | Cardinal/O345-F | negative | z | 50 | lower | yes
+lay_outer_ACSR | 0.000850726759239 | Cardinal/O345-F | positive | z | 50 | lower | no
+lay_middle_ACSR | 0.00163364279762 | Cardinal/O345-F | positive | z | 50 | lower | yes
+lay_inner_ACSR | 0.0021524403996 | Cardinal/O345-F | negative | z | 50 | lower | yes
+d_steel_ACSR | 0.000854519485801 | Cardinal/O345-F | negative | z | 50 | lower | no
+rho_steel_ACSR | 0.000293410017581 | Cardinal/O345-F | positive | z | 50 | upper | no
+ambient_O230 | 0.0132191311838 | Cardinal/O345-F | positive | z | 50 | upper | yes
+mu_steel_ACSR | 0.000368798593301 | Cardinal/O345-F | positive | z | 50 | upper | no
+shield_sag_O230 | 0.000763935081991 | Cardinal/O345-F | zero | z | 650 | upper | no
+phase_sag_O230 | 0.00071389068418 | Cardinal/O345-F | zero | z | 650 | upper | no
+diameter_O230 | 0.0030566217525 | Cardinal/O345-F | zero | z | 50 | upper | yes
+d_aluminium_ACSR | 0.0027505062992 | Cardinal/O345-F | negative | z | 50 | lower | yes
+box_names = ["theta_ACSR", "rho_steel_O230", "rho_EARTH", "mu_steel_O230", "rho_aluminium_ACSR", "lay_middle_ACSR", "lay_inner_ACSR", "ambient_O230", "diameter_O230", "d_aluminium_ACSR"]
+Bear projection check: upper aluminum and steel wire diameters, nominal lay ratios.
+t = 0.825704225352; diameter = 0.0236845 m (+1.000000000 percent); mass = 1.23708333959 kg/m (+1.985436075 percent).
+Effective wires: aluminum 0.00337766109155 m, steel 0.00339128521127 m.
+EN 50182: diameter within +/-1 percent and mass within +/-2 percent; passed.
+Inner lay upper 16 equals steel lay lower 16; that order cannot bind except at equality.
+All 128 wire-diameter and lay endpoint combinations satisfy both aggregate limits and lay order.

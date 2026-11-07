@@ -394,3 +394,69 @@ recomputing a weather-dependent rating at each point.
 One coordinate per input and family acts on every spoke. Both lay coordinates
 remain separate. The mechanical values are fixed.
 The source cases remain in `cases/star3.toml` and `cases/star5.toml`.
+
+## Cardinal and the physical transmission cases
+
+The twelve `ACSR.Cardinal.*` rows and `O230.geom`, `O230.phase.reference`,
+`O230.gw.reference` supply the IEEE9 and IEEE39 physical cases. The candidate study's
+conductor library and strand table specify 54 aluminum and seven steel wires,
+all 3.38 mm in diameter. Aluminum courses contain 12, 18 and 24 wires around
+the steel center and six-wire course. The resulting diameter is 30.42 mm.
+the catalog DC resistance is 0.05992 ohm/km.
+
+The manufacturing tolerance study gives aluminum wire diameters 3.3462 to
+3.4138 mm and steel wire diameters 3.33 to 3.43 mm. The existing ACSR wire
+realization applies the shared material intervals, lay ordering, aggregate
+one percent diameter and two percent mass limits. The middle aluminum course
+uses the inner-course lay interval 10 to 16, nominal 13, by analogy.
+The steel lay is 16 to 26, nominal 21, and the outer aluminum lay is
+10 to 14, nominal 12. There is one coordinate per input and family.
+
+Assumption: aluminum density 2700 kg/m3 and steel density 7780 kg/m3 determine
+nominal component masses from wire circles and helical lengths, giving
+1.3487363340027083 and 0.49331435514222144 kg/m, respectively.
+For wire area A, each course contributes density times A times its wire count
+times sqrt(1 + (pi/lay)^2). The straight steel center contributes density times A.
+Assumption: the fixed final modulus is 70 GPa and thermal expansion is
+0.0000193 per kelvin for this 54/7 construction. The 30/7 mechanical values
+are replaced by these values for Cardinal.
+
+O230-F and O345-F share the O230 family. The source geometry gives phase
+supports at x = -10, 0, 10 m and height 30 m, earth-wire supports at
+x = -3.25, 3.25 m and height 37.5 m, and reference sags of 10 m for both.
+The source's 6.5 m earth-wire separation is retained. The candidate study's
+16 m separation is superseded by the source geometry. Mean height subtracts
+two thirds of the sag. Assumption: two GW-7x3.15 earth wires replace the
+source's unspecified earth wires, with both-end grounding and ideal transposition.
+Assumption: the towers share the existing span of 300 m and reference temperature.
+The ambient interval and earth-wire mechanical and material inputs also apply.
+The existing setting allowance gives reference sag intervals 10 to 10.1 m.
+The phase temperature remains at least ambient temperature.
+
+The physical cases use every supplied `length_m` in their network JSON.
+Each branch assignment cites its fixed source route. The lengths have no
+uncertainty coordinate. LCM supplies charging.
+The candidate study's fixed thermal current is 994.5173367327438 A, equivalent
+to 396.1875479327156 MVA at 230 kV and 594.2813218990733 MVA at 345 kV.
+Both source systems rate their lines at 1000 MVA.
+Assumption: this fixed current ceiling uses the candidate study's IEEE 738
+reference weather without recalculating ampacity at each electrical point.
+
+IEEE39 branch 31 (27-29) keeps its source 1000 MVA rating. Its nominal
+fundamental terminal currents are 0.676359489 and 0.677167628 per unit,
+above the physical current limit 0.660312580 per unit that HPM derives from
+594.2813218990733 MVA and the source minimum voltage of 0.9 per unit.
+The source current limit is 1.111111111 per unit. Every other IEEE39 line
+keeps the physical rating. The fundamental power flow selects this exception.
+
+The transformer representation stays in the source branch records. IEEE9's
+case notes propose Dy11 in generator-to-grid order with a solid grid neutral.
+IEEE39's notes propose Yd11 on generator-connected records and Yy0 on internal
+records, with solid grid-side grounding. These assumed vector groups remain
+notes because the source branch representation does not apply winding groups.
+The IEEE39 generator source impedances and capacitive load components remain.
+
+Both sweeps admit ten coordinates at 0.1 percent: phase temperature, earth
+resistivity, aluminum resistivity and diameter, inner and middle aluminum lays,
+and ambient temperature, wire diameter, steel resistivity and permeability
+of the earth-wire family. The remaining registered coordinates stay nominal.

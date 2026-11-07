@@ -72,7 +72,7 @@ function comparison(io, paths...)
     println(io, "Threads: ", Threads.nthreads(), "; solver: Clarabel; unchanged runner settings.")
     println(io, "Method parameters: ", METHOD)
     println(io,
-        "level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination")
+        "level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination | nominal termination")
     flush(io)
     cases = [study(path) for path in paths]
     runs = NamedTuple[]
@@ -90,20 +90,38 @@ function comparison(io, paths...)
             " | ", res["lower_bound"], " | ",
             res["upper_bound"], " | ", res["gap"], " | ", res["iterations"], " | ",
             result.solves, " | ", result.elapsed, " | ", res["signed_off"],
-            " | ", res["termination_status"])
+            " | ", res["termination_status"],
+            " | ", result.nominal["termination_status"])
+        isempty(result.nominal["solution"]) &&
+            println(io, label, ": nominal solution = ", result.nominal["solution"])
+        isempty(res["solution"]) && println(io, label, ": solution = ", res["solution"])
         flush(io)
     end
     println(io, "level | harmonic | robust / nominal | robust current")
-    for (case, result) in zip(cases, runs), h in case.config.harmonics
-
-        println(io, splitext(basename(case.file))[1], " | ", h, " | ",
-            result.robust["solution"][h] / result.nominal["master_solution"][h], " | ",
-            result.robust["solution"][h])
+    for (case, result) in zip(cases, runs)
+        label = splitext(basename(case.file))[1]
+        if isempty(result.robust["solution"]) || isempty(result.nominal["master_solution"])
+            println(io, label, ": harmonic ratios not evaluated because a solution is empty.")
+            continue
+        end
+        for h in case.config.harmonics
+            println(io, label, " | ", h, " | ",
+                result.robust["solution"][h] / result.nominal["master_solution"][h], " | ",
+                result.robust["solution"][h])
+        end
     end
     println(io, "Posterior checks: 1024 random points, public HPM defaults (seed 2, tolerance 0.0001).")
+    println(io,
+        "Checks below evaluate positive-limit constraints. An infeasible nominal has no feasible capacity.")
     println(io, "solution | target case | maximum normalized violation | constraint | violated fraction")
     for i in eachindex(cases), j in eachindex(cases)
 
+        if isempty(runs[i].robust["solution"])
+            println(io, splitext(basename(cases[i].file))[1], " | ",
+                splitext(basename(cases[j].file))[1],
+                " | not evaluated: empty solution (", runs[i].robust["termination_status"], ")")
+            continue
+        end
         checked = posterior_check(runs[j].hdata, cases[j].model, cases[j].box,
             runs[i].robust["solution"]; n = 1024)
         println(io, splitext(basename(cases[i].file))[1],
@@ -121,6 +139,12 @@ function comparison(io, paths...)
         "solution | target case | corners evaluated | maximum normalized violation | constraint | case-coordinate point")
     for i in eachindex(cases), j in eachindex(cases)
 
+        if isempty(runs[i].robust["solution"])
+            println(io, splitext(basename(cases[i].file))[1], " | ",
+                splitext(basename(cases[j].file))[1],
+                " | not evaluated: empty solution (", runs[i].robust["termination_status"], ")")
+            continue
+        end
         println("Corner adversary: ", basename(cases[i].file), " on ", basename(cases[j].file))
         flush(stdout)
         result = corner_adversary(runs[j].hdata, cases[j].model, cases[j].box, runs[i].robust["solution"])

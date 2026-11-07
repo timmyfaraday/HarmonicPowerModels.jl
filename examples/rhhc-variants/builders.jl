@@ -310,9 +310,12 @@ function system(::Val{:overhead}, conductor, row)
         return build(CableSystem, fill(conductor, 3), positions;
             connections = [(core = k,) for k in 1:3], id = row.name, line_length = 1.0)
     end
-    push!(positions, Placement(row.shield_x, row.shield_height - (2 / 3) * row.shield_sag))
-    return build(CableSystem, [conductor, conductor, conductor, row.shield], positions;
-        connections = [(core = 1,), (core = 2,), (core = 3,), (core = 0,)],
+    append!(positions,
+        [Placement(x, h - (2 / 3) * row.shield_sag)
+         for (x, h) in zip(row.shield_x, row.shield_height)])
+    count = length(positions) - 3
+    return build(CableSystem, vcat(fill(conductor, 3), fill(row.shield, count)), positions;
+        connections = vcat([(core = k,) for k in 1:3], fill((core = 0,), count)),
         id = row.name, line_length = 1.0)
 end
 
