@@ -1,0 +1,65 @@
+[shape]
+function = 2
+type = 3
+module = 2
+constant = 2
+field = 2
+keyword = 2
+predicates = ["is", "has"]
+marker = "abstract"
+prepositions = ["in", "per", "to", "by", "of", "or", "for", "from", "with", "at", "on"]
+mandated = ["__init__"]
+
+[rejected]
+check = "validate"
+verify = "validate"
+ensure = "validate"
+require = "validate"
+assert = "validate"
+get = "the name of the quantity"
+set = "the name of the quantity, with !"
+make = "the constructor"
+create = "the constructor"
+calc = "the name of the quantity"
+calculate = "the name of the quantity"
+same = "==, isequal or isapprox"
+valid = "isvalid"
+match = "=="
+matches = "=="
+equal = "isequal"
+data = "the name of what it holds"
+info = "the name of what it holds"
+helper = "a method of the function it serves"
+util = "a method of the function it serves"
+utils = "a method of the function it serves"
+work = "workspace, plan, buffers or the component's name"
+scratch = "workspace, plan, buffers or the component's name"
+storage = "workspace, plan, buffers or the component's name"
+cache = "workspace, plan, buffers or the component's name"
+armor = "wires, with the tag :armor"
+difference = "perforated"
+hflat = "flat"
+vflat = "flat"
+
+[modules.HarmonicPowerModelsLineCableModelsExt]
+# circuit, problem, formulation: LCM `examples/cable_30kv_630mm2_trefoil.jl`.
+# fortescue, matrix: LCM `v0.0.0:src/engine/transforms/fortescue.jl`.
+# sequence, sequences: HPM `src/core/data.jl`, harmonic_sequence.
+# lock: HPM threaded evaluations and `Base.ReentrantLock`.
+nouns = ["circuit", "fortescue", "sequence", "problem", "formulation", "sequences", "lock", "matrix"]
+# HPM `src/core/data.jl`, harmonic_sequence.
+qualifiers = ["zero", "positive", "negative"]
+# tol: LCM `v0.0.0:src/engine/transforms/fortescue.jl`.
+# f1: HPM `ExactPiModel`.
+symbols = ["tol", "f1"]
+
+[register.HarmonicPowerModelsLineCableModelsExt]
+lifts = ["select"]
+
+[register.HarmonicPowerModelsLineCableModelsExt.public]
+Circuit = "a three-phase circuit of LCM served per sequence: the user's problem at a point and a frequency, the formulation built once, the Fortescue matrix and the table of its sequences"
+Fortescue = "the generalized Fortescue transformation: the unitary N-point DFT matrix and the tolerance of its diagonal check"
+AbstractSequence = "the abstract sequence of HPM's protocol"
+ZeroSequence = "the zero sequence of HPM's protocol"
+PositiveSequence = "the positive sequence of HPM's protocol"
+NegativeSequence = "the negative sequence of HPM's protocol"

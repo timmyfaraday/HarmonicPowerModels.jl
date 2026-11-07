@@ -1,0 +1,13 @@
+[deps]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
+ExplicitImports = "7d51a73a-1435-4ff3-83d9-f097790105c7"
+JuliaSyntax = "70703baa-626e-46a2-a12c-08ffd08c73b4"
+TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
+HarmonicPowerModels = "56365af1-a032-4c1d-861b-3c9f15bdb54e"
+LineCableModels = "dffb7669-8cd4-4628-99dd-7694e356ba37"
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[sources]
+HarmonicPowerModels = {path = "../.."}
+LineCableModels = {url = "https://github.com/Electa-Git/LineCableModels.jl", rev = "59cc3f2329e5df9b33929f52009e996cee1d4784"}

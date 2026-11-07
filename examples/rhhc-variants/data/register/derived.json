@@ -1,0 +1,597 @@
+{
+  "conductor_equivalent_resistivity": {
+    "U33-400": {
+      "d_c_mm": 23.0,
+      "R20_ohm_per_km": 0.0778,
+      "metal": "Al",
+      "nominal_mm2": 400,
+      "rho_eq_ohm_m": 3.232400389241806e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.06802805764157777,
+      "error_solid_core_pct": -12.560337221622397,
+      "R_if_nominal_area_straight_ohm_per_km": 0.07066,
+      "error_nominal_area_pct": -9.177377892030837,
+      "equivalent_straight_metal_mm2": 363.29048843187667,
+      "fill_factor_equivalent": 0.874396627783776,
+      "fill_factor_if_nominal_area": 0.9627520187033366
+    },
+    "U33-500": {
+      "d_c_mm": 26.5,
+      "R20_ohm_per_km": 0.0605,
+      "metal": "Al",
+      "nominal_mm2": 500,
+      "rho_eq_ohm_m": 3.336852454487441e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.051245058728935054,
+      "error_solid_core_pct": -15.297423588537107,
+      "R_if_nominal_area_straight_ohm_per_km": 0.056527999999999995,
+      "error_nominal_area_pct": -6.565289256198348,
+      "equivalent_straight_metal_mm2": 467.1735537190083,
+      "fill_factor_equivalent": 0.8470257641146292,
+      "fill_factor_if_nominal_area": 0.9065429296797173
+    },
+    "U33-630": {
+      "d_c_mm": 29.9,
+      "R20_ohm_per_km": 0.0469,
+      "metal": "Al",
+      "nominal_mm2": 630,
+      "rho_eq_ohm_m": 3.2931013785564884e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.040253288545312294,
+      "error_solid_core_pct": -14.172092653918355,
+      "R_if_nominal_area_straight_ohm_per_km": 0.04486349206349207,
+      "error_nominal_area_pct": -4.342234406200274,
+      "equivalent_straight_metal_mm2": 602.6439232409382,
+      "fill_factor_equivalent": 0.8582790734608166,
+      "fill_factor_if_nominal_area": 0.8972393073714529
+    },
+    "U33-800": {
+      "d_c_mm": 34.2,
+      "R20_ohm_per_km": 0.0367,
+      "metal": "Al",
+      "nominal_mm2": 800,
+      "rho_eq_ohm_m": 3.371383505758823e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.030767451944525355,
+      "error_solid_core_pct": -16.164981077587605,
+      "R_if_nominal_area_straight_ohm_per_km": 0.03533,
+      "error_nominal_area_pct": -3.7329700272479616,
+      "equivalent_straight_metal_mm2": 770.1362397820163,
+      "fill_factor_equivalent": 0.8383501892241241,
+      "fill_factor_if_nominal_area": 0.870859098344901
+    },
+    "U132-800": {
+      "d_c_mm": 34.2,
+      "R20_ohm_per_km": 0.0221,
+      "metal": "Cu",
+      "nominal_mm2": 800,
+      "rho_eq_ohm_m": 2.0301791683179832e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.01876810214320555,
+      "error_solid_core_pct": -15.076460890472632,
+      "R_if_nominal_area_straight_ohm_per_km": 0.02155125,
+      "error_nominal_area_pct": -2.483031674208147,
+      "equivalent_straight_metal_mm2": 780.1357466063348,
+      "fill_factor_equivalent": 0.8492353910952737,
+      "fill_factor_if_nominal_area": 0.870859098344901
+    },
+    "U22-Al95": {
+      "d_c_mm": 11.4,
+      "R20_ohm_per_km": 0.32,
+      "metal": "Al",
+      "nominal_mm2": 95,
+      "rho_eq_ohm_m": 3.2662510500842365e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.27690706750072824,
+      "error_solid_core_pct": -13.466541406022436,
+      "R_if_nominal_area_straight_ohm_per_km": 0.29751578947368423,
+      "error_nominal_area_pct": -7.026315789473692,
+      "equivalent_straight_metal_mm2": 88.32499999999999,
+      "fill_factor_equivalent": 0.8653345859397755,
+      "fill_factor_if_nominal_area": 0.930730661356113
+    },
+    "U22-Al150": {
+      "d_c_mm": 14.2,
+      "R20_ohm_per_km": 0.206,
+      "metal": "Al",
+      "nominal_mm2": 150,
+      "rho_eq_ohm_m": 3.2623743247497054e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.17847075229316925,
+      "error_solid_core_pct": -13.363712479044054,
+      "R_if_nominal_area_straight_ohm_per_km": 0.1884266666666667,
+      "error_nominal_area_pct": -8.530744336569562,
+      "equivalent_straight_metal_mm2": 137.20388349514565,
+      "fill_factor_equivalent": 0.8663628752095596,
+      "fill_factor_if_nominal_area": 0.9471629225861656
+    },
+    "U22-Al240": {
+      "d_c_mm": 18.0,
+      "R20_ohm_per_km": 0.125,
+      "metal": "Al",
+      "nominal_mm2": 240,
+      "rho_eq_ohm_m": 3.180862561759667e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.1110705015197365,
+      "error_solid_core_pct": -11.143598784210795,
+      "R_if_nominal_area_straight_ohm_per_km": 0.11776666666666667,
+      "error_nominal_area_pct": -5.786666666666662,
+      "equivalent_straight_metal_mm2": 226.112,
+      "fill_factor_equivalent": 0.888564012157892,
+      "fill_factor_if_nominal_area": 0.9431404035075277
+    },
+    "U22-Al300": {
+      "d_c_mm": 20.1,
+      "R20_ohm_per_km": 0.1,
+      "metal": "Al",
+      "nominal_mm2": 300,
+      "rho_eq_ohm_m": 3.173087119942032e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.08907413799756103,
+      "error_solid_core_pct": -10.925862002438969,
+      "R_if_nominal_area_straight_ohm_per_km": 0.09421333333333334,
+      "error_nominal_area_pct": -5.786666666666651,
+      "equivalent_straight_metal_mm2": 282.64000000000004,
+      "fill_factor_equivalent": 0.8907413799756103,
+      "fill_factor_if_nominal_area": 0.9454515071917742
+    },
+    "U22-Al400": {
+      "d_c_mm": 23.0,
+      "R20_ohm_per_km": 0.0778,
+      "metal": "Al",
+      "nominal_mm2": 400,
+      "rho_eq_ohm_m": 3.232400389241806e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.06802805764157777,
+      "error_solid_core_pct": -12.560337221622397,
+      "R_if_nominal_area_straight_ohm_per_km": 0.07066,
+      "error_nominal_area_pct": -9.177377892030837,
+      "equivalent_straight_metal_mm2": 363.29048843187667,
+      "fill_factor_equivalent": 0.874396627783776,
+      "fill_factor_if_nominal_area": 0.9627520187033366
+    },
+    "U22-Al500": {
+      "d_c_mm": 26.5,
+      "R20_ohm_per_km": 0.0605,
+      "metal": "Al",
+      "nominal_mm2": 500,
+      "rho_eq_ohm_m": 3.336852454487441e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.051245058728935054,
+      "error_solid_core_pct": -15.297423588537107,
+      "R_if_nominal_area_straight_ohm_per_km": 0.056527999999999995,
+      "error_nominal_area_pct": -6.565289256198348,
+      "equivalent_straight_metal_mm2": 467.1735537190083,
+      "fill_factor_equivalent": 0.8470257641146292,
+      "fill_factor_if_nominal_area": 0.9065429296797173
+    },
+    "U22-Al630": {
+      "d_c_mm": 29.9,
+      "R20_ohm_per_km": 0.0469,
+      "metal": "Al",
+      "nominal_mm2": 630,
+      "rho_eq_ohm_m": 3.2931013785564884e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.040253288545312294,
+      "error_solid_core_pct": -14.172092653918355,
+      "R_if_nominal_area_straight_ohm_per_km": 0.04486349206349207,
+      "error_nominal_area_pct": -4.342234406200274,
+      "equivalent_straight_metal_mm2": 602.6439232409382,
+      "fill_factor_equivalent": 0.8582790734608166,
+      "fill_factor_if_nominal_area": 0.8972393073714529
+    },
+    "U22-Al1200": {
+      "d_c_mm": 43.8,
+      "R20_ohm_per_km": 0.0247,
+      "metal": "Al",
+      "nominal_mm2": 1200,
+      "rho_eq_ohm_m": 3.721645953892856e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.018758388321967138,
+      "error_solid_core_pct": -24.05510800823022,
+      "R_if_nominal_area_straight_ohm_per_km": 0.023553333333333336,
+      "error_nominal_area_pct": -4.642375168690949,
+      "equivalent_straight_metal_mm2": 1144.2914979757086,
+      "fill_factor_equivalent": 0.7594489199176979,
+      "fill_factor_if_nominal_area": 0.7964218081786217
+    },
+    "U36-Al400": {
+      "d_c_mm": 23.4,
+      "R20_ohm_per_km": 0.0778,
+      "metal": "Al",
+      "nominal_mm2": 400,
+      "rho_eq_ohm_m": 3.3458093707622747e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.06572219024836481,
+      "error_solid_core_pct": -15.524177058657052,
+      "R_if_nominal_area_straight_ohm_per_km": 0.07066,
+      "error_nominal_area_pct": -9.177377892030837,
+      "equivalent_straight_metal_mm2": 363.29048843187667,
+      "fill_factor_equivalent": 0.8447582294134296,
+      "fill_factor_if_nominal_area": 0.9301187411316842
+    },
+    "U11-Al240": {
+      "d_c_mm": 18.0,
+      "R20_ohm_per_km": 0.125,
+      "metal": "Al",
+      "nominal_mm2": 240,
+      "rho_eq_ohm_m": 3.180862561759667e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.1110705015197365,
+      "error_solid_core_pct": -11.143598784210795,
+      "R_if_nominal_area_straight_ohm_per_km": 0.11776666666666667,
+      "error_nominal_area_pct": -5.786666666666662,
+      "equivalent_straight_metal_mm2": 226.112,
+      "fill_factor_equivalent": 0.888564012157892,
+      "fill_factor_if_nominal_area": 0.9431404035075277
+    },
+    "U155-Cu1600": {
+      "d_c_mm": 49.6,
+      "R20_ohm_per_km": 0.0113,
+      "metal": "Cu",
+      "nominal_mm2": 1600,
+      "rho_eq_ohm_m": 2.1833918146001695e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.00892296557572635,
+      "error_solid_core_pct": -21.03570286967833,
+      "R_if_nominal_area_straight_ohm_per_km": 0.010775625,
+      "error_nominal_area_pct": -4.640486725663717,
+      "equivalent_straight_metal_mm2": 1525.7522123893805,
+      "fill_factor_equivalent": 0.7896429713032167,
+      "fill_factor_if_nominal_area": 0.8280694229547102
+    },
+    "U230-Cu1200": {
+      "d_c_mm": 41.6,
+      "R20_ohm_per_km": 0.0151,
+      "metal": "Cu",
+      "nominal_mm2": 1200,
+      "rho_eq_ohm_m": 2.0523597549301236e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.012684866743007428,
+      "error_solid_core_pct": -15.994259980083259,
+      "R_if_nominal_area_straight_ohm_per_km": 0.014367500000000002,
+      "error_nominal_area_pct": -4.850993377483448,
+      "equivalent_straight_metal_mm2": 1141.7880794701987,
+      "fill_factor_equivalent": 0.8400574001991675,
+      "fill_factor_if_nominal_area": 0.8828861488085908
+    },
+    "U345-Cu1600": {
+      "d_c_mm": 49.6,
+      "R20_ohm_per_km": 0.0113,
+      "metal": "Cu",
+      "nominal_mm2": 1600,
+      "rho_eq_ohm_m": 2.1833918146001695e-08,
+      "R_if_solid_core_with_metal_rho_ohm_per_km": 0.00892296557572635,
+      "error_solid_core_pct": -21.03570286967833,
+      "R_if_nominal_area_straight_ohm_per_km": 0.010775625,
+      "error_nominal_area_pct": -4.640486725663717,
+      "equivalent_straight_metal_mm2": 1525.7522123893805,
+      "fill_factor_equivalent": 0.7896429713032167,
+      "fill_factor_if_nominal_area": 0.8280694229547102
+    }
+  },
+  "R20_evidence_ratio_to_cap": {
+    "Kinectrics K-422899 (Cu 300, cap 0.0601)": [
+      0.9184692179700499,
+      0.9217970049916805
+    ],
+    "KEMA 1533-16 (Cu 300, cap 0.06010)": [
+      0.995341098169717,
+      0.9991514143094842
+    ],
+    "DEKRA 2236358.51-CAT (Cu 150 shaped, cap 0.124)": [
+      0.935483870967742,
+      0.9435483870967742
+    ]
+  },
+  "xlpe_eps_r_implied_by_catalogue": {
+    "U33-400": {
+      "t_sc1_mm": 0.85,
+      "r1_mm": 12.350000000000001,
+      "r2_mm": 20.35,
+      "eps_r_implied": 2.396915975163953
+    },
+    "U33-500": {
+      "t_sc1_mm": 0.85,
+      "r1_mm": 14.100000000000001,
+      "r2_mm": 22.1,
+      "eps_r_implied": 2.3991844381786405
+    },
+    "U33-630": {
+      "t_sc1_mm": 1.05,
+      "r1_mm": 16.0,
+      "r2_mm": 24.0,
+      "eps_r_implied": 2.397843237672602
+    },
+    "U33-800": {
+      "t_sc1_mm": 1.05,
+      "r1_mm": 18.15,
+      "r2_mm": 26.15,
+      "eps_r_implied": 2.4024692732887463
+    }
+  },
+  "xlpe_rho_implied_by_catalogue_ohm_m": 114485665723368.61,
+  "screen_lay_implied_by_catalogue": {
+    "48x1.35 (68.7 mm2), Olex R_s 0.263": {
+      "area_mm2": 68.70663133400879,
+      "straight_R_ohm_per_km": 0.2509364768036001,
+      "lay_factor_implied": 1.048074011997234,
+      "lay_ratio_implied": 10.012023620153052
+    },
+    "43x1.35 (61.5 mm2), Olex R_s 0.293": {
+      "area_mm2": 61.549690570049535,
+      "straight_R_ohm_per_km": 0.2801151368970419,
+      "lay_factor_implied": 1.045998453513399,
+      "lay_ratio_implied": 10.240604808324786
+    }
+  },
+  "screen_R_with_candidate_lay_ratio_20": 0.25401341704048475,
+  "sensitivity_U33_500": {
+    "C_nominal_uF_per_km": 0.2971009600833888,
+    "dC_pct_t_ins_minus5": 4.236548557696951,
+    "dC_pct_t_ins_plus5": -3.83825074709897,
+    "dC_pct_t_ins_plus10_starter": -7.332387638202265,
+    "dC_pct_eps_2.25": -6.25,
+    "dC_pct_eps_2.50": 4.166666666666674,
+    "dC_pct_d_c_plus_0.4mm": 1.1423272334124546,
+    "dC_pct_t_sc1_plus10": 0.48554170718189127,
+    "semicon_lossless_series_share_eps1000": 0.0003320526355990903,
+    "semicon_lossy_R_over_Xc_650Hz_rho1000": 1.2007397460855529e-05,
+    "OD_nominal_mm": 54.6,
+    "X50_screening_ohm_per_km": 0.10468021309528275,
+    "dX_pct_jacket_plus35": 2.2282125758103843,
+    "solenoid_over_coaxial_inductance_lay10": 0.05839052926817435,
+    "solenoid_over_coaxial_inductance_lay16": 0.0228088004953806,
+    "solenoid_over_coaxial_inductance_lay20": 0.014597632317043587
+  },
+  "earthwire_7x3.15_R20_ohm_per_km_IEC_rho": 3.5451514394598864,
+  "earthwire_7x3.15_R20_ohm_per_km_candidate_rho_1.8e-7": 3.3310396152987396,
+  "earthwire_7x3.15_R20_interval_ohm_per_km": [
+    3.3017212170518766,
+    4.014852291542426
+  ],
+  "eskom_10-S1A-7/3.51_implied_rho_incl_lay_ohm_m": 1.9371720193571547e-07,
+  "ACSR_R20_interval_factor": [
+    0.9676987511456124,
+    1.0204081632653061
+  ],
+  "Cardinal_345kV_avg_surface_gradient_kV_per_cm_at_Um": 20.449650324032053,
+  "Cu_adiabatic_K_licensed_A_s05_per_mm2": 226.35493854625858,
+  "Cu_adiabatic_K_over_IEC60949_226": 1.0015705245409672,
+  "Cu_adiabatic_K_IEC60865_data_A_s05_per_mm2": 223.24874019801322,
+  "Cu_screen_50mm2_adiabatic_1s_kA": 7.439930410497826,
+  "Cu_screen_50mm2_adiabatic_1s_kA_IEC60865_data": 7.319808097042042,
+  "dC_pct_U33_500_eps_2.10_vs_2.40": -12.5,
+  "resonance_frequency_factor_eps_2.10_vs_2.40": 1.0690449676496976,
+  "U132_stress_kV_per_mm_sc1.0": [
+    6.647627091712613,
+    3.528505875659774
+  ],
+  "U132_C_uF_per_km_eps2.4_sc1.0": 0.2108005599011114,
+  "U132_stress_kV_per_mm_sc1.2": [
+    6.628780846234291,
+    3.536638177436955
+  ],
+  "U132_C_uF_per_km_eps2.4_sc1.2": 0.2125256175980102,
+  "Cu_screen_mm2_for_1s_fault_kA": {
+    "21.5": 144.49059879419875,
+    "25": 168.0123241793009,
+    "31.5": 211.69552846591912
+  },
+  "U132_C_over_declared_at_box_corners": {
+    "eps2.1_t15.2": 0.9039297685702116,
+    "eps2.1_t16.8": 0.8393203669724197,
+    "eps2.5_t15.2": 1.0761068673454899,
+    "eps2.5_t16.8": 0.9991909130624046
+  },
+  "full_uncertainty_ieee30": {
+    "core_resistivity_ohm_m": {
+      "400": [
+        2.9748054996107106e-08,
+        3.3458093707622747e-08
+      ],
+      "500": [
+        3.072110441569429e-08,
+        3.438347888346967e-08
+      ],
+      "630": [
+        3.026282929974086e-08,
+        3.381800477219412e-08
+      ],
+      "800": [
+        3.104979904486327e-08,
+        3.450707463624903e-08
+      ]
+    },
+    "cable_diameter_mm": {
+      "400": [
+        49.723,
+        54.477000000000004
+      ],
+      "500": [
+        53.423,
+        58.237
+      ],
+      "630": [
+        57.383,
+        62.357
+      ],
+      "800": [
+        62.18300000000001,
+        67.337
+      ]
+    },
+    "acsr": {
+      "Bear": {
+        "area_m2": 0.000326122842882931,
+        "mass_kg_per_m": 1.213,
+        "H0_N": 22303.999593750003,
+        "H0_interval_N": [
+          21641.50455631188,
+          22750.079585625
+        ],
+        "temperature_end_sag_m": [
+          5.102178412690998,
+          7.885325205801323
+        ],
+        "joint_sag_interval_m": [
+          5.012048125338435,
+          8.101221839958246
+        ],
+        "area_interval_m2": [
+          0.0003190327925170528,
+          0.0003332932669698603
+        ]
+      },
+      "Goat": {
+        "area_m2": 0.0003999810578502963,
+        "mass_kg_per_m": 1.489,
+        "H0_N": 27378.94096875,
+        "H0_interval_N": [
+          26565.705098391092,
+          27926.519788124995
+        ],
+        "temperature_end_sag_m": [
+          5.102438210299297,
+          7.885004895869169
+        ],
+        "joint_sag_interval_m": [
+          5.012176132429916,
+          8.101078899666458
+        ],
+        "area_interval_m2": [
+          0.0003910994866276931,
+          0.0004089670749334994
+        ]
+      },
+      "Lion": {
+        "area_m2": 0.00029386363433899317,
+        "mass_kg_per_m": 1.095,
+        "H0_N": 20134.278281249997,
+        "H0_interval_N": [
+          19536.2304115099,
+          20536.963846874998
+        ],
+        "temperature_end_sag_m": [
+          5.102723865721504,
+          7.884652544325734
+        ],
+        "joint_sag_interval_m": [
+          5.01253796269191,
+          8.100674694931556
+        ],
+        "area_interval_m2": [
+          0.00028738755304376834,
+          0.00030041485813226223
+        ]
+      },
+      "Panther": {
+        "area_m2": 0.0002615375884113503,
+        "mass_kg_per_m": 0.974,
+        "H0_N": 17909.394562499998,
+        "H0_interval_N": [
+          17377.43234777228,
+          18267.58245375
+        ],
+        "temperature_end_sag_m": [
+          5.102555486731607,
+          7.884860257608514
+        ],
+        "joint_sag_interval_m": [
+          5.0122422280886205,
+          8.101005081498872
+        ],
+        "area_interval_m2": [
+          0.0002556820524041406,
+          0.00026746302485510225
+        ]
+      }
+    },
+    "earthwire": {
+      "area_m2": 5.4551792934178265e-05,
+      "mass_kg_per_m": 0.4284611611024378,
+      "H0_N": 8753.684678177544,
+      "H0_interval_N": [
+        8366.583737185347,
+        9094.88610027056
+      ],
+      "temperature_end_sag_m": [
+        4.791815099838908,
+        6.006310758362588
+      ],
+      "joint_sag_interval_m": [
+        4.791100773247658,
+        6.060042189899024
+      ],
+      "mass_interval_kg_per_m": [
+        0.41360911175451925,
+        0.4451617349584078
+      ],
+      "R20_interval_ohm_per_km": [
+        3.1993485133005115,
+        4.145408102271561
+      ]
+    },
+    "screen_tube_mm": {
+      "400": [
+        0.4854398839639238,
+        0.4641198139945608,
+        0.5406801782846706
+      ],
+      "500": [
+        0.4492397947014375,
+        0.43058840450284563,
+        0.4994429687454094
+      ],
+      "630": [
+        0.41554555899219636,
+        0.3989247720269695,
+        0.46155982221311476
+      ],
+      "800": [
+        0.38299741095401174,
+        0.36854125252983394,
+        0.42466676555460836
+      ]
+    },
+    "jacket_model_mm": {
+      "400": [
+        3.7145601160360764,
+        3.64581982171533,
+        4.749380186005439
+      ],
+      "500": [
+        3.850760205298563,
+        3.787057031254591,
+        4.912911595497154
+      ],
+      "630": [
+        3.984454441007804,
+        3.924940177786885,
+        5.084575227973031
+      ],
+      "800": [
+        4.267002589045989,
+        4.2118332344453915,
+        5.454958747470166
+      ]
+    },
+    "corpus_interval_derivations": {
+      "span_m": [
+        300,
+        300
+      ],
+      "phase_reference_sag_m": [
+        6.0,
+        6.06
+      ],
+      "earthwire_reference_sag_m": [
+        5.4,
+        5.454000000000001
+      ],
+      "ACSR_modulus_GPa": [
+        80.41453,
+        82.0
+      ],
+      "ACSR_expansion_per_K": [
+        1.78e-05,
+        1.92e-05
+      ],
+      "earthwire_modulus_GPa": [
+        190.0,
+        196.133
+      ],
+      "earthwire_expansion_per_K": [
+        1.15e-05,
+        1.15e-05
+      ],
+      "ambient_C": [
+        -5,
+        45
+      ]
+    }
+  }
+}
