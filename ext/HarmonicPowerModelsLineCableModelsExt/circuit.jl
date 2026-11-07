@@ -83,7 +83,8 @@ Return all sequences at point `p` and frequency `f` \\[Hz\\]. Store the first
 written result under a lock. Compute outside the lock when the key is absent.
 The members `z` and `y` have units \\[Ω/m\\] and \\[S/m\\].
 """
-function (c::Circuit{B, F, P})(p::P, f::Float64) where {B <: Function, F <: AbstractFormulation, P <: NamedTuple}
+function (c::Circuit{B, F, P})(
+        p::P, f::Float64) where {B <: Function, F <: AbstractFormulation, P <: NamedTuple}
     @lock c.lock begin
         haskey(c.sequences, (p, f)) && return c.sequences[(p, f)]
     end

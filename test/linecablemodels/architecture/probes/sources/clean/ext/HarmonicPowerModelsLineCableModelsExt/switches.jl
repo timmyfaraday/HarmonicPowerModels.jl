@@ -3,10 +3,9 @@ generated(xs) = (x for x in xs if typeof(x) <: Real)
 filtered(xs) = filter(x -> x isa Int, xs)
 found(xs) = findfirst(x -> x isa Int, xs)
 located(xs) = Iterators.filter(x -> x isa Int, xs)
-blocked(xs) =
-    filter(xs) do x
-        x isa Int
-    end
+blocked(xs) = filter(xs) do x
+    x isa Int
+end
 function guarded(f)
     try
         f()

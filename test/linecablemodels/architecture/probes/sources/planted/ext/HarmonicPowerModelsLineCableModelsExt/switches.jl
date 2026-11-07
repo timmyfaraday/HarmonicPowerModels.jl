@@ -8,7 +8,6 @@ typed(x) = x isa Int || isa(x, Float64) || Core.isa(x, Char)
 subtyped(T) = T <: Real
 spelled(x) = typeof(x) <: Real || typeof(x) == Int || Int !== typeof(x)
 tested(xs) = any(x -> x isa Int, xs)
-mapped(xs) =
-    map(xs) do x
-        x isa Int
-    end
+mapped(xs) = map(xs) do x
+    x isa Int
+end

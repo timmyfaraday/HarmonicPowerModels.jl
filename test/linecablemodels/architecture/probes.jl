@@ -91,19 +91,25 @@ end
     planted_methods = Base.invokelatest(Guards.package_methods, planted)
     @test Base.invokelatest(Guards.boxed_captures, planted_methods, planted) ==
           Dict{String, Int}(
-        "ValuesProbePlanted | boxed | ext/HarmonicPowerModelsLineCableModelsExt/ValuesProbePlanted.jl" => 1,
-        "ValuesProbePlanted | boxed_keyword | ext/HarmonicPowerModelsLineCableModelsExt/ValuesProbePlanted.jl" => 1)
+        "ValuesProbePlanted | boxed | ext/HarmonicPowerModelsLineCableModelsExt/ValuesProbePlanted.jl" =>
+            1,
+        "ValuesProbePlanted | boxed_keyword | ext/HarmonicPowerModelsLineCableModelsExt/ValuesProbePlanted.jl" =>
+            1)
     @test Base.invokelatest(Guards.typed_values, planted) == Dict{String, Int}(
         "ValuesProbePlanted | Blend | x" => 1,
         "ValuesProbePlanted | Either | x" => 1,
-        "ValuesProbePlanted | Loose | constructor | ext/HarmonicPowerModelsLineCableModelsExt/ValuesProbePlanted.jl" => 1,
+        "ValuesProbePlanted | Loose | constructor | ext/HarmonicPowerModelsLineCableModelsExt/ValuesProbePlanted.jl" =>
+            1,
         "ValuesProbePlanted | Loose | x" => 1,
         "ValuesProbePlanted | Nested | x" => 1,
         "ValuesProbePlanted | Nested | y" => 1,
-        "ValuesProbePlanted | Open | constructor | ext/HarmonicPowerModelsLineCableModelsExt/ValuesProbePlanted.jl" => 1,
+        "ValuesProbePlanted | Open | constructor | ext/HarmonicPowerModelsLineCableModelsExt/ValuesProbePlanted.jl" =>
+            1,
         "ValuesProbePlanted | Open | x" => 1,
-        "ValuesProbePlanted | Plain | constructor | ext/HarmonicPowerModelsLineCableModelsExt/ValuesProbePlanted.jl" => 3,
-        "ValuesProbePlanted | Wide | constructor | ext/HarmonicPowerModelsLineCableModelsExt/ValuesProbePlanted.jl" => 1,
+        "ValuesProbePlanted | Plain | constructor | ext/HarmonicPowerModelsLineCableModelsExt/ValuesProbePlanted.jl" =>
+            3,
+        "ValuesProbePlanted | Wide | constructor | ext/HarmonicPowerModelsLineCableModelsExt/ValuesProbePlanted.jl" =>
+            1,
         "ValuesProbePlanted | Wide | x" => 1)
 
     clean, _ = probe("values/clean", "ValuesProbeClean")

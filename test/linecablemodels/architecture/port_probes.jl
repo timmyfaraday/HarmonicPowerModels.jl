@@ -9,9 +9,12 @@
         names = Base.invokelatest(Guards.shared_names, tree)
         if mode == "planted"
             @test ownership == Dict(
-                "StructureProbePlanted | branch_data | ext/HarmonicPowerModelsLineCableModelsExt/StructureProbePlanted.jl" => 2,
-                "StructureProbePlanted | compute | ext/HarmonicPowerModelsLineCableModelsExt/StructureProbePlanted.jl" => 1,
-                "StructureProbePlanted | length | ext/HarmonicPowerModelsLineCableModelsExt/StructureProbePlanted.jl" => 1)
+                "StructureProbePlanted | branch_data | ext/HarmonicPowerModelsLineCableModelsExt/StructureProbePlanted.jl" =>
+                    2,
+                "StructureProbePlanted | compute | ext/HarmonicPowerModelsLineCableModelsExt/StructureProbePlanted.jl" =>
+                    1,
+                "StructureProbePlanted | length | ext/HarmonicPowerModelsLineCableModelsExt/StructureProbePlanted.jl" =>
+                    1)
             @test placement ==
                   Dict("test/linecablemodels/misplaced.jl | StructureProbePlanted" => 1)
             @test names == Dict("StructureProbePlanted | length -> Base" => 1,
@@ -96,7 +99,8 @@ end
         found = Guards.clones(files, methods, subject)
         if mode == "planted"
             @test found ==
-                  Dict("ext/HarmonicPowerModelsLineCableModelsExt/clone.jl | copied ~ branch_data" => 1)
+                  Dict("ext/HarmonicPowerModelsLineCableModelsExt/clone.jl | copied ~ branch_data" =>
+                1)
         else
             @test found == Dict{String, Int}()
         end

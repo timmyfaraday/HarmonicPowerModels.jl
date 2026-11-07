@@ -7,10 +7,9 @@ positional(x::Nothing = nothing) = x
 absent(x::Missing; y::Union{Missing, Int} = missing) = x
 anonymous = (x::Nothing) -> x
 single = x::Nothing -> x
-mapped(values) =
-    map(values) do x::Nothing
-        x
-    end
+mapped(values) = map(values) do x::Nothing
+    x
+end
 struct Holder{T <: Union{Nothing, Int}}
     value::Union{Int, Nothing}
 end

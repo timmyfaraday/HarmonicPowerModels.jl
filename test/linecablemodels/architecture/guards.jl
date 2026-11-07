@@ -19,7 +19,9 @@ using JuliaSyntax: JuliaSyntax, SyntaxNode, @K_str, kind, children, numchildren,
 # Each reserving name maps to its home and to the definition names it reserves outside that
 # home. The physical constants and the matrix reductions enter it with their definitions.
 const VOCABULARY = Dict{Symbol, Pair{String, Regex}}(
-    :ε₀ => "LCM/constants" => r"(?i)^_*(\w+_)?(vacuum_permittivity|eps(ilon)?_?[0₀]|[εϵ]_?[0₀])$",
+    :ε₀ =>
+        "LCM/constants" =>
+            r"(?i)^_*(\w+_)?(vacuum_permittivity|eps(ilon)?_?[0₀]|[εϵ]_?[0₀])$",
     :μ₀ => "LCM/constants" => r"(?i)^_*(\w+_)?(vacuum_permeability|mu_?[0₀]|[μµ]_?[0₀])$",
     :transposition! => "LCM/reductions" => r"transpos",
     :eliminate! => "LCM/reductions" => r"kron")
@@ -264,7 +266,7 @@ end
 
 function lowered_code(m::Method)
     isdefined(m, :source) && m.source !== nothing &&
-        !isdefined(m, :generator) ? Base.uncompressed_ir(m).code : nothing
+    !isdefined(m, :generator) ? Base.uncompressed_ir(m).code : nothing
 end
 
 # The file that defines an extension module: `ext/<name>.jl` or `ext/<name>/<name>.jl`.
@@ -289,7 +291,8 @@ function explicit_imports(tree::PackageTree, extensions)
             "no_implicit_imports" => check_no_implicit_imports(
                 M, file; skip = (
                     Base, Core), throw = false),
-            "no_stale_explicit_imports" => check_no_stale_explicit_imports(M, file; throw = false),
+            "no_stale_explicit_imports" =>
+                check_no_stale_explicit_imports(M, file; throw = false),
             "all_explicit_imports_via_owners" => check_all_explicit_imports_via_owners(
                 M, file;
                 allow_internal_imports = false, throw = false),
@@ -302,7 +305,8 @@ function explicit_imports(tree::PackageTree, extensions)
             "all_qualified_accesses_are_public" => check_all_qualified_accesses_are_public(
                 M, file;
                 allow_internal_accesses = false, throw = false),
-            "no_self_qualified_accesses" => check_no_self_qualified_accesses(M, file; throw = false))
+            "no_self_qualified_accesses" =>
+                check_no_self_qualified_accesses(M, file; throw = false))
         for (check, exception) in checks
             exception === nothing && continue
             # A check exception stores its module, then its rows.
@@ -1416,8 +1420,7 @@ function chunks(name)
     text = replace(string(name), r"^[_@]+" => "", r"!$" => "")
     found = String[]
     for part in split(text, '_'; keepempty = false)
-        for piece in
-            eachmatch(r"[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z0-9]+|[A-Z]+[0-9]*|[^\W_]+", part)
+        for piece in eachmatch(r"[A-Z]+(?=[A-Z][a-z])|[A-Z]?[a-z0-9]+|[A-Z]+[0-9]*|[^\W_]+", part)
             push!(found, length(piece.match) == 1 ? piece.match : lowercase(piece.match))
         end
     end
