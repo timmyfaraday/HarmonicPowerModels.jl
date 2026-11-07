@@ -138,6 +138,8 @@ struct ConstraintEvaluator{M<:AbstractNetworkModel}
     cons::Vector{ShhcConstraint}               # nominal records (kind, key, harmonics, limit, λ)
     brinfo::Dict{Int,Tuple{Int,Int,ComplexF64}}   # branch => (from, to, tap) for :rmsi
     deps::Vector{Vector{Int}}                  # coordinate => uncertain branches it changes
+    recomb::Bool                               # false: worst-case alignment (no recombination)
+    W::Dict{Int,Vector{Float64}}               # h => allocation weight w_d of each unit row
 end
 
 function ConstraintEvaluator(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox)
@@ -147,24 +149,29 @@ function ConstraintEvaluator(hdata::Dict, model::AbstractNetworkModel, box::Para
     pos  = Dict(i => j for (j, i) in enumerate(nc.keep))
     wts  = fairness_weights(hdata, pce["harmonic_units"])
     E    = Dict{Int,Matrix{ComplexF64}}(); upos = Dict{Int,Vector{Int}}()
+    recomb = get(pce, "recombination", true)
+    hunits = Set(pce["harmonic_units"]); W = Dict{Int,Vector{Float64}}()
     for h in m0.harm_nw_ints
         haskey(pce["cos_phi"], h) || continue
-        rows = Vector{ComplexF64}[]; ps = Int[]
+        rows = Vector{ComplexF64}[]; ps = Int[]; ws = Float64[]
         for (d_str, load) in hdata["nw"]["$h"]["load"]
             d = parse(Int, d_str); bd = nc.bus_idx[load["load_bus"]]
             haskey(pos, bd) || continue                      # unit at an ideal ground
             w = get(wts, d, 0.0)
+            # without recombination only the harmonic units count (normal loads inject nothing)
+            recomb || (d in hunits && w != 0.0) || continue
             push!(rows, w .* (pce["cos_phi"][h][d] .+ im .* pce["sin_phi"][h][d])); push!(ps, pos[bd])
+            push!(ws, w)
         end
         E[h] = isempty(rows) ? zeros(ComplexF64, 0, length(m0.K)) : permutedims(reduce(hcat, rows))
-        upos[h] = ps
+        upos[h] = ps; W[h] = ws
     end
     fund   = hdata["nw"]["1"]["branch"]
     brinfo = Dict(parse(Int, k) => (nc.bus_idx[b["f_bus"]], nc.bus_idx[b["t_bus"]], _tap(b))
                   for (k, b) in fund)
     deps   = _dependencies(nc, box, minimum(m0.harm_nw_ints))
     return ConstraintEvaluator(nc, box, m0.pb, collect(m0.K), collect(Float64, m0.psi_norms), E,
-                               upos, pos, shhc_constraints(hdata, m0), brinfo, deps)
+                               upos, pos, shhc_constraints(hdata, m0), brinfo, deps, recomb, W)
 end
 
 # PCE coefficients (re, im) of the voltage response at matrix index n, from the factorised
@@ -176,6 +183,19 @@ function _response(ce::ConstraintEvaluator, Ft, n::Int, h::Int)
     x = Ft \ e
     C = isempty(ce.upos[h]) ? zeros(ComplexF64, nk) : vec(transpose(x[ce.upos[h]]) * ce.E[h])
     return real.(C), imag.(C)
+end
+
+# row n of the inverse of the reduced Y (zero for an ideal ground or for earth, n = 0)
+function _zrow(ce::ConstraintEvaluator, Ft, n::Int)
+    haskey(ce.pos, n) || return zeros(ComplexF64, length(ce.pos))
+    e = zeros(ComplexF64, length(ce.pos)); e[ce.pos[n]] = 1.0
+    return Ft \ e
+end
+
+# worst-case (no recombination) coefficient: (Σ_d w_d |u_d|)² as the mean, zero variance
+function _worst_case_coef(ce::ConstraintEvaluator, u::AbstractVector, h::Int)
+    c = zeros(length(ce.K)); c[1] = sum(ce.W[h] .* abs.(u); init = 0.0)^2
+    return c
 end
 
 # series admittance of branch b at (p, h): from the model if uncertain, else from the data
@@ -203,6 +223,17 @@ function fast_violation(ce::ConstraintEvaluator, j::Int, ξ, g)
     for h in keys(c.coef)
         Yr = reduced_admittance(ce.nc, p, h; sequence = harmonic_sequence(h))[1]
         Ft = lu(transpose(Yr))
+        if !ce.recomb
+            if c.kind === :rmsi
+                f, t, tc, ys = _branch_terminals(ce, c.key, p, h)
+                u = ys .* ((1.0 / tc) .* _zrow(ce, Ft, f) .- _zrow(ce, Ft, t))
+            else
+                bus = c.kind === :ihd ? c.key[2] : c.key
+                u = _zrow(ce, Ft, ce.nc.bus_idx[bus])
+            end
+            coef[h] = _worst_case_coef(ce, u[ce.upos[h]], h)
+            continue
+        end
         if c.kind === :rmsi
             f, t, tc, ys = _branch_terminals(ce, c.key, p, h); gy, by = real(ys), imag(ys)
             arf, aif = _response(ce, Ft, f, h); art, ait = _response(ce, Ft, t, h)
@@ -303,6 +334,23 @@ function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVe
         row(n) = haskey(ce.pos, n) ? (e = zeros(ComplexF64, length(ce.pos)); e[ce.pos[n]] = 1.0;
                                        transpose(F) \ e) : zeros(ComplexF64, length(ce.pos))
         resp(rv) = isempty(ce.upos[h]) ? zeros(ComplexF64, nk) : vec(transpose(rv[ce.upos[h]]) * ce.E[h])
+        if !ce.recomb
+            # worst-case alignment: u_d per unit, the sum of magnitudes S_h, D_d = t⁻¹z_f − z_t
+            if c.kind === :rmsi
+                f, t, tc, ys = _branch_terminals(ce, c.key, p, h, bd)
+                Dv = (1.0 / tc) .* row(f) .- row(t)
+                r  = ys .* Dv
+                Du = Dv[ce.upos[h]]
+            else
+                bus = c.kind === :ihd ? c.key[2] : c.key
+                r   = row(nc.bus_idx[bus]); Du = nothing
+            end
+            u  = r[ce.upos[h]]
+            Sh = sum(ce.W[h] .* abs.(u); init = 0.0)
+            fw[h] = (F = F, r = r, C = nothing, D = Du, ys = nothing, bd = bd, u = u, Sh = Sh)
+            coef[h] = _worst_case_coef(ce, u, h)
+            continue
+        end
         if c.kind === :rmsi
             f, t, tc, ys = _branch_terminals(ce, c.key, p, h, bd)
             ct = 1.0 / tc
@@ -338,9 +386,16 @@ function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVe
                 β[k+1] = c.λ * ce.psi_norms[k+1] * S[k] * g[h] / sd
             end
         end
-        C  = fw[h].C
-        G  = _galerkin_grad(ce.pb, β, real.(C)) .+ im .* _galerkin_grad(ce.pb, β, imag.(C))
-        q  = ce.E[h] * conj.(G)
+        if ce.recomb
+            C  = fw[h].C
+            G  = _galerkin_grad(ce.pb, β, real.(C)) .+ im .* _galerkin_grad(ce.pb, β, imag.(C))
+            q  = ce.E[h] * conj.(G)
+        else
+            # ∂(g_h S_h²)/∂u_d contracted as Re(c_d du_d), c_d = 2 g_h S_h w_d conj(u_d)/|u_d|
+            u  = fw[h].u
+            q  = [abs(u[a]) > 0.0 ? 2 * g[h] * fw[h].Sh * ce.W[h][a] * conj(u[a]) / abs(u[a]) :
+                  zero(ComplexF64) for a in eachindex(u)]
+        end
         s  = zeros(ComplexF64, length(ce.pos))
         for (a, pa) in enumerate(ce.upos[h]); s[pa] += q[a]; end
         v  = fw[h].F \ s
@@ -366,7 +421,8 @@ function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVe
             grad[i] -= real(acc)
             # a branch-current constraint on an uncertain branch: its own y_s moves too
             if c.kind === :rmsi && b == c.key
-                grad[i] += real(dys * sum(conj.(G) .* fw[h].D))
+                grad[i] += ce.recomb ? real(dys * sum(conj.(G) .* fw[h].D)) :
+                                       real(dys * sum(q .* fw[h].D))
             end
         end
     end

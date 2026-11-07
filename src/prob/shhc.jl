@@ -410,6 +410,14 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
 
     non_ref_pos = Dict(id => idx for (idx, id) in enumerate(non_ref_ids))
 
+    # ── No recombination: worst-case alignment of the unit contributions ─────
+    if !get(pce, "recombination", true)
+        alpha_V, alpha_I = _worst_case_moments(Z_harm, networks, harm_nw_strs, harm_nw_ints,
+            bus_idx, ref_bus_ids, non_ref_pos, wts, Set(pce["harmonic_units"]), length(K))
+        return (; pb, K, psi_norms, alpha_re, alpha_im, alpha_V, alpha_I, Nn, bus_idx,
+                  ref_bus_ids, harm_nw_strs, harm_nw_ints, wts, blocked)
+    end
+
     for (nw_str, nw_int) in zip(harm_nw_strs, harm_nw_ints)
         haskey(Z_harm, nw_int) || continue
         haskey(cos_phi, nw_int) || continue
@@ -489,6 +497,54 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
 
     return (; pb, K, psi_norms, alpha_re, alpha_im, alpha_V, alpha_I, Nn, bus_idx,
               ref_bus_ids, harm_nw_strs, harm_nw_ints, wts, blocked)
+end
+
+# Moments without recombination: every unit contribution aligns in the worst case, so a
+# squared quantity per unit g_h is the square of the arithmetic sum of the magnitudes,
+#   |V_{n,h}|² / g_h = (Σ_d w_d |Z_{n,d}|)²,  |I_{b,h}|² / g_h = (Σ_d w_d |y_s (Z_{f,d}/t − Z_{t,d})|)²,
+# stored as the mean (k = 0) with zero variance. Normal loads inject nothing.
+function _worst_case_moments(Z_harm, networks, harm_nw_strs, harm_nw_ints, bus_idx,
+                             ref_bus_ids, non_ref_pos, wts, hunits, nK)
+    alpha_V = Dict{Int, Matrix{Float64}}()
+    alpha_I = Dict{Int, Dict{Int, Vector{Float64}}}()
+    Nn = length(bus_idx)
+    for (nw_str, nw_int) in zip(harm_nw_strs, harm_nw_ints)
+        haskey(Z_harm, nw_int) || continue
+        Zr, nw_data = Z_harm[nw_int], networks[nw_str]
+        units = Tuple{Int,Float64}[]
+        for (d_str, load) in nw_data["load"]
+            d = parse(Int, d_str); d in hunits || continue
+            bd = bus_idx[load["load_bus"]]; bd in ref_bus_ids && continue
+            w  = get(wts, d, 0.0); w == 0.0 || push!(units, (non_ref_pos[bd], w))
+        end
+        zrow(n) = n in ref_bus_ids ? nothing : non_ref_pos[n]
+        A = zeros(Nn, nK)
+        for n in 1:Nn
+            pn = zrow(n); pn === nothing && continue
+            A[n, 1] = sum((w * abs(Zr[pn, pd]) for (pd, w) in units); init = 0.0)^2
+        end
+        alpha_V[nw_int] = A
+        AI = Dict{Int, Vector{Float64}}()
+        for (b_str, br) in nw_data["branch"]
+            r, x = br["br_r"], br["br_x"]
+            (abs(r) + abs(x) > 0.0) || continue
+            ys = 1.0 / (r + im * x)
+            tm = get(br, "tap", 1.0); tm == 0.0 && (tm = 1.0)
+            ct = 1.0 / (tm * cis(get(br, "shift", 0.0)))
+            pf = get(br, "earth_fr", false) ? nothing : zrow(bus_idx[br["f_bus"]])
+            pt = get(br, "earth_to", false) ? nothing : zrow(bus_idx[br["t_bus"]])
+            a  = zero(Float64)
+            for (pd, w) in units
+                zf = pf === nothing ? zero(ComplexF64) : Zr[pf, pd]
+                zt = pt === nothing ? zero(ComplexF64) : Zr[pt, pd]
+                a += w * abs(ys * (ct * zf - zt))
+            end
+            v = zeros(nK); v[1] = a^2
+            AI[parse(Int, b_str)] = v
+        end
+        alpha_I[nw_int] = AI
+    end
+    return alpha_V, alpha_I
 end
 
 """

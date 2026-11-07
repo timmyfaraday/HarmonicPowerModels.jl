@@ -278,6 +278,7 @@ harmonic units are "normal" loads: they receive zero trig PCE coefficients
 | `"harmonics"` | Dict{Int, T} | Maps harmonic order h to its angle range in **radians**, where `T` is either a bare `(v_min, v_max)` tuple (shared by all units) or a `Dict{unit_id => (v_min, v_max)}` (per-unit) |
 | `"angle_centre"` | String (optional) | Where each unit's angle support is centred: `"range"` (default) keeps the supplied range as given, so every unit shares one mean angle; `"ref_angle"` re-centres it on each unit's own `load["ref_angle"]` (see below) |
 | `"harmonic_units"` | Vector{Int} (optional) | Load ids designated as harmonic sources; defaults to **all** loads |
+| `"recombination"` | Bool (optional) | `true` (default): stochastic angles and recombination. `false`: no recombination, i.e., the contributions of the units align in the worst case at every bus and branch (the arithmetic sum of their magnitudes), with zero variance; `"harmonics"` may then be omitted |
 | `"type_germs"` | Dict{String, Dict} (optional) | Germs shared by groups of units (see below): name → `Dict("units" => Vector{Int}, "shift" => Dict{Int => (s_min, s_max)})`, shift in **radians** per harmonic |
 
 # Shared type germs
@@ -343,7 +344,16 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
     β̂       = pce_params["beta_hat"]
     δ       = pce_params["delta"]
     ε       = pce_params["epsilon"]
-    h_bounds = pce_params["harmonics"]      # Dict{Int => range} in radians
+    # Without recombination (worst-case alignment of the contributions, see `shhc_moments`)
+    # the angles do not enter: harmonics without an angle range get a zero-width one.
+    recombination = get(pce_params, "recombination", true)
+    h_bounds = Dict{Int,Any}(get(pce_params, "harmonics", Dict{Int,Any}()))
+    if !recombination
+        for nw in keys(hdata["nw"])
+            h = parse(Int, nw)
+            h == 1 || haskey(h_bounds, h) || (h_bounds[h] = (0.0, 0.0))
+        end
+    end
 
     δ != 2 && @warn "update_hdata_with_pce_data!: δ=$δ detected; " *
                     "PCE constraints are validated only for δ=2."
@@ -497,6 +507,7 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
         "alpha_beta"     => (Float64(α̂), Float64(β̂)),
         "angle_ranges"   => angle_ranges,
         "lambdas"        => emp_lambdas,   # per-constraint λ* (or nothing)
+        "recombination"  => recombination, # false: worst-case alignment, no angles
     )
 
     return hdata
