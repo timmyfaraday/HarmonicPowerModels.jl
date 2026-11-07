@@ -1,0 +1,27 @@
+family = "ACSR"
+n_steel = {value = 7, register = "ACSR.Panther.st"}
+n_aluminium = {value = 30, register = "ACSR.Panther.al"}
+R20 = {value = 0.0001363, register = "ACSR.Panther.R20"}
+courses = {value = [12, 18], register = "ACSR.courses"}
+mass_al = {value = 0.586, register = "ACSR.Panther.mass.al"}
+mass_st = {value = 0.388, register = "ACSR.Panther.mass.st"}
+
+[d_steel]
+nominal = {value = 0.003, register = "ACSR.Panther.st"}
+lower = {value = 0.0029500000000000004, register = "ACSR.Panther.st"}
+upper = {value = 0.0030499999999999998, register = "ACSR.Panther.st"}
+
+[d_aluminium]
+nominal = {value = 0.003, register = "ACSR.Panther.al"}
+lower = {value = 0.0029700000000000004, register = "ACSR.Panther.al"}
+upper = {value = 0.0030299999999999997, register = "ACSR.Panther.al"}
+
+[diameter]
+nominal = {value = 0.021, register = "ACSR.Panther.d"}
+lower = {value = 0.02079, register = "ACSR.Panther.d"}
+upper = {value = 0.02121, register = "ACSR.Panther.d"}
+
+[mass]
+nominal = {value = 0.974, register = "ACSR.Panther.mass"}
+lower = {value = 0.9545199999999999, register = "ACSR.Panther.mass"}
+upper = {value = 0.99348, register = "ACSR.Panther.mass"}

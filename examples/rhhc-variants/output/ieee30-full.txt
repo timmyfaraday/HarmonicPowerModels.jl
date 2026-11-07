@@ -1,0 +1,35 @@
+git commit: 20bca09bbde082cc988e71ec91b1791746a212b8
+LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+case: examples/rhhc-variants/cases/ieee30-full.toml
+threads: 16; solver: Clarabel
+Transformer vector groups are applied to tapped branches.
+Winding earthing is declared below; HPM applies it only in its IV formulation.
+branch 11 (6–9): vg=Yy0 gnd1=1 gnd2=0 re1=0.0 xe1=0.0 re2=0.0 xe2=0.0 [pu]
+Three-winding unit at bus 6, star point 9. The 132 kV winding is YN, solidly earthed. Bus 9 represents the star point.
+branch 12 (6–10): vg=Yy0 gnd1=1 gnd2=1 re1=0.0 xe1=0.0 re2=1.7493112947658402 xe2=0.0 [pu]
+YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance.
+assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA
+branch 13 (9–11): vg=Yd11 gnd1=0 gnd2=0 re1=0.0 xe1=0.0 re2=0.0 xe2=0.0 [pu]
+Three-winding unit, star point 9. The 11 kV winding is delta and supplies the condenser at bus 11.
+branch 14 (9–10): vg=Yy0 gnd1=0 gnd2=1 re1=0.0 xe1=0.0 re2=1.7493112947658402 xe2=0.0 [pu]
+Three-winding unit, star point 9. The 33 kV winding is yn, earthed through a resistance.
+assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA
+branch 15 (4–12): vg=Yy0 gnd1=1 gnd2=1 re1=0.0 xe1=0.0 re2=1.7493112947658402 xe2=0.0 [pu]
+YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance.
+assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA
+branch 16 (12–13): vg=Yd11 gnd1=1 gnd2=0 re1=1.7493112947658402 xe1=0.0 re2=0.0 xe2=0.0 [pu]
+YNd11 step-up of the condenser at bus 13. The delta is on the 11 kV side. The 33 kV YN neutral is earthed through a resistance.
+assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA
+branch 36 (28–27): vg=Yy0 gnd1=1 gnd2=1 re1=0.0 xe1=0.0 re2=1.7493112947658402 xe2=0.0 [pu]
+YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance.
+assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA
+IEEE 30-bus, inductive_cable33, 34 branches from LineCableModels, 21 units, ε = 0.05, Cantelli, 16 threads
+nominal stochastic: 0.051871 (OPTIMAL)
+zero-width iterations: 1; lower bound: 0.051871078893810936; upper bound: 0.051871078893810936
+resonances at the nominal point: h = 6.27, h = 12.32
+robust HHC: 0.039828  [LB 0.039828, UB 0.039833, gap 1.2e-04], 2 iterations, 119 s, signed off
+master termination: OPTIMAL
+per harmonic, robust HHC / nominal: h5 0.826, h7 0.447, h11 0.903, h13 0.580
+oracle dictionary labels: nominal=1, vertex=0, corner=88, seed=16, background=1024, refined=31
+a posteriori (1024 random points): worst -3.67e-02 ((:ihd, (11, 7))), violated at 0.0 %
+LineCableModels solves (sum of circuit table sizes): 228792

@@ -1,0 +1,52 @@
+git commit: 20bca09bbde082cc988e71ec91b1791746a212b8
+LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+case: examples/rhhc-variants/cases/ieee30-full.toml
+threads: 16; solver: Clarabel
+Relative changes compare each endpoint with the nominal value.
+coordinate | maximum relative change | circuit | sequence | quantity | Hz | end | decision
+Rscreen_U33 | 0.0378282936526 | U33-800/trefoil | zero | z | 50 | lower | yes
+theta_ACSR | 0.0693176632369 | Panther/O132-D | positive | z | 50 | upper | yes
+eps_semicon_U33 | 0.00554278857517 | U33-630/trefoil | positive | y | 50 | lower | yes
+rho_EARTH | 0.145574955888 | Goat/O132-D | zero | z | 50 | upper | yes
+rho_inner_U33 | 0 | U33-500/trefoil | zero | z | 50 | lower | no
+d_wire_U33 | 0.000241172970773 | U33-630/trefoil | positive | z | 50 | lower | no
+rho_copper_U33 | 0.000355753975619 | U33-400/trefoil | negative | z | 650 | upper | no
+E_O132 | 0 | Lion/O132-D | zero | z | 50 | lower | no
+eps_U33 | 0.12494039455 | U33-500/trefoil | negative | y | 650 | lower | yes
+eps_jacket_U33 | 4.61171597638e-16 | U33-800/trefoil | zero | y | 50 | lower | no
+lay_steel_ACSR | 7.24018215071e-05 | Panther/O132-D | negative | z | 50 | lower | no
+ambient_O132 | 0.0315002799891 | Panther/O132-D | positive | z | 50 | upper | yes
+t_ins_U33 | 0.0440393829359 | U33-800/trefoil | zero | y | 650 | lower | yes
+tand_xlpe_U33 | 0 | U33-500/trefoil | zero | z | 50 | lower | no
+rho_aluminium_ACSR | 0.00390941844022 | Panther/O132-D | positive | z | 50 | lower | yes
+lay_outer_ACSR | 0.00254881972079 | Panther/O132-D | positive | z | 50 | lower | yes
+rho_outer_U33 | 0 | U33-500/trefoil | zero | z | 50 | lower | no
+lay_inner_ACSR | 0.0048340644833 | Panther/O132-D | positive | z | 50 | lower | yes
+R20_U33 | 0.0438329389803 | U33-400/trefoil | negative | z | 50 | lower | yes
+depth_U33 | 6.1879353687e-06 | U33-800/trefoil | zero | z | 50 | upper | no
+expansion_ACSR | 0 | Lion/O132-D | zero | z | 50 | lower | no
+theta_U33 | 0.259813150804 | U33-400/trefoil | zero | z | 50 | upper | yes
+t_sc1_U33 | 0.00538328155976 | U33-400/trefoil | zero | y | 50 | lower | yes
+d_steel_ACSR | 0.00128725716234 | Goat/O132-D | positive | z | 50 | lower | yes
+E_ACSR | 0 | Lion/O132-D | zero | z | 50 | lower | no
+diameter_O132 | 0.00150976845073 | Goat/O132-D | zero | z | 50 | upper | yes
+t_jkt_U33 | 0.0201710184502 | U33-800/trefoil | positive | z | 50 | upper | yes
+rho_steel_ACSR | 0.00120517490512 | Panther/O132-D | negative | z | 50 | upper | yes
+rho_xlpe_U33 | 0 | U33-500/trefoil | zero | z | 50 | lower | no
+mu_steel_ACSR | 0.00129884925929 | Goat/O132-D | positive | z | 50 | upper | yes
+rho_steel_O132 | 0.00530451892416 | Goat/O132-D | zero | z | 50 | upper | yes
+shield_sag_O132 | 0.000298360611787 | Goat/O132-D | zero | z | 650 | upper | no
+rho_jacket_U33 | 0 | U33-500/trefoil | zero | z | 50 | lower | no
+t_sc2_U33 | 0.00458576835427 | U33-500/trefoil | zero | z | 650 | lower | yes
+mu_steel_O132 | 0.0311603417138 | Goat/O132-D | zero | z | 650 | upper | yes
+lay_O132 | 0.000316726003807 | Goat/O132-D | zero | z | 50 | lower | no
+phase_sag_O132 | 0.000296213831713 | Goat/O132-D | zero | z | 650 | upper | no
+d_c_U33 | 0.0127447144221 | U33-400/trefoil | zero | y | 50 | upper | yes
+d_aluminium_ACSR | 0.0061949112058 | Panther/O132-D | negative | z | 50 | lower | yes
+box_names = ["Rscreen_U33", "theta_ACSR", "eps_semicon_U33", "rho_EARTH", "eps_U33", "ambient_O132", "t_ins_U33", "rho_aluminium_ACSR", "lay_outer_ACSR", "lay_inner_ACSR", "R20_U33", "theta_U33", "t_sc1_U33", "d_steel_ACSR", "diameter_O132", "t_jkt_U33", "rho_steel_ACSR", "mu_steel_ACSR", "rho_steel_O132", "t_sc2_U33", "mu_steel_O132", "d_c_U33", "d_aluminium_ACSR"]
+Bear projection check: upper aluminum and steel wire diameters, nominal lay ratios.
+t = 0.825704225352; diameter = 0.0236845 m (+1.000000000 percent); mass = 1.23708333959 kg/m (+1.985436075 percent).
+Effective wires: aluminum 0.00337766109155 m, steel 0.00339128521127 m.
+EN 50182: diameter within +/-1 percent and mass within +/-2 percent; passed.
+Inner lay upper 16 equals steel lay lower 16; that order cannot bind except at equality.
+All 128 wire-diameter and lay endpoint combinations satisfy both aggregate limits and lay order.

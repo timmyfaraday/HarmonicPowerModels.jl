@@ -1,0 +1,22 @@
+family = "U33"
+diameter = {value = 0.0586, register = "U33.od"}
+
+[d_c]
+nominal = {value = 0.0299, register = "U33.cond.d.630"}
+lower = {value = 0.0299, register = "U33.cond.d.630"}
+upper = {value = 0.0303, register = "U33.cond.d.630"}
+
+[R20]
+nominal = {value = 4.69e-05, register = "U33.cond.R20.630"}
+lower = {value = 4.31e-05, register = "U33.cond.R20.630"}
+upper = {value = 4.69e-05, register = "U33.cond.R20.630"}
+
+[t_sc1]
+nominal = {value = 0.00105, register = "U33.sc1.t.630"}
+lower = {value = 0.000945, register = "U33.sc1.t.630"}
+upper = {value = 0.001155, register = "U33.sc1.t.630"}
+
+[t_jkt]
+nominal = {value = 0.00305, register = "U33.jkt.t.630"}
+lower = {value = 0.00305, register = "U33.jkt.t.630"}
+upper = {value = 0.00412, register = "U33.jkt.t.630"}

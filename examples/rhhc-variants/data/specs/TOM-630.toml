@@ -1,0 +1,5 @@
+family = "TOM"
+t_sc1 = {value = 0.0008, origin = "examples/rhhc/ieee30_lcm.jl:59"}
+t_sc2 = {value = 0.0008, origin = "examples/rhhc/ieee30_lcm.jl:61"}
+t_tube = {value = 0.0003, origin = "examples/rhhc/ieee30_lcm.jl:63"}
+t_jkt = {value = 0.0025, origin = "examples/rhhc/ieee30_lcm.jl:65"}

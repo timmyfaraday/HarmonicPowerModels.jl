@@ -1,0 +1,5 @@
+kind = "overhead"
+# O33.geom: an unearthed structure, with no earth wire.
+phase_x = {value = [-1.5, 0.0, 1.5], register = "O33.geom"} # m
+phase_height = {value = [12.0, 12.0, 12.0], register = "O33.geom"} # m
+phase_sag = {value = 2.25, register = "O33.sag"} # m
