@@ -1,0 +1,34 @@
+Uncertainty levels and transfer to the source case
+HPM commit: 5e7400eaefa38a95558726b2fa81c83a3f12058d
+LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+Cases: cases/star5-physical.toml, cases/star5.toml
+Threads: 1; solver: Clarabel; unchanged runner settings.
+Method parameters: (difference_step = 0.0001, zero_band = 1.0e-6, subdivision_depth = 6, sharing_tolerance = 1.0e-10, verification_samples = 4096, admission_threshold = 0.001, interior_starts = (corners = true, center = true), interior_tolerance = 1.0e-10, interior_iterations = 32)
+level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination
+star5-physical | 0.004212222549106773 | 0.00421039104730615 | 0.004211979934713518 | 0.0003772305262597508 | 2 | 31923 | 164.131051326 | true | OPTIMAL
+star5 | 0.004589988393727914 | 0.004589930833762832 | 0.004589988393727914 | 1.2540329112870444e-5 | 1 | 0 | 1.06128523 | true | OPTIMAL
+level | harmonic | robust / nominal | robust current
+star5-physical | 5 | 0.9996227691216824 | 0.00047948656115998377
+star5-physical | 7 | 0.9996227691979868 | 0.0003288949211971172
+star5-physical | 11 | 0.9996227678889523 | 0.00013773381568992456
+star5-physical | 13 | 0.9990539163824621 | 0.00010648246377951214
+star5 | 5 | 0.9999874596708872 | 0.0004957978698645387
+star5 | 7 | 0.9999874596708872 | 0.00035144306247704925
+star5 | 11 | 0.9999874596708872 | 0.00016356752929795617
+star5 | 13 | 0.9999874596708872 | 0.0001366742468011641
+Posterior checks: 1024 random points, public HPM defaults (seed 2, tolerance 0.0001).
+solution | target case | maximum normalized violation | constraint | violated fraction
+star5-physical | star5-physical | -5.497530599052336e-5 | (:ihd, (11, 5)) | 0.0
+star5-physical | star5 | -0.06471601351707323 | (:ihd, (5, 5)) | 0.0
+star5 | star5-physical | 0.6460902610725574 | (:ihd, (13, 3)) | 1.0
+star5 | star5 | -1.4702721296000476e-7 | (:ihd, (13, 3)) | 0.0
+Corner adversary: nominal finite-difference signs, unique predicted corners.
+Positive own-case violations refute reported feasibility and its lower-bound certificate.
+Positive transfer violations refute feasibility of the level's solution on the source box.
+A transfer failure alone does not refute an own-case certificate.
+The adversary is not a proof of feasibility: resonance constraints can be nonmonotone.
+solution | target case | corners evaluated | maximum normalized violation | constraint | case-coordinate point
+star5-physical | star5-physical | 4 | -1.9688689205099585e-5 | (:ihd, (11, 3)) | (theta_ACSR = -5.0, rho_EARTH = 100.0, ambient_O132 = 45.0, rho_aluminium_ACSR = 2.8264e-8, lay_middle_ACSR = 13.0, lay_inner_ACSR = 13.0, diameter_O132 = 0.0032, d_steel_ACSR = 1.0, rho_steel_O132 = 1.9157e-7, mu_steel_O132 = 100.0, d_aluminium_ACSR = 1.0)
+star5-physical | star5 | 2 | -0.06471596250376566 | (:ihd, (5, 4)) | (kR_ohl = 1.0, kL_ohl = 1.05)
+star5 | star5-physical | 4 | 0.6461777019953712 | (:ihd, (13, 2)) | (theta_ACSR = -5.0, rho_EARTH = 100.0, ambient_O132 = 45.0, rho_aluminium_ACSR = 2.8264e-8, lay_middle_ACSR = 13.0, lay_inner_ACSR = 13.0, diameter_O132 = 0.0032, d_steel_ACSR = 1.0, rho_steel_O132 = 1.9157e-7, mu_steel_O132 = 100.0, d_aluminium_ACSR = 1.0)
+star5 | star5 | 2 | -9.635387343553958e-8 | (:ihd, (13, 3)) | (kR_ohl = 1.0, kL_ohl = 1.05)

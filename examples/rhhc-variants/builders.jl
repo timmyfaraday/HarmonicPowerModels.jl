@@ -139,30 +139,62 @@ end
 strandspan(count) = 2 * ((isqrt(12count - 3) - 3) ÷ 6) + 1
 
 """
+    construction(spec, q, inner, outer)
+
+Resolve the steel course counts and the dimensionless steel and aluminum lay ratios.
+Keep the supplied effective inner and outer aluminum lays unchanged.
+"""
+function construction(spec, q, inner, outer)
+    steel_courses = Tuple(6i for i in 1:((strandspan(spec.n_steel) - 1) ÷ 2))
+    steel_lays = accumulate(min,
+        Tuple(i == 1 ? q.lay_steel : q.lay_steel_outer for i in eachindex(steel_courses)))
+    aluminum_lays = Tuple(i == length(spec.courses) ? outer :
+                          i == 1 ? inner : min(q.lay_middle, inner)
+    for i in eachindex(spec.courses))
+    return (; steel_courses, steel_lays, aluminum_lays)
+end
+
+"""
     construction(spec, q, reference, da, ds, inner, outer)
 
-Compute mass, metal area and outside diameter from effective wire diameters in
-meters and effective lay ratios. The caller supplies already ordered and projected values.
+Compute mass in kg/m, metal area in square meters and outside
+diameter in meters from the supplied wire diameters. Each component mass scales
+with wire area and the ratio of its summed helical wire lengths to their nominal values.
+The caller supplies the effective inner and outer aluminum lays unchanged.
 """
 function construction(spec, q, reference, da, ds, inner, outer)
+    recipe = construction(spec, q, inner, outer)
+    nominal_lays = (i == length(spec.courses) ? reference.lay_outer :
+                    i == 1 ? reference.lay_inner : reference.lay_middle
+    for i in eachindex(spec.courses))
     aluminum = spec.mass_al *
-               (spec.courses[1] * sqrt(1 + (π / inner)^2) +
-                spec.courses[2] * sqrt(1 + (π / outer)^2)) /
-               (spec.courses[1] * sqrt(1 + (π / reference.lay_inner)^2) +
-                spec.courses[2] * sqrt(1 + (π / reference.lay_outer)^2))
-    steel = spec.mass_st * (1 + (spec.n_steel - 1) * sqrt(1 + (π / q.lay_steel)^2)) /
-            (1 + (spec.n_steel - 1) * sqrt(1 + (π / reference.lay_steel)^2))
+               sum(n * sqrt(1 + (π / lay)^2)
+    for (n, lay) in zip(spec.courses, recipe.aluminum_lays)) /
+               sum(n * sqrt(1 + (π / lay)^2)
+    for (n, lay) in zip(spec.courses, nominal_lays))
+    steel = spec.mass_st *
+            (1 + sum(
+        (n * sqrt(1 + (π / lay)^2)
+        for (n, lay) in zip(recipe.steel_courses, recipe.steel_lays)); init = 0.0)) /
+            (1 + sum(
+        (n * sqrt(1 + (π / (i == 1 ? reference.lay_steel : reference.lay_steel_outer))^2)
+        for (i, n) in enumerate(recipe.steel_courses));
+        init = 0.0))
     diameter = strandspan(spec.n_steel) * ds + 2length(spec.courses) * da
     mass = aluminum * (da / spec.d_aluminium.nominal)^2 +
            steel * (ds / spec.d_steel.nominal)^2
     area = π * (spec.n_aluminium * da^2 + spec.n_steel * ds^2) / 4
-    return (; da, ds, inner, outer, diameter, mass, area)
+    return (;
+        da, ds, inner = first(recipe.aluminum_lays), outer = last(recipe.aluminum_lays),
+        diameter, mass, area)
 end
 
 # EN 50182:2001 5.4 and 5.7.3 constrain diameter and mass jointly.
 function realize(spec, q, reference)
-    inner = q.lay_inner
-    outer = min(q.lay_outer, inner)
+    inner = min(q.lay_inner, spec.n_steel > 7 ?
+                             min(q.lay_steel, q.lay_steel_outer) : q.lay_steel)
+    outer = min(q.lay_outer, inner,
+        length(spec.courses) > 2 ? q.lay_middle : inner)
     da = interpolate(spec.d_aluminium, q.d_aluminium)
     ds = interpolate(spec.d_steel, q.d_steel)
     physical = construction(spec, q, reference, da, ds, inner, outer)
@@ -238,19 +270,14 @@ function design(::Val{:ACSR}, spec, q, mat; temperature = q.theta, realized)
     steel = metal(mat.s1a, mat.reference; rho = q.rho_steel, mu_r = q.mu_steel, temperature)
     aluminum = metal(mat.al1, mat.reference; rho = q.rho_aluminium, temperature)
     da, ds = realized.da, realized.ds
-    return @design "ACSR" begin
-        @terminal :core begin
-            stranded(steel; center = Circle(ds / 2),
-                shape = Circle(ds / 2), n = (spec.n_steel - 1,),
-                lay = LayRatio(q.lay_steel), boundary = Circle(strandspan(spec.n_steel) *
-                                                               ds / 2),
-                tag = :steel)
-            wires(aluminum; shape = Circle(da / 2), n = spec.courses[1],
-                lay = LayRatio(realized.inner), tag = :aluminium_inner)
-            wires(aluminum; shape = Circle(da / 2), n = spec.courses[2],
-                lay = LayRatio(realized.outer), tag = :aluminium_outer)
-        end
-    end
+    recipe = construction(spec, q, realized.inner, realized.outer)
+    core = stranded(steel; center = Circle(ds / 2), shape = Circle(ds / 2),
+        n = recipe.steel_courses, lay = LayRatio.(Tuple(recipe.steel_lays)),
+        boundary = Circle(strandspan(spec.n_steel) * ds / 2), tag = :steel)
+    courses = Tuple(wires(aluminum; shape = Circle(da / 2), n = count,
+                        lay = LayRatio(lay), tag = Symbol("aluminium_", i))
+    for (i, (count, lay)) in enumerate(zip(spec.courses, recipe.aluminum_lays)))
+    return build(CableDesign, "ACSR", Terminal(:core, Stack(core, courses...)))
 end
 
 function design(::Val{:O132}, spec, q, mat; temperature = q.ambient)
@@ -333,7 +360,8 @@ function arrangement(::Val{:ACSR}, spec, physical, row, mat)
     (; q, structure, temperature, realized) = physical
     conductor = design(spec.family, spec, q, mat; temperature, realized)
     haskey(row, :structure) || return conductor, row
-    phase_sag = sag(structure.span, realized.mass, realized.area, q.E * 1e9, q.expansion,
+    phase_sag = sag(structure.span, realized.mass, realized.area,
+        get(spec, :E, q.E) * 1e9, get(spec, :expansion, q.expansion),
         structure.phase_sag, temperature, structure.reference_theta, structure.gravity)
     wire = row.shield_spec
     shield = design(wire.family, wire, structure, mat)
@@ -408,6 +436,10 @@ function network(config, ipopt)
 end
 
 function route_length(br, kv, zbase, config)
+    if haskey(config, :routes)
+        row = getproperty(config.branches, Symbol(br["index"]))
+        return getproperty(config.routes, Symbol(row.route)).length_m
+    end
     haskey(br, "length_m") && return br["length_m"]
     haskey(br, "cable_km") && return 1e3br["cable_km"]
     config.network.kind == "scenario" && return 1e3br["br_x"] * zbase / OHL_X[kv]
@@ -446,6 +478,10 @@ function study(path; all_coordinates = false)
         kv = data["bus"][string(br["f_bus"])]["base_kv"]
         zbase = kv^2 / data["baseMVA"]
         len = route_length(br, kv, zbase, config)
+        if haskey(row, :rating)
+            rating = getproperty(config.ratings, Symbol(row.rating))
+            br["rate_a"] = sqrt(3) * kv * rating.current_A / (1000data["baseMVA"])
+        end
         key = (row.spec, row.formation)
         if !haskey(definitions, key)
             spec = specification(row.spec, row.formation, records)

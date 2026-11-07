@@ -347,3 +347,50 @@ Family fields name physical quantities. Case coordinates append the family name,
 `R20_U33`, `t_ins_U33` and `rho_EARTH`. The `registered` scale identifies a normalized
 position: zero is nominal, minus one is the registered lower bound and plus one is the
 registered upper bound. One-sided intervals retain the applicable half of that interval.
+
+## Falcon and the physical star cases
+
+The twelve `ACSR.Falcon.*` rows and `STAR3.length`, `STAR5.length` supply the two
+physical star cases. The conductor library and strand table in
+`local/codex/alternative-test-cases/physical-candidates.md` give the 54 aluminum
+wires of 4.36 mm and the 19 steel wires of 2.62 mm, arranged as 12/18/24 aluminum
+courses over a steel center and 6/12 courses. The component masses are 2243 and
+799 kg/km, from Trefinasa printed p. 4. Wire dimensions give
+39.26 mm outside diameter. The candidate library gives 39.24 mm.
+
+The diameter intervals come from the Falcon rows of
+`local/codex/manufacturing-tolerances/physical-input-tolerances.csv`: aluminum
+4.3164 to 4.4036 mm, steel 2.58 to 2.66 mm. Aggregate diameter and mass limits use
+EN 50182 by analogy. The middle aluminum lay adopts the inner-course interval
+10 to 16, midpoint 13. The second steel course uses `ACSR.lay.st12`, 14 to 22,
+midpoint 18. Outward lays are capped by the preceding course. Every course
+contributes to the mass and lay calculation.
+
+Material assumption: the conductor uses the registered ACSR material laws and intervals,
+including steel relative permeability 50 to 300, nominal 100.
+
+Assumption: the Trefinasa printed p. 3 calculation values for 54+19 construction,
+66.68522 GPa modulus and 0.0000194 per kelvin expansion, are fixed for Falcon.
+The 30/7 mechanical coordinates do not act on Falcon.
+
+Installation assumption: O132-D serves the 100 kV stars. It retains the existing
+supports and the 300 m span with the reference sags. GW-7x3.15 has both-end grounding,
+and each circuit has ideal transposition. Phase temperature is at least ambient temperature.
+
+The candidate study's `scratch/branch-candidates.csv` supplies the shared fitted
+lengths: 25690.406433487706 m for star3 and 513.8081286697541 m for star5.
+`derive.py` reproduces its joint relative R/X fit. These fixed study lengths
+have no surveyed route interval. The physical cases retain LCM charging.
+
+The current rating is an imported result of the candidate study's heat balance.
+The same candidate table supplies the physical current rating, 1372.8443238788311 A,
+or 237.783612 MVA at 100 kV. The source rating is 100 MVA, or 577.350269 A.
+Its IEEE 738 reference conditions are 75 °C conductor, 25 °C ambient, 0.6 m/s
+perpendicular wind, sea level, 1000 W/m² solar flux, emissivity and absorptivity
+0.5. Assumption: this fixed reference ceiling serves the electrical study without
+recomputing a weather-dependent rating at each point.
+
+`sweep.jl` admits eleven coordinates at 0.1 percent for each physical case.
+One coordinate per input and family acts on every spoke. Both lay coordinates
+remain separate. The mechanical values are fixed.
+The source cases remain in `cases/star3.toml` and `cases/star5.toml`.

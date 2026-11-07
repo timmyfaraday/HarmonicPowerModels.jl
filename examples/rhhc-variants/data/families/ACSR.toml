@@ -65,3 +65,15 @@ field = "d_steel"
 nominal = {value = 0.0, register = "ACSR.st.d"}
 lower = {value = -1.0, register = "ACSR.st.d"}
 upper = {value = 1.0, register = "ACSR.st.d"}
+
+[lay_middle]
+field = "lay_middle"
+nominal = {value = 13, register = "ACSR.Falcon.lay.middle"}
+lower = {value = 10, register = "ACSR.Falcon.lay.middle"}
+upper = {value = 16, register = "ACSR.Falcon.lay.middle"}
+
+[lay_steel_outer]
+field = "lay_steel_outer"
+nominal = {value = 18, register = "ACSR.lay.st12"}
+lower = {value = 14, register = "ACSR.lay.st12"}
+upper = {value = 22, register = "ACSR.lay.st12"}

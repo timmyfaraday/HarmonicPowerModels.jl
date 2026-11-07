@@ -1,0 +1,33 @@
+git commit: 5e7400eaefa38a95558726b2fa81c83a3f12058d
+LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+case: examples/rhhc-variants/cases/star5-physical.toml
+threads: 1; solver: Clarabel
+Relative changes compare each endpoint with the nominal value.
+coordinate | maximum relative change | circuit | sequence | quantity | Hz | end | decision
+theta_ACSR | 0.0207435616737 | Falcon/O132-D | positive | z | 50 | upper | yes
+rho_EARTH | 0.149356268625 | Falcon/O132-D | zero | z | 50 | upper | yes
+E_O132 | 0 | Falcon/O132-D | zero | z | 50 | lower | no
+lay_steel_ACSR | 9.07848245887e-06 | Falcon/O132-D | negative | z | 50 | lower | no
+ambient_O132 | 0.00939322632391 | Falcon/O132-D | positive | z | 50 | upper | yes
+rho_aluminium_ACSR | 0.00118321729566 | Falcon/O132-D | negative | z | 50 | lower | yes
+lay_outer_ACSR | 0.000665072553799 | Falcon/O132-D | positive | z | 50 | lower | no
+lay_middle_ACSR | 0.00118538702618 | Falcon/O132-D | positive | z | 50 | lower | yes
+lay_inner_ACSR | 0.00151630945051 | Falcon/O132-D | positive | z | 50 | lower | yes
+lay_steel_outer_ACSR | 1.09999423283e-05 | Falcon/O132-D | negative | z | 50 | lower | no
+diameter_O132 | 0.00154898472002 | Falcon/O132-D | zero | z | 50 | upper | yes
+d_steel_ACSR | 0.00106796721722 | Falcon/O132-D | positive | z | 50 | lower | yes
+rho_steel_ACSR | 0.000204184141929 | Falcon/O132-D | negative | z | 50 | upper | no
+mu_steel_ACSR | 0.000153153456763 | Falcon/O132-D | positive | z | 50 | upper | no
+rho_steel_O132 | 0.00544230392193 | Falcon/O132-D | zero | z | 50 | upper | yes
+shield_sag_O132 | 0.000307229570106 | Falcon/O132-D | zero | z | 650 | upper | no
+mu_steel_O132 | 0.0320866026241 | Falcon/O132-D | zero | z | 650 | upper | yes
+lay_O132 | 0.000324952968844 | Falcon/O132-D | zero | z | 50 | lower | no
+phase_sag_O132 | 0.000305018975633 | Falcon/O132-D | zero | z | 650 | upper | no
+d_aluminium_ACSR | 0.00212123681956 | Falcon/O132-D | negative | z | 50 | lower | yes
+box_names = ["theta_ACSR", "rho_EARTH", "ambient_O132", "rho_aluminium_ACSR", "lay_middle_ACSR", "lay_inner_ACSR", "diameter_O132", "d_steel_ACSR", "rho_steel_O132", "mu_steel_O132", "d_aluminium_ACSR"]
+Bear projection check: upper aluminum and steel wire diameters, nominal lay ratios.
+t = 0.825704225352; diameter = 0.0236845 m (+1.000000000 percent); mass = 1.23708333959 kg/m (+1.985436075 percent).
+Effective wires: aluminum 0.00337766109155 m, steel 0.00339128521127 m.
+EN 50182: diameter within +/-1 percent and mass within +/-2 percent; passed.
+Inner lay upper 16 equals steel lay lower 16; that order cannot bind except at equality.
+All 128 wire-diameter and lay endpoint combinations satisfy both aggregate limits and lay order.

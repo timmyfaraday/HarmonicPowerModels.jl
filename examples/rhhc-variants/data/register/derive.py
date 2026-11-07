@@ -3,7 +3,7 @@
 From the repository root, run this script with `python3 -I`.
 The script uses only the Python standard library.
 It writes `derived.json` beside this file and prints a summary.
-Every value of class DER in `inputs.csv` comes from this script.
+The script reproduces derived quantities and records imported study results.
 """
 
 import csv
@@ -372,6 +372,25 @@ full["corpus_interval_derivations"] = {
 OUT["full_uncertainty_ieee30"] = full
 
 here = os.path.dirname(os.path.abspath(__file__))
+# Falcon: 1+6+12 steel wires and three aluminum courses, from the strand table.
+OUT["Falcon_diameter_m"] = 5 * 0.00262 + 6 * 0.00436
+
+# Candidate study calculate.py fit: minimize the sum of squared relative R/X errors.
+# Its Falcon/O100-D coefficients are retained with the fitted routes.
+OUT["star_routes"] = {}
+for name, resistance, reactance in (("star3", 1.0, 10.0), ("star5", 0.02, 0.2)):
+    r, x = 0.04117088118, 0.3638369396682591  # ohms/km, candidate study
+    a, b = r / resistance, x / reactance
+    length_km = (a + b) / (a * a + b * b)
+    OUT["star_routes"][name] = {
+        "source_R_ohm": resistance,
+        "source_X_ohm": reactance,
+        "length_m": 1000 * length_km,
+        "physical_rating_A": number("ACSR.Falcon.rating"),
+        "physical_rating_MVA": math.sqrt(3) * 100 * number("ACSR.Falcon.rating") / 1000,
+        "source_rating_MVA": 100.0,
+    }
+
 with open(os.path.join(here, "derived.json"), "w") as f:
     json.dump(OUT, f, indent=2)
 

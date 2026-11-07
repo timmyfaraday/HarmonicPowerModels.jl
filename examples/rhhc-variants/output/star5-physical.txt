@@ -1,0 +1,12 @@
+git commit: 5e7400eaefa38a95558726b2fa81c83a3f12058d
+LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+case: examples/rhhc-variants/cases/star5-physical.toml
+threads: 1; solver: Clarabel
+../shhc/data/5node_test.m, 4 branches from LineCableModels, 4 units, ε = 0.05, Cantelli, 1 threads
+nominal stochastic: 0.004212 (OPTIMAL)
+resonances at the nominal point: 
+robust: 0.004210  [LB 0.004210, UB 0.004212, gap 3.8e-04], 2 iterations, 164 s, signed off
+robust master termination: OPTIMAL
+per harmonic, robust / nominal: h5 1.000, h7 1.000, h11 1.000, h13 0.999
+a posteriori (1024 random points): worst -5.50e-05 ((:ihd, (11, 5))), violated at 0.0 %
+LineCableModels solves (sum of circuit table sizes): 31923

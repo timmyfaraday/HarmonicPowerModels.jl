@@ -264,3 +264,5 @@ include(joinpath(@__DIR__, "..", "compare.jl"))
 end
 
 include("surrogates.jl")
+
+include("stars.jl")

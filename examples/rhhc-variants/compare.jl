@@ -102,7 +102,7 @@ function comparison(io, paths...)
     end
     println(io, "Posterior checks: 1024 random points, public HPM defaults (seed 2, tolerance 0.0001).")
     println(io, "solution | target case | maximum normalized violation | constraint | violated fraction")
-    for i in eachindex(cases), j in unique((i, 1))
+    for i in eachindex(cases), j in eachindex(cases)
 
         checked = posterior_check(runs[j].hdata, cases[j].model, cases[j].box,
             runs[i].robust["solution"]; n = 1024)
@@ -119,7 +119,7 @@ function comparison(io, paths...)
     println(io, "The adversary is not a proof of feasibility: resonance constraints can be nonmonotone.")
     println(io,
         "solution | target case | corners evaluated | maximum normalized violation | constraint | case-coordinate point")
-    for i in eachindex(cases), j in unique((i, 1))
+    for i in eachindex(cases), j in eachindex(cases)
 
         println("Corner adversary: ", basename(cases[i].file), " on ", basename(cases[j].file))
         flush(stdout)
