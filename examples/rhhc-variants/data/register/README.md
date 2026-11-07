@@ -499,3 +499,37 @@ Assumption: fixed conductor ratings use the candidate study's IEEE738
 reference weather, as described for Cardinal above. The physical ratings admit the nominal fundamental operating point
 on every branch. The source rating is 10 MVA. The case uses one coordinate per input and
 family. The sweep report records admission at 0.1 percent.
+
+## Industrial cables
+
+The 52 `U36.*`, `U11.*` and `NYY.*` rows describe the three industrial cable
+routes. The cable library and radial layouts of the candidate study supply U36-Al400
+and U11-Al240. Intervals for layer thickness, conductor diameter, screen wires and conductor
+resistance come from the register of manufacturing tolerances.
+The phase conductors are solid equivalents with registered DC resistance.
+Screens are equal-area copper tubes within the wire-layer radial envelope.
+Assumption: resistance and finished conductor diameter vary independently in
+this electrical dataset, as in U33. The screen has no helical length correction.
+U11 retains the reference 68.7 mm2 screen, versus the source 25 mm2 screen.
+
+The coaxial formulation accepts one concentric assembly per cable.
+Variant: the LV multicore cable is represented by three unscreened 240 mm2
+copper/PVC single cores in touching trefoil, with ideal transposition.
+The neutral is omitted. The phase insulation is 2.2 mm with a 0 to 5 percent
+interval, and the assumed single-core jacket is 3 mm with a 0 to 10 percent
+interval. The source multicore outside diameter does not apply to this variant.
+Assumption: PVC loss tangent is 0.01, with interval 0.005 to 0.02.
+
+Assumption: the existing U33 material intervals serve the MV insulation and
+semiconducting layers. The study of manufacturing tolerances supplies PVC relative
+permittivity 4.5 [3.6, 6] and resistivity 1e12 [1e11, 1e13] ohm m.
+PE uses relative permittivity 2.3 [2.1, 2.5] by analogy with XLPE and the
+existing insulating-polymer resistivity interval. Burial depth is assumed
+0.8 [0.7, 1.0] m. Temperature is 90 [20, 90] degrees Celsius for MV and
+70 [20, 70] degrees Celsius for LV. Both-end screen grounding applies.
+Assumption: screens share the phase conductor temperature.
+
+Source routes are 1500, 200 and 70 m. Fixed physical limits are 24.5, 6.58
+and 0.382 MVA. The current fields encode these rounded MVA limits exactly.
+Transformer records retain their source ratings and vector groups.
+The sweep report gives the 30 coordinates admitted at 0.1 percent.

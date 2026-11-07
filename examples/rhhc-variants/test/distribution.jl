@@ -101,3 +101,62 @@
     @test all(br -> max(br["cm_fr"], br["cm_to"]) <= br["c_rating"],
         values(prepared["nw"]["1"]["branch"]))
 end
+
+@testset "Industrial physical cables" begin
+    s = study("cases/industrial-physical.toml")
+    source = study("cases/industrial.toml")
+    p = nominal_point(s.box)
+    @test length(s.details) == length(s.lcm) == 3
+    @test length(s.box) == 30
+    @test s.hd["nw"]["1"]["xfmr"] == source.hd["nw"]["1"]["xfmr"]
+    for (b, name, len, rating, terminals) in ((2, "U36-Al400", 1500.0, 24.5, 2),
+        (3, "U11-Al240", 200.0, 6.58, 2),
+        (4, "NYY-Cu240-120", 70.0, 0.382, 1))
+        detail = s.details[b]
+        @test detail.spec == name
+        @test detail.len == len
+        @test s.hd["nw"]["1"]["branch"][string(b)]["rate_a"] ≈ rating / 100
+        spec = specification(name)
+        fn = problem(spec, s.families, formation("trefoil"), s.mat,
+            (;
+                (k => (; (n => Symbol(v) for (n, v) in pairs(row))...)
+            for (k, row) in pairs(s.config.bindings))...))
+        cable = first(fn(p, 50.0).system.designs)
+        @test length(cable.terminals) == terminals
+        q = coordinates(getproperty(s.families, spec.family_name), (;), (;))
+        # Candidate study resistance caps, HPM parent 23f0b26, LCM 59cc3f232.
+        # DC reference at 20 degrees Celsius from the industrial cable library.
+        cold = merge(p, NamedTuple{(Symbol("theta_", spec.family_name),)}((20.0,)))
+        dc = s.model.branches[b].zy(cold, 0.01).positive
+        @test real(dc.z) ≈ q.R20 rtol = 1e-4
+        for f in (50.0, 250.0, 350.0, 550.0, 650.0)
+            v = s.model.branches[b].zy(p, f)
+            @test v.negative.z ≈ v.positive.z rtol = 1e-12
+            @test v.negative.y ≈ v.positive.y rtol = 1e-12
+            @test imag(v.positive.y) > 0
+            pi = branch_data(s.model, b, p, f / 50, :positive)
+            gamma = sqrt(v.positive.z * v.positive.y)
+            characteristic = sqrt(v.positive.z / v.positive.y)
+            expected = characteristic * sinh(gamma * len) / s.model.branches[b].zbase
+            @test complex(pi.br_r, pi.br_x) ≈ expected rtol = 1e-12
+        end
+        changed = merge(p, NamedTuple{(Symbol("theta_", spec.family_name),)}((20.0,)))
+        @test real(s.model.branches[b].zy(changed, 50.0).positive.z) <
+              real(s.model.branches[b].zy(p, 50.0).positive.z)
+    end
+    fixed = ParameterBox(
+        s.box.names, s.box.nominal, s.box.nominal, s.box.nominal, s.box.scale)
+    prepared = deepcopy(s.hd)
+    nominal = solve_rhhc(prepared, s.model, fixed, s.conic;
+        pce_params = deepcopy(s.pce), hpf_optimizer = s.ipopt, nbackground = 0, use_seeds = false)
+    physical = solve_rhhc(prepared, s.model, s.box, s.conic;
+        pce_params = deepcopy(s.pce), hpf_optimizer = s.ipopt, posterior = s.config.posterior)
+    @test nominal["signed_off"]
+    @test posterior_check(prepared, s.model, fixed, nominal["solution"]; n = 1).max_violation <=
+          0
+    @test physical["signed_off"]
+    @test physical["posterior"].violated_fraction == 0
+    @test physical["posterior"].max_violation <= 0
+    @test all(br -> max(br["cm_fr"], br["cm_to"]) <= br["c_rating"],
+        values(prepared["nw"]["1"]["branch"]))
+end

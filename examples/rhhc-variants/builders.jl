@@ -135,6 +135,51 @@ function design(::Val{:U33}, spec, q, mat; temperature = q.theta)
     end
 end
 
+# Candidate study MV cables use a solid core and an equal-area copper screen tube.
+# The jacket fills the difference between the wire envelope and the tube.
+function design(::Union{Val{:U36}, Val{:U11}}, spec, q, mat; temperature = q.theta)
+    radius = q.d_c / 2
+    aluminum = metal(mat.aluminium, mat.reference;
+        rho = q.R20 * π * radius^2, temperature)
+    copper = metal(mat.copper, mat.reference; rho = q.rho_copper, temperature)
+    inner = Material(:semicon, q.rho_inner, q.eps_semicon)
+    outer = Material(:semicon, q.rho_outer, q.eps_semicon)
+    xlpe = Material(:insulator, q.rho_ins, q.eps; tan_delta = q.tand)
+    protection = Material(:insulator, q.rho_jacket, q.eps_jacket)
+    screen_radius = radius + q.t_sc1 + q.t_ins + q.t_sc2
+    area = spec.screen_count * π * q.d_wire^2 / 4
+    tube = sqrt(screen_radius^2 + area / π) - screen_radius
+    return @design spec.name begin
+        @terminal :core begin
+            core(aluminum; r = radius)
+        end
+        screen(inner; t = q.t_sc1, tag = :semicon_inner)
+        insulation(xlpe; t = q.t_ins)
+        screen(outer; t = q.t_sc2, tag = :semicon_outer)
+        @terminal :sheath begin
+            sheath(copper; t = tube)
+        end
+        jacket(protection; t = q.t_jkt + q.d_wire - tube)
+    end
+end
+
+# The coaxial formulation needs one concentric assembly per cable.
+# Variant: three unscreened single cores replace the NYY multicore construction.
+function design(::Val{:NYY}, spec, q, mat; temperature = q.theta)
+    radius = q.d_c / 2
+    copper = metal(mat.copper, mat.reference;
+        rho = q.R20 * π * radius^2, temperature)
+    pvc = Material(:insulator, q.rho_ins, q.eps; tan_delta = q.tand)
+    protection = Material(:insulator, q.rho_jacket, q.eps_jacket)
+    return @design spec.name begin
+        @terminal :core begin
+            core(copper; r = radius)
+        end
+        insulation(pvc; t = q.t_ins)
+        jacket(protection; t = q.t_jkt)
+    end
+end
+
 # A concentric strand has 1 + 3k(k + 1) wires and spans 2k + 1 diameters.
 strandspan(count) = 2 * ((isqrt(12count - 3) - 3) ÷ 6) + 1
 
@@ -307,6 +352,13 @@ function system(::Val{:trefoil}, conductor, row)
         connections = [(core = k, sheath = 0) for k in 1:3], id = "trefoil", line_length = 1.0)
 end
 
+function system(::Val{:unscreened}, conductor, row)
+    spacing = 2r_ex(conductor.outer)
+    positions = trefoil(conductor; spacing, at = centre(row.reference, row, spacing))
+    return build(CableSystem, fill(conductor, 3), positions;
+        connections = [(core = k,) for k in 1:3], id = "trefoil", line_length = 1.0)
+end
+
 function system(::Val{:overhead}, conductor, row)
     # The parabolic span's mean height is support height minus two thirds of the sag.
     positions = [Placement(x, h - (2 / 3) * row.phase_sag)
@@ -362,6 +414,15 @@ end
 function arrangement(kind, spec, physical, row, mat)
     return arrangement(
         kind, spec, physical.q, physical.reference, physical.structure, row, mat)
+end
+
+function arrangement(::Union{Val{:U36}, Val{:U11}}, spec, q, reference, structure, row, mat)
+    return design(spec.family, spec, q, mat), merge(row, (depth = q.depth,))
+end
+
+function arrangement(::Val{:NYY}, spec, q, reference, structure, row, mat)
+    return design(spec.family, spec, q, mat),
+    merge(row, (depth = q.depth, kind = Val(:unscreened)))
 end
 
 function arrangement(::Val{:ACSR}, spec, physical, row, mat)

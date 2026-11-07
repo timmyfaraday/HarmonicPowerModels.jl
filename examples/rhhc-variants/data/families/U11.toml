@@ -1,0 +1,95 @@
+[d_c]
+nominal = {value = 0.018, register = "U11.d_c"}
+lower = {value = 0.01782, register = "U11.d_c"}
+upper = {value = 0.018179999999999998, register = "U11.d_c"}
+
+[R20]
+nominal = {value = 0.000125, register = "U11.R20"}
+lower = {value = 0.00011395533117668201, register = "U11.R20"}
+upper = {value = 0.000125, register = "U11.R20"}
+
+[theta]
+nominal = {value = 90, register = "U11.theta"}
+lower = {value = 20, register = "U11.theta"}
+upper = {value = 90, register = "U11.theta"}
+
+[t_ins]
+nominal = {value = 0.0034, register = "U11.t_ins"}
+lower = {value = 0.00323, register = "U11.t_ins"}
+upper = {value = 0.00357, register = "U11.t_ins"}
+
+[t_jkt]
+nominal = {value = 0.00225, register = "U11.t_jkt"}
+lower = {value = 0.0021374999999999996, register = "U11.t_jkt"}
+upper = {value = 0.002475, register = "U11.t_jkt"}
+
+[eps]
+nominal = {value = 2.4, register = "U11.eps"}
+lower = {value = 2.1, register = "U11.eps"}
+upper = {value = 2.5, register = "U11.eps"}
+
+[rho_ins]
+nominal = {value = 110000000000000.0, register = "U11.rho_ins"}
+lower = {value = 100000000000000.0, register = "U11.rho_ins"}
+upper = {value = 1e+16, register = "U11.rho_ins"}
+scale = "log"
+
+[tand]
+nominal = {value = 0.0003, register = "U11.tand"}
+lower = {value = 0.00016, register = "U11.tand"}
+upper = {value = 0.004, register = "U11.tand"}
+
+[eps_jacket]
+nominal = {value = 4.5, register = "U11.eps_jacket"}
+lower = {value = 3.6, register = "U11.eps_jacket"}
+upper = {value = 6.0, register = "U11.eps_jacket"}
+
+[rho_jacket]
+nominal = {value = 1000000000000.0, register = "U11.rho_jacket"}
+lower = {value = 100000000000.0, register = "U11.rho_jacket"}
+upper = {value = 10000000000000.0, register = "U11.rho_jacket"}
+scale = "log"
+
+[depth]
+nominal = {value = 0.8, register = "U11.depth"}
+lower = {value = 0.7, register = "U11.depth"}
+upper = {value = 1.0, register = "U11.depth"}
+
+[t_sc1]
+nominal = {value = 0.00055, register = "U11.t_sc1"}
+lower = {value = 0.000495, register = "U11.t_sc1"}
+upper = {value = 0.0006050000000000001, register = "U11.t_sc1"}
+
+[t_sc2]
+nominal = {value = 0.0008, register = "U11.t_sc2"}
+lower = {value = 0.00072, register = "U11.t_sc2"}
+upper = {value = 0.0008800000000000001, register = "U11.t_sc2"}
+
+[d_wire]
+nominal = {value = 0.00135, register = "U11.d_wire"}
+lower = {value = 0.0013365, register = "U11.d_wire"}
+upper = {value = 0.0013635000000000001, register = "U11.d_wire"}
+
+[rho_copper]
+nominal = {value = 1.7241e-08, register = "U11.rho_copper"}
+lower = {value = 1.707e-08, register = "U11.rho_copper"}
+upper = {value = 1.786e-08, register = "U11.rho_copper"}
+scale = "log"
+
+[rho_inner]
+nominal = {value = 1000, register = "U11.rho_inner"}
+lower = {value = 14, register = "U11.rho_inner"}
+upper = {value = 1000, register = "U11.rho_inner"}
+scale = "log"
+
+[rho_outer]
+nominal = {value = 500, register = "U11.rho_outer"}
+lower = {value = 9, register = "U11.rho_outer"}
+upper = {value = 500, register = "U11.rho_outer"}
+scale = "log"
+
+[eps_semicon]
+nominal = {value = 1000, register = "U11.eps_semicon"}
+lower = {value = 100, register = "U11.eps_semicon"}
+upper = {value = 10000, register = "U11.eps_semicon"}
+scale = "log"

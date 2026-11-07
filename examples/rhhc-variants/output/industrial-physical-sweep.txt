@@ -1,0 +1,61 @@
+git commit: 23f0b261980da40e552145ad8868fb6823eab0d2
+LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+case: examples/rhhc-variants/cases/industrial-physical.toml
+threads: 16; solver: Clarabel
+Relative changes compare each endpoint with the nominal value.
+coordinate | maximum relative change | circuit | sequence | quantity | Hz | end | decision
+d_wire_U36 | 0.0157248604846 | U36-Al400/trefoil | zero | z | 50 | lower | yes
+d_c_U36 | 0.00716428279242 | U36-Al400/trefoil | positive | y | 50 | lower | yes
+depth_U36 | 1.34766254534e-05 | U36-Al400/trefoil | zero | z | 50 | upper | no
+rho_jacket_U11 | 0 | U11-Al240/trefoil | zero | z | 50 | lower | no
+d_c_NYY | 0.00799149008506 | NYY-Cu240-120/trefoil | negative | y | 50 | lower | yes
+R20_U11 | 0.0716327199609 | U11-Al240/trefoil | negative | z | 50 | lower | yes
+rho_copper_U11 | 0.022851404902 | U11-Al240/trefoil | zero | z | 50 | upper | yes
+depth_U11 | 5.1313064187e-06 | U11-Al240/trefoil | zero | z | 50 | upper | no
+eps_jacket_NYY | 0.149124270148 | NYY-Cu240-120/trefoil | positive | y | 50 | upper | yes
+t_jkt_U36 | 0.00575325450936 | U36-Al400/trefoil | negative | z | 50 | upper | yes
+t_ins_U11 | 0.0453058880175 | U11-Al240/trefoil | zero | y | 50 | lower | yes
+rho_outer_U36 | 0 | U36-Al400/trefoil | zero | z | 50 | lower | no
+rho_ins_NYY | 0 | NYY-Cu240-120/trefoil | zero | z | 50 | lower | no
+tand_NYY | 0 | NYY-Cu240-120/trefoil | zero | z | 50 | lower | no
+t_ins_NYY | 0.0165575060913 | NYY-Cu240-120/trefoil | negative | y | 50 | upper | yes
+eps_NYY | 0.136658004446 | NYY-Cu240-120/trefoil | positive | y | 50 | upper | yes
+t_sc2_U36 | 0.00342572356526 | U36-Al400/trefoil | zero | z | 650 | lower | yes
+d_wire_U11 | 0.0129095910354 | U11-Al240/trefoil | zero | z | 50 | lower | yes
+rho_jacket_NYY | 0 | NYY-Cu240-120/trefoil | zero | z | 50 | lower | no
+eps_jacket_U36 | 4.09116940096e-16 | U36-Al400/trefoil | zero | y | 650 | lower | no
+rho_ins_U11 | 0 | U11-Al240/trefoil | zero | z | 50 | lower | no
+eps_semicon_U11 | 0.00837952611599 | U11-Al240/trefoil | positive | y | 650 | lower | yes
+t_jkt_NYY | 0.0436195686136 | NYY-Cu240-120/trefoil | negative | y | 50 | upper | yes
+t_sc2_U11 | 0.00604937584254 | U11-Al240/trefoil | zero | z | 650 | lower | yes
+R20_U36 | 0.0774305438135 | U36-Al400/trefoil | positive | z | 50 | lower | yes
+tand_U36 | 0 | U36-Al400/trefoil | zero | z | 50 | lower | no
+rho_copper_U36 | 0.0277615020252 | U36-Al400/trefoil | zero | z | 50 | upper | yes
+rho_inner_U11 | 0 | U11-Al240/trefoil | zero | z | 50 | lower | no
+t_sc1_U11 | 0.00491727922816 | U11-Al240/trefoil | zero | y | 650 | lower | yes
+depth_NYY | 0.000193777585778 | NYY-Cu240-120/trefoil | zero | z | 650 | upper | no
+rho_outer_U11 | 0 | U11-Al240/trefoil | zero | z | 50 | lower | no
+rho_jacket_U36 | 0 | U36-Al400/trefoil | zero | z | 50 | lower | no
+t_ins_U36 | 0.0370308747154 | U36-Al400/trefoil | zero | y | 50 | upper | yes
+theta_NYY | 0.114944227543 | NYY-Cu240-120/trefoil | positive | z | 50 | lower | yes
+eps_semicon_U36 | 0.00520003307516 | U36-Al400/trefoil | zero | y | 50 | lower | yes
+eps_U36 | 0.124936470208 | U36-Al400/trefoil | zero | y | 50 | lower | yes
+rho_EARTH | 0.121036853522 | NYY-Cu240-120/trefoil | zero | z | 650 | lower | yes
+t_sc1_U36 | 0.00608453673003 | U36-Al400/trefoil | zero | y | 50 | lower | yes
+eps_jacket_U11 | 1.92368423628e-16 | U11-Al240/trefoil | zero | y | 50 | lower | no
+R20_NYY | 0.049286553473 | NYY-Cu240-120/trefoil | positive | z | 50 | lower | yes
+d_c_U11 | 0.00812485095085 | U11-Al240/trefoil | positive | y | 50 | lower | yes
+t_jkt_U11 | 0.00398652645435 | U11-Al240/trefoil | positive | z | 50 | upper | yes
+theta_U11 | 0.21002660357 | U11-Al240/trefoil | zero | z | 50 | lower | yes
+rho_ins_U36 | 0 | U36-Al400/trefoil | zero | z | 50 | lower | no
+rho_inner_U36 | 0 | U36-Al400/trefoil | zero | z | 50 | lower | no
+eps_U11 | 0.124897292891 | U11-Al240/trefoil | positive | y | 50 | lower | yes
+tand_U11 | 0 | U11-Al240/trefoil | zero | z | 50 | lower | no
+theta_U36 | 0.198617123807 | U36-Al400/trefoil | zero | z | 50 | lower | yes
+box_names = ["d_wire_U36", "d_c_U36", "d_c_NYY", "R20_U11", "rho_copper_U11", "eps_jacket_NYY", "t_jkt_U36", "t_ins_U11", "t_ins_NYY", "eps_NYY", "t_sc2_U36", "d_wire_U11", "eps_semicon_U11", "t_jkt_NYY", "t_sc2_U11", "R20_U36", "rho_copper_U36", "t_sc1_U11", "t_ins_U36", "theta_NYY", "eps_semicon_U36", "eps_U36", "rho_EARTH", "t_sc1_U36", "R20_NYY", "d_c_U11", "t_jkt_U11", "theta_U11", "eps_U11", "theta_U36"]
+Bear projection check: upper aluminum and steel wire diameters, nominal lay ratios.
+t = 0.825704225352; diameter = 0.0236845 m (+1.000000000 percent); mass = 1.23708333959 kg/m (+1.985436075 percent).
+Effective wires: aluminum 0.00337766109155 m, steel 0.00339128521127 m.
+EN 50182: diameter within +/-1 percent and mass within +/-2 percent; passed.
+Inner lay upper 16 equals steel lay lower 16; that order cannot bind except at equality.
+All 128 wire-diameter and lay endpoint combinations satisfy both aggregate limits and lay order.
