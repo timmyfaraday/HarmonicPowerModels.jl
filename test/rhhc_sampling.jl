@@ -79,6 +79,69 @@
             @test maximum(abs.(V[:, s] .- full)) < 1e-12
         end
 
+        # Recompute the former dense storage independently, for every constraint kind.
+        @test Set(first.(dict.keys)) == Set((:ihd, :thd, :rmsv, :rmsi))
+        gv = [g[h] for h in dict.harmonics]
+        for s in eachindex(dict.points)
+            m = moments_at(hd, model, latent(box, dict.points[s]))
+            cons = shhc_constraints(hd, m)
+            μ = zeros(length(gv), length(cons))
+            M = zeros(length(gv), length(gv), length(cons))
+            for (j, c) in enumerate(cons), (a, h) in enumerate(dict.harmonics)
+                haskey(c.coef, h) || continue
+                μ[a, j] = c.coef[h][1]
+                for (b, h2) in enumerate(dict.harmonics)
+                    haskey(c.coef, h2) || continue
+                    M[a, b, j] = sum(m.psi_norms[k+1] * c.coef[h][k+1] * c.coef[h2][k+1]
+                                     for k in m.K if k != 0; init = 0.0)
+                end
+            end
+            for (j, c) in enumerate(cons)
+                μg = HPM.dot(view(μ, :, j), gv)
+                F = c.λ <= 0.0 ? μg :
+                    μg + c.λ * sqrt(max(HPM.dot(gv, view(M, :, :, j), gv), 0.0))
+                dense = c.limit > 0.0 ? F / c.limit - 1.0 : F - c.limit
+                @test V[j, s] === dense
+            end
+        end
+        @test length(first(dict.μ)) == sum(length, dict.positions)
+        @test sum(length, (dict.M[1].single, dict.M[1].full, dict.M[1].subset)) ==
+              sum(p -> length(p)^2, dict.positions)
+        changed = deepcopy(dict)
+        pop!(changed.positions[1])
+        @test_throws ErrorException add_point!(changed, hd, model, zeros(3), :refined)
+
+        # Reading each constraint and filling a supplied matrix allocate no storage.
+        read_allocations(dict, gv, j) =
+            @allocated HPM._compact_violation(dict, j, dict.μ[1], dict.M[1], gv)
+        scan_allocations(V, dict, gv) = @allocated HPM._dictionary_violations!(V, dict, gv)
+        W = similar(V)
+        HPM._dictionary_violations!(W, dict, gv)
+        read_allocations(dict, gv, 1); scan_allocations(W, dict, gv)
+        @test all(read_allocations(dict, gv, j) == 0 for j in eachindex(dict.keys))
+        @test all(W[i] === V[i] for i in eachindex(V))
+        @test scan_allocations(W, dict, gv) == 0
+
+        # A proper harmonic subset keeps the dense dot path through local arrays.
+        m = moments_at(hd, model, nominal_point(box))
+        c = first(c for c in shhc_constraints(hd, m) if c.kind === :thd)
+        H = dict.harmonics
+        pos = [[1, 3]]
+        subset = HPM.ShhcConstraint(c.kind, c.key,
+            Dict(h => c.coef[h] for h in H[only(pos)]), c.limit, c.λ)
+        blocks, sizes = HPM._dictionary_layout(H, pos)
+        μ, M = HPM._compact([subset], m, H, pos, blocks, sizes)
+        partial = HPM.ParameterDictionary(box, H, [(c.kind, c.key)], [c.limit], [c.λ],
+            [zeros(length(box))], [:nominal], pos, blocks, sizes,
+            [μ], [M])
+        μfull = zeros(length(H), 1); Mfull = zeros(length(H), length(H), 1)
+        μfull[only(pos), 1] = μ
+        Mfull[only(pos), only(pos), 1] = reshape(M.subset, 2, 2)
+        F = HPM.dot(view(μfull, :, 1), gv) +
+            c.λ * sqrt(max(HPM.dot(gv, view(Mfull, :, :, 1), gv), 0.0))
+        dense = c.limit > 0.0 ? F / c.limit - 1.0 : F - c.limit
+        @test only(dictionary_violations(partial, g)) === dense
+
         # the interior worst case: for the 7th harmonic at the end of the cable feeder the
         # crossing seed beats every vertex
         j  = findfirst(==((:ihd, (7, 3))), dict.keys)
@@ -121,14 +184,17 @@
 
         # Reconstruct the dictionary before corners were introduced, in the original order.
         legacy = HPM.ParameterDictionary(box, dict.harmonics, dict.keys, dict.limit, dict.λ,
-            Vector{Float64}[], Symbol[], Matrix{Float64}[], Array{Float64,3}[])
+            Vector{Float64}[], Symbol[], dict.positions, dict.blocks, dict.sizes,
+            Vector{Float64}[], HPM._SecondMoments[])
         add_point!(legacy, hd, model, zeros(3), :nominal)
         add_points!(legacy, hd, model, vertices, :vertex)
         add_points!(legacy, hd, model, [s.ξ for s in seeds], :seed)
         add_points!(legacy, hd, model, background_points(box, 8), :background)
         default = build_dictionary(hd, model, box; seeds, nbackground = 8)
         @test all(isequal(getfield(default, f), getfield(legacy, f))
-                  for f in fieldnames(HPM.ParameterDictionary))
+                  for f in fieldnames(HPM.ParameterDictionary) if f !== :M)
+        @test all(isequal(a.single, b.single) && isequal(a.full, b.full) &&
+                  isequal(a.subset, b.subset) for (a, b) in zip(default.M, legacy.M))
 
         # At h5 the box stays below resonance. Two coordinates vary; nine fixed
         # coordinates exercise the d > 10 default without enlarging the physical box.

@@ -99,8 +99,8 @@ function pessimize!(dict::ParameterDictionary, hdata::Dict, model::AbstractNetwo
                     ncons::Int = 5, starts::Int = 3, iters::Int = 10, fd::Real = 1e-3,
                     margin::Real = Inf, ce = nothing, gradient::Symbol = :adjoint)
     gv  = [g[h] for h in dict.harmonics]
-    V   = dictionary_violations(dict, g)
     nc  = length(dict.keys)
+    V   = _dictionary_violations!(Matrix{Float64}(undef, nc, length(dict.points)), dict, gv)
     best = [maximum(view(V, j, :)) for j in 1:nc]
     arg  = [argmax(view(V, j, :)) for j in 1:nc]
 
