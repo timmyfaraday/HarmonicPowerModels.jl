@@ -244,7 +244,8 @@ function _mode_at(hdata, model, box, ξ, h, t; nc::NetworkCache = NetworkCache(h
 end
 
 # Projected gradient descent of |η_m(h; ξ)| over the coordinates `active`, central
-# finite differences, backtracking; ξ stays in [-1, 1].
+# finite differences in parallel, serial backtracking; ξ stays in [-1, 1]. The result
+# does not depend on the number of threads.
 function _min_eta(hdata, model, box, ξ0, h, t; active, iters = 12, fd = 1e-3,
                   nc::NetworkCache = NetworkCache(hdata, model))
     ξ = copy(ξ0)
@@ -252,7 +253,7 @@ function _min_eta(hdata, model, box, ξ0, h, t; active, iters = 12, fd = 1e-3,
     fξ = f(ξ)
     for _ in 1:iters
         g = zeros(length(ξ))
-        for i in active
+        _tforeach(active) do i
             e = zeros(length(ξ)); e[i] = fd
             g[i] = (f(clamp.(ξ .+ e, -1, 1)) - f(clamp.(ξ .- e, -1, 1))) / (2fd)
         end
@@ -285,7 +286,11 @@ resonance and harmonic in `harmonics` (default: the harmonics of `hdata`):
   point that moves only the `top` most sensitive coordinates.
 
 Each seed is scored by the dominant-mode estimate (see [`Seed`](@ref)) over the buses of
-the harmonic units `units` (default: the load buses).
+the harmonic units `units` (default: the load buses). Sensitivities are computed first,
+with their coordinates in parallel, then the (resonance, harmonic) pairs and the central
+differences within each descent step run in parallel. Seeds are collected in resonance
+then harmonic order before sorting by score; the result does not depend on the number
+of threads.
 """
 function resonance_seeds(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox;
                          harmonics = sort([parse(Int, nw) for nw in keys(hdata["nw"]) if nw != "1"]),
@@ -296,38 +301,39 @@ function resonance_seeds(hdata::Dict, model::AbstractNetworkModel, box::Paramete
     ubus = units === nothing ?
            unique(ld["load_bus"] for ld in values(hdata["nw"]["1"]["load"])) :
            unique(hdata["nw"]["1"]["load"]["$u"]["load_bus"] for u in units)
-    seeds = Seed[]
-    for r in res
-        s     = resonance_sensitivity(hdata, model, box, r; nc)
+    sens = [resonance_sensitivity(hdata, model, box, r; nc) for r in res]
+    groups = _tmap([(i, h) for i in eachindex(res) for h in harmonics]) do (i, h)
+        r, s  = res[i], sens[i]
         reach = sum(abs, s)
         order = sortperm(abs.(s); rev = true)
         act   = order[1:min(top, d)]
         upos  = [findfirst(==(b), r.buses) for b in ubus if b in r.buses]
-        for h in harmonics
-            crosses = abs(h - r.h) <= reach
-            cands = Vector{Float64}[]
-            if crosses
-                ξ = norm(s) > 0 ? clamp.(s .* (h - r.h) ./ sum(abs2, s), -1, 1) : zeros(d)
-                push!(cands, _min_eta(hdata, model, box, ξ, h, r.t; active = act, nc))
-            else
-                # the frequency coordinates push the resonance towards h; the coordinates
-                # that hardly move it (e.g., resistance: damping, not tuning) are then set by
-                # minimising |η_m(h)| with the frequency coordinates held
-                dir  = sign(h - r.h)
-                tune = [i for i in 1:d if abs(s[i]) > 1e-3 * maximum(abs, s)]
-                rest = setdiff(1:d, tune)
-                v = zeros(d); v[tune] = dir .* sign.(s[tune])
-                isempty(rest) || (v = _min_eta(hdata, model, box, v, h, r.t; active = rest, nc))
-                push!(cands, v)
-                f = zeros(d); f[act] = dir .* sign.(s[act]); push!(cands, f)
-            end
-            for ξ in unique(cands)
-                η, t = _mode_at(hdata, model, box, ξ, h, r.t; nc)
-                sc = isempty(upos) ? 0.0 : maximum(abs, t) * maximum(abs.(t[upos])) / abs(η)
-                push!(seeds, Seed(ξ, r, h, crosses, sc))
-            end
+        group = Seed[]
+        crosses = abs(h - r.h) <= reach
+        cands = Vector{Float64}[]
+        if crosses
+            ξ = norm(s) > 0 ? clamp.(s .* (h - r.h) ./ sum(abs2, s), -1, 1) : zeros(d)
+            push!(cands, _min_eta(hdata, model, box, ξ, h, r.t; active = act, nc))
+        else
+            # the frequency coordinates push the resonance towards h; the coordinates
+            # that hardly move it (e.g., resistance: damping, not tuning) are then set by
+            # minimising |η_m(h)| with the frequency coordinates held
+            dir  = sign(h - r.h)
+            tune = [i for i in 1:d if abs(s[i]) > 1e-3 * maximum(abs, s)]
+            rest = setdiff(1:d, tune)
+            v = zeros(d); v[tune] = dir .* sign.(s[tune])
+            isempty(rest) || (v = _min_eta(hdata, model, box, v, h, r.t; active = rest, nc))
+            push!(cands, v)
+            f = zeros(d); f[act] = dir .* sign.(s[act]); push!(cands, f)
         end
+        for ξ in unique(cands)
+            η, t = _mode_at(hdata, model, box, ξ, h, r.t; nc)
+            sc = isempty(upos) ? 0.0 : maximum(abs, t) * maximum(abs.(t[upos])) / abs(η)
+            push!(group, Seed(ξ, r, h, crosses, sc))
+        end
+        return group
     end
+    seeds = reduce(vcat, groups; init = Seed[])
     return sort!(seeds; by = s -> -s.score)
 end
 
