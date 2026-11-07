@@ -103,8 +103,9 @@ Example considering harmonic optimal power flow for a two-bus example.
         end
 
         @testset "HOPF w. Xfmr Magnitization" begin
-            # solved to optimality
-            @test results_w["termination_status"] == LOCALLY_SOLVED
+            # solved: a feasibility problem (zero objective), on which Ipopt stops at its
+            # acceptable tolerance on some platforms (Linux CI)
+            @test results_w["termination_status"] in (LOCALLY_SOLVED, ALMOST_LOCALLY_SOLVED)
             # objective value
             @test results_w["objective"] ≈ 0.0
         end
