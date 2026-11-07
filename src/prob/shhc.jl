@@ -246,6 +246,7 @@ admittance, and the transformer 2-port. Dropping any of them silently breaks the
 dHHC ≡ sHHC_SOC equivalence on networks where it is non-zero.
 """
 function _harmonic_admittance(nw_data::Dict, bus_idx::Dict{Int,Int})
+    nw_data = _zero_sequence_view(nw_data)   # the network itself unless zero sequence
     Nn = length(nw_data["bus"])
     Yh = zeros(ComplexF64, Nn, Nn)
 
@@ -265,7 +266,14 @@ function _harmonic_admittance(nw_data::Dict, bus_idx::Dict{Int,Int})
         # QCQP's KCL, where its current enters as (g_fr*vr − b_fr*vi)/tm².
         y_fr = get(branch, "g_fr", 0.0) + im * get(branch, "b_fr", 0.0)
         y_to = get(branch, "g_to", 0.0) + im * get(branch, "b_to", 0.0)
-        _stamp_branch!(Yh, f, t, r, x, y_fr, y_to, tc)
+        # zero sequence: a winding pair that earths one side (`_zero_sequence_view`)
+        if get(branch, "earth_to", false)
+            Yh[f, f] += (1 / (r + im * x) + y_fr) / abs2(tc)
+        elseif get(branch, "earth_fr", false)
+            Yh[t, t] += 1 / (r + im * x) + y_to
+        else
+            _stamp_branch!(Yh, f, t, r, x, y_fr, y_to, tc)
+        end
     end
 
     # Bus shunt stamp: a bus shunt (capacitor bank, shunt filter, shunt reactor)
@@ -348,6 +356,8 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
 
     harm_nw_strs = sort([nw for nw in keys(hdata["nw"]) if nw != "1"])
     harm_nw_ints = parse.(Int, harm_nw_strs)
+    # zero-sequence harmonics: the zero-sequence equivalent networks
+    networks = Dict(nw => _zero_sequence_view(networks[nw]) for nw in harm_nw_strs)
 
     # ── Step 3: Z_h via Kron elimination of clean buses ───────────────────────
     # Clean buses (bus_type 4) are ideal harmonic grounds (V=0); they are
@@ -362,11 +372,21 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
     non_ref_ids = [i for i in 1:Nn if i ∉ ref_bus_ids]   # row/col indices
 
     Z_harm = Dict{Int, Matrix{ComplexF64}}()
+    # zero-sequence harmonics at which a harmonic unit sits in a part of the network with no
+    # path to earth: no current can be injected there, so the hosting capacity is zero
+    blocked = Set{Int}()
+    hunits  = Set(get(pce, "harmonic_units", Int[]))
     for (nw_str, nw_int) in zip(harm_nw_strs, harm_nw_ints)
         nw_data = networks[nw_str]
         Yh      = _harmonic_admittance(nw_data, bus_idx)
         Y_red   = Yh[non_ref_ids, non_ref_ids]
         nr      = length(non_ref_ids)
+        if get(nw_data, "harmonic_sequence", :positive) === :zero
+            Y_red, floating = _earth_floating(Y_red)
+            fl = Set(non_ref_ids[i] for idx in floating for i in idx)
+            any(bus_idx[ld["load_bus"]] in fl for (d, ld) in nw_data["load"]
+                if parse(Int, d) in hunits) && push!(blocked, nw_int)
+        end
         try
             Z_harm[nw_int] = Y_red \ Matrix{ComplexF64}(_eye, nr, nr)
         catch
@@ -454,8 +474,11 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
             # on the from side, as in the QCQP's Ohm's law and the dHHC
             tm   = get(br, "tap", 1.0); tm == 0.0 && (tm = 1.0)
             ct   = 1.0 / (tm * cis(get(br, "shift", 0.0))); cr, ci = real(ct), imag(ct)
-            dVr  = (cr .* view(ar, f, :) .- ci .* view(ai, f, :)) .- view(ar, t, :)
-            dVi  = (cr .* view(ai, f, :) .+ ci .* view(ar, f, :)) .- view(ai, t, :)
+            # zero sequence: an earthed side of a winding pair has zero voltage
+            ef   = get(br, "earth_fr", false) ? 0.0 : 1.0
+            et   = get(br, "earth_to", false) ? 0.0 : 1.0
+            dVr  = ef .* (cr .* view(ar, f, :) .- ci .* view(ai, f, :)) .- et .* view(ar, t, :)
+            dVi  = ef .* (cr .* view(ai, f, :) .+ ci .* view(ar, f, :)) .- et .* view(ai, t, :)
             Ibr  = gy .* dVr .- by .* dVi
             Ibi  = gy .* dVi .+ by .* dVr
             AI[parse(Int, b_str)] = galerkin_product(pb, Ibr, Ibr) .+
@@ -465,7 +488,7 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
     end
 
     return (; pb, K, psi_norms, alpha_re, alpha_im, alpha_V, alpha_I, Nn, bus_idx,
-              ref_bus_ids, harm_nw_strs, harm_nw_ints, wts)
+              ref_bus_ids, harm_nw_strs, harm_nw_ints, wts, blocked)
 end
 
 """
@@ -539,6 +562,11 @@ function shhc_master(hdata::Dict, moments, optimizer)
         isempty(caps) && continue
         JuMP.set_upper_bound(Ip_h[h], minimum(caps) / s_h[h])
         JuMP.set_upper_bound(gp_h[h], (minimum(caps) / s_h[h])^2)
+    end
+    # a unit with no zero-sequence path to earth cannot inject at that harmonic
+    for h in get(moments, :blocked, Set{Int}())
+        JuMP.set_upper_bound(Ip_h[h], 0.0)
+        JuMP.set_upper_bound(gp_h[h], 0.0)
     end
 
     # objective normalised by S = Σ_h U_h·s_h; the reported value is rescaled

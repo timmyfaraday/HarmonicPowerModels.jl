@@ -34,6 +34,7 @@ struct NetworkCache{M<:AbstractNetworkModel}
     unc::Vector{Int}                           # uncertain branches
     ubr::Dict{Int,Tuple{Int,Int,ComplexF64}}   # branch => (from index, to index, tap)
     yfix::Dict{Tuple{Float64,Symbol},Matrix{ComplexF64}}
+    zview::Dict{Int,Dict{String,Any}}          # h => zero-sequence view of the fixed branches
     lk::ReentrantLock
 end
 
@@ -48,7 +49,8 @@ function NetworkCache(hdata::Dict, model::AbstractNetworkModel)
     ubr     = Dict(b => (bus_idx[fund["branch"]["$b"]["f_bus"]], bus_idx[fund["branch"]["$b"]["t_bus"]],
                          _tap(fund["branch"]["$b"])) for b in unc)
     return NetworkCache(hdata, model, bus_idx, buses, [bus_idx[b] for b in buses], unc, ubr,
-                        Dict{Tuple{Float64,Symbol},Matrix{ComplexF64}}(), ReentrantLock())
+                        Dict{Tuple{Float64,Symbol},Matrix{ComplexF64}}(),
+                        Dict{Int,Dict{String,Any}}(), ReentrantLock())
 end
 
 # admittance of the fixed elements at harmonic order h (cached)
@@ -83,7 +85,39 @@ end
 As [`reduced_admittance`](@ref) for `(hdata, model, p, h)`, from the cache.
 """
 function reduced_admittance(nc::NetworkCache, p, h::Real; sequence::Symbol = :positive)
-    return fast_admittance(nc, p, h; sequence)[nc.keep, nc.keep], nc.buses
+    Yr = fast_admittance(nc, p, h; sequence)[nc.keep, nc.keep]
+    sequence === :zero && (Yr = first(_earth_floating(Yr)))
+    return Yr, nc.buses
+end
+
+# zero-sequence view of the fixed (not uncertain) branches at the integer harmonic h (cached)
+function _zero_branches(nc::NetworkCache, h::Int)
+    v = lock(() -> get(nc.zview, h, nothing), nc.lk)
+    v === nothing || return v
+    nw  = nc.hdata["nw"]["$h"]
+    ntw = copy(nw)
+    ntw["branch"] = Dict(k => b for (k, b) in nw["branch"] if !(parse(Int, k) in nc.unc))
+    v = _zero_sequence_view(ntw)["branch"]
+    lock(() -> (nc.zview[h] = v), nc.lk)
+    return v
+end
+
+_admittance_of(r, x) = abs(r) + abs(x) > 0.0 ? 1.0 / (r + im * x) : zero(ComplexF64)
+
+# terminals (matrix indices, 0 for earth), tap and series admittance of branch b at (p, h);
+# at a zero-sequence harmonic a fixed branch is read from its zero-sequence view
+function _branch_terminals(ce, b::Int, p, h::Int, bd = nothing)
+    f, t, tc = ce.brinfo[b]
+    nc = ce.nc
+    if harmonic_sequence(h) !== :zero || b in nc.unc
+        ys = bd !== nothing && b in nc.unc ? 1.0 / (bd[b].br_r + im * bd[b].br_x) :
+             _series_admittance(ce, b, p, h)
+        return f, t, tc, ys
+    end
+    br = _zero_branches(nc, h)["$b"]
+    get(br, "earth_fr", false) && (f = 0)
+    get(br, "earth_to", false) && (t = 0)
+    return f, t, _tap(br), _admittance_of(br["br_r"], br["br_x"])
 end
 
 """
@@ -170,8 +204,7 @@ function fast_violation(ce::ConstraintEvaluator, j::Int, ξ, g)
         Yr = reduced_admittance(ce.nc, p, h; sequence = harmonic_sequence(h))[1]
         Ft = lu(transpose(Yr))
         if c.kind === :rmsi
-            f, t, tc = ce.brinfo[c.key]
-            ys = _series_admittance(ce, c.key, p, h); gy, by = real(ys), imag(ys)
+            f, t, tc, ys = _branch_terminals(ce, c.key, p, h); gy, by = real(ys), imag(ys)
             arf, aif = _response(ce, Ft, f, h); art, ait = _response(ce, Ft, t, h)
             ct = 1.0 / tc; cr, ci = real(ct), imag(ct)
             dVr = (cr .* arf .- ci .* aif) .- art
@@ -264,14 +297,14 @@ function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVe
             f, t, tc = nc.ubr[b]; x = bd[b]
             _stamp_branch!(Y, f, t, x.br_r, x.br_x, complex(x.g_fr, x.b_fr), complex(x.g_to, x.b_to), tc)
         end
-        F   = lu(Y[nc.keep, nc.keep])
+        Yr  = Y[nc.keep, nc.keep]
+        seq === :zero && (Yr = first(_earth_floating(Yr)))
+        F   = lu(Yr)
         row(n) = haskey(ce.pos, n) ? (e = zeros(ComplexF64, length(ce.pos)); e[ce.pos[n]] = 1.0;
                                        transpose(F) \ e) : zeros(ComplexF64, length(ce.pos))
         resp(rv) = isempty(ce.upos[h]) ? zeros(ComplexF64, nk) : vec(transpose(rv[ce.upos[h]]) * ce.E[h])
         if c.kind === :rmsi
-            f, t, tc = ce.brinfo[c.key]
-            ys = c.key in nc.unc ? 1.0 / (bd[c.key].br_r + im * bd[c.key].br_x) :
-                 (br = nc.hdata["nw"]["$h"]["branch"]["$(c.key)"]; 1.0 / (br["br_r"] + im * br["br_x"]))
+            f, t, tc, ys = _branch_terminals(ce, c.key, p, h, bd)
             ct = 1.0 / tc
             xf, xt = row(f), row(t)
             r  = ys .* (ct .* xf .- xt)

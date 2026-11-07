@@ -73,4 +73,7 @@ PMs.silence()
     include("rhhc_cutting_set.jl")
     include("rhhc_minimal.jl")
 
+    # Zero-sequence network of the second-order cone program
+    include("zero_sequence.jl")
+
 end

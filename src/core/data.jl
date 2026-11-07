@@ -576,19 +576,36 @@ The `shift` of a branch carrying `vg` is its own phase shift plus the derived
 Scaling an already scaled network (as `harmonic_network` does with the fundamental)
 replaces `vg_shift` instead of adding the vector-group phase again. Branches without
 `vg` are unchanged.
-Winding earthing (`gnd`, `re`, `xe`) enters only through the IV
-`constraint_xfmr_winding_config` constraints of `xfmr` records. The stochastic SOC
-admittance (`_harmonic_admittance`) models no zero-sequence winding configuration
-for `xfmr` records, and none is added for branches.
+Winding earthing (`gnd`, `re`, `xe`) enters the IV formulations through the
+`constraint_xfmr_winding_config` constraints of `xfmr` records, and the second-order cone
+program through the zero-sequence view of the network (`_zero_sequence_view`), for
+`xfmr` records and transformer branches alike. The network is marked with its
+`harmonic_sequence`; the optional zero-sequence data (`br_r0`, `br_x0`, `b0_fr`, `b0_to`,
+`re1`/`xe1`/`re2`/`xe2` of branches, `rsc0`/`xsc0` of generators) are scaled by the same
+rules.
 This is the one copy of the scaling rules: [`replicate`](@ref) applies it per harmonic.
 """
 function _scale_network_to_harmonic!(ntw::Dict, nh::Real, sequence::Symbol)
+    # the sequence of this network, read by the zero-sequence view of the second-order
+    # cone program (`_zero_sequence_view`); ignored by the IV formulations
+    ntw["harmonic_sequence"] = sequence
+
     # re-evaluate the branch data
     for branch in values(ntw["branch"])
         haskey(branch, "br_r") ? branch["br_r"] *= sqrt(nh) : ~ ;
         haskey(branch, "br_x") ? branch["br_x"] *= nh : ~ ;
         haskey(branch, "b_fr") ? branch["b_fr"] *= nh : ~ ;
         haskey(branch, "b_to") ? branch["b_to"] *= nh : ~ ;
+        # zero-sequence data (optional), scaled by the same rules
+        haskey(branch, "br_r0") ? branch["br_r0"] *= sqrt(nh) : ~ ;
+        haskey(branch, "br_x0") ? branch["br_x0"] *= nh : ~ ;
+        haskey(branch, "b0_fr") ? branch["b0_fr"] *= nh : ~ ;
+        haskey(branch, "b0_to") ? branch["b0_to"] *= nh : ~ ;
+        # neutral earthing of a transformer branch (as the re/xe of `xfmr` records)
+        for w in ("1", "2")
+            haskey(branch, "re" * w) ? branch["re" * w] *= sqrt(nh) : ~ ;
+            haskey(branch, "xe" * w) ? branch["xe" * w] *= nh : ~ ;
+        end
 
         if haskey(branch, "vg")
             # With |tc| = 1, _stamp_branch! gives I_f = y_s (V_f − tc V_t),
@@ -630,6 +647,14 @@ function _scale_network_to_harmonic!(ntw::Dict, nh::Real, sequence::Symbol)
             Yh = 1 / (rsc * sqrt(nh) + im * xsc * nh)        # Y_g(h)
             gen["gsc"] = real(Yh)
             gen["bsc"] = imag(Yh)
+        end
+        # zero-sequence impedance to earth (optional), e.g., the leakage of a YNd step-up
+        rsc0 = get(gen, "rsc0", 0.0)
+        xsc0 = get(gen, "xsc0", 0.0)
+        if !iszero(rsc0) || !iszero(xsc0)
+            Y0 = 1 / (rsc0 * sqrt(nh) + im * xsc0 * nh)
+            gen["gsc0"] = real(Y0)
+            gen["bsc0"] = imag(Y0)
         end
     end
 

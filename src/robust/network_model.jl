@@ -198,6 +198,7 @@ function _override_branches(ntw::Dict, model::AbstractNetworkModel, p, h::Real,
         for (k, v) in pairs(branch_data(model, b, p, h, sequence))
             br[string(k)] = v
         end
+        br["sequence_data"] = sequence      # the model's data hold for this sequence
         out["branch"]["$b"] = br
     end
     return out
