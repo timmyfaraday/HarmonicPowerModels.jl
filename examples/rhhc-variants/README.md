@@ -33,9 +33,34 @@ The cases declare the transformer vector groups per tapped branch. Branches 12, 
 36 are YNyn0. The three-winding unit uses branches 11 and 14 as Yy0 and branch 13 as
 Yd11, and branch 16 is YNd11. HPM receives `Yy0` or `Yd11` and keeps the tap magnitude.
 The case records declare solid 132 kV neutral earthing and resistance earthing at
-33 kV, sized for a 1 kA earth fault. HPM applies vector groups and delta blocking in the
-harmonic admittance, while winding earthing impedances enter only its IV formulation.
-The run report lists these declarations and their per-unit impedances.
+33 kV, sized for a 1 kA earth fault. The builder passes the earthing (`gnd1`, `gnd2`) and
+the neutral impedances in per unit to HPM, which applies the vector groups at every
+harmonic and the earthing at the zero-sequence harmonics. The run report lists these
+declarations and their per-unit impedances.
+
+## Zero-sequence variants
+
+The `ieee30-zs-*` cases take `ieee30-physical` (four inputs) to every harmonic order from
+2 to 50, including the zero-sequence orders 3, 6, …, 48, without recombination: the
+contributions of the 21 units align in the worst case at every bus and branch, so no
+angle model is needed (`recombination = false`). Bus 9 is declared the star point of the
+three-winding unit. Each generator sits behind a YNd step-up with 0.12 pu leakage on a
+rating of 0.2 times its short-circuit power (X/R = 40), i.e., an impedance to earth at its
+bus; the condensers at buses 11 and 13 are behind their own step-ups and open. These
+generator values are assumptions, flagged in the case files. The variants differ only in
+the windings and earthing of the transformers with a 33 kV winding:
+
+| Case | 132/33 kV units | 33 kV earthing |
+| --- | --- | --- |
+| `ieee30-zs-ynyn-solid` | YNyn0 | solid |
+| `ieee30-zs-ynyn-resistance` | YNyn0 | 19.05 Ω (the `ieee30-physical` baseline) |
+| `ieee30-zs-dyn` | Dyn11, delta on 132 kV | 19.05 Ω |
+| `ieee30-zs-ynd` | YNd11, delta on 33 kV | none: the condenser step-up's 33 kV star is unearthed |
+| `ieee30-zs-unearthed` | YNy0 | none: every 33 kV star unearthed |
+
+The clock numbers keep the same phase shift on every 132/33 kV path, so the positive- and
+negative-sequence harmonics do not change between the variants. The report adds the
+hosting capacity summed per sequence, nominal and robust.
 
 ## Inputs and their sources
 

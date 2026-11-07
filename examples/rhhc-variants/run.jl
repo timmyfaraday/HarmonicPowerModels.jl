@@ -17,7 +17,9 @@ function runstudy(s, io)
     label = source.kind == "scenario" ? "IEEE 30-bus, " * source.scenario : source.file
     report(io, label, ", ", length(s.details),
         " branches from LineCableModels, ", length(s.pce["harmonic_units"]), " units, ε = ",
-        s.config.epsilon, ", Cantelli, ", Threads.nthreads(), " threads")
+        s.config.epsilon, ", ", s.config.bound,
+        get(s.pce, "recombination", true) ? "" : ", no recombination (worst-case alignment)",
+        ", ", Threads.nthreads(), " threads")
     box = s.box
     box0 = ParameterBox(box.names, box.nominal, box.nominal, box.nominal, box.scale)
     nom = solve_rhhc(deepcopy(s.hd), s.model, box0, s.conic;
@@ -48,6 +50,13 @@ function runstudy(s, io)
             [@sprintf("h%d %.3f", h, res["solution"][h] / nom["master_solution"][h])
              for h in s.config.harmonics],
             ", "))
+    # totals per sequence (the vector groups and earthing act on the zero sequence only)
+    seqs = (:positive, :negative, :zero)
+    tot(sol) = [sum((get(sol, h, 0.0) for h in s.config.harmonics
+                     if HPM.harmonic_sequence(h) === q); init = 0.0) for q in seqs]
+    tn, tr = tot(nom["master_solution"]), tot(res["solution"])
+    report(io, "per sequence, Σ_h I_h nominal → robust [pu]: ",
+        join([@sprintf("%s %.6f → %.6f", q, a, b) for (q, a, b) in zip(seqs, tn, tr)], ", "))
     labels = res["dictionary"].labels
     report(io, "oracle dictionary labels: ",
         join(

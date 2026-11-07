@@ -1,0 +1,317 @@
+box_names = ["R20_U33", "eps_U33", "t_ins_U33", "rho_EARTH"]
+network = {kind = "scenario", scenario = "inductive_cable33"}
+model = "exact"
+bound = "cantelli"
+harmonics = {value = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50], origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # 1
+units = {value = 21, origin = "examples/rhhc/ieee30_lcm.jl:106"} # 1
+epsilon = {value = 0.05, origin = "examples/shhc/pce_params.jl:20"} # 1
+posterior = {value = 256, origin = "examples/rhhc/ieee30_lcm.jl:152"} # 1
+recombination = {value = false, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # no recombination (worst-case alignment)
+star_points = {value = [9], origin = "three-winding unit at bus 6, star point 9"} # 1
+variant = "Baseline of ieee30-physical: 132/33 kV units YNyn0, 33 kV stars earthed through 19.05 Ω (1 kA)."
+f1 = {value = 50.0, origin = "examples/shhc/ieee30_scenarios.jl:40"} # Hz
+
+
+[box.R20_U33]
+family = "U33"
+coordinate = "R20"
+
+[box.eps_U33]
+family = "U33"
+coordinate = "eps"
+
+[box.t_ins_U33]
+family = "U33"
+coordinate = "t_ins"
+
+[box.rho_EARTH]
+family = "EARTH"
+coordinate = "rho"
+
+[bindings.U33]
+R20 = "R20_U33"
+eps = "eps_U33"
+t_ins = "t_ins_U33"
+
+[branches."17"]
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."18"]
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."19"]
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."20"]
+spec = "U33-400"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."21"]
+spec = "U33-800"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."22"]
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."23"]
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."24"]
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."25"]
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."26"]
+spec = "U33-630"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."27"]
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."28"]
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."29"]
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."30"]
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."31"]
+spec = "U33-400"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."32"]
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."33"]
+spec = "U33-400"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."34"]
+spec = "U33-400"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."35"]
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."37"]
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."38"]
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."39"]
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."1"]
+spec = "Lion"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."2"]
+spec = "Goat"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."3"]
+spec = "Bear"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."4"]
+spec = "Lion"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."5"]
+spec = "Goat"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."6"]
+spec = "Lion"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."7"]
+spec = "Bear"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."8"]
+spec = "Panther"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."9"]
+spec = "Bear"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."10"]
+spec = "Bear"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."40"]
+spec = "Bear"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."41"]
+spec = "Goat"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[transformers."12"]
+vg = "Yy0"
+note = "YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance."
+f_bus = {value = 6, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 10, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 1, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # 1
+gnd2 = {value = 1, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # 1
+re1_ohm = {value = 0, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 19.05, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
+
+[transformers."15"]
+vg = "Yy0"
+note = "YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance."
+f_bus = {value = 4, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 12, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 1, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # 1
+gnd2 = {value = 1, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # 1
+re1_ohm = {value = 0, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 19.05, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
+
+[transformers."36"]
+vg = "Yy0"
+note = "YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance."
+f_bus = {value = 28, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 27, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 1, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # 1
+gnd2 = {value = 1, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # 1
+re1_ohm = {value = 0, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 19.05, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
+
+[transformers."11"]
+vg = "Yy0"
+note = "Three-winding unit at bus 6, star point 9. The 132 kV winding is YN, solidly earthed. Bus 9 represents the star point."
+f_bus = {value = 6, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 9, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 1, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # 1
+gnd2 = {value = 0, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # 1
+re1_ohm = {value = 0, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 0, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+
+[transformers."14"]
+vg = "Yy0"
+note = "Three-winding unit, star point 9. The 33 kV winding is yn, earthed through a resistance."
+f_bus = {value = 9, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 10, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 0, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # 1
+gnd2 = {value = 1, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # 1
+re1_ohm = {value = 0, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 19.05, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
+
+[transformers."13"]
+vg = "Yd11"
+note = "Three-winding unit, star point 9. The 11 kV winding is delta and supplies the condenser at bus 11."
+f_bus = {value = 9, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 11, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 0, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # 1
+gnd2 = {value = 0, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # 1
+re1_ohm = {value = 0, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 0, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+
+[transformers."16"]
+vg = "Yd11"
+note = "YNd11 step-up of the condenser at bus 13. The delta is on the 11 kV side. The 33 kV YN neutral is earthed through a resistance."
+f_bus = {value = 12, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 13, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 1, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # 1
+gnd2 = {value = 0, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # 1
+re1_ohm = {value = 19.05, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 0, origin = "zero-sequence variant, Tom Van Acker 2026-11-07"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
+
+[bindings.EARTH]
+rho = "rho_EARTH"
+
+# Zero sequence of the generators: each machine behind a YNd step-up (delta on the
+# machine side), i.e., an impedance to earth at its bus, 0.12 pu leakage on a rating
+# S = 0.2·Ssc (subtransient reactance 0.2 pu), X/R = 40; the condensers at buses 11
+# and 13 are behind their own step-ups (branches 13 and 16), so open.
+[generators."1"]
+xsc0 = {value = 0.03, origin = "assumption: 0.12 pu on 400 MVA, Ssc 2 GVA"} # pu
+rsc0 = {value = 0.00075, origin = "assumption: X/R = 40"} # pu
+[generators."2"]
+xsc0 = {value = 0.03, origin = "assumption: 0.12 pu on 400 MVA, Ssc 2 GVA"} # pu
+rsc0 = {value = 0.00075, origin = "assumption: X/R = 40"} # pu
+[generators."3"]
+xsc0 = {value = 0.3, origin = "assumption: 0.12 pu on 40 MVA, Ssc 200 MVA"} # pu
+rsc0 = {value = 0.0075, origin = "assumption: X/R = 40"} # pu
+[generators."4"]
+xsc0 = {value = 0.3, origin = "assumption: 0.12 pu on 40 MVA, Ssc 200 MVA"} # pu
+rsc0 = {value = 0.0075, origin = "assumption: X/R = 40"} # pu
+[generators."5"]
+zero_sequence_open = {value = true, origin = "condenser behind branch 13 (delta on 11 kV)"}
+[generators."6"]
+zero_sequence_open = {value = true, origin = "condenser behind branch 16 (delta on 11 kV)"}

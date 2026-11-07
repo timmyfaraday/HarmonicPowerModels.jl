@@ -354,8 +354,34 @@ function transformers(rows, data)
         (br["f_bus"], br["t_bus"]) == (row.f_bus, row.t_bus) ||
             error("transformer $id does not join declared buses $(row.f_bus)–$(row.t_bus)")
         br["vg"] = row.vg
+        # winding earthing for the zero sequence, the neutral impedances in per unit of
+        # each side's base
+        zb(bus) = data["bus"][string(bus)]["base_kv"]^2 / data["baseMVA"]
+        br["gnd1"], br["gnd2"] = row.gnd1, row.gnd2
+        br["re1"], br["xe1"] = row.re1_ohm / zb(row.f_bus), row.xe1_ohm / zb(row.f_bus)
+        br["re2"], br["xe2"] = row.re2_ohm / zb(row.t_bus), row.xe2_ohm / zb(row.t_bus)
     end
     return rows
+end
+
+# star points of three-winding units (zero-sequence T model) and the zero-sequence
+# impedance of the generators, both optional in a case
+function zero_sequence!(config, data)
+    for bus in get(config, :star_points, Int[])
+        haskey(data["bus"], string(bus)) || error("declared star point $bus is absent")
+        data["bus"][string(bus)]["star_point"] = true
+    end
+    for (name, row) in pairs(get(config, :generators, (;)))
+        id = string(name)
+        haskey(data["gen"], id) || error("declared generator $id is absent")
+        g = data["gen"][id]
+        if get(row, :zero_sequence_open, false)
+            g["zero_sequence_open"] = true
+        else
+            g["rsc0"], g["xsc0"] = row.rsc0, row.xsc0
+        end
+    end
+    return data
 end
 
 # MATPOWER route comments remain the source of lengths, in meters after decoding.
@@ -404,6 +430,7 @@ function study(path; all_coordinates = false)
     data = network(config, ipopt)
     haskey(config, :principle) && (data["principle"] = config.principle)
     transformers(get(config, :transformers, (;)), data)
+    zero_sequence!(config, data)
     bindings = (;
         (k => (; (n => Symbol(v) for (n, v) in pairs(b))...)
     for (k, b) in pairs(get(config, :bindings, (;))))...)
@@ -448,9 +475,13 @@ function study(path; all_coordinates = false)
         parse(Int, k) in units || delete!(hd["nw"][string(h)]["load"], k)
     end
     pce = Dict{String, Any}(deepcopy(PCE_PARAMS)...)
+    # without recombination the angles do not enter, and harmonics without an angle
+    # range in PCE_PARAMS are allowed
+    recombination = get(config, :recombination, true)
+    pce["recombination"] = recombination
     pce["harmonics"] = Dict{Int, Any}(h => (PCE_PARAMS["harmonics"][h].v_min,
                                           PCE_PARAMS["harmonics"][h].v_max)
-    for h in config.harmonics)
+    for h in config.harmonics if recombination || haskey(PCE_PARAMS["harmonics"], h))
     pce["harmonic_units"] = units
     pce["bound"] = config.bound
     pce["epsilon"] = config.epsilon
@@ -476,7 +507,7 @@ end
 function declarations(io, s)
     isempty(get(s.config, :transformers, (;))) && return
     println(io, "Transformer vector groups are applied to tapped branches.")
-    println(io, "Winding earthing is declared below; HPM applies it only in its IV formulation.")
+    println(io, "Winding earthing is declared below; HPM applies it in the zero sequence.")
     for (id, row) in sort(collect(pairs(s.config.transformers)); by = x -> parse(Int, string(first(x))))
         br = s.hd["nw"]["1"]["branch"][string(id)]
         kv1 = s.hd["nw"]["1"]["bus"][string(br["f_bus"])]["base_kv"]
