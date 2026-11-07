@@ -18,7 +18,7 @@ physical members, nominal values, bounds, scales and the source records. The
 [reduction report](output/ieee30-full-equivalent-reduction.txt) retains the coordinate
 table, sharing groups, subdivision cells, containment and five largest added
 extremes. The separate comparison script computes the capacity checks. Raw numerical tables and logs stay in
-`/tmp`.
+`tmp/`.
 
 The generated data identify source-case revision `85cdb95`. The capacity
 comparison uses HPM `2262246` and LCM pinned at
@@ -224,7 +224,7 @@ residual is the maximum discrepancy of the two signed normalized positions.
 The source search starts at the closest of the 4399 sampled points and refines
 on the driving source coordinates. If it reaches the first selected corner,
 it tries another corner. The residual records the smallest value found by that
-search. The raw pair table retains the closest source points in `/tmp`.
+search. The raw pair table retains the closest source points in `tmp/`.
 
 ## Capacity comparison
 
@@ -356,7 +356,7 @@ julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/compare.jl c
 ```
 
 Reduction writes the case, coordinate data and compact report. Its temporary
-evidence directory defaults to `/tmp/hpm-equivalent`. A second argument
+evidence directory defaults to `tmp/equivalent`. A second argument
 selects another directory. It recomputes subdivision, hulls, sharing, admission and
 decorrelation. Sorted TOML output and a fixed table order make regeneration
 deterministic. The source commit and LCM source fingerprint identify the input code.
@@ -379,7 +379,7 @@ The studies tests call the reconstruction, effective-map, subdivision, hull and
 generation code. They check equality at 303 source points on eight circuits at
 50 and 650 Hz, containment at 4096 mapped verification points per circuit, sharing,
 and a boxed resistance and height combination. They regenerate all three files
-into `/tmp` and compare their bytes. They also load the generated case, compare
+into `tmp/` and compare their bytes. They also load the generated case, compare
 its nominal sequences with the source, check containment against its saved members
 and exercise its coordinate interpolation away from nominal.
 
@@ -475,7 +475,7 @@ sensitivity parameters, subdivision and scalar hull search as the equivalent
 reduction. The face search remains active on order ties and aggregate limits.
 Containment checks 4096 additional Sobol points per design, mapped through the
 physical source maps. The generated reduction report records the cells, search
-methods and containment results. The raw hull table stays in `/tmp`.
+methods and containment results. The raw hull table stays in `tmp/`.
 
 The factor case uses the existing `exact` model kind. HPM's public
 `ExactPiModel(branches; f1)` receives callables that scale the extension's nominal

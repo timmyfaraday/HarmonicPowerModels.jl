@@ -3,11 +3,11 @@ isdefined(@__MODULE__, :STUDIES) || include(joinpath(@__DIR__, "..", "reduce.jl"
 
 @testset "RLC surrogates" begin
     inputs = reduction_inputs("cases/ieee30-full.toml")
-    factors = factor_study(inputs, "/tmp/hpm-surrogate-tests")
-    fresh = generate_surrogates(factors; destination = "/tmp/hpm-surrogate-regenerated")
+    factors = factor_study(inputs, joinpath(STUDIES, "tmp", "surrogate-tests"))
+    fresh = generate_surrogates(factors; destination = joinpath(STUDIES, "tmp", "surrogate-regenerated"))
     for path in keys(fresh.files)
         @test read(joinpath(STUDIES, path)) ==
-              read(joinpath("/tmp/hpm-surrogate-regenerated", path))
+              read(joinpath(joinpath(STUDIES, "tmp", "surrogate-regenerated"), path))
     end
     source = study("cases/ieee30-full.toml")
     factor = study("cases/ieee30-full-factor.toml")

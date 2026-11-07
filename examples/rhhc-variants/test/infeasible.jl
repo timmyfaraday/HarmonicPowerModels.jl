@@ -1,9 +1,10 @@
 @testset "Infeasible nominal reports" begin
-    directory = mktempdir()
+    mkpath(joinpath(STUDIES, "tmp"))
+    directory = mktempdir(joinpath(STUDIES, "tmp"))
     label = basename(directory)
     paths = [joinpath(directory, label * suffix * ".toml")
              for suffix in ("-infeasible", "-feasible")]
-    reports = [joinpath(STUDIES, "output", splitext(basename(path))[1] * ".txt")
+    reports = [joinpath(directory, splitext(basename(path))[1] * ".txt")
                for path in paths]
     try
         config = TOML.parsefile(joinpath(STUDIES, "cases", "ieee39-physical.toml"))
@@ -31,7 +32,7 @@
         @test occursin("resonances at the nominal point:", text)
         @test occursin("Posterior check not evaluated: the solution is empty.", text)
         @test occursin("LineCableModels solves", text)
-        comparison(io, paths...)
+        comparison(io, reports, paths...)
         text = String(take!(io))
         @test occursin("INFEASIBLE", text)
         @test occursin("OPTIMAL", text)

@@ -460,3 +460,42 @@ Both sweeps admit ten coordinates at 0.1 percent: phase temperature, earth
 resistivity, aluminum resistivity and diameter, inner and middle aluminum lays,
 and ambient temperature, wire diameter, steel resistivity and permeability
 of the earth-wire family. The remaining registered coordinates stay nominal.
+
+## IEEE33 physical feeder
+
+The 66 `ACSR.Rabbit.*`, `ACSR.Weasel.*`, `ACSR.Dog.*`, `ACSR.Tiger.*`,
+`ACSR.Wolf.*` and `ACSR.Bison.*` rows supply six conductor constructions and
+fixed current ratings. The candidate study's conductor library and
+`scratch/strand-patterns.csv` give their counts and wire diameters.
+The study of manufacturing tolerances supplies each wire's diameter interval.
+The existing ACSR material intervals, ordered lays and joint diameter and
+mass limits apply. Bison's middle aluminum course adopts the registered
+inner-course lay interval by analogy.
+
+Assumption: component masses follow aluminum density 2700 kg/m3 and steel
+density 7780 kg/m3, wire circles and nominal helical lengths. Every conductor
+uses fixed final modulus 70 GPa and expansion 0.0000193 per kelvin.
+Assumption: where six aluminum wires need more room than the steel envelope,
+the envelope expands to one aluminum wire diameter. This admits Dog's rounded
+catalog dimensions and wire tolerance endpoints without overlapping wires.
+The nominal Dog outside diameter is 14.16 mm versus the catalog 14.15 mm.
+
+`O13.geom`, `O13.phase.reference` and `O13.span` define the candidate study's
+12.66 kV pole: phase supports at x = -0.8, 0 and 0.8 m, height 11 m,
+reference sag 1.5 m and span 100 m. It has zero earth wires. Mean phase height
+is 10 m at the reference state. Assumption: the existing ambient interval,
+reference temperature, gravity and sag-setting allowance apply to this pole.
+The sag state equation follows conductor temperature and construction.
+Every circuit assumes ideal transposition.
+
+The 32 `IEEE33.length.*` rows retain every fitted length from the candidate
+study's `scratch/branch-candidates.csv`. These fixed routes have no surveyed
+length interval. The physical case retains LCM charging and the source case
+remains beside it. The preliminary fit used 50 degrees Celsius and a fixed
+AC allowance. LCM supplies frequency-dependent impedance at the registered
+nominal 20 degrees Celsius. Deviations refer to that nominal physical state.
+
+Assumption: fixed conductor ratings use the candidate study's IEEE738
+reference weather, as described for Cardinal above. The physical ratings admit the nominal fundamental operating point
+on every branch. The source rating is 10 MVA. The case uses one coordinate per input and
+family. The sweep report records admission at 0.1 percent.

@@ -65,6 +65,12 @@ function corner_adversary(hdata, model, box, solution)
 end
 
 function comparison(io, paths...)
+    reports = [joinpath(STUDIES, "output", splitext(basename(path))[1] * ".txt")
+               for path in paths]
+    return comparison(io, reports, paths...)
+end
+
+function comparison(io, reports::AbstractVector{<:AbstractString}, paths...)
     println(io, "Uncertainty levels and transfer to the source case")
     println(io, "HPM commit: ", readchomp(`git -C $STUDIES rev-parse HEAD`))
     println(io, "LCM commit: ", readchomp(`git -C $(pkgdir(LineCableModels)) rev-parse HEAD`))
@@ -76,11 +82,10 @@ function comparison(io, paths...)
     flush(io)
     cases = [study(path) for path in paths]
     runs = NamedTuple[]
-    for case in cases
+    for (case, own_report) in zip(cases, reports)
         label = splitext(basename(case.file))[1]
         println("Solving ", label)
         flush(stdout)
-        own_report = joinpath(STUDIES, "output", label * ".txt")
         result = open(own_report, "w") do own_io
             runstudy(case, own_io)
         end

@@ -1,0 +1,26 @@
+git commit: 587dd893b92c8a103ded3fcaf5c2246c1c9144d7
+LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+case: examples/rhhc-variants/cases/ieee33-physical.toml
+threads: 16; solver: Clarabel
+Relative changes compare each endpoint with the nominal value.
+coordinate | maximum relative change | circuit | sequence | quantity | Hz | end | decision
+theta_ACSR | 0.204665266789 | Weasel/O13-F | positive | z | 50 | upper | yes
+rho_EARTH | 0.155131312941 | Bison/O13-F | zero | z | 650 | upper | yes
+lay_steel_ACSR | 0.000128640961556 | Tiger/O13-F | positive | z | 50 | lower | no
+rho_aluminium_ACSR | 0.0116321193762 | Weasel/O13-F | negative | z | 50 | lower | yes
+lay_outer_ACSR | 0.0126485342271 | Weasel/O13-F | positive | z | 50 | lower | yes
+lay_middle_ACSR | 0.00310003686054 | Bison/O13-F | positive | z | 50 | lower | yes
+lay_inner_ACSR | 0.0126485342271 | Weasel/O13-F | positive | z | 50 | lower | yes
+ambient_O13 | 0.0930309823304 | Weasel/O13-F | positive | z | 50 | upper | yes
+d_steel_ACSR | 0.00163469475579 | Tiger/O13-F | positive | z | 650 | lower | yes
+rho_steel_ACSR | 0.00256505388207 | Weasel/O13-F | positive | z | 50 | upper | yes
+mu_steel_ACSR | 0.00516546366921 | Rabbit/O13-F | positive | z | 650 | upper | yes
+phase_sag_O13 | 0.00022603376765 | Bison/O13-F | zero | y | 650 | upper | no
+d_aluminium_ACSR | 0.0212787439656 | Weasel/O13-F | positive | z | 50 | lower | yes
+box_names = ["theta_ACSR", "rho_EARTH", "rho_aluminium_ACSR", "lay_outer_ACSR", "lay_middle_ACSR", "lay_inner_ACSR", "ambient_O13", "d_steel_ACSR", "rho_steel_ACSR", "mu_steel_ACSR", "d_aluminium_ACSR"]
+Bear projection check: upper aluminum and steel wire diameters, nominal lay ratios.
+t = 0.825704225352; diameter = 0.0236845 m (+1.000000000 percent); mass = 1.23708333959 kg/m (+1.985436075 percent).
+Effective wires: aluminum 0.00337766109155 m, steel 0.00339128521127 m.
+EN 50182: diameter within +/-1 percent and mass within +/-2 percent; passed.
+Inner lay upper 16 equals steel lay lower 16; that order cannot bind except at equality.
+All 128 wire-diameter and lay endpoint combinations satisfy both aggregate limits and lay order.

@@ -1,0 +1,29 @@
+family = "ACSR"
+n_steel = {value = 7, register = "ACSR.Tiger.st"}
+n_aluminium = {value = 30, register = "ACSR.Tiger.al"}
+R20 = {value = 0.0002202, register = "ACSR.Tiger.R20"}
+courses = {value = [12, 18], register = "ACSR.Tiger.courses"}
+mass_al = {value = 0.3655671491706379, register = "ACSR.Tiger.mass.al"}
+mass_st = {value = 0.24049960018907904, register = "ACSR.Tiger.mass.st"}
+E = {value = 70.0, register = "ACSR.Tiger.E"}
+expansion = {value = 1.93e-05, register = "ACSR.Tiger.expansion"}
+
+[d_steel]
+nominal = {value = 0.0023599999999999997, register = "ACSR.Tiger.st"}
+lower = {value = 0.00232, register = "ACSR.Tiger.st"}
+upper = {value = 0.0024, register = "ACSR.Tiger.st"}
+
+[d_aluminium]
+nominal = {value = 0.0023599999999999997, register = "ACSR.Tiger.al"}
+lower = {value = 0.00233, register = "ACSR.Tiger.al"}
+upper = {value = 0.0023899999999999998, register = "ACSR.Tiger.al"}
+
+[diameter]
+nominal = {value = 0.01652, register = "ACSR.Tiger.d"}
+lower = {value = 0.0163548, register = "ACSR.Tiger.d"}
+upper = {value = 0.0166852, register = "ACSR.Tiger.d"}
+
+[mass]
+nominal = {value = 0.6060667493597169, register = "ACSR.Tiger.mass"}
+lower = {value = 0.5939454143725226, register = "ACSR.Tiger.mass"}
+upper = {value = 0.6181880843469113, register = "ACSR.Tiger.mass"}

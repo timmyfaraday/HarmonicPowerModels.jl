@@ -323,6 +323,7 @@ from the IEEE30 scenario routes, from route comments in MATPOWER branch rows, or
 | Case | Network source | Model | Box coordinates |
 | --- | --- | --- | --- |
 | `ieee33` | `../shhc/data/33bus_network_shhc.m` | Source branches with R and L factors | `kR_ohl`, `kL_ohl` |
+| `ieee33-physical` | As `ieee33` | Six ACSR sizes on an unshielded O13-F pole, fitted routes and LCM charging | Shared physical inputs (11 coordinates) |
 | `industrial` | `../shhc/data/industrial_network_shhc.m` | Source cables with R, L and C factors | `kR_cable`, `kL_cable`, `kC_cable` |
 | `antwerp` | `../shhc/data/medium_network_shhc.m` | Source cables with R, L and C factors | `kR_cable`, `kL_cable`, `kC_cable` |
 | `hello-world` | `../rhhc/data/hello_world.m` | U33-630 on branches 2 and 3, Goat on O33-H on branch 4 | `R20_U33`, `eps_U33`, `t_ins_U33`, `rho_EARTH` |

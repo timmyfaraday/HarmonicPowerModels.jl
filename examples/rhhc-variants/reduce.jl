@@ -2155,7 +2155,7 @@ end
 
 if abspath(PROGRAM_FILE) == @__FILE__
     inputs = reduction_inputs(isempty(ARGS) ? "cases/ieee30-full.toml" : first(ARGS))
-    destination = length(ARGS) > 1 ? ARGS[2] : "/tmp/hpm-equivalent"
+    destination = length(ARGS) > 1 ? ARGS[2] : joinpath(STUDIES, "tmp", "equivalent")
     study_result = hull_study(inputs, destination)
     proposal(study_result, destination)
     generate_equivalent(inputs, destination)

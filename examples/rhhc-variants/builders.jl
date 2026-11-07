@@ -180,7 +180,10 @@ function construction(spec, q, reference, da, ds, inner, outer)
         (n * sqrt(1 + (π / (i == 1 ? reference.lay_steel : reference.lay_steel_outer))^2)
         for (i, n) in enumerate(recipe.steel_courses));
         init = 0.0))
-    diameter = strandspan(spec.n_steel) * ds + 2length(spec.courses) * da
+    # The six-wire aluminum course needs a center circle at least one wire diameter across.
+    core_diameter = first(spec.courses) == 6 ? max(strandspan(spec.n_steel) * ds, da) :
+                    strandspan(spec.n_steel) * ds
+    diameter = core_diameter + 2length(spec.courses) * da
     mass = aluminum * (da / spec.d_aluminium.nominal)^2 +
            steel * (ds / spec.d_steel.nominal)^2
     area = π * (spec.n_aluminium * da^2 + spec.n_steel * ds^2) / 4
@@ -271,9 +274,11 @@ function design(::Val{:ACSR}, spec, q, mat; temperature = q.theta, realized)
     aluminum = metal(mat.al1, mat.reference; rho = q.rho_aluminium, temperature)
     da, ds = realized.da, realized.ds
     recipe = construction(spec, q, realized.inner, realized.outer)
+    core_diameter = first(spec.courses) == 6 ? max(strandspan(spec.n_steel) * ds, da) :
+                    strandspan(spec.n_steel) * ds
     core = stranded(steel; center = Circle(ds / 2), shape = Circle(ds / 2),
         n = recipe.steel_courses, lay = LayRatio.(Tuple(recipe.steel_lays)),
-        boundary = Circle(strandspan(spec.n_steel) * ds / 2), tag = :steel)
+        boundary = Circle(core_diameter / 2), tag = :steel)
     courses = Tuple(wires(aluminum; shape = Circle(da / 2), n = count,
                         lay = LayRatio(lay), tag = Symbol("aluminium_", i))
     for (i, (count, lay)) in enumerate(zip(spec.courses, recipe.aluminum_lays)))
@@ -366,6 +371,7 @@ function arrangement(::Val{:ACSR}, spec, physical, row, mat)
     phase_sag = sag(structure.span, realized.mass, realized.area,
         get(spec, :E, q.E) * 1e9, get(spec, :expansion, q.expansion),
         structure.phase_sag, temperature, structure.reference_theta, structure.gravity)
+    haskey(row, :earth_wire) || return conductor, merge(row, (; phase_sag))
     wire = row.shield_spec
     shield = design(wire.family, wire, structure, mat)
     wire_area = π * structure.diameter^2 / 4
