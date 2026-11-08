@@ -1,5 +1,6 @@
 using HarmonicPowerModels, LineCableModels, PowerModels, JuMP, Ipopt, Clarabel
 using Printf, LinearAlgebra, TOML
+import LineCableModels.Commons: nominal
 
 const HPM = HarmonicPowerModels
 const STUDIES = @__DIR__
@@ -264,6 +265,31 @@ function realize(spec, q, reference)
             end
         end
         factor = low
+        # The converged feasible point lies on one diameter or mass limit.
+        a0 = spec.d_aluminium.nominal + factor * (da - spec.d_aluminium.nominal)
+        d0 = spec.d_steel.nominal + factor * (ds - spec.d_steel.nominal)
+        physical = construction(spec, q, reference, a0, d0, inner, outer)
+        limits = ((:diameter, spec.diameter.lower), (:diameter, spec.diameter.upper),
+            (:mass, spec.mass.lower), (:mass, spec.mass.upper))
+        active = argmin(map(limits) do (quantity, bound)
+            abs(nominal(getproperty(physical, quantity)) - bound) / abs(bound)
+        end)
+        quantity, bound = limits[active]
+        delta_a = nominal(da) - spec.d_aluminium.nominal
+        delta_d = nominal(ds) - spec.d_steel.nominal
+        if quantity === :diameter
+            slope = 2length(spec.courses) * delta_a + strandspan(spec.n_steel) * delta_d
+        else
+            # Mass is A*a^2 + S*d^2 at fixed lays. Evaluate its two
+            # coefficients on plain inputs, then differentiate analytically.
+            q0, ref0 = map(nominal, q), map(nominal, reference)
+            i0, o0 = nominal(inner), nominal(outer)
+            A = construction(spec, q0, ref0, 1.0, 0.0, i0, o0).mass
+            S = construction(spec, q0, ref0, 0.0, 1.0, i0, o0).mass
+            slope = 2A * nominal(a0) * delta_a + 2S * nominal(d0) * delta_d
+        end
+        correction = (getproperty(physical, quantity) - bound) / slope
+        factor -= correction - nominal(correction)
         da = spec.d_aluminium.nominal + factor * (da - spec.d_aluminium.nominal)
         ds = spec.d_steel.nominal + factor * (ds - spec.d_steel.nominal)
     end
@@ -400,7 +426,13 @@ function sag(span, mass, area, modulus, expansion, reference, theta, theta0, gra
             low = value
         end
     end
-    return (low + high) / 2
+    x0 = (low + high) / 2
+    tension = load * span^2 / (8x0)
+    residual = 8(x0^2 - reference^2) / (3span^2) -
+               (tension - tension0) / (modulus * area) - expansion * (theta - theta0)
+    residual_x = 16x0 / (3span^2) + load * span^2 / (8modulus * area * x0^2)
+    correction = residual / residual_x
+    return x0 - (correction - nominal(correction))
 end
 
 function arrangement(::Val{:TOM}, spec, q, reference, structure, row, mat)
