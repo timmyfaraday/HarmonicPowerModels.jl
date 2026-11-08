@@ -125,6 +125,8 @@ end
 
 Normalized violation of one chance constraint at a latent point, computed from only the
 harmonics and transfer-impedance rows that constraint needs. `hdata` must carry the PCE data.
+Floating zero-sequence units are omitted from `E`, `upos` and `W`; realizations that
+change the participating units use the corresponding injection rows.
 """
 struct ConstraintEvaluator{M<:AbstractNetworkModel}
     nc::NetworkCache{M}
@@ -140,6 +142,41 @@ struct ConstraintEvaluator{M<:AbstractNetworkModel}
     deps::Vector{Vector{Int}}                  # coordinate => uncertain branches it changes
     recomb::Bool                               # false: worst-case alignment (no recombination)
     W::Dict{Int,Vector{Float64}}               # h => allocation weight w_d of each unit row
+    active_units::Dict{Int,Set{Int}}            # h => units with a return path at the nominal point
+end
+
+# PCE injection rows in the original load order; omit only floating harmonic units.
+# Recombination retains normal loads and zero weights as all-zero rows.
+function _injection_rows(hdata, h, bus_idx, pos, wts, units, nk)
+    pce = hdata["pce"]
+    hunits = Set(pce["harmonic_units"])
+    recomb = get(pce, "recombination", true)
+    rows = Vector{ComplexF64}[]; ps = Int[]; ws = Float64[]
+    for (d_str, load) in hdata["nw"]["$h"]["load"]
+        d = parse(Int, d_str)
+        d in hunits && d ∉ units && continue
+        bd = bus_idx[load["load_bus"]]
+        haskey(pos, bd) || continue                         # unit at an ideal ground
+        w = get(wts, d, 0.0)
+        recomb || (d in hunits && w != 0.0) || continue
+        push!(rows, w .* (pce["cos_phi"][h][d] .+ im .* pce["sin_phi"][h][d]))
+        push!(ps, pos[bd]); push!(ws, w)
+    end
+    E = isempty(rows) ? zeros(ComplexF64, 0, nk) : permutedims(reduce(hcat, rows))
+    return (; E, upos = ps, W = ws)
+end
+
+# Rebuild the rows if a zero-sequence realization changes which units can inject.
+function _point_injections(ce::ConstraintEvaluator, h, floating)
+    rows = (E = ce.E[h], upos = ce.upos[h], W = ce.W[h])
+    harmonic_sequence(h) === :zero || return rows
+    hd = ce.nc.hdata
+    hunits = Set(hd["pce"]["harmonic_units"])
+    fl = Set(ce.nc.keep[i] for idx in floating for i in idx)
+    units = _harmonic_units(hd["nw"]["$h"], hunits, ce.nc.bus_idx, fl)
+    units == ce.active_units[h] && return rows
+    return _injection_rows(hd, h, ce.nc.bus_idx, ce.pos,
+        fairness_weights(hd, hd["pce"]["harmonic_units"]), units, length(ce.K))
 end
 
 function ConstraintEvaluator(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox)
@@ -150,38 +187,29 @@ function ConstraintEvaluator(hdata::Dict, model::AbstractNetworkModel, box::Para
     wts  = fairness_weights(hdata, pce["harmonic_units"])
     E    = Dict{Int,Matrix{ComplexF64}}(); upos = Dict{Int,Vector{Int}}()
     recomb = get(pce, "recombination", true)
-    hunits = Set(pce["harmonic_units"]); W = Dict{Int,Vector{Float64}}()
+    W = Dict{Int,Vector{Float64}}()
     for h in m0.harm_nw_ints
         haskey(pce["cos_phi"], h) || continue
-        rows = Vector{ComplexF64}[]; ps = Int[]; ws = Float64[]
-        for (d_str, load) in hdata["nw"]["$h"]["load"]
-            d = parse(Int, d_str); bd = nc.bus_idx[load["load_bus"]]
-            haskey(pos, bd) || continue                      # unit at an ideal ground
-            w = get(wts, d, 0.0)
-            # without recombination only the harmonic units count (normal loads inject nothing)
-            recomb || (d in hunits && w != 0.0) || continue
-            push!(rows, w .* (pce["cos_phi"][h][d] .+ im .* pce["sin_phi"][h][d])); push!(ps, pos[bd])
-            push!(ws, w)
-        end
-        E[h] = isempty(rows) ? zeros(ComplexF64, 0, length(m0.K)) : permutedims(reduce(hcat, rows))
-        upos[h] = ps; W[h] = ws
+        rows = _injection_rows(hdata, h, nc.bus_idx, pos, wts, m0.active_units[h], length(m0.K))
+        E[h] = rows.E; upos[h] = rows.upos; W[h] = rows.W
     end
     fund   = hdata["nw"]["1"]["branch"]
     brinfo = Dict(parse(Int, k) => (nc.bus_idx[b["f_bus"]], nc.bus_idx[b["t_bus"]], _tap(b))
                   for (k, b) in fund)
     deps   = _dependencies(nc, box, minimum(m0.harm_nw_ints))
     return ConstraintEvaluator(nc, box, m0.pb, collect(m0.K), collect(Float64, m0.psi_norms), E,
-                               upos, pos, shhc_constraints(hdata, m0), brinfo, deps, recomb, W)
+                               upos, pos, shhc_constraints(hdata, m0), brinfo, deps, recomb, W, m0.active_units)
 end
 
 # PCE coefficients (re, im) of the voltage response at matrix index n, from the factorised
 # transpose of the reduced Y (row n of its inverse = transfer impedances from the units)
-function _response(ce::ConstraintEvaluator, Ft, n::Int, h::Int)
+function _response(ce::ConstraintEvaluator, Ft, n::Int, h::Int,
+                   rows = (E = ce.E[h], upos = ce.upos[h]))
     nk = length(ce.K)
     haskey(ce.pos, n) || return zeros(nk), zeros(nk)    # ideal ground: V = 0
     e = zeros(ComplexF64, length(ce.pos)); e[ce.pos[n]] = 1.0
     x = Ft \ e
-    C = isempty(ce.upos[h]) ? zeros(ComplexF64, nk) : vec(transpose(x[ce.upos[h]]) * ce.E[h])
+    C = isempty(rows.upos) ? zeros(ComplexF64, nk) : vec(transpose(x[rows.upos]) * rows.E)
     return real.(C), imag.(C)
 end
 
@@ -193,8 +221,8 @@ function _zrow(ce::ConstraintEvaluator, Ft, n::Int)
 end
 
 # worst-case (no recombination) coefficient: (Σ_d w_d |u_d|)² as the mean, zero variance
-function _worst_case_coef(ce::ConstraintEvaluator, u::AbstractVector, h::Int)
-    c = zeros(length(ce.K)); c[1] = sum(ce.W[h] .* abs.(u); init = 0.0)^2
+function _worst_case_coef(ce::ConstraintEvaluator, u::AbstractVector, h::Int, weights = ce.W[h])
+    c = zeros(length(ce.K)); c[1] = sum(weights .* abs.(u); init = 0.0)^2
     return c
 end
 
@@ -221,7 +249,11 @@ function fast_violation(ce::ConstraintEvaluator, j::Int, ξ, g)
     p  = latent(ce.box, ξ)
     coef = Dict{Int,Vector{Float64}}()
     for h in keys(c.coef)
-        Yr = reduced_admittance(ce.nc, p, h; sequence = harmonic_sequence(h))[1]
+        seq = harmonic_sequence(h)
+        Yr = fast_admittance(ce.nc, p, h; sequence = seq)[ce.nc.keep, ce.nc.keep]
+        floating = Vector{Int}[]
+        seq === :zero && ((Yr, floating) = _earth_floating(Yr))
+        rows = _point_injections(ce, h, floating)
         Ft = lu(transpose(Yr))
         if !ce.recomb
             if c.kind === :rmsi
@@ -231,12 +263,12 @@ function fast_violation(ce::ConstraintEvaluator, j::Int, ξ, g)
                 bus = c.kind === :ihd ? c.key[2] : c.key
                 u = _zrow(ce, Ft, ce.nc.bus_idx[bus])
             end
-            coef[h] = _worst_case_coef(ce, u[ce.upos[h]], h)
+            coef[h] = _worst_case_coef(ce, u[rows.upos], h, rows.W)
             continue
         end
         if c.kind === :rmsi
             f, t, tc, ys = _branch_terminals(ce, c.key, p, h); gy, by = real(ys), imag(ys)
-            arf, aif = _response(ce, Ft, f, h); art, ait = _response(ce, Ft, t, h)
+            arf, aif = _response(ce, Ft, f, h, rows); art, ait = _response(ce, Ft, t, h, rows)
             ct = 1.0 / tc; cr, ci = real(ct), imag(ct)
             dVr = (cr .* arf .- ci .* aif) .- art
             dVi = (cr .* aif .+ ci .* arf) .- ait
@@ -245,7 +277,7 @@ function fast_violation(ce::ConstraintEvaluator, j::Int, ξ, g)
             coef[h] = galerkin_product(ce.pb, Ibr, Ibr) .+ galerkin_product(ce.pb, Ibi, Ibi)
         else
             bus = c.kind === :ihd ? c.key[2] : c.key
-            ar, ai = _response(ce, Ft, ce.nc.bus_idx[bus], h)
+            ar, ai = _response(ce, Ft, ce.nc.bus_idx[bus], h, rows)
             coef[h] = galerkin_product(ce.pb, ar, ar) .+ galerkin_product(ce.pb, ai, ai)
         end
     end
@@ -406,26 +438,28 @@ function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVe
             _stamp_branch!(Y, f, t, x.br_r, x.br_x, complex(x.g_fr, x.b_fr), complex(x.g_to, x.b_to), tc)
         end
         Yr  = Y[nc.keep, nc.keep]
-        seq === :zero && (Yr = first(_earth_floating(Yr)))
+        floating = Vector{Int}[]
+        seq === :zero && ((Yr, floating) = _earth_floating(Yr))
+        rows = _point_injections(ce, h, floating)
         F   = lu(Yr)
         row(n) = haskey(ce.pos, n) ? (e = zeros(ComplexF64, length(ce.pos)); e[ce.pos[n]] = 1.0;
                                        transpose(F) \ e) : zeros(ComplexF64, length(ce.pos))
-        resp(rv) = isempty(ce.upos[h]) ? zeros(ComplexF64, nk) : vec(transpose(rv[ce.upos[h]]) * ce.E[h])
+        resp(rv) = isempty(rows.upos) ? zeros(ComplexF64, nk) : vec(transpose(rv[rows.upos]) * rows.E)
         if !ce.recomb
             # worst-case alignment: u_d per unit, the sum of magnitudes S_h, D_d = t⁻¹z_f − z_t
             if c.kind === :rmsi
                 f, t, tc, ys = _branch_terminals(ce, c.key, p, h, bd)
                 Dv = (1.0 / tc) .* row(f) .- row(t)
                 r  = ys .* Dv
-                Du = Dv[ce.upos[h]]
+                Du = Dv[rows.upos]
             else
                 bus = c.kind === :ihd ? c.key[2] : c.key
                 r   = row(nc.bus_idx[bus]); Du = nothing
             end
-            u  = r[ce.upos[h]]
-            Sh = sum(ce.W[h] .* abs.(u); init = 0.0)
-            fw[h] = (F = F, r = r, C = nothing, D = Du, ys = nothing, bd = bd, u = u, Sh = Sh)
-            coef[h] = _worst_case_coef(ce, u, h)
+            u  = r[rows.upos]
+            Sh = sum(rows.W .* abs.(u); init = 0.0)
+            fw[h] = (F = F, r = r, C = nothing, D = Du, ys = nothing, bd = bd, rows = rows, u = u, Sh = Sh)
+            coef[h] = _worst_case_coef(ce, u, h, rows.W)
             continue
         end
         if c.kind === :rmsi
@@ -434,11 +468,11 @@ function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVe
             xf, xt = row(f), row(t)
             r  = ys .* (ct .* xf .- xt)
             D  = resp(ct .* xf .- xt)
-            fw[h] = (F = F, r = r, C = ys .* D, D = D, ys = ys, bd = bd)
+            fw[h] = (F = F, r = r, C = ys .* D, D = D, ys = ys, bd = bd, rows = rows)
         else
             bus = c.kind === :ihd ? c.key[2] : c.key
             r   = row(nc.bus_idx[bus])
-            fw[h] = (F = F, r = r, C = resp(r), D = nothing, ys = nothing, bd = bd)
+            fw[h] = (F = F, r = r, C = resp(r), D = nothing, ys = nothing, bd = bd, rows = rows)
         end
         C = fw[h].C
         coef[h] = galerkin_product(ce.pb, real.(C), real.(C)) .+ galerkin_product(ce.pb, imag.(C), imag.(C))
@@ -457,6 +491,7 @@ function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVe
 
     grad = zeros(d)
     for h in hs
+        rows = fw[h].rows
         β = zeros(nk); β[1] = g[h]
         if c.λ > 0.0 && sd > 0.0
             for k in Kh
@@ -466,15 +501,15 @@ function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVe
         if ce.recomb
             C  = fw[h].C
             G  = _galerkin_grad(ce.pb, β, real.(C)) .+ im .* _galerkin_grad(ce.pb, β, imag.(C))
-            q  = ce.E[h] * conj.(G)
+            q  = rows.E * conj.(G)
         else
             # ∂(g_h S_h²)/∂u_d contracted as Re(c_d du_d), c_d = 2 g_h S_h w_d conj(u_d)/|u_d|
             u  = fw[h].u
-            q  = [abs(u[a]) > 0.0 ? 2 * g[h] * fw[h].Sh * ce.W[h][a] * conj(u[a]) / abs(u[a]) :
+            q  = [abs(u[a]) > 0.0 ? 2 * g[h] * fw[h].Sh * rows.W[a] * conj(u[a]) / abs(u[a]) :
                   zero(ComplexF64) for a in eachindex(u)]
         end
         s  = zeros(ComplexF64, length(ce.pos))
-        for (a, pa) in enumerate(ce.upos[h]); s[pa] += q[a]; end
+        for (a, pa) in enumerate(rows.upos); s[pa] += q[a]; end
         v  = fw[h].F \ s
         r  = fw[h].r
         seq = harmonic_sequence(h)

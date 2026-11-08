@@ -31,7 +31,8 @@ end
 Assemble the (n_bus × n_bus) nodal admittance matrix for harmonic order `h`.
 
 Bus IDs are sorted from `data["bus"]` and mapped to 1-indexed Julia rows/cols.
-The fundamental-frequency `data` values are scaled to harmonic `h` internally:
+For positive and negative sequences, the fundamental-frequency `data` values are
+scaled to harmonic `h` internally:
 
   - branch:  br_r·√h,  br_x·h,  b_fr·h,  b_to·h
   - shunt:   gs (frequency-independent),  bs·h if capacitive (bs ≥ 0),
@@ -39,30 +40,29 @@ The fundamental-frequency `data` values are scaled to harmonic `h` internally:
   - xfmr:    xsc·h  (r1, r2 ignored — lossless model)
   - xfmr phase shift: pos-seq (h%3==1) ∠−30·shift°,
                       neg-seq (h%3==2) ∠+30·shift°,
-                      zero-seq (h%3==0) ∠0°
+                      zero-seq (h%3==0): winding polarity below
 
 Branches carrying `vg` use the same unit phase factor as `xfmr` records;
-branches without `vg` retain their existing stamp. Branch shunts are unchanged.
+branches without `vg` retain their existing stamp in positive and negative sequences.
 
-**Zero sequence** (h%3==0): each transformer (an `xfmr` record or a branch with `vg`)
-follows the winding rules of `_zero_sequence_view`: a series element between earthed
-stars, a shunt to earth at the earthed star of a delta–star pair, and open otherwise. A
-star side without `gnd1`/`gnd2` is taken as earthed, as this utility did before it read the
-earthing; neutral impedances (`re`, `xe`) are included. Lines keep their positive-sequence
-data. Buses with no path to earth are eliminated in `harmonic_transfer_impedance`.
+**Zero sequence** (h%3==0): scale a copy with `_scale_network_to_harmonic!`, apply
+`_zero_sequence_view` and assemble with `_harmonic_admittance`, using the same sorted
+bus index map. This shares the second-order cone program's line, cable, transformer,
+neutral, generator and earthed-shunt model, including its missing-data errors.
 
-The second-order cone program uses its own admittance (`_harmonic_admittance`) with the
-full zero-sequence network of `_zero_sequence_view`, including line, cable and generator
-zero-sequence data; this utility models the transformer windings only.
-
-The magnetising branch (gsh) and winding resistances (r1, r2) are not included.
+For positive and negative sequences the magnetising branch (gsh) and winding
+resistances (r1, r2) are not included.
 """
 function build_harmonic_Ybus(data::Dict, h::Int)
     bus_ids, bus_idx = _bus_id_map(data)
     n_bus = length(bus_ids)
 
-    Y = zeros(ComplexF64, n_bus, n_bus)
     sequence = harmonic_sequence(h)
+    if sequence === :zero
+        ntw = _scale_network_to_harmonic!(deepcopy(data), h, sequence)
+        return _harmonic_admittance(_zero_sequence_view(ntw), bus_idx)
+    end
+    Y = zeros(ComplexF64, n_bus, n_bus)
 
     # ── branches (π-model) ────────────────────────────────────────────────────
     for branch in values(data["branch"])
@@ -80,14 +80,6 @@ function build_harmonic_Ybus(data::Dict, h::Int)
         y_fr = im * b_fr_h
         y_to = im * b_to_h
 
-        if haskey(branch, "vg") && sequence === :zero
-            _stamp_zero_sequence_pair!(Y, fr, to, branch, uppercase(branch["vg"][1]),
-                uppercase(branch["vg"][2]), r_h + im * x_h, h,
-                _is_star_point(data, branch["f_bus"]), _is_star_point(data, branch["t_bus"]))
-            Y[fr, fr] += y_fr
-            Y[to, to] += y_to
-            continue
-        end
         Y[fr, fr] += y_s + y_fr
         if haskey(branch, "vg")
             vg = branch["vg"]
@@ -122,13 +114,6 @@ function build_harmonic_Ybus(data::Dict, h::Int)
             y_sc = 1 / (im * xfmr["xsc"] * h)
 
             vg    = get(xfmr, "vg", "Yy0")
-            cnf1  = uppercase(vg[1])
-            cnf2  = uppercase(vg[2])
-            if sequence === :zero
-                _stamp_zero_sequence_pair!(Y, fr, to, xfmr, cnf1, cnf2, im * xfmr["xsc"] * h,
-                                           h, false, false)
-                continue
-            end
             angle = _vector_group_angle(vg, sequence)
             tr = cosd(angle); ti = sind(angle)
             t = tr + im * ti
@@ -141,27 +126,6 @@ function build_harmonic_Ybus(data::Dict, h::Int)
         end
     end
 
-    return Y
-end
-
-# Zero-sequence stamp of a transformer winding pair (`_zs_combination`) with leakage z at
-# harmonic h, from the fundamental neutral impedances re/xe of `rec`. A star side without
-# gnd is taken as earthed (the behaviour of this utility before it read the earthing).
-function _stamp_zero_sequence_pair!(Y, fr, to, rec, cnf1::Char, cnf2::Char, z, h, star1, star2)
-    s1  = _zs_side(cnf1, get(rec, "gnd1", 1), star1)
-    s2  = _zs_side(cnf2, get(rec, "gnd2", 1), star2)
-    zn1 = 3 * complex(get(rec, "re1", 0.0) * sqrt(h), get(rec, "xe1", 0.0) * h)
-    zn2 = 3 * complex(get(rec, "re2", 0.0) * sqrt(h), get(rec, "xe2", 0.0) * h)
-    kind, zeq = _zs_combination(s1, s2, complex(z), zn1, zn2)
-    kind === :open && return Y
-    y = 1 / zeq
-    if kind === :series
-        Y[fr, fr] += y; Y[to, to] += y; Y[fr, to] -= y; Y[to, fr] -= y
-    elseif kind === :shunt_fr
-        Y[fr, fr] += y
-    else
-        Y[to, to] += y
-    end
     return Y
 end
 

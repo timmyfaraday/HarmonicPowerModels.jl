@@ -15,7 +15,7 @@
 #                                                                               #
 # Transformer windings (`vg` = "<side 1><side 2><clock>", e.g., "Yd11";        #
 # `gnd1`/`gnd2` = 1 for an earthed star, neutral impedance re + j xe):          #
-#   earthed–earthed       series   z + 3Zn1 + 3Zn2                              #
+#   earthed–earthed       series   z + 3Zn1/|t|² + 3Zn2                        #
 #   earthed–star point    series   z + 3Zn          (three-winding T model)     #
 #   delta–earthed         shunt    z + 3Zn at the earthed side                  #
 #   delta–star point      shunt    z at the star point                          #
@@ -38,7 +38,8 @@ function _zs_side(cnf::Char, gnd, star::Bool)
 end
 
 # Zero-sequence equivalent of a winding pair: (:series, z), (:shunt_fr, z), (:shunt_to, z)
-# or (:open, 0), for leakage z and neutral impedances zn1, zn2 (already ×3).
+# or (:open, 0), for leakage z and neutral impedances zn1, zn2 (already ×3,
+# with zn1 referred to the leakage side of any from-side tap).
 function _zs_combination(s1::Symbol, s2::Symbol, z::Complex, zn1::Complex, zn2::Complex)
     s1 === :earthed && s2 === :earthed && return (:series, z + zn1 + zn2)
     s1 === :earthed && s2 === :star    && return (:series, z + zn1)
@@ -50,6 +51,9 @@ function _zs_combination(s1::Symbol, s2::Symbol, z::Complex, zn1::Complex, zn2::
     s1 === :delta   && s2 === :star    && return (:shunt_to, z)
     return (:open, zero(z))
 end
+
+# Zero-sequence polarity of two star windings, after phase relabelling.
+_zs_star_angle(vg::AbstractString) = mod(parse(Int, vg[3:end]), 4) == 2 ? 180.0 : 0.0
 
 _is_star_point(ntw::Dict, bus_id) =
     get(get(ntw["bus"], string(bus_id), Dict{String,Any}()), "star_point", false) == true
@@ -66,15 +70,18 @@ function _zs_transformer_branch!(br::Dict, ntw::Dict, id)
     s2 = _zs_side(uppercase(vg[2]), get(br, "gnd2", 0), star2)
     z  = haskey(br, "br_x0") ? complex(get(br, "br_r0", 0.0), br["br_x0"]) :
                                complex(br["br_r"], br["br_x"])
-    zn1 = 3 * complex(get(br, "re1", 0.0), get(br, "xe1", 0.0))
+    tm = get(br, "tap", 1.0); tm == 0.0 && (tm = 1.0)
+    zn1 = 3 * complex(get(br, "re1", 0.0), get(br, "xe1", 0.0)) / abs2(tm)
     zn2 = 3 * complex(get(br, "re2", 0.0), get(br, "xe2", 0.0))
     kind, zeq = _zs_combination(s1, s2, z, zn1, zn2)
     br["br_r"], br["br_x"] = kind === :open ? (0.0, 0.0) : (real(zeq), imag(zeq))
     for k in ("g_fr", "b_fr", "g_to", "b_to"); br[k] = 0.0; end
     br["earth_fr"] = kind === :shunt_to          # the from side is earth (a delta winding)
     br["earth_to"] = kind === :shunt_fr
-    br["shift"]    = get(br, "shift", 0.0) - get(br, "vg_shift", 0.0)   # no vector-group shift
-    br["vg_shift"] = 0.0
+    # Star–star clocks 2, 6 and 10 reverse the polarity of all three windings.
+    phase = kind === :series ? deg2rad(_zs_star_angle(vg)) : 0.0
+    br["shift"]    = get(br, "shift", 0.0) - get(br, "vg_shift", 0.0) + phase
+    br["vg_shift"] = phase
     return br
 end
 
@@ -159,7 +166,8 @@ function _zero_sequence_view(ntw::Dict)
                 3 * complex(get(x, "re2", 0.0), get(x, "xe2", 0.0)))
             if kind === :series
                 x["r1"], x["r2"], x["xsc"] = real(zeq), 0.0, imag(zeq)
-                x["tr"], x["ti"] = 1.0, 0.0
+                angle = _zs_star_angle(get(x, "vg", "Yy0"))
+                x["tr"], x["ti"] = cosd(angle), sind(angle)
                 out["xfmr"][id] = x
             elseif kind !== :open
                 bus = kind === :shunt_fr ? x["f_bus"] : x["t_bus"]
@@ -178,8 +186,10 @@ end
 For a reduced zero-sequence admittance `Y`, the connected parts with no path to earth
 (singular blocks, e.g., behind delta windings without any shunt) and a copy of `Y` with the
 identity on their diagonal, which makes it invertible without changing the other parts.
-No current can be injected into a floating part: its units have no hosting capacity at
-this harmonic (see `shhc_moments`), and its voltages are zero for injections elsewhere.
+Units in a floating part are omitted from the injections and allocation weights at
+this harmonic (see `shhc_moments`); units in earthed parts retain their capacity. Only
+when every harmonic unit floats is the harmonic blocked with zero capacity. Voltages
+in floating parts are zero for injections elsewhere.
 Returns `Y` itself and an empty list when no part floats.
 """
 function _earth_floating(Y::AbstractMatrix; tol::Real = 1e-12)

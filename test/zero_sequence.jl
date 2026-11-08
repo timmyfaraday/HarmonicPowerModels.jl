@@ -5,6 +5,8 @@
 # stochastic and robust evaluations at a zero-sequence harmonic.              #
 ################################################################################
 
+import LinearAlgebra
+
 @testset "Zero Sequence" begin
 
     # ── A. winding rules ─────────────────────────────────────────────────────
@@ -197,5 +199,217 @@
         δ = 1e-5
         fd = (fast_violation(ce, j, [0.3 + δ], g) - fast_violation(ce, j, [0.3 - δ], g)) / (2δ)
         @test isapprox(gr[1], fd; rtol = 1e-4, atol = 1e-8)
+    end
+    # ── F. independent phase-domain winding reference ────────────────────────
+    # Three single-phase leakage units, with explicit winding connections and
+    # neutral nodes. Eliminate the neutrals before the Fortescue transform.
+    function phase_ports(vg, g1, g2, n1, n2, z, tap)
+        E = Matrix{Float64}(LinearAlgebra.I, 3, 3)
+        D = [1.0 -1 0; 0 1 -1; -1 0 1] / sqrt(3)
+        F = [cis(2π * k * m / 3) / sqrt(3) for k in 0:2, m in 0:2]
+        c1, c2 = uppercase(vg[1]), uppercase(vg[2])
+        C1 = c1 == 'D' ? D : E
+        C2 = c2 == 'D' ? D : E
+        target = cis(parse(Int, vg[3:end]) * π / 6)
+        permutations = [s * circshift(E, (k, 0)) for s in (-1, 1), k in 0:2]
+        errors = [abs((F * C2 * P * F')[2, 2] / (F * C1 * F')[2, 2] - target)
+                  for P in permutations]
+        C2 = C2 * permutations[argmin(errors)]
+        B = hcat(C1 / tap, -C2)
+        neutral = Tuple{Vector{Float64},ComplexF64}[]
+        for (c, g, n, v) in ((c1, g1, n1, -ones(3) / tap),
+                              (c2, g2, n2, C2 * ones(3)))
+            if c == 'Y' && !(g == 1 && iszero(n))
+                push!(neutral, (v, g == 1 ? inv(n) : 0im))
+                B = hcat(B, v)
+            end
+        end
+        Y = complex.(transpose(B) * B / z)
+        for (k, (_, y)) in enumerate(neutral)
+            Y[6 + k, 6 + k] += y
+        end
+        if !isempty(neutral)
+            Y = Y[1:6, 1:6] - Y[1:6, 7:end] * LinearAlgebra.pinv(Y[7:end, 7:end]) * Y[7:end, 1:6]
+        end
+        T = kron(Matrix{Float64}(LinearAlgebra.I, 2, 2), F)
+        return (T * Y * T')[1:3:6, 1:3:6]
+    end
+
+    @testset "phase-domain two ports" begin
+        for (vg, g1, g2) in (("Yy0", 1, 1), ("Yy2", 1, 1), ("Yy4", 1, 1),
+                              ("Yy6", 1, 1), ("Yy8", 1, 1), ("Yy10", 1, 1),
+                              ("Yd11", 1, 0), ("Dy11", 0, 1), ("Yy0", 1, 0)),
+            tap in (1.0, 0.95), h in (1, 3, 27)
+            ntw = network(vg; gnd1 = g1, gnd2 = g2)
+            br = ntw["branch"]["2"]
+            br["tap"] = tap
+            br["br_r"], br["br_x"] = 0.1, 0.5
+            br["re1"], br["xe1"] = 0.1, 0.07
+            br["re2"], br["xe2"] = 0.2, 0.09
+            ntw["branch"] = Dict{String,Any}("2" => br)
+            ntw["bus"] = Dict{String,Any}(id => ntw["bus"][id] for id in ("2", "3"))
+            empty!(ntw["gen"]); empty!(ntw["shunt"])
+            scaled = HPM._scale_network_to_harmonic!(deepcopy(ntw), h, :zero)
+            Y = HPM._harmonic_admittance(scaled, Dict(2 => 1, 3 => 2))
+            ref = phase_ports(vg, g1, g2, 0.1 + 0.07h * im, 0.2 + 0.09h * im,
+                              0.1sqrt(h) + 0.5h * im, tap)
+            @test isapprox(Y, ref; atol = 1e-12, rtol = 1e-12)
+            if h != 1
+                @test isapprox(HPM.build_harmonic_Ybus(ntw, h), ref; atol = 1e-12, rtol = 1e-12)
+            end
+            if tap == 1.0 && h != 1
+                xf = Dict{String,Any}("f_bus" => 2, "t_bus" => 3, "vg" => vg,
+                    "gnd1" => g1, "gnd2" => g2, "r1" => 0.04, "r2" => 0.06,
+                    "xsc" => 0.5, "re1" => 0.1, "xe1" => 0.07, "re2" => 0.2, "xe2" => 0.09)
+                empty!(ntw["branch"])
+                ntw["xfmr"] = Dict{String,Any}("1" => xf)
+                @test isapprox(HPM.build_harmonic_Ybus(ntw, h), ref; atol = 1e-12, rtol = 1e-12)
+            end
+        end
+    end
+
+    @testset "one zero-sequence admittance" begin
+        for h in (3, 27)
+            ntw = network("Yy6"; re2 = 0.1)
+            ntw["branch"]["2"]["tap"] = 0.95
+            ntw["branch"]["2"]["b_fr"] = 0.8   # transformer shunts are dropped
+            ntw["branch"]["1"]["sequence_data"] = :zero
+            ntw["branch"]["3"]["zero_sequence_open"] = true
+            ntw["gen"]["1"]["rsc0"], ntw["gen"]["1"]["xsc0"] = 0.02, 0.3
+            ntw["shunt"]["2"] = Dict{String,Any}("shunt_bus" => 2, "gs" => 0.1,
+                "bs" => 0.2, "earthed" => true)
+            ntw["xfmr"] = Dict{String,Any}("1" => Dict{String,Any}("f_bus" => 1,
+                "t_bus" => 4, "vg" => "Yy6", "gnd1" => 1, "gnd2" => 1,
+                "r1" => 0.03, "r2" => 0.04, "xsc" => 0.5, "re1" => 0.1, "xe1" => 0.02))
+            scaled = HPM._scale_network_to_harmonic!(deepcopy(ntw), h, :zero)
+            @test HPM.build_harmonic_Ybus(ntw, h) == HPM._harmonic_admittance(scaled, idx)
+            @test ntw["branch"]["2"]["re2"] == 0.1  # utility leaves fundamental data intact
+            @test scaled["xfmr"]["1"]["re1"] == 0.1
+            @test scaled["gen"]["1"]["gsc0"] ≈ real(inv(0.02sqrt(h) + 0.3h * im))
+            delete!(ntw["branch"]["2"], "gnd1")
+            @test_throws ErrorException HPM.build_harmonic_Ybus(ntw, h)
+        end
+    end
+    # ── G. a floating unit drops out of its zero-sequence harmonic ────────────
+    @testset "partially floating harmonic units" begin
+        partial = deepcopy(data)
+        for br in values(partial["branch"])
+            br["br_r0"], br["br_x0"] = br["br_r"], br["br_x"]
+            br["b0_fr"], br["b0_to"] = 0.0, 0.0
+        end
+        partial["branch"]["3"]["zero_sequence_open"] = true
+        delete!(partial["branch"]["3"], "br_x0")
+        filter!(kv -> last(kv)["load_bus"] in (2, 3), partial["load"])
+        units = sort(parse.(Int, collect(keys(partial["load"]))))
+        earthed = only(parse(Int, d) for (d, ld) in partial["load"] if ld["load_bus"] == 2)
+        floating = only(setdiff(units, [earthed]))
+        for recombination in (true, false)
+            params = deepcopy(pp)
+            params["harmonics"] = Dict(3 => (0.0, 30d2r))
+            params["harmonic_units"] = units
+            params["recombination"] = recombination
+            hd = HPM.replicate(deepcopy(partial); H = [1, 3])
+            # A floating unit's small rating must not cap the remaining unit.
+            hd["nw"]["3"]["load"]["$floating"]["c_rating"] = 1e-9
+            sol = HPM.solve_shhc(hd, sHHC_SOC, solver_soc; pce_params = deepcopy(params),
+                                 hpf_optimizer = solver_nlp)
+            @test sol["termination_status"] == OPTIMAL
+            @test sol["solution"][3] > 1e-8
+            m = HPM.shhc_moments(hd)
+            @test m.active_units[3] == Set([earthed])
+            @test 3 ∉ m.blocked
+            @test all(iszero, m.alpha_V[3][m.bus_idx[3], :])
+            @test HPM.shhc_master(hd, m, solver_soc).U_h[3] == 1.0
+
+            removed = HPM.replicate(deepcopy(partial); H = [1, 3])
+            delete!(removed["nw"]["3"]["load"], "$floating")
+            reference = HPM.solve_shhc(removed, sHHC_SOC, solver_soc;
+                pce_params = deepcopy(params), hpf_optimizer = solver_nlp)
+            @test reference["termination_status"] == OPTIMAL
+            @test isapprox(sol["solution"][3], reference["solution"][3]; rtol = 1e-7, atol = 1e-9)
+
+            br = partial["branch"]["2"]
+            zy = (p, f, seq) -> (p.kR * br["br_r"] * sqrt(f / 50) + im * br["br_x"] * f / 50, im * 1e-4 * f / 50)
+            model = ExactPiModel(Dict(2 => (zy = zy, len = 1.0, zbase = 1.0)))
+            box = ParameterBox(:kR => (1.0, 0.8, 1.2))
+            ce = ConstraintEvaluator(hd, model, box)
+            @test length(ce.upos[3]) == size(ce.E[3], 1) == length(ce.W[3]) == 1
+            @test ce.W[3] == [1.0]
+            g = Dict(3 => (0.8sol["solution"][3])^2)
+            for ξ in ([-0.7], [0.0], [0.6])
+                moments = moments_at(hd, model, latent(box, ξ))
+                full = [normalized_violation(c, g, moments) for c in shhc_constraints(hd, moments)]
+                fast = [fast_violation(ce, j, ξ, g) for j in eachindex(ce.cons)]
+                @test maximum(abs.(full .- fast)) < 1e-10
+            end
+            j = findfirst(c -> c.kind === :ihd && c.key == (3, 2), ce.cons)
+            value, grad = fast_violation_gradient(ce, j, [0.3], g)
+            δ = 1e-5
+            fd = (fast_violation(ce, j, [0.3 + δ], g) - fast_violation(ce, j, [0.3 - δ], g)) / (2δ)
+            @test isapprox(value, fast_violation(ce, j, [0.3], g); atol = 1e-12, rtol = 1e-12)
+            @test isapprox(grad[1], fd; atol = 1e-8, rtol = 1e-4)
+
+            all_float = deepcopy(partial)
+            all_float["branch"]["1"]["zero_sequence_open"] = true
+            delete!(all_float["branch"]["1"], "br_x0")
+            hd_open = HPM.replicate(all_float; H = [1, 3])
+            sol_open = HPM.solve_shhc(hd_open, sHHC_SOC, solver_soc;
+                pce_params = deepcopy(params), hpf_optimizer = solver_nlp)
+            @test sol_open["termination_status"] == OPTIMAL
+            @test abs(sol_open["solution"][3]) <= 1e-8
+            mo = HPM.shhc_moments(hd_open)
+            @test isempty(mo.active_units[3]) && 3 in mo.blocked
+            # A stronger capacitive return path restores the row in another realization.
+            switch_zy = (p, f, seq) -> (br["br_r"] * sqrt(f / 50) + im * br["br_x"] * f / 50,
+                                        im * p.kC * f / 50)
+            switch_model = ExactPiModel(Dict(2 => (zy = switch_zy, len = 1.0, zbase = 1.0)))
+            switch_box = ParameterBox(:kC => (1e-14, 1e-16, 0.1))
+            switch_ce = ConstraintEvaluator(hd_open, switch_model, switch_box)
+            @test isempty(switch_ce.W[3]) && isempty(switch_ce.upos[3]) && size(switch_ce.E[3], 1) == 0
+            for ξ in ([-1.0], [1.0])
+                ms = moments_at(hd_open, switch_model, latent(switch_box, ξ))
+                full = [normalized_violation(c, g, ms) for c in shhc_constraints(hd_open, ms)]
+                fast = [fast_violation(switch_ce, j, ξ, g) for j in eachindex(switch_ce.cons)]
+                @test maximum(abs.(full .- fast)) < 1e-10
+                @test length(ms.active_units[3]) == (ξ[1] < 0.0 ? 0 : 1)
+            end
+            println("Partial floating, recombination=", recombination, ": capacity=",
+                sol["solution"][3], "; removed=", reference["solution"][3], "; all floating=",
+                sol_open["solution"][3])
+        end
+    end
+    # ── H. preserve the original row sets outside floating harmonic units ─────
+    @testset "preserved zero injection rows" begin
+        normal = deepcopy(data)
+        normal["branch"]["3"]["zero_sequence_open"] = true
+        delete!(normal["branch"]["3"], "br_x0")
+        units = sort([parse(Int, d) for (d, ld) in normal["load"] if ld["load_bus"] in (2, 3)])
+        floating = only(parse(Int, d) for (d, ld) in normal["load"] if ld["load_bus"] == 3)
+        for recombination in (true, false)
+            params = deepcopy(pp)
+            params["harmonic_units"] = units
+            params["recombination"] = recombination
+            hd = HPM.replicate(deepcopy(normal); H = [1, 3, 5])
+            HPM.update_hdata_with_fundamental_hpf_results!(hd, dHHC_NLP, solver_nlp)
+            HPM.update_hdata_with_pce_data!(hd, params)
+            br = normal["branch"]["2"]
+            zy = (p, f, seq) -> (p.kR * br["br_r"] * sqrt(f / 50) + im * br["br_x"] * f / 50,
+                                 im * 1e-4 * f / 50)
+            model = ExactPiModel(Dict(2 => (zy = zy, len = 1.0, zbase = 1.0)))
+            box = ParameterBox(:kR => (1.0, 0.8, 1.2))
+            ce = ConstraintEvaluator(hd, model, box)
+            for h in (3, 5)
+                # The original recombination rows include normal loads in load-table order.
+                ids = [parse(Int, d) for d in keys(hd["nw"]["$h"]["load"])
+                       if (recombination || parse(Int, d) in units) &&
+                          !(h == 3 && parse(Int, d) == floating)]
+                @test ce.upos[h] == [ce.pos[ce.nc.bus_idx[hd["nw"]["$h"]["load"]["$d"]["load_bus"]]] for d in ids]
+                @test ce.W[h] == [d in units ? 1.0 : 0.0 for d in ids]
+                @test size(ce.E[h], 1) == length(ids)
+                for (i, d) in enumerate(ids)
+                    d in units || @test all(iszero, ce.E[h][i, :])
+                end
+            end
+        end
     end
 end

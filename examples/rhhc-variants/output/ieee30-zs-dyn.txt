@@ -1,4 +1,4 @@
-git commit: 5d263e053b99cd7e838d1bb9bc93589f1c8420f7
+git commit: 6059a624be0eae211cec2ecba8446177d9970db0
 LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
 case: examples/rhhc-variants/cases/ieee30-zs-dyn.toml
 threads: 16; solver: Clarabel
@@ -19,11 +19,11 @@ Tom Van Acker zero-sequence variant: Yd11; from side earthed through 19.05 Ω (T
 branch 36 (28–27): vg=Dy11 gnd1=0 gnd2=1 re1=0.0 xe1=0.0 re2=1.7493112947658402 xe2=0.0 [pu]
 Tom Van Acker zero-sequence variant: Dy11; from side without a neutral connection to earth; to side earthed through 19.05 Ω (Tom Van Acker assumption).
 IEEE 30-bus, inductive_cable33, 34 branches from LineCableModels, 21 units, ε = 0.05, cantelli, no recombination (worst-case alignment), 16 threads
-nominal stochastic: 0.308179 (OPTIMAL)
+nominal stochastic: 0.314843 (OPTIMAL)
 resonances at the nominal point: h = 6.27, h = 12.32, h = 16.86, h = 18.21, h = 19.12, h = 19.65, h = 22.72, h = 29.92, h = 30.70, h = 31.39, h = 31.93, h = 35.76, h = 35.97, h = 36.47, h = 37.89, h = 43.47, h = 43.85, h = 46.38, h = 46.87, h = 48.67, h = 51.75, h = 52.78, h = 56.21
-robust: 0.275280  [LB 0.275280, UB 0.275284, gap 1.3e-05], 2 iterations, 516 s, signed off
+robust: 0.283266  [LB 0.283266, UB 0.283288, gap 7.7e-05], 2 iterations, 519 s, signed off
 robust master termination: OPTIMAL
-per harmonic, robust / nominal: h2 0.992, h3 0.939, h4 0.951, h5 0.884, h6 0.872, h7 0.483, h8 0.745, h9 0.767, h10 0.948, h11 0.971, h12 0.819, h13 0.621, h14 0.773, h15 0.906, h16 0.943, h17 0.952, h18 1.000, h19 0.990, h20 0.823, h21 0.962, h22 0.890, h23 0.899, h24 0.719, h25 0.722, h26 0.739, h27 0.994, h28 0.867, h29 0.949, h30 0.671, h31 0.972, h32 0.926, h33 0.955, h34 0.951, h35 0.947, h36 0.944, h37 0.941, h38 0.939, h39 0.938, h40 0.938, h41 0.940, h42 0.750, h43 0.945, h44 0.970, h45 0.929, h46 0.965, h47 0.852, h48 0.713, h49 0.995, h50 0.787
-per sequence, Σ_h I_h nominal → robust [pu]: positive 0.004063 → 0.003443, negative 0.006858 → 0.006442, zero 0.003754 → 0.003224
-a posteriori (256 random points): worst -2.59e-05 ((:ihd, (21, 3))), violated at 0.0 %
-LineCableModels solves (sum of circuit table sizes): 729784
+per harmonic, robust / nominal: h2 0.992, h3 0.979, h4 0.951, h5 0.884, h6 0.924, h7 0.483, h8 0.745, h9 0.767, h10 0.948, h11 0.971, h12 0.819, h13 0.621, h14 0.773, h15 0.892, h16 0.943, h17 0.952, h18 1.000, h19 0.990, h20 0.823, h21 0.962, h22 0.890, h23 0.899, h24 0.797, h25 0.722, h26 0.739, h27 0.994, h28 0.867, h29 0.949, h30 0.671, h31 0.972, h32 0.926, h33 0.955, h34 0.951, h35 0.947, h36 0.945, h37 0.941, h38 0.938, h39 0.938, h40 0.938, h41 0.940, h42 0.766, h43 0.945, h44 0.969, h45 0.929, h46 0.965, h47 0.852, h48 0.711, h49 0.995, h50 0.787
+per sequence, Σ_h I_h nominal → robust [pu]: positive 0.004063 → 0.003442, negative 0.006858 → 0.006441, zero 0.004071 → 0.003605
+a posteriori (256 random points): worst -1.54e-04 ((:ihd, (21, 3))), violated at 0.0 %
+LineCableModels solves (sum of circuit table sizes): 733184
