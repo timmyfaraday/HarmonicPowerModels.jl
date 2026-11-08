@@ -104,8 +104,8 @@ function pessimize!(dict::ParameterDictionary, hdata::Dict, model::AbstractNetwo
                     branch_derivative = :central)
     _check_branch_derivative(branch_derivative)
     gv  = [g[h] for h in dict.harmonics]
-    V   = dictionary_violations(dict, g)
     nc  = length(dict.keys)
+    V   = _dictionary_violations!(Matrix{Float64}(undef, nc, length(dict.points)), dict, gv)
     best = [maximum(view(V, j, :)) for j in 1:nc]
     arg  = [argmax(view(V, j, :)) for j in 1:nc]
 
