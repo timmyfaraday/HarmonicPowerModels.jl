@@ -22,7 +22,7 @@ extremes. The separate comparison script computes the capacity checks. Raw numer
 
 The generated data identify source-case revision `85cdb95`. The capacity
 comparison uses HPM `2262246` and LCM pinned at
-`59cc3f2329e5df9b33929f52009e996cee1d4784` in the detached
+`e180b435e` in the detached
 `LineCableModels-hpm` worktree. The study and kit environments declare that
 source path. Generated data and reports record the pin. Each case has eight
 circuit designs, solid grounding and ideal transposition.

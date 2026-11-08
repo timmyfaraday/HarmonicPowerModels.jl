@@ -1,12 +1,12 @@
 Uncertainty levels and transfer to the source case
-HPM commit: 23f0b261980da40e552145ad8868fb6823eab0d2
-LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+HPM commit: 48145492b6ac3c5aee5eb10db398fc6f830d83f8
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
 Cases: cases/industrial-physical.toml, cases/industrial.toml
 Threads: 16; solver: Clarabel; unchanged runner settings.
 Method parameters: (difference_step = 0.0001, zero_band = 1.0e-6, subdivision_depth = 6, sharing_tolerance = 1.0e-10, verification_samples = 4096, admission_threshold = 0.001, interior_starts = (corners = true, center = true), interior_tolerance = 1.0e-10, interior_iterations = 32)
 level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination | nominal termination
-industrial-physical | 0.004742131309711506 | 0.004733082722550064 | 0.004733082722550064 | 0.0 | 2 | 40459 | 32.384739292 | true | OPTIMAL | OPTIMAL
-industrial | 0.004761621931562812 | 0.004738592317915505 | 0.004738592317915505 | 0.0 | 2 | 0 | 1.647084939 | true | OPTIMAL | OPTIMAL
+industrial-physical | 0.004742131309711506 | 0.004733082722550064 | 0.004733082722550064 | 0.0 | 2 | 40459 | 32.822809215 | true | OPTIMAL | OPTIMAL
+industrial | 0.004761621931562812 | 0.004738592317915505 | 0.004738592317915505 | 0.0 | 2 | 0 | 3.393482484 | true | OPTIMAL | OPTIMAL
 level | harmonic | robust / nominal | robust current
 industrial-physical | 5 | 0.9980580750712145 | 0.0006587037857301732
 industrial-physical | 7 | 0.9980593742495023 | 0.00033148736702604095

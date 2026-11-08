@@ -1,6 +1,6 @@
 # Generated. Source: cases/ieee30-full.toml
 # Source commit: 85cdb95f25eb26af816314f5eadec3b86cf0e0b6
-# LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+# LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
 # Method: effective coordinates, subdivision, constrained hull search, exact sharing at 1.0e-10, 0.1 percent admission
 # Regenerate: `julia --project=examples/rhhc-variants examples/rhhc-variants/reduce.jl cases/ieee30-full.toml`
 

@@ -1,12 +1,12 @@
 Uncertainty levels and transfer to the source case
-HPM commit: 35666069f36bb22eff730b0fa11822dc11814443
-LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+HPM commit: 48145492b6ac3c5aee5eb10db398fc6f830d83f8
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
 Cases: cases/ieee39-physical.toml, cases/ieee39.toml
 Threads: 16; solver: Clarabel; unchanged runner settings.
 Method parameters: (difference_step = 0.0001, zero_band = 1.0e-6, subdivision_depth = 6, sharing_tolerance = 1.0e-10, verification_samples = 4096, admission_threshold = 0.001, interior_starts = (corners = true, center = true), interior_tolerance = 1.0e-10, interior_iterations = 32)
 level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination | nominal termination
-ieee39-physical | 0.256008598213739 | 0.2546170848753197 | 0.2546170848753197 | 0.0 | 2 | 14610 | 38.900434053 | true | OPTIMAL | OPTIMAL
-ieee39 | 0.24587499473200267 | 0.22048097280141757 | 0.22048097280141757 | 0.0 | 2 | 0 | 14.693653389 | true | OPTIMAL | OPTIMAL
+ieee39-physical | 0.256008598213739 | 0.2546170848753197 | 0.2546170848753197 | 0.0 | 2 | 14610 | 44.518820132 | true | OPTIMAL | OPTIMAL
+ieee39 | 0.24587499473200267 | 0.22048097280141757 | 0.22048097280141757 | 0.0 | 2 | 0 | 17.497353452 | true | OPTIMAL | OPTIMAL
 level | harmonic | robust / nominal | robust current
 ieee39-physical | 5 | 0.992073183254874 | 0.002928428764440571
 ieee39-physical | 7 | 0.9967799129382968 | 0.007844575788257237

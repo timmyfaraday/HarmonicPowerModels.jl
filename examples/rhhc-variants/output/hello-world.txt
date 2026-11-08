@@ -1,11 +1,13 @@
-git commit: 28bec0e0b3c587af92c56df9adffd889e611d9c1
+git commit: 48145492b6ac3c5aee5eb10db398fc6f830d83f8
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
 case: examples/rhhc-variants/cases/hello-world.toml
 threads: 16; solver: Clarabel
-../rhhc/data/hello_world.m, 3 branches from LineCableModels, 3 units, ε = 0.05, Cantelli, 16 threads
+../rhhc/data/hello_world.m, 3 branches from LineCableModels, 3 units, ε = 0.05, cantelli, 16 threads
 nominal stochastic: 0.020359 (OPTIMAL)
 resonances at the nominal point: h = 7.03
-robust: 0.016915  [LB 0.016915, UB 0.016915, gap 2.2e-07], 3 iterations, 25 s, signed off
+robust: 0.016915  [LB 0.016915, UB 0.016915, gap 2.2e-07], 3 iterations, 20 s, signed off
 robust master termination: OPTIMAL
 per harmonic, robust / nominal: h5 0.915, h7 1.750, h11 0.730, h13 0.776
+per sequence, Σ_h I_h nominal → robust [pu]: positive 0.002415 → 0.001992, negative 0.004372 → 0.003646, zero 0.000000 → 0.000000
 a posteriori (1024 random points): worst -5.98e-04 ((:thd, 3)), violated at 0.0 %
-LineCableModels solves (sum of circuit table sizes): 28882
+LineCableModels solves (sum of circuit table sizes): 27468

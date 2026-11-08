@@ -1,12 +1,12 @@
 Uncertainty levels and transfer to the source case
-HPM commit: 5e7400eaefa38a95558726b2fa81c83a3f12058d
-LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+HPM commit: 48145492b6ac3c5aee5eb10db398fc6f830d83f8
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
 Cases: cases/star5-physical.toml, cases/star5.toml
-Threads: 1; solver: Clarabel; unchanged runner settings.
+Threads: 16; solver: Clarabel; unchanged runner settings.
 Method parameters: (difference_step = 0.0001, zero_band = 1.0e-6, subdivision_depth = 6, sharing_tolerance = 1.0e-10, verification_samples = 4096, admission_threshold = 0.001, interior_starts = (corners = true, center = true), interior_tolerance = 1.0e-10, interior_iterations = 32)
-level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination
-star5-physical | 0.004212222549106773 | 0.00421039104730615 | 0.004211979934713518 | 0.0003772305262597508 | 2 | 31923 | 164.131051326 | true | OPTIMAL
-star5 | 0.004589988393727914 | 0.004589930833762832 | 0.004589988393727914 | 1.2540329112870444e-5 | 1 | 0 | 1.06128523 | true | OPTIMAL
+level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination | nominal termination
+star5-physical | 0.004212222549106773 | 0.00421039104730615 | 0.004211979934713518 | 0.0003772305262597508 | 2 | 31923 | 33.53646627 | true | OPTIMAL | OPTIMAL
+star5 | 0.004589988393727914 | 0.004589930833762832 | 0.004589988393727914 | 1.2540329112870444e-5 | 1 | 0 | 1.235355639 | true | OPTIMAL | OPTIMAL
 level | harmonic | robust / nominal | robust current
 star5-physical | 5 | 0.9996227691216824 | 0.00047948656115998377
 star5-physical | 7 | 0.9996227691979868 | 0.0003288949211971172
@@ -17,6 +17,7 @@ star5 | 7 | 0.9999874596708872 | 0.00035144306247704925
 star5 | 11 | 0.9999874596708872 | 0.00016356752929795617
 star5 | 13 | 0.9999874596708872 | 0.0001366742468011641
 Posterior checks: 1024 random points, public HPM defaults (seed 2, tolerance 0.0001).
+Checks below evaluate positive-limit constraints. An infeasible nominal has no feasible capacity.
 solution | target case | maximum normalized violation | constraint | violated fraction
 star5-physical | star5-physical | -5.497530599052336e-5 | (:ihd, (11, 5)) | 0.0
 star5-physical | star5 | -0.06471601351707323 | (:ihd, (5, 5)) | 0.0

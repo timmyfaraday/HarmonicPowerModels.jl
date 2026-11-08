@@ -1,4 +1,5 @@
-git commit: 28bec0e0b3c587af92c56df9adffd889e611d9c1
+git commit: 48145492b6ac3c5aee5eb10db398fc6f830d83f8
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
 case: examples/rhhc-variants/cases/ieee30-full.toml
 threads: 16; solver: Clarabel
 Sequence file: ieee30-full-sequences.csv; 763 frequencies per circuit.

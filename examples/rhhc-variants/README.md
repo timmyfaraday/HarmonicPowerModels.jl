@@ -140,7 +140,8 @@ julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/run.jl cases
 
 Paths such as `cases/ieee30-tom.toml` are relative to this directory unless they already
 identify a file on disk. The solver is Clarabel. Ipopt solves the fundamental power flow.
-The studies and kit pin LCM at `59cc3f232` in `LineCableModels-hpm`.
+The studies and kit use LCM at `e180b435e`. Resolve their environments against a checkout
+of that commit.
 The scripts include the shared PCE parameters and scenario builders under `examples/shhc/`.
 
 `run.jl` writes `output/<case>.txt`. It computes the nominal stochastic capacity with a

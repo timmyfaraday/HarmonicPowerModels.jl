@@ -1,5 +1,5 @@
 Surrogate uncertainty reduction
-Source: cases/ieee30-full.toml; commit: 85cdb95f25eb26af816314f5eadec3b86cf0e0b6; LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+Source: cases/ieee30-full.toml; commit: 85cdb95f25eb26af816314f5eadec3b86cf0e0b6; LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
 Method: effective coordinates, subdivision, constrained hull search, positive-sequence R/L/C ratios at case frequencies, 4096 mapped verification samples; parameters: (difference_step = 0.0001, zero_band = 1.0e-6, subdivision_depth = 6, sharing_tolerance = 1.0e-10, verification_samples = 4096, admission_threshold = 0.001, interior_starts = (corners = true, center = true), interior_tolerance = 1.0e-10, interior_iterations = 32)
 Frequencies: [50.0, 250.0, 350.0, 550.0, 650.0] Hz. Positive sequence defines the intervals.
 Harmonics 5, 7, 11 and 13 are negative or positive sequence. No zero-sequence harmonic enters.
