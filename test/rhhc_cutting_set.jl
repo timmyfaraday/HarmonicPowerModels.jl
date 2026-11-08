@@ -30,6 +30,49 @@
         @test isapprox(res["lower_bound"], res["upper_bound"]; rtol = 1e-6)
     end
 
+    @testset "Gaussian nominal network: single and mixed shapes" begin
+        units = sort(parse.(Int, collect(keys(data["load"]))))
+        @test length(units) ≥ 2
+        shapes = Dict(d => (iseven(i) ? (4.139, 3.659) : (4.0414, 4.7762))
+                      for (i, d) in enumerate(units))
+        # Distinct supports for the two converter populations, in radians.
+        thyristor = Dict(5 => (-138.23d2r, -10.87d2r), 7 => (-265.07d2r, -48.90d2r),
+                         11 => (-240.99d2r, 44.65d2r), 13 => (-337.52d2r, 20.25d2r))
+        mixed_ranges = Dict(h => Dict(d => (iseven(i) ? thyristor[h] : pp["harmonics"][h])
+                                      for (i, d) in enumerate(units)) for h in H[2:end])
+        for mixed in (false, true)
+            params = merge(deepcopy(pp), Dict("bound" => "gaussian"))
+            if mixed
+                params["unit_shapes"] = shapes
+                params["harmonics"] = mixed_ranges
+            end
+            nom_g = HPM.solve_shhc(HPM.replicate(deepcopy(data); H), sHHC_SOC, solver_soc;
+                                   pce_params = deepcopy(params), hpf_optimizer = solver_nlp)
+            hd = HPM.replicate(deepcopy(data); H)
+            box = ParameterBox(:kC_cable => (1.0, 1.0, 1.0), :kR_cable => (1.0, 1.0, 1.0))
+            res = solve_rhhc(hd, ScaledBranchModel(hd, classes), box, solver_soc;
+                             pce_params = deepcopy(params), hpf_optimizer = solver_nlp,
+                             nbackground = 8)
+            @test nom_g["termination_status"] == JuMP.MOI.OPTIMAL
+            @test res["signed_off"]
+            @test res["iterations"] == 1
+            @test isapprox(res["upper_bound"], nom_g["objective_value"]; rtol = 1e-6)
+            @test isapprox(res["lower_bound"], nom_g["objective_value"]; rtol = 1e-6)
+            if mixed
+                pce = hd["pce"]
+                @test pce["germ_shapes"] == [shapes[d] for d in units]
+                @test length(unique(pce["germ_shapes"])) == 2
+                # Check the optimized oracle against the full moment path as well.
+                ce = HPM.ConstraintEvaluator(hd, ScaledBranchModel(hd, classes), box)
+                g = Dict(h => I^2 for (h, I) in res["solution"])
+                ξ = zeros(length(box.names))
+                full = HPM._violations_at(hd, ScaledBranchModel(hd, classes), box, ξ, g)
+                fast = [fast_violation(ce, j, ξ, g) for j in eachindex(full)]
+                @test isapprox(fast, full; rtol = 1e-10, atol = 1e-12)
+            end
+        end
+    end
+
     @testset "an infeasible master is not signed off" begin
         hd  = HPM.replicate(deepcopy(data); H)
         hd["nw"]["1"]["branch"]["2"]["c_rating"] = 0.1

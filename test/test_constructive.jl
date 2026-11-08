@@ -86,3 +86,92 @@ end
     @test sol["iterations"] ≥ 1
     @test haskey(sol, "empirical_lambdas")
 end
+
+@testset "Per-unit shapes in PCE data and empirical sampling" begin
+    data = HPM.parse_file(joinpath(HPM.BASE_DIR, "examples", "shhc", "data",
+                                   "industrial_network_shhc.m"))
+    units = sort(parse.(Int, collect(keys(data["load"]))))[[1, end]]
+    a, b = 4.0414, 4.7762
+    params = Dict{String,Any}("alpha_hat" => a, "beta_hat" => b, "delta" => 2,
+        "epsilon" => 0.05, "harmonic_units" => units, "angle_centre" => "ref_angle",
+        "harmonics" => Dict(5 => Dict(units[1] => (0.1, 0.8), units[2] => (-1.2, 0.2))),
+        "unit_shapes" => Dict(units[2] => (4.139, 3.659)),
+        "type_germs" => Dict("B" => Dict("units" => [units[2]], "shift" => Dict(5 => (-0.2, 0.3)))))
+    hd = HPM.replicate(deepcopy(data); H = [1, 5])
+    HPM.update_hdata_with_pce_data!(hd, params)
+    pce = hd["pce"]
+    @test pce["germ_shapes"] == [(a, b), (4.139, 3.659), (a, b)]
+    for d in units
+        u = pce["germ_dim"][d]
+        α, β = pce["germ_shapes"][u]
+        lo, hi = pce["angle_ranges"][5][d]
+        load = hd["nw"]["5"]["load"][string(d)]
+        centre = deg2rad(get(load, "ref_angle", 0.0) + get(load, "angle_offset", 0.0))
+        @test isapprox(lo + (hi - lo) * α / (α + β), centre; atol = 1e-14)
+        @test isapprox(hi - lo, params["harmonics"][5][d][2] - params["harmonics"][5][d][1]; atol = 1e-14)
+        cc, sc = if d == units[2]
+            HPM.affine2_trig_pce(pce["basis"], u, lo, hi, pce["type_dim"]["B"], -0.2, 0.3)
+        else
+            HPM.affine_trig_pce(pce["basis"], u, lo, hi)
+        end
+        @test pce["cos_phi"][5][d] == cc
+        @test pce["sin_phi"][5][d] == sc
+    end
+    # Explicit default unit shapes and the legacy absence of germ_shapes must
+    # preserve the sampled empirical factors, including the shared type stream.
+    params["unit_shapes"] = Dict(d => (a, b) for d in units)
+    HPM.update_hdata_with_pce_data!(hd, params)
+    λs = empirical_lambdas(hd, Dict(5 => 1e-3); nsamp = 100, seed = 19)
+    delete!(hd["pce"], "germ_shapes")
+    @test empirical_lambdas(hd, Dict(5 => 1e-3); nsamp = 100, seed = 19) == λs
+    delete!(params, "unit_shapes")
+    HPM.update_hdata_with_pce_data!(hd, params)
+    @test empirical_lambdas(hd, Dict(5 => 1e-3); nsamp = 100, seed = 19) == λs
+end
+
+@testset "Empirical sampling kernel: per-unit Beta shapes" begin
+    # Compare the typed real arithmetic with direct complex network responses,
+    # using the same scalar draw stream (unit germs first, then shared type germs).
+    nsamp, npos = 40, 2
+    Bd = Beta(4.0414, 4.7762)
+    Bu = [Bd, Beta(4.139, 3.659), Bd]
+    dp, w, tix = [1, 2, 0], [1.0, 0.7, 0.5], [1, 1, 2]
+    lo = [0.1 -0.5 0.0; -0.3 0.8 0.0]
+    hi = [0.8 0.2 1.0; 0.4 -0.2 1.0]   # also a reversed support
+    slo = [-0.2 0.1; -0.4 0.2]; shi = [0.3 0.5; 0.2 0.6]
+    Zs = [ComplexF64[1+2im 0.3-0.2im; 0.3-0.2im 2+im],
+          ComplexF64[0.4+im 0.1+0.2im; 0.1+0.2im 1+3im]]
+    brs = [[(1, 1, 2, 0.3, -0.7, 0.9, 0.1),
+            (2, 0, 1, 0.2, -0.5, 1.0, 0.0),
+            (3, 2, 0, 0.1, -0.4, 1.0, 0.0)] for _ in Zs]
+    aV = [zeros(nsamp, npos) for _ in Zs]
+    aI = [zeros(nsamp, 3) for _ in Zs]
+    rng = MersenneTwister(17); ref_rng = MersenneTwister(17)
+    HPM._sample_aggregates!(aV, aI, rng, Bu, Bd, dp, lo, hi, w, tix,
+                            slo, shi, Zs, brs, nsamp, npos)
+    refV = [zeros(nsamp, npos) for _ in Zs]
+    refI = [zeros(nsamp, 3) for _ in Zs]
+    for m in 1:nsamp
+        ωu = [rand(ref_rng, B) for B in Bu]
+        ωt = [rand(ref_rng, Bd) for _ in 1:2]
+        for (i, Z) in enumerate(Zs)
+            V = zeros(ComplexF64, npos)
+            for u in eachindex(dp)
+                dp[u] == 0 && continue
+                t = tix[u]
+                φ = lo[i, u] + (hi[i, u] - lo[i, u]) * ωu[u] +
+                    slo[i, t] + (shi[i, t] - slo[i, t]) * ωt[t]
+                V .+= Z[:, dp[u]] .* (w[u] * cis(φ))
+            end
+            refV[i][m, :] .= abs2.(V)
+            for (j, fp, tp, gy, by, cr, ci) in brs[i]
+                vf = fp == 0 ? 0.0im : V[fp]
+                vt = tp == 0 ? 0.0im : V[tp]
+                refI[i][m, j] = abs2(complex(gy, by) * (complex(cr, ci) * vf - vt))
+            end
+        end
+    end
+    @test all(isapprox(a, b; rtol = 1e-13, atol = 1e-14) for (a, b) in zip(aV, refV))
+    @test all(isapprox(a, b; rtol = 1e-13, atol = 1e-14) for (a, b) in zip(aI, refI))
+    @test rand(rng) == rand(ref_rng)
+end
