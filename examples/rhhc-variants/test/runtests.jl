@@ -44,3 +44,5 @@ include("infeasible.jl")
 include("antwerp.jl")
 
 include("hdata_at.jl")
+
+include("manual.jl")

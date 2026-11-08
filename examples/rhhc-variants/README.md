@@ -1,20 +1,9 @@
 # Network studies with LineCableModels
 
-The IEEE30 studies use the `inductive_cable33` scenario and 21 harmonic units at the first 21 loads.
-The baseline cases use harmonic orders 5, 7, 11 and 13, the Gaussian factor and a risk level of 0.05. The fundamental
-network uses the nominal LCM branch parameters. HPM computes each branch's exact π-model
-from the extension's series impedance and shunt admittance per meter at each frequency.
-
-To run HPM's other solvers on a case's LCM network, build `s = study("cases/ieee30-physical.toml")`
-and pass `hdata_at(s.hd, s.model, nominal_point(s.box))` to `solve_hhc`, `solve_hpf`,
-`solve_hopf` or `solve_shhc`. Use `solve_hhc(hdata_at(s.hd, s.model,
-nominal_point(s.box)), dHHC_SOC, s.conic, s.ipopt)`. For `solve_shhc`, also pass
-`pce_params = deepcopy(s.pce)` and `hpf_optimizer = s.ipopt` as keywords. Each call to
-`hdata_at` returns independent solver data with the fundamental LCM network.
-
-Each cable screen has a solid bond to ground at both terminals, with connection index `0`.
-Each overhead earth wire has a bond at every tower and a solid connection to ground, with index `0`.
-Every circuit uses `CoaxialFormulation(transposition = true)`. The studies omit cross-bonding.
+These studies join physical cable and overhead-line inputs to HPM's harmonic hosting
+capacity models. The [Physical-input studies manual](../../docs/src/linecablemodels_studies.md)
+describes the folder layout, input register, case format, construction method and scripts.
+The [LineCableModels manual](../../docs/src/linecablemodels.md) gives a runnable extension session.
 
 | Case | 33 kV cables | 132 kV lines | Box |
 | --- | --- | --- | --- |
@@ -28,254 +17,6 @@ Cable lengths follow the scenario's retained routes. The overhead lengths follow
 `length_km = x_pu * zbase / OHL_X[132.0]`, with `OHL_X[132.0] = 0.40 Ω/km`.
 
 The equivalent and surrogate levels live on the branch `experimental/surrogates`.
-
-## Converter populations and case variants
-
-A case selects its converter population with a cited record:
-
-```toml
-population = {value = "mix", origin = "examples/shhc/paper_mix_ab.jl"}
-```
-
-`diode` and an omitted key use the existing Table III parameters, without a
-`unit_shapes` entry. `thyristor` uses the Table IV Beta shape and angle ranges from
-`PCE_PARAMS_THYRISTOR` in `examples/shhc/pce_params.jl`. `mix` sorts the harmonic
-load ids and assigns diode bridges to odd positions and thyristor bridges to even positions. The 21-unit IEEE30
-population has 11 diode bridges and 10 thyristor bridges. Each unit receives its
-own angle range at each harmonic and its own Beta shape.
-
-The builder refuses a population with `recombination = false` or a harmonic order
-outside the Table III and IV data (5, 7, 11 and 13). It also refuses an unknown
-population. Run studies with `SHHC_UNIT` unset or equal to `diode`. Other values are refused
-when building a study. `examples/shhc/pce_params.jl` merges the thyristor inputs into
-`PCE_PARAMS` when `SHHC_UNIT` is `thyristor`.
-
-The 20 cases with recombination have `-mix` variants. Each variant contains only its
-base case name and the population record:
-
-```toml
-base = "ieee30-physical"
-population = {value = "mix", origin = "examples/shhc/paper_mix_ab.jl"}
-```
-
-`base` names a TOML case in `cases/`, without its path or extension. The builder
-reads that file and replaces its top-level keys with the variant's keys. A record
-is replaced as a whole. A base case that itself declares `base` is refused.
-The variant retains its own filename in the reports. Its box and network model
-come from the base case. The population record changes the converter inputs.
-
-The five `ieee30-zs-*` cases use worst-case alignment without recombination and
-have no population variants. `compare.jl` accepts the paired variants through the
-same two paths as their bases:
-
-```sh
-julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/compare.jl \
-    cases/ieee9-physical-mix.toml cases/ieee9-mix.toml
-```
-
-The variants write capacity and comparison reports. Their sequences and physical
-input sweeps are those of their bases. The inventory lists those reports with
-the bases.
-
-## Gaussian factor
-
-Every case selects `bound = "gaussian"`. HPM uses
-`λ = Φ⁻¹(1 - ε)` in the moment constraint `E[S] + λ sqrt(Var[S]) ≤ limit`.
-At ε = 0.05, λ is about 1.644854. This assumes a Gaussian distribution
-for the constrained quantity. The former Cantelli factor was about 4.358899.
-With `recombination = false`, the zero-sequence variants align contributions
-in the worst case. Their variance is zero. The factor changes only the label.
-
-## Dataset and construction
-
-The LCM cases use one construction chain: `problem` resolves the family coordinates,
-`arrangement` selects the formation's physical state, `design` builds the LCM conductors,
-and `system` places and connects them. The bindings select the coordinates of a case.
-A family input without a binding, or without a coordinate in the box, has its nominal value.
-TOM, U33, ACSR and the earthwire use this same chain.
-
-Family files own the shared varying inputs and their nominal values and intervals.
-`EARTH.toml` owns earth resistivity, permittivity and the logarithmic resistivity scale.
-`U33.toml` owns cable temperature, burial depth, screen resistance and material properties.
-`O132.toml` owns ambient temperature, reference sags, earthwire dimensions and mechanics.
-`ACSR.toml` owns wire materials, temperatures and lay ratios. `TOM.toml` defines the placeholder
-radius, insulation thickness and permittivity. Materials contain fixed properties and the
-common electrical reference temperature. Formation files contain fixed coordinates and
-placement conventions. A formation with `structure = "O132"` selects that structure's
-mechanics. O33-H has fixed sag and uses the ACSR phase temperature.
-
-Each family field specifies a physical quantity. Case coordinates use the form
-`<field>_<FAMILY>`, including `eps_xlpe_TOM`, `t_xlpe_TOM` and `r_core_TOM`.
-A per-size spec contains each nominal and its registered physical bounds.
-`interpolate` maps the signed normalized coordinate to this interval, with nominal at
-zero and the registered endpoints at minus one and plus one. A one-sided interval uses [-1, 0] or [0, 1].
-A family row with `scale = "registered"` marks this normalized convention. HPM
-samples these normalized positions on its linear scale. This applies to U33 resistance, jacket thickness, conductor diameter, inner semiconductor
-thickness and ACSR wire diameters. The box names `t_ins_U33`, `t_sc2_U33` and `d_wire_U33`
-bind the shared physical thicknesses and screen-wire diameter in meters. All bounds and
-aggregate projection limits come from the family or spec records.
-
-The compacted U33 core has radius equal to half the resolved conductor diameter and
-resistivity `R20 * π * radius^2`, with the resolved R20. The copper screen tube has area
-`rho_Cu / R20_screen`. Its jacket correction preserves the physical outside diameter.
-The TOM design retains its fixed metal resistivities and its family geometry.
-LCM computes ACSR resistance from the realized wires. The aggregate projection and
-thermal sag model use the same realized mass and metal area.
-
-The family files define normalized jacket and diameter coordinates, held at nominal
-when absent from the box.
-
-The cases supply series impedance and shunt admittance per meter through the extension.
-HPM computes the exact π-model in `branch_data` of `ExactPiModel`:
-
-```math
-Z = Z_c \sinh(\gamma\ell), \qquad Y/2 = \tanh(\gamma\ell/2)/Z_c,
-\qquad \gamma = \sqrt{zy}, \qquad Z_c = \sqrt{z/y}.
-```
-
-## Coordinate declarations
-
-The builders declare each LCM branch's `coordinates` from its spec family,
-formation structure and earth family bindings, restricted to names in the box.
-Branches sharing a problem function share one circuit and must declare the same tuple.
-The constructor refuses unknown names. Without a declaration, the full point is the key.
-The projection is set in the circuit type at construction, and the stored key type is
-concrete. The problem still receives the full point. Other point types, including dual
-points, compute directly without entering the table.
-
-The study test moves each undeclared coordinate alone to latent positions -1, -0.5,
-0.5 and 1 at 50 and 650 Hz. All other coordinates retain their nominal values.
-It covers each base case once and skips cases that declare `base`.
-It bypasses the table to check the problem's actual dependencies and checks exact
-sequence equality with the projected-table result.
-
-## Installed length
-
-A branch's `length_m = {value = ..., register = "LINK.length_m"}` sets its fixed
-length in meters. Add `lower` and `upper` to make the length uncertain. The builder
-appends the linear coordinate `length_<branch index>` after `box_names`, in numeric
-branch order. Without `length_m`, the branch uses its route length. Each branch
-chooses either `route` or `length_m`.
-
-`ieee30-physical-length` sets this key on its 22 cable links, with the retained route
-lengths as nominal values. Register row `LINK.length_m` supplies the adopted ±1 percent
-installation interval (class ENV), based on route deviations, snaking, and slack at
-joints and terminations. Length coordinates enter HPM's π-model and stay outside the
-LCM circuit's coordinate declaration.
-
-## Transformers
-
-The declarations follow Tom Van Acker's proposal. Branches 12, 15 and 36 are YNyn0,
-132/33 kV.
-
-The three-winding unit at bus 6 has star point 9. Branch 11 represents its 132 kV YN winding.
-Branch 14 represents its 33 kV yn winding. Branch 13 represents its 11 kV delta winding. Branch 16 is the YNd11 step-up of the
-condenser at bus 13, with the delta on the 11 kV side.
-
-The 132 kV neutrals have solid connections to earth. Each 33 kV neutral has a resistance of 19.05 Ω: assumption to agree with Tom:
-limits a 33 kV earth fault to 1.0 kA.
-
-The case files store neutral impedances in ohms. The runner prints HPM's `vg`, `gnd1`,
-`gnd2`, `re1`, `xe1`, `re2` and `xe2`. It converts the impedances to per unit on their winding
-voltage bases. HPM writes YNyn0 as `Yy0` and YNd11 as `Yd11`, with the grounding flags.
-The runner checks each branch's existence, transformer status and buses.
-
-The reports print these declarations. HPM applies the vector groups to tapped branches
-at every harmonic and the winding earthing in the zero sequence. The network retains
-the leakage parameters of the source transformers.
-
-## Zero-sequence variants
-
-The `ieee30-zs-*` cases extend `ieee30-physical` to orders 2 through 50, including
-zero-sequence orders 3, 6, …, 48. With `recombination = false`, the contributions of
-all 21 units align in the worst case at every bus and branch. The angle ranges do not
-enter this calculation. Bus 9 is the star point of the three-winding unit.
-
-Tom Van Acker assumes a connection from each generator through a YNd step-up, with 0.12 pu
-leakage on a rating of 0.2 times its short-circuit power and X/R = 40. Its network bus
-sees an impedance to earth. The condensers at buses 11 and 13 are open in
-the zero sequence, behind branches 13 and 16. The 19.05 Ω neutral resistance is also
-Tom's assumption, corresponding to a 1 kA earth fault at 33 kV. The case records state
-these origins. The variants change the windings and earthing of units with a 33 kV winding.
-
-| Case | 132/33 kV units | 33 kV earthing |
-| --- | --- | --- |
-| `ieee30-zs-ynyn-solid` | YNyn0 | Solid |
-| `ieee30-zs-ynyn-resistance` | YNyn0 | 19.05 Ω |
-| `ieee30-zs-dyn` | Dyn11, delta on 132 kV | 19.05 Ω |
-| `ieee30-zs-ynd` | YNd11, delta on 33 kV | Condenser step-up star unearthed |
-| `ieee30-zs-unearthed` | YNy0 | Every 33 kV star unearthed |
-
-The clock numbers preserve the phase shift along every 132/33 kV path. The positive-
-and negative-sequence capacities stay equal across these variants. The run
-report gives the nominal hosting capacity and robust hosting capacity, each summed per
-sequence, and the bound used.
-
-The zero-sequence model keeps each lumped earthing resistance constant with harmonic
-order. The earthing reactance scales with frequency. It refers the from-side neutral
-term to the leakage side as `3Zn1 / abs2(tap)`, while the to-side term is `3Zn2`.
-Star-to-star clocks 2, 6 and 10 reverse zero-sequence polarity by 180 degrees.
-The other star-to-star clocks retain positive polarity. In a floating connected part,
-harmonic units drop out of the injections and allocation weights at that harmonic.
-Units with an earth return retain their capacity. The reports use this corrected model.
-
-## Run
-
-From the repository root, with Julia 1.12 and the public LCM source available:
-
-```sh
-julia --project=examples/rhhc-variants -e 'using Pkg; Pkg.instantiate()'
-julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/scan.jl cases/ieee30-tom.toml
-julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/scan.jl cases/ieee30-u33.toml
-julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/scan.jl cases/ieee30-physical.toml
-julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/run.jl cases/ieee30-tom.toml
-julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/run.jl cases/ieee30-u33.toml
-julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/run.jl cases/ieee30-physical.toml
-```
-
-Paths such as `cases/ieee30-tom.toml` are relative to this directory unless they already
-identify a file on disk. The solver is Clarabel. Ipopt solves the fundamental power flow.
-Both project files pin the public source
-`https://github.com/Electa-Git/LineCableModels.jl` at commit
-`e180b435e39495eeb7eb16dbdaa5193d374a9f60`. `Pkg.instantiate()` fetches this
-commit. Pkg supplies the pinned LCM source.
-HPM resolves from this repository through the relative source path `../..`.
-For a fresh kit environment, run
-`julia --project=test/linecablemodels -e 'using Pkg; Pkg.instantiate()'`.
-The reports read the resolved LCM revision from the study manifest.
-The scripts include the shared PCE parameters and scenario builders under `examples/shhc/`.
-
-`run.jl` writes `output/<case>.txt`. It computes the nominal stochastic capacity with a
-zero-width box, scans the nominal network, then calls `solve_rhhc` over the parameter box
-with 1024 posterior points.
-
-The nominal solve evaluates the LCM frequency dependence at
-every harmonic. Each report has one header with a repository-relative case path. Solver banners and progress
-logs go to the terminal. The report gives the git commit, case, threads, solver, declarations,
-capacities, bounds, sign-off, posterior check and sum of the circuits' table sizes.
-The commit identifies the repository base. The study and extension can contain uncommitted
-changes.
-
-The table sizes count stored point-frequency pairs. Concurrent calls can compute
-the same absent pair before either stores it.
-
-`scan.jl` writes `output/<case>-sequences.csv` and the text companion report
-`output/<case>-scan.txt`. The CSV has real and imaginary parts of `z0`, `z1`, `y0` and `y1`, per meter in SI units, for every circuit.
-It follows HPM's modal scan: orders `1:0.02:(1.25 * maximum(harmonics))`, plus the harmonic
-orders. The text report gives the branch-to-circuit table, nominal resonances, sequences
-at 50 Hz and data checks. Each branch table also gives the source reactance and scenario
-capacitance on the retained route. The inductive scenario sets overhead capacitance to zero.
-
-## Add a spec or case
-
-Add a spec with its family, primary quantities, SI units and a source for every numeric
-value.
-
-Use the audited register to source physical inputs. Select a formation
-or add sourced placement data. A new case lists its branches, formation, family bindings, ordered box names and
-transformer declarations. The family records define its environment and temperatures. A family coordinate that
-the case does not bind stays at its nominal value. The U33 family defines the normalized jacket and diameter
-coordinates. A case without those coordinates uses their nominal values.
 
 ## Checks and results
 
@@ -402,6 +143,10 @@ U33 cases. The overhead circuits appear in `ieee30-physical`.
 
 ## Capacity runs
 
+At ε = 0.05, the Gaussian factor is about 1.644854. The former Cantelli factor
+was about 4.358899. With worst-case alignment the variance is zero, so the factor
+changes only the label.
+
 The reports use 16 Julia threads, one BLAS thread, Clarabel and 1024 posterior points.
 The nominal stochastic capacity uses the nominal point. The robust
 hosting capacity varies the declared box.
@@ -424,18 +169,6 @@ hosting capacity for the Gaussian run, a ratio of 0.757. `ieee30-full` reproduce
 both capacities.
 
 ## Other test systems
-
-The case selects `network.kind`: `scenario` calls the IEEE30 scenario builder,
-`matpower` reads the declared MATPOWER file, and `converted` reads a saved PowerModels
-JSON file. Source paths are relative to this directory. The `model` field selects
-`exact` for LCM circuits or `scaled` for source branches with the case's declared factors.
-`units` is a count of the first loads, or an explicit list of load IDs.
-The case also declares its harmonic orders. Shared angle distributions come from
-`examples/shhc/pce_params.jl` for those orders.
-
-LCM branch bases come from the source bus voltage and network power base. Lengths come
-from the IEEE30 scenario routes, from route comments in MATPOWER branch rows, or from
-`length_m` in converted branch records. Physical lengths use meters.
 
 | Case | Network source | Model | Box coordinates |
 | --- | --- | --- | --- |
@@ -461,144 +194,7 @@ Their intervals, route origins and fixed ratings are recorded in `data/register/
 | `ieee39-physical` | Cardinal ACSR on O345-F, with the saved 345 kV routes | 10 |
 | `ieee33-physical` | Rabbit, Weasel, Dog, Tiger, Wolf and Bison ACSR on O13-F | 11 |
 
-Antwerp retains the source 300 MVA branch limit. Its source construction uses a
-Milliken core and cross-bonded screens. The study variant uses a round DC equivalent
-and both-end bonds. The industrial LV variant omits the multicore neutral.
-
-The factor ranges follow `examples/rhhc/ieee30_robust.jl:58-60`. They describe
-network parameters. The physical cases and their input origins are documented in `data/register/README.md`. Hello-world uses the audited U33 and ACSR families,
-with the U33 coordinates and earth interval of `ieee30-u33`. Its overhead family
-coordinates stay at nominal values. O33-H has no earth wire.
-
-Run a new case with the same environment and solvers:
-
-```sh
-julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/scan.jl cases/hello-world.toml
-for case in ieee33 industrial antwerp hello-world star3 star5 ieee9 ieee39; do
-    julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/run.jl "cases/$case.toml"
-done
-```
-
-The hello-world scan writes the LCM sequence table and modal resonances.
-The source cases above use scaled branch data. The capacity runner also scans the
-nominal network for cases that use source branches. A failed run writes its exception message to
-`output/<case>.txt`.
-
-The source network data retain their voltage limits, ratings and transformer data.
-The study premise applies to the cases, with source electrical data kept while physical
-specs await audit. The HV candidate ratings assume cross-bonding. These cases instead
-assume solid grounding at both cable ends and ideal transposition, and omit cross-bonding.
-
-## Conversion from PowerImpedance
-
-`networks/convert.jl` reads the passive-network portions of the two source examples
-at PowerImpedance commit `c0547d03670b2ca4432459274c54b879d345d07b`. It calls
-`convert(network, ACDCPowerFlow().backend)` to obtain PowerModels data. It then adds
-HPM's ideal-source flags, the study harmonic limits and the harmonic-unit load records.
-The saved files include their commit, script and component mapping. A read of each saved
-file checks the bus, branch, generator, shunt and load tables against the conversion.
-
-To reproduce the files once, with the existing source environment available:
-
-```sh
-julia --project=<PowerImpedance checkout> examples/rhhc-variants/networks/convert.jl <PowerImpedance checkout>
-```
-
-The capacity and scan scripts read the saved files without PowerImpedance. The
-conversion keeps the passive IEEE9 network before its MMC study and the IEEE39
-network before its STATCOM study. It includes the original lines, transformers,
-source impedances and capacitors. NetworkBuilder assigns bus numbers. The saved
-`conversion_buses` and `conversion_elements` tables identify the original names.
-
-Grounded impedances with active power become HPM loads at their 50 Hz equivalents.
-Pure capacitors remain shunts. HPM then applies its own harmonic scaling to the saved
-network. This represents a test of the HPM pipeline with the source network at 50 Hz.
-It does not reproduce PowerImpedance's frequency-dependent load or transformer models.
-The source conversion's branch ratings are defaults, except for `Zg39` as stated below.
-Their origins are recorded in `networks/convert.jl`. They are not audited thermal ratings.
-
-The conversion adds the absolute-equality principle and the IEC harmonic limits
-used in `examples/shhc/data/3node_test.m:17,33-35`. These are study assumptions.
-The JSON records use HPM's native per-unit values on the 1000 MVA source power
-base. The conversion uses local voltage bases in line-to-line kV.
-It converts each voltage level to its own base, with transformer taps as off-
-nominal ratios. Physical route lengths use meters. Cases without a `principle`
-declaration keep their source fairness principle.
-Hello-world declares absolute equality for `solve_rhhc`.
-
-The conversion reports “Transformer has no open-circuit voltage ratings” twelve times,
-from `PowerImpedance src/Network/Components/transformer/transformer.jl:351`.
-
-IEEE9 uses local voltage bases at 13.8, 16.5, 18 and 230 kV. Its transformers have
-off-nominal taps near one. The conversion checks the admittance identity under the
-change of voltage bases in `networks/convert.jl, normalize`, as well as the saved tables.
-
-IEEE39 source impedance `Zg39` uses the apparent-power capability of generator 39 in
-[MATPOWER `case39.m`, tag 8.1, line 136](https://github.com/MATPOWER/matpower/blob/8.1/data/case39.m#L136).
-That row gives `Pmax = 1100 MW`, `Qmax = 300 MVAr` and `Qmin = -100 MVAr`.
-The capability is `S = sqrt(Pmax^2 + max(Qmax^2, Qmin^2)) = 1140.175425 MVA`.
-On the 1000 MVA study base, `rate_a = rate_b = rate_c = 1.140175425` pu.
-The nominal-voltage current rating `c_rating_a` has the same per-unit value.
-The row's `mBase` is the machine base. It does not set this rating.
-The other branches keep their source conversion ratings.
-
-## Full-uncertainty IEEE30 case
-
-`cases/ieee30-full.toml` uses the physical case's 22 U33 cables and 12 ACSR lines.
-The cable screens and the earthwire have solid connections to ground, and the circuits use ideal
-transposition. Each input has one coordinate per family, shared by its branches.
-The case declares 39 wire and material candidates under `box`. The sweep admits 23 into
-`box_names`. The separate ACSR resistance factor has been removed.
-With more than 10 coordinates, HPM omits the vertices from its oracle dictionary.
-
-The full case selects the ACSR wire inputs. LCM computes their resistance, and the
-catalogue R20 remains a check value. The derived resistance envelope is absorbed by
-those wire inputs and has no additional coordinate.
-
-EN 50182:2001 5.4 limits conductor diameter to ±1 percent at these sizes, and 5.7.3
-limits total mass to ±2 percent. The mass includes the helical wire-length increments.
-For a requested point, the builder first applies 5.5.6 with
-`lay_outer_eff = min(lay_outer, lay_inner)`. The inner aluminum range ends at 16 and
-the steel range starts at 16. Their ordering cannot bind within the registered ranges
-except at equality.
-
-A feasible wire realization maps to itself. Otherwise, the builder finds the largest
-t in [0, 1] for which both aggregate limits hold along
-`d_eff = d_nom + t * (d - d_nom)`. Bisection reduces both diameter deviations along
-the same direction. The realized mass and metal area also enter the sag equation.
-The input coordinates retain their rectangular bounds. This mapping couples the
-physical wires inside the builder, so HPM can keep its parameter box without an
-additional constrained-domain protocol.
-
-The U33 coordinates describe core resistance, conductor diameter, insulation thickness,
-permittivity, jacket thickness, conductor temperature, screen resistance, both semiconductor
-thicknesses and semiconductor permittivity. ACSR coordinates describe
-phase temperature, aluminum and steel wire dimensions, their resistivities, steel
-permeability and the two aluminum lay ratios. The O132 coordinates describe ambient
-temperature and earthwire diameter, resistivity and permeability. Earth resistivity has
-one coordinate. The normalized per-size coordinates interpolate the individual products' registered
-limits. Shared physical inputs take their values directly from the family records.
-
-LCM's public `LineParametersProblem` provides one temperature for every component.
-The full-case builder evaluates each metal's resistivity using its own temperature and
-registered electrical temperature coefficient. It passes the reference temperature of
-20 °C to LCM, which applies no further correction. The cable core and screen use the
-U33 temperature. ACSR phases use the maximum of their temperature and ambient, while
-the earthwire uses ambient. The other cases use the same temperature evaluation with their own nominal family inputs.
-
-The phase and earthwire sag follow the register's elastic thermal state equation at each
-evaluation, with a fixed 300 m span. The positive sag root uses bisection in the input
-number type. Phase mass follows the catalogue component masses, wire areas and helical
-lengths. The earthwire uses its steel density and helical wire lengths. The lay ratio of the outer aluminum layer
-is capped by the inner ratio, as EN 50182 requires. The endpoint checks agree
-with `derived.json` within 1e-6 m, and the sag calculation preserves `BigFloat`.
-
-Each sweep moves one candidate to each endpoint with all others nominal. It evaluates
-every affected circuit at 50 and 650 Hz through the extension's `zy(p, f)` protocol.
-The maximum of |Δ|/|nominal| over z, y and all three sequences admits the coordinate
-when it reaches 0.001. This rule applies equally to the previously recommended inputs.
-The table records the endpoint and result that give that maximum. The complete report
-is `output/ieee30-full-sweep.txt`, and the register records each decision.
+## Full-uncertainty sweep results
 
 | Coordinate | Maximum change % | Circuit | Sequence | Quantity | Hz | End | Admitted |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -669,10 +265,6 @@ The capacity results appear above and in `output/ieee30-full.txt`.
 The scan and sweep reports are `output/ieee30-full-scan.txt` and
 `output/ieee30-full-sweep.txt`. Their sequence parameters and admission decisions
 do not depend on the chance-constraint factor.
-
-The scan binds the thermal coordinate and evaluates a point at the electrical reference
-temperature or the family's registered upper temperature. It leaves family nominals unchanged.
-Strand spans, steel-layer counts and earthwire identity come from the specs.
 
 ## Study tests
 
@@ -794,3 +386,5 @@ A comparison file is listed with its physical case. It also evaluates the source
 | `test/distribution.jl` | Check the physical feeder and industrial cables. |
 | `test/infeasible.jl` | Check reports for infeasible nominal operating points. |
 | `test/antwerp.jl` | Check Antwerp cables and IEEE30 cable sequence references. |
+| `test/hdata_at.jl` | Check the physical network inputs of the other solvers. |
+| `test/manual.jl` | Parse the manual TOML examples and build complete cases. |
