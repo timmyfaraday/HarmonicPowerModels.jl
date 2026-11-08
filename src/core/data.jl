@@ -278,6 +278,7 @@ harmonic units are "normal" loads: they receive zero trig PCE coefficients
 | `"harmonics"` | Dict{Int, T} | Maps harmonic order h to its angle range in **radians**, where `T` is either a bare `(v_min, v_max)` tuple (shared by all units) or a `Dict{unit_id => (v_min, v_max)}` (per-unit) |
 | `"angle_centre"` | String (optional) | Where each unit's angle support is centred: `"range"` (default) keeps the supplied range as given, so every unit shares one mean angle; `"ref_angle"` re-centres it on each unit's own `load["ref_angle"]` (see below) |
 | `"harmonic_units"` | Vector{Int} (optional) | Load ids designated as harmonic sources; defaults to **all** loads |
+| `"recombination"` | Bool (optional) | `true` (default): stochastic angles and recombination. `false`: no recombination, i.e., the contributions of the units align in the worst case at every bus and branch (the arithmetic sum of their magnitudes), with zero variance; `"harmonics"` may then be omitted |
 | `"type_germs"` | Dict{String, Dict} (optional) | Germs shared by groups of units (see below): name → `Dict("units" => Vector{Int}, "shift" => Dict{Int => (s_min, s_max)})`, shift in **radians** per harmonic |
 
 # Shared type germs
@@ -343,7 +344,16 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
     β̂       = pce_params["beta_hat"]
     δ       = pce_params["delta"]
     ε       = pce_params["epsilon"]
-    h_bounds = pce_params["harmonics"]      # Dict{Int => range} in radians
+    # Without recombination (worst-case alignment of the contributions, see `shhc_moments`)
+    # the angles do not enter: harmonics without an angle range get a zero-width one.
+    recombination = get(pce_params, "recombination", true)
+    h_bounds = Dict{Int,Any}(get(pce_params, "harmonics", Dict{Int,Any}()))
+    if !recombination
+        for nw in keys(hdata["nw"])
+            h = parse(Int, nw)
+            h == 1 || haskey(h_bounds, h) || (h_bounds[h] = (0.0, 0.0))
+        end
+    end
 
     δ != 2 && @warn "update_hdata_with_pce_data!: δ=$δ detected; " *
                     "PCE constraints are validated only for δ=2."
@@ -497,6 +507,7 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
         "alpha_beta"     => (Float64(α̂), Float64(β̂)),
         "angle_ranges"   => angle_ranges,
         "lambdas"        => emp_lambdas,   # per-constraint λ* (or nothing)
+        "recombination"  => recombination, # false: worst-case alignment, no angles
     )
 
     return hdata
@@ -576,19 +587,36 @@ The `shift` of a branch carrying `vg` is its own phase shift plus the derived
 Scaling an already scaled network (as `harmonic_network` does with the fundamental)
 replaces `vg_shift` instead of adding the vector-group phase again. Branches without
 `vg` are unchanged.
-Winding earthing (`gnd`, `re`, `xe`) enters only through the IV
-`constraint_xfmr_winding_config` constraints of `xfmr` records. The stochastic SOC
-admittance (`_harmonic_admittance`) models no zero-sequence winding configuration
-for `xfmr` records, and none is added for branches.
+Winding earthing (`gnd`, `re`, `xe`) enters the IV formulations through the
+`constraint_xfmr_winding_config` constraints of `xfmr` records, and the second-order cone
+program through the zero-sequence view of the network (`_zero_sequence_view`), for
+`xfmr` records and transformer branches alike. The network is marked with its
+`harmonic_sequence`; the optional zero-sequence data (`br_r0`, `br_x0`, `b0_fr`, `b0_to`,
+`re1`/`xe1`/`re2`/`xe2` of branches, `rsc0`/`xsc0` of generators) are scaled by the same
+rules.
 This is the one copy of the scaling rules: [`replicate`](@ref) applies it per harmonic.
 """
 function _scale_network_to_harmonic!(ntw::Dict, nh::Real, sequence::Symbol)
+    # the sequence of this network, read by the zero-sequence view of the second-order
+    # cone program (`_zero_sequence_view`); ignored by the IV formulations
+    ntw["harmonic_sequence"] = sequence
+
     # re-evaluate the branch data
     for branch in values(ntw["branch"])
         haskey(branch, "br_r") ? branch["br_r"] *= sqrt(nh) : ~ ;
         haskey(branch, "br_x") ? branch["br_x"] *= nh : ~ ;
         haskey(branch, "b_fr") ? branch["b_fr"] *= nh : ~ ;
         haskey(branch, "b_to") ? branch["b_to"] *= nh : ~ ;
+        # zero-sequence data (optional), scaled by the same rules
+        haskey(branch, "br_r0") ? branch["br_r0"] *= sqrt(nh) : ~ ;
+        haskey(branch, "br_x0") ? branch["br_x0"] *= nh : ~ ;
+        haskey(branch, "b0_fr") ? branch["b0_fr"] *= nh : ~ ;
+        haskey(branch, "b0_to") ? branch["b0_to"] *= nh : ~ ;
+        # neutral earthing of a transformer branch (as the re/xe of `xfmr` records)
+        for w in ("1", "2")
+            haskey(branch, "re" * w) ? branch["re" * w] *= sqrt(nh) : ~ ;
+            haskey(branch, "xe" * w) ? branch["xe" * w] *= nh : ~ ;
+        end
 
         if haskey(branch, "vg")
             # With |tc| = 1, _stamp_branch! gives I_f = y_s (V_f − tc V_t),
@@ -630,6 +658,14 @@ function _scale_network_to_harmonic!(ntw::Dict, nh::Real, sequence::Symbol)
             Yh = 1 / (rsc * sqrt(nh) + im * xsc * nh)        # Y_g(h)
             gen["gsc"] = real(Yh)
             gen["bsc"] = imag(Yh)
+        end
+        # zero-sequence impedance to earth (optional), e.g., the leakage of a YNd step-up
+        rsc0 = get(gen, "rsc0", 0.0)
+        xsc0 = get(gen, "xsc0", 0.0)
+        if !iszero(rsc0) || !iszero(xsc0)
+            Y0 = 1 / (rsc0 * sqrt(nh) + im * xsc0 * nh)
+            gen["gsc0"] = real(Y0)
+            gen["bsc0"] = imag(Y0)
         end
     end
 

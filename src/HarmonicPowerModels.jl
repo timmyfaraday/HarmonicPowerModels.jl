@@ -59,6 +59,7 @@ module HarmonicPowerModels
     include("core/types.jl")
     include("core/constraint_template.jl")
     include("core/data.jl")
+    include("core/zero_sequence.jl")
     include("core/variable.jl")
 
     include("form/iv.jl")
