@@ -1,0 +1,95 @@
+[d_c]
+nominal = {value = 0.0234, register = "U36.d_c"}
+lower = {value = 0.023166, register = "U36.d_c"}
+upper = {value = 0.023634000000000002, register = "U36.d_c"}
+
+[R20]
+nominal = {value = 7.78e-05, register = "U36.R20"}
+lower = {value = 6.837319870600922e-05, register = "U36.R20"}
+upper = {value = 7.78e-05, register = "U36.R20"}
+
+[theta]
+nominal = {value = 90, register = "U36.theta"}
+lower = {value = 20, register = "U36.theta"}
+upper = {value = 90, register = "U36.theta"}
+
+[t_ins]
+nominal = {value = 0.0088, register = "U36.t_ins"}
+lower = {value = 0.0088, register = "U36.t_ins"}
+upper = {value = 0.009240000000000002, register = "U36.t_ins"}
+
+[t_jkt]
+nominal = {value = 0.00399, register = "U36.t_jkt"}
+lower = {value = 0.00399, register = "U36.t_jkt"}
+upper = {value = 0.004389, register = "U36.t_jkt"}
+
+[eps]
+nominal = {value = 2.4, register = "U36.eps"}
+lower = {value = 2.1, register = "U36.eps"}
+upper = {value = 2.5, register = "U36.eps"}
+
+[rho_ins]
+nominal = {value = 110000000000000.0, register = "U36.rho_ins"}
+lower = {value = 100000000000000.0, register = "U36.rho_ins"}
+upper = {value = 1e+16, register = "U36.rho_ins"}
+scale = "log"
+
+[tand]
+nominal = {value = 0.0003, register = "U36.tand"}
+lower = {value = 0.00016, register = "U36.tand"}
+upper = {value = 0.004, register = "U36.tand"}
+
+[eps_jacket]
+nominal = {value = 2.3, register = "U36.eps_jacket"}
+lower = {value = 2.1, register = "U36.eps_jacket"}
+upper = {value = 2.5, register = "U36.eps_jacket"}
+
+[rho_jacket]
+nominal = {value = 100000000000000.0, register = "U36.rho_jacket"}
+lower = {value = 100000000000000.0, register = "U36.rho_jacket"}
+upper = {value = 1e+16, register = "U36.rho_jacket"}
+scale = "log"
+
+[depth]
+nominal = {value = 0.8, register = "U36.depth"}
+lower = {value = 0.7, register = "U36.depth"}
+upper = {value = 1.0, register = "U36.depth"}
+
+[t_sc1]
+nominal = {value = 0.001, register = "U36.t_sc1"}
+lower = {value = 0.0009000000000000001, register = "U36.t_sc1"}
+upper = {value = 0.0011, register = "U36.t_sc1"}
+
+[t_sc2]
+nominal = {value = 0.001, register = "U36.t_sc2"}
+lower = {value = 0.0009000000000000001, register = "U36.t_sc2"}
+upper = {value = 0.0011, register = "U36.t_sc2"}
+
+[d_wire]
+nominal = {value = 0.00126, register = "U36.d_wire"}
+lower = {value = 0.0012474, register = "U36.d_wire"}
+upper = {value = 0.0012726, register = "U36.d_wire"}
+
+[rho_copper]
+nominal = {value = 1.7241e-08, register = "U36.rho_copper"}
+lower = {value = 1.707e-08, register = "U36.rho_copper"}
+upper = {value = 1.786e-08, register = "U36.rho_copper"}
+scale = "log"
+
+[rho_inner]
+nominal = {value = 1000, register = "U36.rho_inner"}
+lower = {value = 14, register = "U36.rho_inner"}
+upper = {value = 1000, register = "U36.rho_inner"}
+scale = "log"
+
+[rho_outer]
+nominal = {value = 500, register = "U36.rho_outer"}
+lower = {value = 9, register = "U36.rho_outer"}
+upper = {value = 500, register = "U36.rho_outer"}
+scale = "log"
+
+[eps_semicon]
+nominal = {value = 1000, register = "U36.eps_semicon"}
+lower = {value = 100, register = "U36.eps_semicon"}
+upper = {value = 10000, register = "U36.eps_semicon"}
+scale = "log"
