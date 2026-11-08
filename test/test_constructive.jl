@@ -72,7 +72,8 @@ end
     HPM.update_hdata_with_pce_data!(hd, pce_params)
     g  = Dict(h => 1e-3 for h in harm)
     λs = empirical_lambdas(hd, g; nsamp = 3000, seed = 1)
-    @test Set(keys(λs)) == Set([:ihd, :agg, :rmsi])
+    @test Set(keys(λs)) == Set([:ihd, :agg, :rmsi, :q, :g])
+    @test all(Set(keys(λs[:q][k])) == Set(keys(λs[k])) for k in (:ihd, :agg, :rmsi))
     @test all(0.0 .≤ values(λs[:ihd]))             # λ* ≥ 0
     @test all(v -> v < HPM.cantelli_lambda(0.05), values(λs[:ihd]))   # tighter than Cantelli
     @test all(isfinite, values(λs[:agg]))
@@ -85,6 +86,15 @@ end
     @test isfinite(sol["objective_value"]) && sol["objective_value"] > 0
     @test sol["iterations"] ≥ 1
     @test haskey(sol, "empirical_lambdas")
+
+    # the default calibrates on the moments of the expansion, so that every IHD bound
+    # equals the sampled (1−ε) quantile of |V|²/I²; the sampled moments stay close
+    @test !isempty(sol["lambdas_used"][:ihd])
+    sol_p = HPM.solve_shhc_calibrated(HPM.replicate(deepcopy(data), H=H), sHHC_SOC, solver_soc;
+                                      pce_params = merge(deepcopy(pce_params), Dict("empirical_moments" => "sample")),
+                                      hpf_optimizer = solver_nlp, nsamp = 3000, maxiter = 4)
+    @test string(sol_p["termination_status"]) in ("OPTIMAL", "ALMOST_OPTIMAL")
+    @test isapprox(sol_p["objective_value"], sol["objective_value"]; rtol = 0.05)
 end
 
 @testset "Per-unit shapes in PCE data and empirical sampling" begin

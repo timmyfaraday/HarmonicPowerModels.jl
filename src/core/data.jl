@@ -280,6 +280,7 @@ harmonic units are "normal" loads: they receive zero trig PCE coefficients
 | `"harmonic_units"` | Vector{Int} (optional) | Load ids designated as harmonic sources; defaults to **all** loads |
 | `"unit_shapes"` | Dict{Int, Tuple} (optional) | Per-unit Beta shape `(α̂, β̂)`, e.g., for a mix of converter types; units not listed (and type germs) take `alpha_hat`, `beta_hat` |
 | `"recombination"` | Bool (optional) | `true` (default): stochastic angles and recombination. `false`: no recombination, i.e., the contributions of the units align in the worst case at every bus and branch (the arithmetic sum of their magnitudes), with zero variance; `"harmonics"` may then be omitted |
+| `"empirical_moments"` | String (optional) | With empirical factors: `"pce"` (default) calibrates λ* on the mean and standard deviation of the expansion, so that the bound reproduces the sampled quantile despite the truncation of the basis; `"sample"` on the sampled ones. `sHHC_SOC` only: `sHHC_QCQP` uses the factors as given (pass the SOC's `"lambdas_used"` to compare the two) |
 | `"type_germs"` | Dict{String, Dict} (optional) | Germs shared by groups of units (see below): name → `Dict("units" => Vector{Int}, "shift" => Dict{Int => (s_min, s_max)})`, shift in **radians** per harmonic |
 
 # Shared type germs
@@ -513,6 +514,7 @@ function update_hdata_with_pce_data!(hdata::Dict, pce_params::Dict)
         "germ_shapes"    => shapes,     # (α̂, β̂) per germ dimension
         "angle_ranges"   => angle_ranges,
         "lambdas"        => emp_lambdas,   # per-constraint λ* (or nothing)
+        "empirical_moments" => get(pce_params, "empirical_moments", "pce"),
         "recombination"  => recombination, # false: worst-case alignment, no angles
     )
 

@@ -30,6 +30,14 @@
         @test isapprox(res["lower_bound"], res["upper_bound"]; rtol = 1e-6)
     end
 
+    @testset "solve_rhhc rejects the empirical bound" begin
+        hd = HPM.replicate(deepcopy(data); H)
+        box = ParameterBox(:kC_cable => (1.0, 1.0, 1.0))
+        @test_throws ArgumentError solve_rhhc(hd, ScaledBranchModel(hd, classes), box, solver_soc;
+            pce_params = merge(deepcopy(pp), Dict("bound" => "empirical")),
+            hpf_optimizer = solver_nlp, nbackground = 0)
+    end
+
     @testset "Gaussian nominal network: single and mixed shapes" begin
         units = sort(parse.(Int, collect(keys(data["load"]))))
         @test length(units) ≥ 2
@@ -62,14 +70,14 @@
                 pce = hd["pce"]
                 @test pce["germ_shapes"] == [shapes[d] for d in units]
                 @test length(unique(pce["germ_shapes"])) == 2
-                # Check the optimized oracle against the full moment path as well.
-                ce = HPM.ConstraintEvaluator(hd, ScaledBranchModel(hd, classes), box)
-                g = Dict(h => I^2 for (h, I) in res["solution"])
-                ξ = zeros(length(box.names))
-                full = HPM._violations_at(hd, ScaledBranchModel(hd, classes), box, ξ, g)
-                fast = [fast_violation(ce, j, ξ, g) for j in eachindex(full)]
-                @test isapprox(fast, full; rtol = 1e-10, atol = 1e-12)
             end
+            # Check the optimized oracle against the full moment path as well.
+            ce = HPM.ConstraintEvaluator(hd, ScaledBranchModel(hd, classes), box)
+            g = Dict(h => I^2 for (h, I) in res["solution"])
+            ξ = zeros(length(box.names))
+            full = HPM._violations_at(hd, ScaledBranchModel(hd, classes), box, ξ, g)
+            fast = [fast_violation(ce, j, ξ, g) for j in eachindex(full)]
+            @test isapprox(fast, full; rtol = 1e-10, atol = 1e-12)
         end
     end
 

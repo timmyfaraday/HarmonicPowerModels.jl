@@ -680,6 +680,21 @@ function shhc_constraints(hdata::Dict, moments)
     # λ for a given constraint: per-constraint empirical value if available, else scalar
     λfor(kind, key) = (lambdas !== nothing && haskey(lambdas[kind], key)) ?
                        lambdas[kind][key] : lambda
+    # With empirical_moments = "pce", λ is recalibrated so that the bound built on the
+    # expansion's own mean and standard deviation equals the sampled (1−ε) quantile;
+    # the aggregates are evaluated at the hosting decision g of the calibration.
+    pce_moments = get(pce, "empirical_moments", "pce") == "pce" &&
+                  lambdas !== nothing && haskey(lambdas, :q)
+    function λfor(kind, key, coef)
+        pce_moments && haskey(lambdas[:q][kind], key) || return λfor(kind, key)
+        g  = lambdas[:g]; gv(h) = kind == :ihd ? 1.0 : get(g, h, 0.0)
+        E  = sum(coef[h][1] * gv(h) for h in keys(coef))
+        σ  = sqrt(sum(psi_norms[k+1] * sum(coef[h][k+1] * gv(h) for h in keys(coef))^2
+                      for k in K if k != 0; init = 0.0))
+        return σ > 0.0 ? max((lambdas[:q][kind][key] - E) / σ, 0.0) : 0.0
+    end
+    psi_norms = pce["psi_norms"]
+    K = pce["K"]
 
     cons = ShhcConstraint[]
 
@@ -693,7 +708,7 @@ function shhc_constraints(hdata::Dict, moments)
             v_fund = fund_nw["bus"][bi_str]["vm"]
             push!(cons, ShhcConstraint(:ihd, (nw_int, bus["bus_i"]),
                 Dict(nw_int => A[n, :]), (bus["ihdmax"] * v_fund)^2,
-                λfor(:ihd, (nw_int, bus["bus_i"]))))
+                λfor(:ihd, (nw_int, bus["bus_i"]), Dict(nw_int => view(A, n, :)))))
         end
     end
 
@@ -703,7 +718,7 @@ function shhc_constraints(hdata::Dict, moments)
         n in ref_bus_ids && continue
         coef   = Dict(h => alpha_V[h][n, :] for h in harm_nw_ints if haskey(alpha_V, h))
         v_fund = fbus["vm"]
-        λ      = λfor(:agg, fbus["bus_i"])
+        λ      = λfor(:agg, fbus["bus_i"], coef)
         haskey(fbus, "thdmax")  && push!(cons, ShhcConstraint(:thd, fbus["bus_i"], coef,
                                              (fbus["thdmax"] * v_fund)^2, λ))
         haskey(fbus, "vmaxrms") && push!(cons, ShhcConstraint(:rmsv, fbus["bus_i"], coef,
@@ -718,7 +733,7 @@ function shhc_constraints(hdata::Dict, moments)
                     if haskey(alpha_I, h) && haskey(alpha_I[h], b))
         isempty(coef) && continue
         push!(cons, ShhcConstraint(:rmsi, b, coef,
-                                   fbr["c_rating"]^2 - get(fbr, "cm_fr", 0.0)^2, λfor(:rmsi, b)))
+                                   fbr["c_rating"]^2 - get(fbr, "cm_fr", 0.0)^2, λfor(:rmsi, b, coef)))
     end
     return cons
 end
@@ -867,7 +882,13 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
 
     moments = shhc_moments(hdata)
     master  = shhc_master(hdata, moments, optimizer)
-    add_shhc_constraints!(master, hdata, moments)
+    cons = shhc_constraints(hdata, moments)
+    used = Dict(:ihd => Dict{Any,Float64}(), :agg => Dict{Any,Float64}(), :rmsi => Dict{Any,Float64}())
+    for c in cons
+        add_shhc_constraint!(master, c, moments)
+        kind = c.kind in (:thd, :rmsv) ? :agg : c.kind
+        used[kind][c.key] = c.λ
+    end
     (; model, I_h, S) = master
     (; alpha_re, alpha_im, alpha_V, alpha_I, harm_nw_ints) = moments
     pce = hdata["pce"]
@@ -882,6 +903,7 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
         "termination_status" => JuMP.termination_status(model),
         "objective_value"    => JuMP.has_values(model) ? S * JuMP.objective_value(model) : NaN,
         "solve_time"         => JuMP.solve_time(model),
+        "lambdas_used"       => used,     # λ per constraint as applied (:ihd, :agg, :rmsi)
         "solution"           => JuMP.has_values(model) ?
                                     Dict(h => JuMP.value(I_h[h]) for h in harm_nw_ints) :
                                     Dict{Int, Float64}(),

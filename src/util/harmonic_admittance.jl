@@ -474,7 +474,15 @@ function empirical_lambdas(hdata::Dict, g::AbstractDict; nsamp::Int=20000, seed:
         S = sum((haskey(aI[h], bid) ? aI[h][bid] : zeros(nsamp)) .* gv(h) for h in harm_nws)
         λ_rmsi[bid] = λstar(S)
     end
-    return Dict(:ihd => λ_ihd, :agg => λ_agg, :rmsi => λ_rmsi)
+    # the sampled (1−ε) quantiles themselves, for calibrating λ against the moments
+    # of the polynomial chaos expansion instead (pce_params["empirical_moments"] = "pce")
+    q(x) = Statistics.quantile(x, 1 - ε)
+    q_ihd  = Dict((h, pos2bus[p]) => q(aV[h][p]) for h in harm_nws for p in 1:npos)
+    q_agg  = Dict(pos2bus[p] => q(sum(aV[h][p] .* gv(h) for h in harm_nws)) for p in 1:npos)
+    q_rmsi = Dict(bid => q(sum((haskey(aI[h], bid) ? aI[h][bid] : zeros(nsamp)) .* gv(h) for h in harm_nws))
+                  for bid in allbr)
+    return Dict(:ihd => λ_ihd, :agg => λ_agg, :rmsi => λ_rmsi,
+                :q => Dict(:ihd => q_ihd, :agg => q_agg, :rmsi => q_rmsi), :g => Dict(g))
 end
 
 """
