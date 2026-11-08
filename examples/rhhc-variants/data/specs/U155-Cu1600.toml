@@ -1,0 +1,2 @@
+family = "U155"
+screen_count = {value = 60, register = "U155.screen_count"}

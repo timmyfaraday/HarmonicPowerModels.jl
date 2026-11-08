@@ -1,0 +1,35 @@
+Uncertainty levels and transfer to the source case
+HPM commit: 6059a624be0eae211cec2ecba8446177d9970db0
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+Cases: cases/antwerp-physical.toml, cases/antwerp.toml
+Threads: 16; solver: Clarabel; unchanged runner settings.
+Method parameters: (difference_step = 0.0001, zero_band = 1.0e-6, subdivision_depth = 6, sharing_tolerance = 1.0e-10, verification_samples = 4096, admission_threshold = 0.001, interior_starts = (corners = true, center = true), interior_tolerance = 1.0e-10, interior_iterations = 32)
+level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination | nominal termination
+antwerp-physical | 0.5452807800486488 | 0.5131180603186571 | 0.5131180603186571 | 0.0 | 2 | 16834 | 6.483886395 | true | OPTIMAL | OPTIMAL
+antwerp | 0.557371483788313 | 0.5184162741043158 | 0.5184162741043158 | 0.0 | 2 | 0 | 1.344125888 | true | OPTIMAL | OPTIMAL
+level | harmonic | robust / nominal | robust current
+antwerp-physical | 5 | 0.9917799030617764 | 0.04880593485213309
+antwerp-physical | 7 | 0.9325740771399725 | 0.021814146328322934
+antwerp-physical | 11 | 0.19456798594515226 | 7.210813052094336e-5
+antwerp-physical | 13 | 0.5300425441729979 | 0.002610390734545501
+antwerp | 5 | 0.9891109236037408 | 0.04765079589392911
+antwerp | 7 | 0.9058609924513354 | 0.01771383503346038
+antwerp | 11 | 0.5710664219928389 | 0.0020252053644104736
+antwerp | 13 | 0.7989434121222083 | 0.006669631437388021
+Posterior checks: 1024 random points, public HPM defaults (seed 2, tolerance 0.0001).
+Checks below evaluate positive-limit constraints. An infeasible nominal has no feasible capacity.
+solution | target case | maximum normalized violation | constraint | violated fraction
+antwerp-physical | antwerp-physical | -0.003427953099194969 | (:ihd, (5, 200)) | 0.0
+antwerp-physical | antwerp | 0.5140594096847984 | (:ihd, (7, 40)) | 1.0
+antwerp | antwerp-physical | 755.8841755402943 | (:ihd, (11, 20)) | 1.0
+antwerp | antwerp | -0.00024455883027452163 | (:ihd, (5, 200)) | 0.0
+Corner adversary: nominal finite-difference signs, unique predicted corners.
+Positive own-case violations refute reported feasibility and its lower-bound certificate.
+Positive transfer violations refute feasibility of the level's solution on the source box.
+A transfer failure alone does not refute an own-case certificate.
+The adversary is not a proof of feasibility: resonance constraints can be nonmonotone.
+solution | target case | corners evaluated | maximum normalized violation | constraint | case-coordinate point
+antwerp-physical | antwerp-physical | 22 | -9.416766255654352e-10 | (:ihd, (13, 20)) | (d_wire_U155 = 0.0014342, rho_EARTH = 100.0, R20_U155 = 1.0458715462762823e-5, rho_copper_U155 = 1.707e-8, t_ins_U155 = 0.01995, t_sc1_U155 = 0.00189, t_sc2_U155 = 0.00165, t_jkt_U155 = 0.006218, d_c_U155 = 0.0496, theta_U155 = 20.0, eps_semicon_U155 = 100.0, eps_U155 = 2.1)
+antwerp-physical | antwerp | 11 | 0.5165308605505217 | (:ihd, (7, 40)) | (kR_cable = 1.2, kL_cable = 1.05, kC_cable = 1.1)
+antwerp | antwerp-physical | 17 | 28.86155587584995 | (:ihd, (11, 20)) | (d_wire_U155 = 0.00142, rho_EARTH = 100.0, R20_U155 = 1.13e-5, rho_copper_U155 = 1.7241e-8, t_ins_U155 = 0.019, t_sc1_U155 = 0.0021, t_sc2_U155 = 0.0015, t_jkt_U155 = 0.00568, d_c_U155 = 0.0496, theta_U155 = 90.0, eps_semicon_U155 = 1000.0, eps_U155 = 2.4)
+antwerp | antwerp | 13 | -8.190892408777017e-12 | (:ihd, (5, 200)) | (kR_cable = 1.2, kL_cable = 1.05, kC_cable = 1.1)

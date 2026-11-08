@@ -139,6 +139,33 @@ function design(::Union{Val{:U36}, Val{:U11}}, spec, q, mat; temperature = q.the
     end
 end
 
+# Variant: round copper core with the Milliken DC resistance.
+function design(::Val{:U155}, spec, q, mat; temperature = q.theta)
+    radius = q.d_c / 2
+    conductor = metal(mat.copper, mat.reference;
+        rho = q.R20 * π * radius^2, temperature)
+    copper = metal(mat.copper, mat.reference; rho = q.rho_copper, temperature)
+    inner = Material(:semicon, q.rho_inner, q.eps_semicon)
+    outer = Material(:semicon, q.rho_outer, q.eps_semicon)
+    xlpe = Material(:insulator, q.rho_ins, q.eps; tan_delta = q.tand)
+    protection = Material(:insulator, q.rho_jacket, q.eps_jacket)
+    screen_radius = radius + q.t_sc1 + q.t_ins + q.t_sc2
+    area = spec.screen_count * π * q.d_wire^2 / 4
+    tube = sqrt(screen_radius^2 + area / π) - screen_radius
+    return @design spec.name begin
+        @terminal :core begin
+            core(conductor; r = radius)
+        end
+        screen(inner; t = q.t_sc1, tag = :semicon_inner)
+        insulation(xlpe; t = q.t_ins)
+        screen(outer; t = q.t_sc2, tag = :semicon_outer)
+        @terminal :sheath begin
+            sheath(copper; t = tube)
+        end
+        jacket(protection; t = q.t_jkt + q.d_wire - tube)
+    end
+end
+
 # The coaxial formulation needs one concentric assembly per cable.
 # Variant: three unscreened single cores replace the NYY multicore construction.
 function design(::Val{:NYY}, spec, q, mat; temperature = q.theta)
@@ -422,7 +449,8 @@ function arrangement(kind, spec, physical, row, mat)
         kind, spec, physical.q, physical.reference, physical.structure, row, mat)
 end
 
-function arrangement(::Union{Val{:U36}, Val{:U11}}, spec, q, reference, structure, row, mat)
+function arrangement(
+        ::Union{Val{:U36}, Val{:U11}, Val{:U155}}, spec, q, reference, structure, row, mat)
     return design(spec.family, spec, q, mat), merge(row, (depth = q.depth,))
 end
 
