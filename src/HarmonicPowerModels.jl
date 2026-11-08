@@ -103,7 +103,7 @@ module HarmonicPowerModels
     export ShhcConstraint, shhc_constraints, add_shhc_constraint!, constraint_value, normalized_violation
     export ParameterBox, latent, nominal_point
     export AbstractNetworkModel, ScaledBranchModel, ExactPiModel, uncertain_branches, branch_data
-    export networks_at, harmonic_network, harmonic_sequence, admittance_at, moments_at
+    export networks_at, hdata_at, harmonic_network, harmonic_sequence, admittance_at, moments_at
     export Resonance, reduced_admittance, modal_scan, locate_resonance, resonance_sensitivity
     export Seed, resonance_seeds, background_points
     export ParameterDictionary, build_dictionary, dictionary_violations, add_point!, add_points!

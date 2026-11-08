@@ -67,6 +67,7 @@ PMs.silence()
 
     # Robust HHC: parametric network model
     include("rhhc_network_model.jl")
+    include("hdata_at.jl")
     include("rhhc_moments.jl")
     include("rhhc_sampling.jl")
     include("rhhc_oracle.jl")

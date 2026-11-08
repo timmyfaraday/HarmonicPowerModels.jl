@@ -5,6 +5,13 @@ The baseline cases use harmonic orders 5, 7, 11 and 13, the Gaussian factor and 
 network uses the nominal LCM branch parameters. HPM computes each branch's exact π-model
 from the extension's series impedance and shunt admittance per meter at each frequency.
 
+To run HPM's other solvers on a case's LCM network, build `s = study("cases/ieee30-physical.toml")`
+and pass `hdata_at(s.hd, s.model, nominal_point(s.box))` to `solve_hhc`, `solve_hpf`,
+`solve_hopf` or `solve_shhc`. Use `solve_hhc(hdata_at(s.hd, s.model,
+nominal_point(s.box)), dHHC_SOC, s.conic, s.ipopt)`. For `solve_shhc`, also pass
+`pce_params = deepcopy(s.pce)` and `hpf_optimizer = s.ipopt` as keywords. Each call to
+`hdata_at` returns independent solver data with the fundamental LCM network.
+
 Each cable screen has a solid bond to ground at both terminals, with connection index `0`.
 Each overhead earth wire has a bond at every tower and a solid connection to ground, with index `0`.
 Every circuit uses `CoaxialFormulation(transposition = true)`. The studies omit cross-bonding.

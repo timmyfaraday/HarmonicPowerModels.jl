@@ -227,6 +227,24 @@ function networks_at(hdata::Dict, model::AbstractNetworkModel, p)
 end
 
 """
+    hdata_at(hdata, model, p) -> Dict
+
+A deep copy of `hdata` with the uncertain branches of `model` evaluated at the parameter
+point `p`: the fundamental at order 1 in the positive sequence, and every harmonic network
+at its own order and sequence. All other data are preserved. The result shares no mutable
+state with `hdata` and can be passed to HPM's solvers, which may modify their input.
+Pass `nominal_point(box)` as `p` for the nominal network.
+"""
+function hdata_at(hdata::Dict, model::AbstractNetworkModel, p)
+    out = deepcopy(hdata)
+    for (nw, ntw) in out["nw"]
+        h = parse(Int, nw)
+        out["nw"][nw] = _override_branches(ntw, model, p, h, harmonic_sequence(h))
+    end
+    return out
+end
+
+"""
     harmonic_network(hdata, h; sequence = :positive) -> Dict
 
 The network of `hdata` scaled to the (real) harmonic order `h` from its fundamental data,
