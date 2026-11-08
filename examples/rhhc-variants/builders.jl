@@ -18,7 +18,8 @@ BLAS.set_num_threads(1)
 record(x) = x
 record(x::AbstractVector) = Tuple(record(v) for v in x)
 function record(x::AbstractDict)
-    haskey(x, "value") && return record(x["value"])
+    haskey(x, "value") && !haskey(x, "lower") && !haskey(x, "upper") &&
+        return record(x["value"])
     return (; (Symbol(k) => record(v) for (k, v) in x)...)
 end
 readrecord(path) = record(TOML.parsefile(path))
@@ -486,7 +487,11 @@ function arrangement(::Val{:O132}, spec, q, reference, structure, row, mat)
         shield_sag = structure.shield_sag, shield = conductor))
 end
 
-function parameterbox(rows, families, names)
+function parameterbox(rows, families, names, branches)
+    for (name, row) in pairs(branches)
+        haskey(row, :route) && haskey(row, :length_m) &&
+            throw(ArgumentError("branch $name declares both route and length_m"))
+    end
     entries = map(names) do text
         name = Symbol(text)
         row = getproperty(rows, name)
@@ -498,7 +503,12 @@ function parameterbox(rows, families, names)
                 Symbol(get(values, :scale, "linear") == "registered" ? "linear" :
                        get(values, :scale, "linear")))
     end
-    return ParameterBox(entries...)
+    lengths = (Symbol("length_", name) =>
+                   (len.value, len.lower, len.upper, :linear)
+    for (name, row) in sort(collect(pairs(branches)); by = x -> parse(Int, string(first(x))))
+    if haskey(row, :length_m)
+    for len in (row.length_m,) if len isa NamedTuple)
+    return ParameterBox(entries..., lengths...)
 end
 
 function isxfmr(b)
@@ -546,8 +556,9 @@ function network(config, ipopt)
 end
 
 function route_length(br, kv, zbase, config)
-    if haskey(config, :routes)
-        row = getproperty(config.branches, Symbol(br["index"]))
+    row = getproperty(config.branches, Symbol(br["index"]))
+    haskey(row, :length_m) && return route_length(row.length_m)
+    if haskey(row, :route)
         return getproperty(config.routes, Symbol(row.route)).length_m
     end
     haskey(br, "length_m") && return br["length_m"]
@@ -555,6 +566,14 @@ function route_length(br, kv, zbase, config)
     config.network.kind == "scenario" && return 1e3br["br_x"] * zbase / OHL_X[kv]
     error("LCM branch $(br["index"]) has no route length in its source data")
 end
+
+# Fixed values and bounded records supply the nominal length in meters.
+route_length(len::Real) = len
+route_length(row::NamedTuple) = row.value
+
+# A bounded branch length reads its coordinate in meters.
+route_length(len::Real, b::Int) = len
+route_length(row::NamedTuple, b::Int) = Base.Fix2(getproperty, Symbol("length_", b))
 
 function harmonic_units(count::Integer, data)
     sort(parse.(Int, collect(keys(data["load"]))))[1:count]
@@ -571,7 +590,8 @@ function study(path; all_coordinates = false)
     for name in sort(readdir(joinpath(STUDIES, "data", "families")))
     if endswith(name, ".toml"))...)
     box = parameterbox(config.box, families,
-        all_coordinates ? Tuple(string.(keys(config.box))) : config.box_names)
+        all_coordinates ? Tuple(string.(keys(config.box))) : config.box_names,
+        get(config, :branches, (;)))
     ipopt = optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
     conic = optimizer_with_attributes(Clarabel.Optimizer, "verbose" => false)
     data = network(config, ipopt)
@@ -613,9 +633,19 @@ function study(path; all_coordinates = false)
             definitions[key] = problem(
                 spec, families, formation(row.formation), mat, bindings)
         end
-        branches[b] = (problem = definitions[key], len = len, zbase = zbase)
+        spec = specification(row.spec)
+        layout = formation(row.formation)
+        names = (spec.family_name, :EARTH,
+            (haskey(layout, :structure) ? (layout.structure,) : ())...)
+        declared = Tuple(n
+        for n in keys(nominal_point(box))
+        if any(family -> n in values(get(bindings, family, (;))), names))
+        branches[b] = (problem = definitions[key],
+            coordinates = declared,
+            len = haskey(row, :length_m) ? route_length(row.length_m, b) : len,
+            zbase = zbase)
         details[b] = (branch = b, f_bus = br["f_bus"], t_bus = br["t_bus"], kv = kv,
-            spec = row.spec, formation = row.formation, len = len,
+            spec = row.spec, formation = row.formation, coordinates = declared, len = len,
             circuit = row.spec * "/" * row.formation,
             source_x = br["br_x"] * zbase / (len / 1e3),
             source_c = (br["b_fr"] + br["b_to"]) / (2π * config.f1 * zbase * (len / 1e3)))
@@ -664,7 +694,9 @@ end
 
 function header(io, s)
     println(io, "git commit: ", readchomp(`git -C $STUDIES rev-parse HEAD`))
-    println(io, "LCM commit: ", readchomp(`git -C $(pkgdir(LineCableModels)) rev-parse HEAD`))
+    println(io,
+        "LCM commit: ",
+        TOML.parsefile(joinpath(STUDIES, "Manifest.toml"))["deps"]["LineCableModels"][1]["repo-rev"])
     println(io, "case: ", relpath(s.file, dirname(dirname(STUDIES))))
     println(io, "threads: ", Threads.nthreads(), "; solver: Clarabel")
 end

@@ -1,6 +1,8 @@
 using Test
 include(joinpath(@__DIR__, "..", "compare.jl"))
 
+include("coordinates.jl")
+
 @testset "Corner adversary" begin
     s = study("cases/ieee30-tom.toml")
     fixed = ParameterBox(

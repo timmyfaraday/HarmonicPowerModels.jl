@@ -1,7 +1,7 @@
 # Study premise: solid grounding of screens and earth wires at both ends.
 # This case assumes ideal transposition. The study omits cross-bonding.
 model = "scaled"
-bound = "cantelli"
+bound = "gaussian"
 harmonics = {value = [5, 7, 11, 13], origin = "examples/rhhc/ieee30_robust.jl:32"}
 epsilon = {value = 0.05, origin = "examples/shhc/pce_params.jl:20"}
 posterior = {value = 1024, origin = "examples/rhhc/ieee30_robust.jl:83"}

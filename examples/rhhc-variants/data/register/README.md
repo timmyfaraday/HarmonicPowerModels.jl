@@ -549,3 +549,16 @@ Cross-bonded screens become screens bonded and grounded at both ends. The source
 300 MVA limit remains because the candidate study's 1390 A applies to
 cross-bonding, whereas both-end bonds add circulating screen losses. Burial is
 1 m, with an assumed 0.9–1.2 m interval. Ideal transposition is retained.
+
+## Installed length
+
+A branch's `length_m` holds its length in meters: `value` alone fixes it, while
+`value`, `lower` and `upper` make it uncertain. The builder appends the linear
+coordinate `length_<branch index>` after `box_names`, in numeric branch order.
+Without the key, the branch keeps its route length.
+
+Row `LINK.length_m` supplies the adopted ±1 percent installation interval (class ENV).
+Its nominal is the retained route length, and its bounds are `value × 0.99` and
+`value × 1.01`. The as-laid length departs from the retained route through route
+deviations, snaking, and slack at joints and terminations. Each branch's `length_m`
+cites this row and stores its nominal and bounds in meters.

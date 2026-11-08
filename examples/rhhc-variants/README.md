@@ -1,7 +1,7 @@
 # Network studies with LineCableModels
 
 The IEEE30 studies use the `inductive_cable33` scenario and 21 harmonic units at the first 21 loads.
-The baseline cases use harmonic orders 5, 7, 11 and 13, Cantelli bounds and a risk level of 0.05. The fundamental
+The baseline cases use harmonic orders 5, 7, 11 and 13, the Gaussian factor and a risk level of 0.05. The fundamental
 network uses the nominal LCM branch parameters. HPM computes each branch's exact π-model
 from the extension's series impedance and shunt admittance per meter at each frequency.
 
@@ -21,6 +21,15 @@ Cable lengths follow the scenario's retained routes. The overhead lengths follow
 `length_km = x_pu * zbase / OHL_X[132.0]`, with `OHL_X[132.0] = 0.40 Ω/km`.
 
 The equivalent and surrogate levels live on the branch `experimental/surrogates`.
+
+## Gaussian factor
+
+Every case selects `bound = "gaussian"`. HPM uses
+`λ = Φ⁻¹(1 - ε)` in the moment constraint `E[S] + λ sqrt(Var[S]) ≤ limit`.
+At ε = 0.05, λ is about 1.644854. This assumes a Gaussian distribution
+for the constrained quantity. The former Cantelli factor was about 4.358899.
+With `recombination = false`, the zero-sequence variants align contributions
+in the worst case. Their variance is zero. The factor changes only the label.
 
 ## Dataset and construction
 
@@ -58,6 +67,9 @@ The TOM design retains its fixed metal resistivities and its family geometry.
 LCM computes ACSR resistance from the realized wires. The aggregate projection and
 thermal sag model use the same realized mass and metal area.
 
+The family files define normalized jacket and diameter coordinates, held at nominal
+when absent from the box.
+
 The cases supply series impedance and shunt admittance per meter through the extension.
 HPM computes the exact π-model in `branch_data` of `ExactPiModel`:
 
@@ -65,6 +77,35 @@ HPM computes the exact π-model in `branch_data` of `ExactPiModel`:
 Z = Z_c \sinh(\gamma\ell), \qquad Y/2 = \tanh(\gamma\ell/2)/Z_c,
 \qquad \gamma = \sqrt{zy}, \qquad Z_c = \sqrt{z/y}.
 ```
+
+## Coordinate declarations
+
+The builders declare each LCM branch's `coordinates` from its spec family,
+formation structure and earth family bindings, restricted to names in the box.
+Branches sharing a problem function share one circuit and must declare the same tuple.
+The constructor refuses unknown names. Without a declaration, the full point is the key.
+The projection is set in the circuit type at construction, and the stored key type is
+concrete. The problem still receives the full point. Other point types, including dual
+points, compute directly without entering the table.
+
+The study test moves each undeclared coordinate alone to latent positions -1, -0.5,
+0.5 and 1 at 50 and 650 Hz. All other coordinates retain their nominal values.
+It bypasses the table to check the problem's actual dependencies and checks exact
+sequence equality with the projected-table result.
+
+## Installed length
+
+A branch's `length_m = {value = ..., register = "LINK.length_m"}` sets its fixed
+length in meters. Add `lower` and `upper` to make the length uncertain. The builder
+appends the linear coordinate `length_<branch index>` after `box_names`, in numeric
+branch order. Without `length_m`, the branch uses its route length. Each branch
+chooses either `route` or `length_m`.
+
+`ieee30-physical-length` sets this key on its 22 cable links, with the retained route
+lengths as nominal values. Register row `LINK.length_m` supplies the adopted ±1 percent
+installation interval (class ENV), based on route deviations, snaking, and slack at
+joints and terminations. Length coordinates enter HPM's π-model and stay outside the
+LCM circuit's coordinate declaration.
 
 ## Transformers
 
@@ -114,9 +155,17 @@ and negative-sequence capacities stay equal across these variants. The run
 report gives the nominal hosting capacity and robust hosting capacity, each summed per
 sequence, and the bound used.
 
+The zero-sequence model keeps each lumped earthing resistance constant with harmonic
+order. The earthing reactance scales with frequency. It refers the from-side neutral
+term to the leakage side as `3Zn1 / abs2(tap)`, while the to-side term is `3Zn2`.
+Star-to-star clocks 2, 6 and 10 reverse zero-sequence polarity by 180 degrees.
+The other star-to-star clocks retain positive polarity. In a floating connected part,
+harmonic units drop out of the injections and allocation weights at that harmonic.
+Units with an earth return retain their capacity. The reports use this corrected model.
+
 ## Run
 
-From the repository root, with Julia and the LCM worktree available:
+From the repository root, with Julia 1.12 and the public LCM source available:
 
 ```sh
 julia --project=examples/rhhc-variants -e 'using Pkg; Pkg.instantiate()'
@@ -130,8 +179,14 @@ julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/run.jl cases
 
 Paths such as `cases/ieee30-tom.toml` are relative to this directory unless they already
 identify a file on disk. The solver is Clarabel. Ipopt solves the fundamental power flow.
-The studies and kit use LCM at `e180b435e`. Resolve their environments against a checkout
-of that commit.
+Both project files pin the public source
+`https://github.com/Electa-Git/LineCableModels.jl` at commit
+`e180b435e39495eeb7eb16dbdaa5193d374a9f60`. `Pkg.instantiate()` fetches this
+commit. Pkg supplies the pinned LCM source.
+HPM resolves from this repository through the relative source path `../..`.
+For a fresh kit environment, run
+`julia --project=test/linecablemodels -e 'using Pkg; Pkg.instantiate()'`.
+The reports read the resolved LCM revision from the study manifest.
 The scripts include the shared PCE parameters and scenario builders under `examples/shhc/`.
 
 `run.jl` writes `output/<case>.txt`. It computes the nominal stochastic capacity with a
@@ -148,8 +203,8 @@ changes.
 The table sizes count stored point-frequency pairs. Concurrent calls can compute
 the same absent pair before either stores it.
 
-`scan.jl` writes `output/<case>-sequences.csv` and `output/<case>-scan.txt`. The CSV has real
-and imaginary parts of `z0`, `z1`, `y0` and `y1`, per meter in SI units, for every circuit.
+`scan.jl` writes `output/<case>-sequences.csv` and the text companion report
+`output/<case>-scan.txt`. The CSV has real and imaginary parts of `z0`, `z1`, `y0` and `y1`, per meter in SI units, for every circuit.
 It follows HPM's modal scan: orders `1:0.02:(1.25 * maximum(harmonics))`, plus the harmonic
 orders. The text report gives the branch-to-circuit table, nominal resonances, sequences
 at 50 Hz and data checks. Each branch table also gives the source reactance and scenario
@@ -174,10 +229,11 @@ low-frequency resistance with R20, its resistance at 90 °C with Olex's AC value
 The low-frequency diagnostic uses 0.01 Hz at 20 °C. It approaches DC and includes the
 circuit's bonding and earth-return model.
 
-For ACSR, compare the low-frequency resistance with catalogue R20. Report the 50 Hz
-reactance and capacitance beside the case's source values, without a catalogue comparison.
+The ACSR checks use catalogue R20 for DC and case values for 50 Hz reactance
+and capacitance.
 For the earth wire, compare with 3.55 Ω/km and the register interval 3.30–4.01 Ω/km.
-The earth-wire diagnostic uses three copies as phases at the same formation heights.
+The earth-wire diagnostic uses the same low-frequency method as the phase specs,
+with three copies as phases at the same formation heights.
 
 The data checks below come from `output/ieee30-tom-scan.txt`. All resistance and reactance
 values are in Ω/km. Capacitance is in µF/km. The listed specs use nominal family coordinates.
@@ -290,36 +346,26 @@ U33 cases. The overhead circuits appear in `ieee30-physical`.
 
 ## Capacity runs
 
-The reports below use 16 Julia threads and Clarabel. Each posterior check uses 1024 points.
+The reports use 16 Julia threads, one BLAS thread, Clarabel and 1024 posterior points.
+The nominal stochastic capacity uses the nominal point. The robust
+hosting capacity varies the declared box.
 
-| Case | Nominal pu | `lower_bound` pu | Upper bound pu | Gap | Iterations | Time s | Sign-off | Posterior violated | Stored pairs |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| ieee30-tom | 0.050179 | 0.043700 | 0.043720 | 4.4e-04 | 2 | 25 | signed off | 0.0% | 12228 |
-| ieee30-u33 | 0.049971 | 0.042919 | 0.042927 | 2.0e-04 | 3 | 30 | signed off | 0.0% | 51044 |
-| ieee30-physical | 0.051871 | 0.041474 | 0.041474 | 0.0e+00 | 2 | 48 | signed off | 0.0% | 85584 |
+| Case | Nominal pu | Robust hosting capacity pu | Capacity ratio | Posterior violated | Stored pairs |
+| --- | --- | --- | --- | --- | --- |
+| ieee30-full | 0.055640 | 0.042112 | 0.757 | 0.0% | 173820 |
+| ieee30-physical | 0.055640 | 0.043813 | 0.787 | 0.0% | 73460 |
+| ieee30-tom | 0.052095 | 0.045243 | 0.868 | 0.0% | 11778 |
+| ieee30-u33 | 0.051815 | 0.044278 | 0.855 | 0.0% | 47532 |
+| hello-world | 0.021128 | 0.017518 | 0.829 | 0.0% | 26074 |
+| ieee30-physical-length | 0.055640 | 0.042947 | 0.772 | 0.0% | 75840 |
 
-| Case | h5 ratio | h7 ratio | h11 ratio | h13 ratio | Posterior worst | Constraint |
-| --- | --- | --- | --- | --- | --- | --- |
-| ieee30-tom | 0.834 | 0.895 | 0.867 | 0.905 | -1.12e-3 | IHD, h7, bus 30 |
-| ieee30-u33 | 0.906 | 0.966 | 0.785 | 0.859 | -7.51e-3 | IHD, h11, bus 30 |
-| ieee30-physical | 0.884 | 0.483 | 0.914 | 0.623 | -1.91e-3 | IHD, h11, bus 7 |
+The installed-length case has the same nominal capacity as `ieee30-physical`.
+Its robust hosting capacity is 0.000866 pu lower under the adopted length interval.
+Both runs signed off with no violated posterior points.
 
-Tom's saved report uses Mosek, an earlier LCM and 10 threads. Its nominal capacity, lower
-and upper bounds, gap, resonance, harmonic ratios and posterior metric agree with this run
-at the printed precision.
-
-Tom's report records 7 s and 12613 stored pairs. The current report gives its elapsed time
-and stored-pair count. Solver tolerances and the LCM version can affect finite-difference
-search points and their reuse. The thread count and compilation can affect elapsed time.
-
-## Interpretation
-
-All three cases completed with solver sign-off and no violated posterior points. This is
-the numerical result under the stated physical premise and input ranges.
-
-The ACSR checks use catalogue R20 for DC and case values for X and C. The earth-wire diagnostic uses the same low-frequency method as the phase specs.
-The scan writes a text companion report for the branch table, data checks and resonances.
-The family files also define normalized jacket and diameter coordinates, held at nominal when absent from the box. The physical inputs cite their sources.
+Tom Van Acker's review of PR #35 gives 0.055640 pu nominal and 0.042112 pu robust
+hosting capacity for the Gaussian run, a ratio of 0.757. `ieee30-full` reproduces
+both capacities.
 
 ## Other test systems
 
@@ -347,9 +393,24 @@ from the IEEE30 scenario routes, from route comments in MATPOWER branch rows, or
 | `ieee9` | `networks/ieee9.json` | Converted source lines with R and L factors | `kR_ohl`, `kL_ohl` |
 | `ieee39` | `networks/ieee39.json` | Converted source lines with R and L factors | `kR_ohl`, `kL_ohl` |
 
+The physical variants use the same source networks with the constructions below.
+Their intervals, route origins and fixed ratings are recorded in `data/register/README.md`.
+
+| Physical case | LCM construction | Selected coordinates |
+| --- | --- | --- |
+| `industrial-physical` | U36-Al400 and U11-Al240 screened MV cables, plus the NYY-Cu240-120 variant as three unscreened single cores in touching trefoil | 30 |
+| `antwerp-physical` | U155-Cu1600 with a round core of equal DC resistance and screens bonded at both ends | 12 |
+| `star3-physical`, `star5-physical` | Falcon ACSR on O132-D, with identical physical branches in each star | 11 |
+| `ieee9-physical` | Cardinal ACSR on O230-F, with the saved 230 kV routes | 10 |
+| `ieee39-physical` | Cardinal ACSR on O345-F, with the saved 345 kV routes | 10 |
+| `ieee33-physical` | Rabbit, Weasel, Dog, Tiger, Wolf and Bison ACSR on O13-F | 11 |
+
+Antwerp retains the source 300 MVA branch limit. Its source construction uses a
+Milliken core and cross-bonded screens. The study variant uses a round DC equivalent
+and both-end bonds. The industrial LV variant omits the multicore neutral.
+
 The factor ranges follow `examples/rhhc/ieee30_robust.jl:58-60`. They describe
-network parameters. The pending-audit section of `data/register/README.md` lists the
-candidate physical realizations. Hello-world uses the audited U33 and ACSR families,
+network parameters. The physical cases and their input origins are documented in `data/register/README.md`. Hello-world uses the audited U33 and ACSR families,
 with the U33 coordinates and earth interval of `ieee30-u33`. Its overhead family
 coordinates stay at nominal values. O33-H has no earth wire.
 
@@ -362,9 +423,9 @@ for case in ieee33 industrial antwerp hello-world star3 star5 ieee9 ieee39; do
 done
 ```
 
-Only hello-world has LCM circuits among these new cases. Its scan writes the sequence
-table and modal resonances. The capacity runner also scans the nominal network for
-cases that use source branches. A failed run writes its exception message to
+The hello-world scan writes the LCM sequence table and modal resonances.
+The source cases above use scaled branch data. The capacity runner also scans the
+nominal network for cases that use source branches. A failed run writes its exception message to
 `output/<case>.txt`.
 
 The source network data retain their voltage limits, ratings and transformer data.
@@ -548,22 +609,10 @@ Removing the separate ACSR resistance coordinate reduces the selected box from 2
 sweep decisions are unchanged. The inner-lay maximum changes from 0.115048 percent
 to 0.483406 percent with the outer-lay cap, and remains above the threshold.
 
-The capacity run uses 16 Julia threads and Clarabel. The nominal stochastic capacity
-is 0.051871 pu with OPTIMAL termination. The capacity calculation signs off after five
-iterations in 316 s, with lower bound 0.039870 pu, upper bound 0.039882 pu and gap
-2.9e-4. The final master status is OPTIMAL. The 1024-point posterior check reports
-zero violations and a worst metric of -3.48e-2 for IHD at harmonic 11, bus 7.
-The first nominal resonances are h = 6.2720 and h = 12.3169. The coordinate count
-is 23, so HPM omits the vertices from its dictionary. The reports are
-`output/ieee30-full.txt`, `output/ieee30-full-scan.txt` and
-`output/ieee30-full-sweep.txt`.
-
-The normalized coordinates preserve the full case's physical intervals. Matching points
-under the previous and current coordinate representations agree within 1.5e-14 relative
-in cable sequence impedance and admittance. Floating-point evaluation order changes the
-oracle search trajectory: the reported lower and upper bounds remain 0.039870 and
-0.039882 pu, while the final gap and stored-pair count change. The earlier U33 boxes now
-reach each size's own registered resistance lower bound.
+The capacity results appear above and in `output/ieee30-full.txt`.
+The scan and sweep reports are `output/ieee30-full-scan.txt` and
+`output/ieee30-full-sweep.txt`. Their sequence parameters and admission decisions
+do not depend on the chance-constraint factor.
 
 The scan binds the thermal coordinate and evaluates a point at the electrical reference
 temperature or the family's registered upper temperature. It leaves family nominals unchanged.
@@ -581,3 +630,83 @@ julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/test/runtest
 points and corners predicted from nominal constraint sensitivities. It also accepts a
 single source case, such as `cases/ieee30-full.toml`, for its own-case corner check.
 `scan.jl` and `sweep.jl` evaluate the selected case's sequences and physical inputs.
+
+## Reproduce every output
+
+The commands below run from the repository root after instantiation. They use the
+same case settings as the saved reports. Each comparison also writes the capacity
+reports for its two cases. A scan writes both its text report and sequence CSV.
+A sweep writes the complete endpoint admission table.
+
+```sh
+for case in ieee30-tom ieee30-u33 ieee30-physical ieee30-full hello-world ieee30-physical-length \
+    ieee30-zs-dyn ieee30-zs-unearthed ieee30-zs-ynd ieee30-zs-ynyn-resistance ieee30-zs-ynyn-solid; do
+    julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/run.jl "cases/$case.toml"
+done
+for case in antwerp ieee33 ieee39 ieee9 industrial star3 star5; do
+    julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/compare.jl \
+        "cases/$case-physical.toml" "cases/$case.toml"
+done
+for case in ieee30-tom ieee30-u33 ieee30-physical ieee30-full hello-world ieee30-physical-length \
+    antwerp-physical ieee33-physical ieee39-physical ieee9-physical industrial-physical star3-physical star5-physical; do
+    julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/scan.jl "cases/$case.toml"
+done
+for case in ieee30-full antwerp-physical ieee33-physical ieee39-physical ieee9-physical \
+    industrial-physical star3-physical star5-physical; do
+    julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/sweep.jl "cases/$case.toml"
+done
+```
+
+A zero-sequence IEEE30 case needs about 11 GB of memory.
+
+## Cases and output inventory
+
+The case files below and their generated outputs form the complete study inventory.
+A comparison file is listed with its physical case. It also evaluates the source case.
+
+| Case file | Generated outputs |
+| --- | --- |
+| `cases/antwerp-physical.toml` | `output/antwerp-physical-comparison.txt`, `output/antwerp-physical-scan.txt`, `output/antwerp-physical-sequences.csv`, `output/antwerp-physical-sweep.txt`, `output/antwerp-physical.txt` |
+| `cases/antwerp.toml` | `output/antwerp.txt` |
+| `cases/hello-world.toml` | `output/hello-world-scan.txt`, `output/hello-world-sequences.csv`, `output/hello-world.txt` |
+| `cases/ieee30-full.toml` | `output/ieee30-full-scan.txt`, `output/ieee30-full-sequences.csv`, `output/ieee30-full-sweep.txt`, `output/ieee30-full.txt` |
+| `cases/ieee30-physical-length.toml` | `output/ieee30-physical-length-scan.txt`, `output/ieee30-physical-length-sequences.csv`, `output/ieee30-physical-length.txt` |
+| `cases/ieee30-physical.toml` | `output/ieee30-physical-scan.txt`, `output/ieee30-physical-sequences.csv`, `output/ieee30-physical.txt` |
+| `cases/ieee30-tom.toml` | `output/ieee30-tom-scan.txt`, `output/ieee30-tom-sequences.csv`, `output/ieee30-tom.txt` |
+| `cases/ieee30-u33.toml` | `output/ieee30-u33-scan.txt`, `output/ieee30-u33-sequences.csv`, `output/ieee30-u33.txt` |
+| `cases/ieee30-zs-dyn.toml` | `output/ieee30-zs-dyn.txt` |
+| `cases/ieee30-zs-unearthed.toml` | `output/ieee30-zs-unearthed.txt` |
+| `cases/ieee30-zs-ynd.toml` | `output/ieee30-zs-ynd.txt` |
+| `cases/ieee30-zs-ynyn-resistance.toml` | `output/ieee30-zs-ynyn-resistance.txt` |
+| `cases/ieee30-zs-ynyn-solid.toml` | `output/ieee30-zs-ynyn-solid.txt` |
+| `cases/ieee33-physical.toml` | `output/ieee33-physical-comparison.txt`, `output/ieee33-physical-scan.txt`, `output/ieee33-physical-sequences.csv`, `output/ieee33-physical-sweep.txt`, `output/ieee33-physical.txt` |
+| `cases/ieee33.toml` | `output/ieee33.txt` |
+| `cases/ieee39-physical.toml` | `output/ieee39-physical-comparison.txt`, `output/ieee39-physical-scan.txt`, `output/ieee39-physical-sequences.csv`, `output/ieee39-physical-sweep.txt`, `output/ieee39-physical.txt` |
+| `cases/ieee39.toml` | `output/ieee39.txt` |
+| `cases/ieee9-physical.toml` | `output/ieee9-physical-comparison.txt`, `output/ieee9-physical-scan.txt`, `output/ieee9-physical-sequences.csv`, `output/ieee9-physical-sweep.txt`, `output/ieee9-physical.txt` |
+| `cases/ieee9.toml` | `output/ieee9.txt` |
+| `cases/industrial-physical.toml` | `output/industrial-physical-comparison.txt`, `output/industrial-physical-scan.txt`, `output/industrial-physical-sequences.csv`, `output/industrial-physical-sweep.txt`, `output/industrial-physical.txt` |
+| `cases/industrial.toml` | `output/industrial.txt` |
+| `cases/star3-physical.toml` | `output/star3-physical-comparison.txt`, `output/star3-physical-scan.txt`, `output/star3-physical-sequences.csv`, `output/star3-physical-sweep.txt`, `output/star3-physical.txt` |
+| `cases/star3.toml` | `output/star3.txt` |
+| `cases/star5-physical.toml` | `output/star5-physical-comparison.txt`, `output/star5-physical-scan.txt`, `output/star5-physical-sequences.csv`, `output/star5-physical-sweep.txt`, `output/star5-physical.txt` |
+| `cases/star5.toml` | `output/star5.txt` |
+
+## Script inventory
+
+| Script | Role |
+| --- | --- |
+| `builders.jl` | Decode cases, construct physical inputs and declare circuit coordinates. |
+| `run.jl` | Write nominal capacity, robust hosting capacity and posterior checks. |
+| `compare.jl` | Write paired capacity reports, transfer checks and corner checks. |
+| `scan.jl` | Write sequence tables, nominal resonances and physical checks. |
+| `sweep.jl` | Write endpoint sensitivities and coordinate admission decisions. |
+| `networks/convert.jl` | Reproduce the saved IEEE9 and IEEE39 network inputs from PowerImpedance. |
+| `data/register/derive.py` | Reproduce the register arithmetic in `data/register/derived.json`. |
+| `test/runtests.jl` | Run the study suite. |
+| `test/coordinates.jl` | Check declarations, undeclared-coordinate probes and installed length. |
+| `test/stars.jl` | Check Falcon constructions, exact π-models and sequence references. |
+| `test/transmission.jl` | Check the physical transmission cases and Cardinal construction. |
+| `test/distribution.jl` | Check the physical feeder and industrial cables. |
+| `test/infeasible.jl` | Check reports for infeasible nominal operating points. |
+| `test/antwerp.jl` | Check Antwerp cables and IEEE30 cable sequence references. |

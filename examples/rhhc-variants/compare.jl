@@ -73,7 +73,9 @@ end
 function comparison(io, reports::AbstractVector{<:AbstractString}, paths...)
     println(io, "Uncertainty levels and transfer to the source case")
     println(io, "HPM commit: ", readchomp(`git -C $STUDIES rev-parse HEAD`))
-    println(io, "LCM commit: ", readchomp(`git -C $(pkgdir(LineCableModels)) rev-parse HEAD`))
+    println(io,
+        "LCM commit: ",
+        TOML.parsefile(joinpath(STUDIES, "Manifest.toml"))["deps"]["LineCableModels"][1]["repo-rev"])
     println(io, "Cases: ", join(paths, ", "))
     println(io, "Threads: ", Threads.nthreads(), "; solver: Clarabel; unchanged runner settings.")
     println(io, "Method parameters: ", METHOD)

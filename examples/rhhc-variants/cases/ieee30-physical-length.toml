@@ -1,0 +1,315 @@
+box_names = ["R20_U33", "eps_U33", "t_ins_U33", "rho_EARTH"]
+network = {kind = "scenario", scenario = "inductive_cable33"}
+model = "exact"
+bound = "gaussian"
+harmonics = {value = [5, 7, 11, 13], origin = "examples/rhhc/ieee30_lcm.jl:102"} # 1
+units = {value = 21, origin = "examples/rhhc/ieee30_lcm.jl:106"} # 1
+epsilon = {value = 0.05, origin = "examples/shhc/pce_params.jl:20"} # 1
+posterior = {value = 1024, origin = "examples/rhhc/ieee30_lcm.jl:152"} # 1
+f1 = {value = 50.0, origin = "examples/shhc/ieee30_scenarios.jl:40"} # Hz
+
+
+[box.R20_U33]
+family = "U33"
+coordinate = "R20"
+
+[box.eps_U33]
+family = "U33"
+coordinate = "eps"
+
+[box.t_ins_U33]
+family = "U33"
+coordinate = "t_ins"
+
+[box.rho_EARTH]
+family = "EARTH"
+coordinate = "rho"
+
+[bindings.U33]
+R20 = "R20_U33"
+eps = "eps_U33"
+t_ins = "t_ins_U33"
+
+[branches."17"]
+length_m = {value = 7962.145714285715, lower = 7882.524257142858, upper = 8041.7671714285725, register = "LINK.length_m"}
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."18"]
+length_m = {value = 4057.302857142857, lower = 4016.7298285714287, upper = 4097.875885714286, register = "LINK.length_m"}
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."19"]
+length_m = {value = 6182.408571428572, lower = 6120.5844857142865, upper = 6244.2326571428575, register = "LINK.length_m"}
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."20"]
+length_m = {value = 6213.522857142857, lower = 6151.387628571429, upper = 6275.658085714285, register = "LINK.length_m"}
+spec = "U33-400"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."21"]
+length_m = {value = 5983.277142857143, lower = 5923.444371428572, upper = 6043.109914285715, register = "LINK.length_m"}
+spec = "U33-800"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."22"]
+length_m = {value = 6798.471428571429, lower = 6730.486714285715, upper = 6866.456142857143, register = "LINK.length_m"}
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."23"]
+length_m = {value = 4019.965714285715, lower = 3979.766057142858, upper = 4060.165371428572, register = "LINK.length_m"}
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."24"]
+length_m = {value = 2115.771428571429, lower = 2094.6137142857147, upper = 2136.9291428571437, register = "LINK.length_m"}
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."25"]
+length_m = {value = 6502.885714285714, lower = 6437.856857142857, upper = 6567.914571428571, register = "LINK.length_m"}
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."26"]
+length_m = {value = 2629.1571428571438, lower = 2602.8655714285724, upper = 2655.448714285715, register = "LINK.length_m"}
+spec = "U33-630"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."27"]
+length_m = {value = 2330.46, lower = 2307.1554, upper = 2353.7646, register = "LINK.length_m"}
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."28"]
+length_m = {value = 4664.0314285714285, lower = 4617.391114285714, upper = 4710.671742857143, register = "LINK.length_m"}
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."29"]
+length_m = {value = 734.297142857143, lower = 726.9541714285715, upper = 741.6401142857144, register = "LINK.length_m"}
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."30"]
+length_m = {value = 6285.085714285715, lower = 6222.234857142857, upper = 6347.936571428572, register = "LINK.length_m"}
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."31"]
+length_m = {value = 5569.4571428571435, lower = 5513.762571428572, upper = 5625.151714285715, register = "LINK.length_m"}
+spec = "U33-400"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."32"]
+length_m = {value = 8400.857142857143, lower = 8316.84857142857, upper = 8484.865714285716, register = "LINK.length_m"}
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."33"]
+length_m = {value = 10242.822857142859, lower = 10140.39462857143, upper = 10345.251085714288, register = "LINK.length_m"}
+spec = "U33-400"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."34"]
+length_m = {value = 11823.428571428574, lower = 11705.194285714288, upper = 11941.662857142861, register = "LINK.length_m"}
+spec = "U33-400"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."35"]
+length_m = {value = 6493.551428571429, lower = 6428.615914285715, upper = 6558.486942857143, register = "LINK.length_m"}
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."37"]
+length_m = {value = 12921.76285714286, lower = 12792.545228571431, upper = 13050.980485714288, register = "LINK.length_m"}
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."38"]
+length_m = {value = 18752.58, lower = 18565.054200000002, upper = 18940.1058, register = "LINK.length_m"}
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."39"]
+length_m = {value = 14104.105714285713, lower = 13963.064657142857, upper = 14245.14677142857, register = "LINK.length_m"}
+spec = "U33-500"
+formation = "trefoil"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."1"]
+spec = "Lion"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."2"]
+spec = "Goat"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."3"]
+spec = "Bear"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."4"]
+spec = "Lion"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."5"]
+spec = "Goat"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."6"]
+spec = "Lion"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."7"]
+spec = "Bear"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."8"]
+spec = "Panther"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."9"]
+spec = "Bear"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."10"]
+spec = "Bear"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."40"]
+spec = "Bear"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[branches."41"]
+spec = "Goat"
+formation = "O132-D"
+origin = "data/register/README.md, IEEE 30-bus assignments"
+
+[transformers."12"]
+vg = "Yy0"
+note = "YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance."
+f_bus = {value = 6, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 10, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+gnd2 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+re1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 19.05, origin = "Tom Van Acker transformer proposal"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
+
+[transformers."15"]
+vg = "Yy0"
+note = "YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance."
+f_bus = {value = 4, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 12, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+gnd2 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+re1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 19.05, origin = "Tom Van Acker transformer proposal"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
+
+[transformers."36"]
+vg = "Yy0"
+note = "YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance."
+f_bus = {value = 28, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 27, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+gnd2 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+re1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 19.05, origin = "Tom Van Acker transformer proposal"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
+
+[transformers."11"]
+vg = "Yy0"
+note = "Three-winding unit at bus 6, star point 9. The 132 kV winding is YN, solidly earthed. Bus 9 represents the star point."
+f_bus = {value = 6, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 9, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+gnd2 = {value = 0, origin = "Tom Van Acker transformer proposal"} # 1
+re1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+
+[transformers."14"]
+vg = "Yy0"
+note = "Three-winding unit, star point 9. The 33 kV winding is yn, earthed through a resistance."
+f_bus = {value = 9, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 10, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 0, origin = "Tom Van Acker transformer proposal"} # 1
+gnd2 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+re1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 19.05, origin = "Tom Van Acker transformer proposal"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
+
+[transformers."13"]
+vg = "Yd11"
+note = "Three-winding unit, star point 9. The 11 kV winding is delta and supplies the condenser at bus 11."
+f_bus = {value = 9, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 11, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 0, origin = "Tom Van Acker transformer proposal"} # 1
+gnd2 = {value = 0, origin = "Tom Van Acker transformer proposal"} # 1
+re1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+
+[transformers."16"]
+vg = "Yd11"
+note = "YNd11 step-up of the condenser at bus 13. The delta is on the 11 kV side. The 33 kV YN neutral is earthed through a resistance."
+f_bus = {value = 12, origin = "Tom Van Acker transformer proposal"} # 1
+t_bus = {value = 13, origin = "Tom Van Acker transformer proposal"} # 1
+gnd1 = {value = 1, origin = "Tom Van Acker transformer proposal"} # 1
+gnd2 = {value = 0, origin = "Tom Van Acker transformer proposal"} # 1
+re1_ohm = {value = 19.05, origin = "Tom Van Acker transformer proposal"} # Ω
+xe1_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+re2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+xe2_ohm = {value = 0.0, origin = "Tom Van Acker transformer proposal"} # Ω
+resistance_note = "assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA"
+
+[bindings.EARTH]
+rho = "rho_EARTH"
