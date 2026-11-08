@@ -512,6 +512,12 @@ function transformers(rows, data)
         isxfmr(br) || error("declared branch $id is not a transformer")
         (br["f_bus"], br["t_bus"]) == (row.f_bus, row.t_bus) ||
             error("transformer $id does not join declared buses $(row.f_bus)–$(row.t_bus)")
+        br["vg"] = row.vg
+        br["gnd1"], br["gnd2"] = row.gnd1, row.gnd2
+        zb1 = data["bus"][string(row.f_bus)]["base_kv"]^2 / data["baseMVA"]
+        zb2 = data["bus"][string(row.t_bus)]["base_kv"]^2 / data["baseMVA"]
+        br["re1"], br["xe1"] = row.re1_ohm / zb1, row.xe1_ohm / zb1
+        br["re2"], br["xe2"] = row.re2_ohm / zb2, row.xe2_ohm / zb2
     end
     return rows
 end
@@ -568,6 +574,20 @@ function study(path; all_coordinates = false)
     data = network(config, ipopt)
     haskey(config, :principle) && (data["principle"] = config.principle)
     transformers(get(config, :transformers, (;)), data)
+    for bus in get(config, :star_points, ())
+        haskey(data["bus"], string(bus)) || error("declared star point $bus is absent")
+        data["bus"][string(bus)]["star_point"] = true
+    end
+    for (name, row) in pairs(get(config, :generators, (;)))
+        id = string(name)
+        haskey(data["gen"], id) || error("declared generator $id is absent")
+        generator = data["gen"][id]
+        if get(row, :zero_sequence_open, false)
+            generator["zero_sequence_open"] = true
+        else
+            generator["rsc0"], generator["xsc0"] = row.rsc0, row.xsc0
+        end
+    end
     bindings = (;
         (k => (; (n => Symbol(v) for (n, v) in pairs(b))...)
     for (k, b) in pairs(get(config, :bindings, (;))))...)
@@ -621,9 +641,11 @@ function study(path; all_coordinates = false)
         parse(Int, k) in units || delete!(hd["nw"][string(h)]["load"], k)
     end
     pce = Dict{String, Any}(deepcopy(PCE_PARAMS)...)
+    recombination = get(config, :recombination, true)
+    pce["recombination"] = recombination
     pce["harmonics"] = Dict{Int, Any}(h => (PCE_PARAMS["harmonics"][h].v_min,
                                           PCE_PARAMS["harmonics"][h].v_max)
-    for h in config.harmonics)
+    for h in config.harmonics if recombination || haskey(PCE_PARAMS["harmonics"], h))
     pce["harmonic_units"] = units
     pce["bound"] = config.bound
     pce["epsilon"] = config.epsilon
@@ -646,8 +668,8 @@ end
 
 function declarations(io, s)
     isempty(get(s.config, :transformers, (;))) && return
-    println(io, "Transformer declarations. Not applied to the network: HPM reads vector groups")
-    println(io, "from xfmr, which has no tap. IEEE30 transformers are tapped branches.")
+    println(io, "Transformer vector groups are applied to tapped branches.")
+    println(io, "HPM applies winding earthing in the zero sequence.")
     for (id, row) in sort(collect(pairs(s.config.transformers)); by = x -> parse(Int, string(first(x))))
         br = s.hd["nw"]["1"]["branch"][string(id)]
         kv1 = s.hd["nw"]["1"]["bus"][string(br["f_bus"])]["base_kv"]

@@ -1,7 +1,7 @@
 # Network studies with LineCableModels
 
 The IEEE30 studies use the `inductive_cable33` scenario and 21 harmonic units at the first 21 loads.
-They use harmonic orders 5, 7, 11 and 13, Cantelli bounds and a risk level of 0.05. The fundamental
+The baseline cases use harmonic orders 5, 7, 11 and 13, Cantelli bounds and a risk level of 0.05. The fundamental
 network uses the nominal LCM branch parameters. HPM computes each branch's exact π-model
 from the extension's series impedance and shunt admittance per meter at each frequency.
 
@@ -93,11 +93,36 @@ The case files store neutral impedances in ohms. The runner prints HPM's `vg`, `
 voltage bases. HPM writes YNyn0 as `Yy0` and YNd11 as `Yd11`, with the grounding flags.
 The runner checks each branch's existence, transformer status and buses.
 
-The reports print these declarations. The network retains the source transformer parameters.
-HPM's harmonic model reads vector groups from its `xfmr` table, which has no tap, whereas
-the IEEE30 transformers are tapped branches. This proposal needs an upstream
-change to the harmonic model. The zero-sequence scans describe the circuits per unit length, with the stated
-bonding.
+The reports print these declarations. HPM applies the vector groups to tapped branches
+at every harmonic and the winding earthing in the zero sequence. The network retains
+the leakage parameters of the source transformers.
+
+## Zero-sequence variants
+
+The `ieee30-zs-*` cases extend `ieee30-physical` to orders 2 through 50, including
+zero-sequence orders 3, 6, …, 48. With `recombination = false`, the contributions of
+all 21 units align in the worst case at every bus and branch. The angle ranges do not
+enter this calculation. Bus 9 is the star point of the three-winding unit.
+
+Tom Van Acker assumes a connection from each generator through a YNd step-up, with 0.12 pu
+leakage on a rating of 0.2 times its short-circuit power and X/R = 40. Its network bus
+sees an impedance to earth. The condensers at buses 11 and 13 are open in
+the zero sequence, behind branches 13 and 16. The 19.05 Ω neutral resistance is also
+Tom's assumption, corresponding to a 1 kA earth fault at 33 kV. The case records state
+these origins. The variants change the windings and earthing of units with a 33 kV winding.
+
+| Case | 132/33 kV units | 33 kV earthing |
+| --- | --- | --- |
+| `ieee30-zs-ynyn-solid` | YNyn0 | Solid |
+| `ieee30-zs-ynyn-resistance` | YNyn0 | 19.05 Ω |
+| `ieee30-zs-dyn` | Dyn11, delta on 132 kV | 19.05 Ω |
+| `ieee30-zs-ynd` | YNd11, delta on 33 kV | Condenser step-up star unearthed |
+| `ieee30-zs-unearthed` | YNy0 | Every 33 kV star unearthed |
+
+The clock numbers preserve the phase shift along every 132/33 kV path. The positive-
+and negative-sequence capacities stay equal across these variants. The run
+report gives the nominal hosting capacity and robust hosting capacity, each summed per
+sequence, and the bound used.
 
 ## Run
 
@@ -299,8 +324,7 @@ search points and their reuse. The thread count and compilation can affect elaps
 ## Interpretation
 
 All three cases completed with solver sign-off and no violated posterior points. This is
-the numerical result under the stated physical premise and input ranges. The transformer
-declarations remain outside the harmonic network model.
+the numerical result under the stated physical premise and input ranges.
 
 The ACSR checks use catalogue R20 for DC and case values for X and C. The earth-wire diagnostic uses the same low-frequency method as the phase specs.
 The scan writes a text companion report for the branch table, data checks and resonances.
