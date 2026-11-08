@@ -34,31 +34,6 @@ function dielectric(row; eps_r = row.eps_r)
 end
 semiconductor(row) = Material(:semicon, row.rho, row.eps_r)
 
-"""
-    equivalent(source::CableDesign)
-
-Build plain tubes and annular layers from the public LCM blueprint of `source`.
-Keep terminal names and materials. Radii are in meters. This path serves designs
-with one concentric assembly at the origin and no helical dielectric correction.
-"""
-function equivalent(source::CableDesign)
-    blueprint = LineCableModels.flatten(source)
-    length(blueprint.positions) == 1 && only(blueprint.positions) == (0, 0) ||
-        error("equivalent design needs one assembly at the origin")
-    parts = AbstractCablePart[]
-    for (k, tube) in enumerate(blueprint.conductors)
-        shape = iszero(tube.r_in) ? Circle(tube.r_ex) : Annulus(tube.r_in, tube.r_ex)
-        push!(parts, Terminal(source.terminals[k].name,
-            Region(Symbol("tube_", k), shape, tube.material)))
-        for l in blueprint.dielectric_ranges[k]
-            layer = blueprint.dielectrics[l]
-            push!(parts, Region(Symbol("layer_", l),
-                Annulus(layer.r_in, layer.r_ex), layer.material))
-        end
-    end
-    return build(CableDesign, source.id, parts...)
-end
-
 function specification(name)
     row = readrecord(joinpath(STUDIES, "data", "specs", name * ".toml"))
     return merge(row, (
@@ -322,8 +297,7 @@ function physical_inputs(spec, families, layout, bindings, p)
                 coordinates(getproperty(families, layout.structure), get(bindings, layout.structure, (;)), p) :
                 layout
     ground = coordinates(families.EARTH, get(bindings, :EARTH, (;)), p)
-    return physical_inputs(spec.family, spec,
-        effective(spec.family, spec, q, reference, structure, layout), ground)
+    return merge(effective(spec.family, spec, q, reference, structure, layout), (; ground))
 end
 
 """
@@ -562,11 +536,12 @@ harmonic_units(ids::Tuple, data) = collect(ids)
 function study(path; all_coordinates = false)
     file = isfile(path) ? abspath(path) : joinpath(STUDIES, path)
     config = readrecord(file)
-    haskey(config, :factor_data) && return study(file, config,
-        study(joinpath(STUDIES, config.source_case)))
     mat = readrecord(joinpath(STUDIES, "data", "materials.toml"))
-    records = readrecord(config)
-    families = records.families
+    families = (;
+        (Symbol(splitext(name)[1]) =>
+             readrecord(joinpath(STUDIES, "data", "families", name))
+    for name in sort(readdir(joinpath(STUDIES, "data", "families")))
+    if endswith(name, ".toml"))...)
     box = parameterbox(config.box, families,
         all_coordinates ? Tuple(string.(keys(config.box))) : config.box_names)
     ipopt = optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
@@ -606,7 +581,7 @@ function study(path; all_coordinates = false)
         end
         key = (row.spec, row.formation)
         if !haskey(definitions, key)
-            spec = specification(row.spec, row.formation, records)
+            spec = specification(row.spec)
             definitions[key] = problem(
                 spec, families, formation(row.formation), mat, bindings)
         end
@@ -682,272 +657,6 @@ function declarations(io, s)
         println(io, row.note)
         haskey(row, :resistance_note) && println(io, row.resistance_note)
     end
-end
-
-"""
-    equivalent_values(source, kind)
-
-Describe plain-tube equivalents by positive radial widths in meters, operating
-DC resistances in ohms per meter, and material properties. The widths reconstruct
-the blueprint radii. Contact formations retain their geometric spacing law.
-"""
-function equivalent_values(source::LineParametersProblem, kind)
-    rows = Pair{String, Float64}[]
-    formulation = CoaxialFormulation(transposition = true)
-    for (k, design) in enumerate(source.system.designs)
-        blueprint = LineCableModels.flatten(design)
-        for (i, tube) in enumerate(blueprint.conductors)
-            prefix = "cable.$k.tube.$i."
-            i == 1 && push!(rows, prefix * "hole" => tube.r_in)
-            push!(rows, prefix * "width" => tube.r_ex - tube.r_in)
-            rho = formulation.resistivity(tube.material, source.temperature)
-            push!(rows, prefix * "resistance" => rho / (π * (tube.r_ex^2 - tube.r_in^2)))
-            push!(rows, prefix * "mu_r" => tube.material.mu_r)
-        end
-        for (i, layer) in enumerate(blueprint.dielectrics)
-            prefix = "cable.$k.layer.$i."
-            push!(rows, prefix * "width" => layer.r_ex - layer.r_in)
-            for field in (:rho, :eps_r, :mu_r, :tan_delta)
-                push!(rows, prefix * string(field) => getproperty(layer.material, field))
-            end
-        end
-    end
-    append!(rows, placement_values(kind, source))
-    length(source.earth.layers) == 2 || error("equivalent values need homogeneous earth")
-    for field in (:rho, :eps_r, :mu_r)
-        push!(rows, "earth.$field" => getproperty(last(source.earth.layers), field))
-    end
-    return rows
-end
-
-function placement_values(::Val{:trefoil}, source)
-    conductor = first(source.system.designs)
-    relative = trefoil(conductor; spacing = 2support(conductor.outer))
-    center = first(source.system.placements) * inv(first(relative))
-    return ["formation.x" => center.x, "formation.y" => center.y]
-end
-function placement_values(::Val{:overhead}, source)
-    return ["cable.$k.$field" => getproperty(p, field)
-            for (k, p) in enumerate(source.system.placements) for field in (:x, :y)]
-end
-
-"""
-    equivalent(source, values, kind)
-
-Reconstruct plain tubes and annular layers from `equivalent_values`. Tube
-resistivity equals DC resistance times metal area at the operating temperature.
-Keep the source connections and formation, with its equivalent placement inputs.
-"""
-function equivalent(source::LineParametersProblem, values::AbstractDict, kind)
-    mat = (reference = (temperature = source.temperature,),)
-    designs = [design(Val(:equivalent), specification(conductor, k, values), (;), mat)
-               for (k, conductor) in enumerate(source.system.designs)]
-    positions = equivalent_positions(kind, source, designs, values)
-    connections = [(;
-                       (design.terminals[row.terminal].name => row.connection
-                   for row in source.system.terminals if row.cable == k)...)
-                   for (k, design) in enumerate(source.system.designs)]
-    circuit = build(CableSystem, designs, positions; connections,
-        id = source.system.id, line_length = source.system.line_length)
-    soil = homogeneous(rho = values["earth.rho"], eps_r = values["earth.eps_r"],
-        mu_r = values["earth.mu_r"])
-    return LineParametersProblem(circuit, soil;
-        temperature = source.temperature, frequencies = source.frequencies)
-end
-
-function equivalent_positions(::Val{:trefoil}, source, designs, values)
-    conductor = first(designs)
-    return trefoil(conductor; spacing = 2support(conductor.outer),
-        at = Placement(values["formation.x"], values["formation.y"]))
-end
-function equivalent_positions(::Val{:overhead}, source, designs, values)
-    return [Placement(values["cable.$k.x"], values["cable.$k.y"])
-            for k in eachindex(designs)]
-end
-
-"""
-    readrecord(config::NamedTuple)
-
-Read the physical families and, for a generated equivalent case, its coordinate
-records. Keep the physical families available to the unchanged catalogue checks.
-"""
-function readrecord(config::NamedTuple)
-    families = (;
-        (Symbol(splitext(name)[1]) =>
-             readrecord(joinpath(STUDIES, "data", "families", name))
-    for name in sort(readdir(joinpath(STUDIES, "data", "families")))
-    if endswith(name, ".toml"))...)
-    haskey(config, :equivalent_data) || return (; families)
-    dataset = readrecord(joinpath(STUDIES, config.equivalent_data))
-    for (name, coordinate) in pairs(dataset.coordinates)
-        family = Symbol(coordinate.family)
-        declaration = (nominal = coordinate.nominal, lower = coordinate.lower,
-            upper = coordinate.upper, scale = coordinate.scale)
-        rows = merge(getproperty(families, family), NamedTuple{(name,)}((declaration,)))
-        families = merge(families, NamedTuple{(family,)}((rows,)))
-    end
-    return (; families, dataset)
-end
-
-function specification(name, placement, records)
-    haskey(records, :dataset) || return specification(name)
-    row = getproperty(records.dataset.circuits, Symbol(name * "/" * placement))
-    return merge(row, (;
-        family = Val(:equivalent), family_name = Symbol(row.family_name), name))
-end
-
-"""
-    interpolate(row, coordinates::NamedTuple)
-
-Resolve a generated physical member from its signed coordinate, or keep its
-nominal value when the member has no admitted coordinate.
-"""
-function interpolate(row, coordinates::NamedTuple)
-    return haskey(row, :coordinate) ?
-           interpolate(row, getproperty(coordinates, Symbol(row.coordinate))) : row.nominal
-end
-
-physical_inputs(kind, spec, physical, ground) = merge(physical, (; ground))
-function physical_inputs(::Val{:equivalent}, spec, physical, ground)
-    return merge(physical,
-        (ground = (rho = interpolate(spec.earth.rho, ground),
-            eps = interpolate(spec.earth.eps, ground)),))
-end
-
-function specification(original::Material{T, K}) where {T, K}
-    return (; kind = string(K), T0 = original.T0, alpha = original.alpha,
-        rho_thermal = original.rho_thermal, theta_max = original.theta_max,
-        sigma_solar = original.sigma_solar)
-end
-
-"""
-    specification(source::CableDesign, cable, values)
-
-Describe the public blueprint as tube and layer declarations. Physical members
-are nominal records until the generator attaches their admitted coordinates.
-"""
-function specification(source::CableDesign, cable, values)
-    blueprint = LineCableModels.flatten(source)
-    parts = NamedTuple[]
-    for (i, tube) in enumerate(blueprint.conductors)
-        prefix = "cable.$cable.tube.$i."
-        part = merge(specification(tube.material),
-            (; key = "tube.$i", terminal = string(source.terminals[i].name),
-                width = (nominal = values[prefix * "width"],),
-                resistance = (nominal = values[prefix * "resistance"],),
-                mu_r = (nominal = values[prefix * "mu_r"],),
-                eps_r = (nominal = tube.material.eps_r,),
-                tan_delta = (nominal = tube.material.tan_delta,)))
-        i == 1 && (part = merge(part, (hole = (nominal = values[prefix * "hole"],),)))
-        push!(parts, part)
-        for l in blueprint.dielectric_ranges[i]
-            layer = blueprint.dielectrics[l]
-            prefix = "cable.$cable.layer.$l."
-            push!(parts,
-                merge(specification(layer.material),
-                    (; key = "layer.$l", width = (nominal = values[prefix * "width"],),
-                        rho = (nominal = values[prefix * "rho"],),
-                        eps_r = (nominal = values[prefix * "eps_r"],),
-                        mu_r = (nominal = values[prefix * "mu_r"],),
-                        tan_delta = (nominal = values[prefix * "tan_delta"],))))
-        end
-    end
-    return (; id = source.id, parts = Tuple(parts))
-end
-
-"""
-    design(::Val{:equivalent}, spec, coordinates, materials)
-
-Build plain tubes and annular layers through LCM's public design API. Resolve
-widths in meters and tube DC resistance in ohms per meter through `interpolate`.
-Convert operating resistivity to the declared material reference temperature.
-"""
-function design(::Val{:equivalent}, spec, q, mat)
-    parts = AbstractCablePart[]
-    radius = 0.0
-    for part in spec.parts
-        haskey(part, :hole) && (radius = interpolate(part.hole, q))
-        outer = radius + interpolate(part.width, q)
-        rho = haskey(part, :terminal) ?
-              interpolate(part.resistance, q) * π * (outer^2 - radius^2) /
-              (1 + part.alpha * (mat.reference.temperature - part.T0)) :
-              interpolate(part.rho, q)
-        medium = Material(Symbol(part.kind), rho, interpolate(part.eps_r, q),
-            interpolate(part.mu_r, q), part.T0, part.alpha;
-            rho_thermal = part.rho_thermal, theta_max = part.theta_max,
-            tan_delta = interpolate(part.tan_delta, q), sigma_solar = part.sigma_solar)
-        shape = iszero(radius) ? Circle(outer) : Annulus(radius, outer)
-        region = Region(Symbol(replace(part.key, '.' => '_')), shape, medium)
-        push!(parts, haskey(part, :terminal) ? Terminal(Symbol(part.terminal), region) :
-                     region)
-        radius = outer
-    end
-    return build(CableDesign, spec.id, parts...)
-end
-
-function arrangement(::Val{:equivalent}, spec, physical, row, mat)
-    return arrangement(row.kind, spec, physical.q, physical.structure, row, mat)
-end
-function arrangement(::Val{:trefoil}, spec, q, structure, row, mat)
-    conductor = design(Val(:equivalent), spec, q, mat)
-    spacing = 2r_ex(conductor.outer)
-    offset = centre(row.reference, merge(row, (depth = 0.0,)), spacing).y
-    return conductor, merge(row, (depth = offset - interpolate(spec.center_y, q),))
-end
-function arrangement(::Val{:overhead}, spec, q, structure, row, mat)
-    conductor = design(Val(:equivalent), spec, q, mat)
-    positions = merge(row,
-        (phase_sag = 0.0, phase_x = spec.phase_x,
-            phase_height = Tuple(interpolate(member, q) for member in spec.phase_y)))
-    haskey(spec, :shield) || return conductor, positions
-    shield = design(Val(:equivalent), spec.shield, structure, mat)
-    return conductor,
-    merge(positions,
-        (shield_sag = 0.0,
-            shield_x = spec.shield_x, shield_height = interpolate(spec.shield_y, structure), shield))
-end
-
-function factor_values(values, p, family)
-    kR, kL, kC = (get(p, Symbol("k", name, "_", family), 1.0) for name in ("R", "L", "C"))
-    return (z = complex(kR * real(values.z), kL * imag(values.z)),
-        y = complex(real(values.y), kC * imag(values.y)))
-end
-
-function factor_callable(original, nominal, family)
-    return (p, f, sequences...) -> begin
-        values = original(nominal, f)
-        if isempty(sequences)
-            return (;
-                (name => factor_values(value, p, family)
-            for (name, value) in pairs(values))...)
-        end
-        return factor_values(getproperty(values, only(sequences)), p, family)
-    end
-end
-
-function study(file, config, source)
-    dataset = readrecord(joinpath(STUDIES, config.factor_data))
-    declarations = (;
-        (name => (nominal = row.nominal, lower = row.lower,
-             upper = row.upper, scale = row.scale)
-    for (name, row) in pairs(dataset.coordinates))...)
-    box = parameterbox(declarations, source.families, config.box_names)
-    return study(file, config, source, box)
-end
-
-function study(file, config, source, box)
-    classes = Dict(b => Symbol(name) for (name, ids) in pairs(config.classes) for b in ids)
-    hd = deepcopy(source.hd)
-    if config.model == "exact"
-        p = nominal_point(source.box)
-        branches = Dict(b => (zy = factor_callable(row.zy, p, classes[b]),
-                            len = row.len, zbase = row.zbase)
-        for (b, row) in source.model.branches)
-        model = ExactPiModel(branches; f1 = config.f1)
-    else
-        model = ScaledBranchModel(hd, classes)
-    end
-    return merge(source, (; file, config, box, model, hd))
 end
 
 lcm_solves(s) = sum((length(c.sequences) for c in s.lcm); init = 0)

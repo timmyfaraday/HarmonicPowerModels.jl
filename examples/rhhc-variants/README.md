@@ -20,17 +20,7 @@ uses U33-800. The other 33 kV cables use U33-500. The case files give every assi
 Cable lengths follow the scenario's retained routes. The overhead lengths follow
 `length_km = x_pu * zbase / OHL_X[132.0]`, with `OHL_X[132.0] = 0.40 Ω/km`.
 
-The [uncertainty comparison](REDUCTION.md) has three levels. The source box has
-23 physical coordinates. Exact lumping and verified sharing give 35 coaxial
-equivalent coordinates. The surrogate uses six family factors on R, L and C. Independent equivalent
-intervals discard source correlations, and five screened widths stay nominal
-under the 0.1 percent rule. The factor surrogate keeps the nominal LCM frequency
-behavior, and the scaled surrogate adds HPM's frequency scaling to the nominal
-fundamental π data. Both surrogate sets are neither inner nor outer
-approximations of the source set. The factor solution passes the source random
-and corner checks, and the scaled solution violates source IHD limits at
-harmonic 13, bus 30. The source and equivalent own-case corner violations refute
-their reported feasibility certificates.
+The equivalent and surrogate levels live on the branch `experimental/surrogates`.
 
 ## Dataset and construction
 
@@ -578,3 +568,16 @@ reach each size's own registered resistance lower bound.
 The scan binds the thermal coordinate and evaluates a point at the electrical reference
 temperature or the family's registered upper temperature. It leaves family nominals unchanged.
 Strand spans, steel-layer counts and earthwire identity come from the specs.
+
+## Study tests
+
+From the repository root, run the physical model, corner adversary and reporting tests:
+
+```sh
+julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/test/runtests.jl
+```
+
+`compare.jl` compares capacity runs and evaluates their solutions with random posterior
+points and corners predicted from nominal constraint sensitivities. It also accepts a
+single source case, such as `cases/ieee30-full.toml`, for its own-case corner check.
+`scan.jl` and `sweep.jl` evaluate the selected case's sequences and physical inputs.
