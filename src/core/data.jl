@@ -593,7 +593,7 @@ program through the zero-sequence view of the network (`_zero_sequence_view`), f
 `xfmr` records and transformer branches alike. The network is marked with its
 `harmonic_sequence`; the optional zero-sequence data (`br_r0`, `br_x0`, `b0_fr`, `b0_to`,
 `re1`/`xe1`/`re2`/`xe2` of branches, `rsc0`/`xsc0` of generators) are scaled by the same
-rules.
+rules, except that lumped earthing resistances `re1`/`re2` remain constant.
 This is the one copy of the scaling rules: [`replicate`](@ref) applies it per harmonic.
 """
 function _scale_network_to_harmonic!(ntw::Dict, nh::Real, sequence::Symbol)
@@ -614,7 +614,6 @@ function _scale_network_to_harmonic!(ntw::Dict, nh::Real, sequence::Symbol)
         haskey(branch, "b0_to") ? branch["b0_to"] *= nh : ~ ;
         # neutral earthing of a transformer branch (as the re/xe of `xfmr` records)
         for w in ("1", "2")
-            haskey(branch, "re" * w) ? branch["re" * w] *= sqrt(nh) : ~ ;
             haskey(branch, "xe" * w) ? branch["xe" * w] *= nh : ~ ;
         end
 
@@ -678,8 +677,6 @@ function _scale_network_to_harmonic!(ntw::Dict, nh::Real, sequence::Symbol)
 
             haskey(xfmr, "xe1") ? xfmr["xe1"] *= nh : ~ ;
             haskey(xfmr, "xe2") ? xfmr["xe2"] *= nh : ~ ;
-            haskey(xfmr, "re1") ? xfmr["re1"] *= sqrt(nh) : ~ ;
-            haskey(xfmr, "re2") ? xfmr["re2"] *= sqrt(nh) : ~ ;
 
             xfmr["cnf1"] = haskey(xfmr, "vg") ? uppercase(xfmr["vg"][1]) : 'Y' ;
             xfmr["cnf2"] = haskey(xfmr, "vg") ? uppercase(xfmr["vg"][2]) : 'Y' ;

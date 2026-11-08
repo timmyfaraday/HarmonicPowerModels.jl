@@ -31,6 +31,11 @@
     # ── C. an xfmr and its unit-tap branch have the same phase stamp ──────────
     @testset "xfmr ≡ branch with vg" begin
         data = HPM.parse_file(joinpath(case_path, "industrial_network_hhc.m"))
+        # Declare equal line data in both sequences for this representation test.
+        for br in values(data["branch"])
+            br["br_r0"], br["br_x0"] = br["br_r"], br["br_x"]
+            br["b0_fr"], br["b0_to"] = br["b_fr"], br["b_to"]
+        end
         id = first(sort([id for (id, x) in data["xfmr"] if x["vg"] in ("Yd11", "Dy11")]))
         branch_data = deepcopy(data)
         xfmr = pop!(branch_data["xfmr"], id)

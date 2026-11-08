@@ -327,6 +327,11 @@ function _accumulate_response!(ar, ai, n, nk, rz, iz, cp_d, sp_d)
     return nothing
 end
 
+# Harmonic units that have a return path, with floating matrix indices excluded.
+_harmonic_units(nw, hunits, bus_idx, floating) = Set{Int}(
+    parse(Int, d) for (d, ld) in nw["load"]
+    if parse(Int, d) in hunits && bus_idx[ld["load_bus"]] ∉ floating)
+
 """
     shhc_moments(hdata; networks = hdata["nw"]) -> NamedTuple
 
@@ -338,6 +343,9 @@ The harmonic admittances, loads and branch impedances are read from `networks` (
 string ⇒ network data), which defaults to `hdata["nw"]`. Passing the networks of another
 realization of the network parameters gives that realization's moments, with the same
 buses, units and PCE data — the oracle of the robust (cutting-set) formulation.
+`active_units[h]` records the participating load IDs: floating zero-sequence units
+have zero injection and allocation weight at that harmonic; the base fairness
+weights `wts` still apply at harmonics where those units participate.
 """
 function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
     pce      = hdata["pce"]
@@ -372,21 +380,25 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
     non_ref_ids = [i for i in 1:Nn if i ∉ ref_bus_ids]   # row/col indices
 
     Z_harm = Dict{Int, Matrix{ComplexF64}}()
-    # zero-sequence harmonics at which a harmonic unit sits in a part of the network with no
-    # path to earth: no current can be injected there, so the hosting capacity is zero
+    # Floating units inject nothing at this harmonic and drop out of its rows and weights.
+    # Block the shared capacity only when every harmonic unit floats: no injection remains
+    # to bound it. Units in earthed parts retain their common hosting capacity.
     blocked = Set{Int}()
     hunits  = Set(get(pce, "harmonic_units", Int[]))
+    active_units = Dict{Int,Set{Int}}()
     for (nw_str, nw_int) in zip(harm_nw_strs, harm_nw_ints)
         nw_data = networks[nw_str]
         Yh      = _harmonic_admittance(nw_data, bus_idx)
         Y_red   = Yh[non_ref_ids, non_ref_ids]
         nr      = length(non_ref_ids)
+        fl      = Set{Int}()
         if get(nw_data, "harmonic_sequence", :positive) === :zero
             Y_red, floating = _earth_floating(Y_red)
             fl = Set(non_ref_ids[i] for idx in floating for i in idx)
-            any(bus_idx[ld["load_bus"]] in fl for (d, ld) in nw_data["load"]
-                if parse(Int, d) in hunits) && push!(blocked, nw_int)
         end
+        active_units[nw_int] = _harmonic_units(nw_data, hunits, bus_idx, fl)
+        all_units = _harmonic_units(nw_data, hunits, bus_idx, Set{Int}())
+        !isempty(all_units) && isempty(active_units[nw_int]) && push!(blocked, nw_int)
         try
             Z_harm[nw_int] = Y_red \ Matrix{ComplexF64}(_eye, nr, nr)
         catch
@@ -413,9 +425,9 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
     # ── No recombination: worst-case alignment of the unit contributions ─────
     if !get(pce, "recombination", true)
         alpha_V, alpha_I = _worst_case_moments(Z_harm, networks, harm_nw_strs, harm_nw_ints,
-            bus_idx, ref_bus_ids, non_ref_pos, wts, Set(pce["harmonic_units"]), length(K))
+            bus_idx, ref_bus_ids, non_ref_pos, wts, active_units, length(K))
         return (; pb, K, psi_norms, alpha_re, alpha_im, alpha_V, alpha_I, Nn, bus_idx,
-                  ref_bus_ids, harm_nw_strs, harm_nw_ints, wts, blocked)
+                  ref_bus_ids, harm_nw_strs, harm_nw_ints, wts, active_units, blocked)
     end
 
     for (nw_str, nw_int) in zip(harm_nw_strs, harm_nw_ints)
@@ -435,6 +447,7 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
             n_pos = non_ref_pos[n]
             for (d_str, load) in nw_data["load"]
                 d     = parse(Int, d_str)
+                d in hunits && d ∉ active_units[nw_int] && continue
                 bus_d = bus_idx[load["load_bus"]]
                 bus_d in ref_bus_ids && continue
                 d_pos  = non_ref_pos[bus_d]
@@ -496,7 +509,7 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
     end
 
     return (; pb, K, psi_norms, alpha_re, alpha_im, alpha_V, alpha_I, Nn, bus_idx,
-              ref_bus_ids, harm_nw_strs, harm_nw_ints, wts, blocked)
+              ref_bus_ids, harm_nw_strs, harm_nw_ints, wts, active_units, blocked)
 end
 
 # Moments without recombination: every unit contribution aligns in the worst case, so a
@@ -504,7 +517,7 @@ end
 #   |V_{n,h}|² / g_h = (Σ_d w_d |Z_{n,d}|)²,  |I_{b,h}|² / g_h = (Σ_d w_d |y_s (Z_{f,d}/t − Z_{t,d})|)²,
 # stored as the mean (k = 0) with zero variance. Normal loads inject nothing.
 function _worst_case_moments(Z_harm, networks, harm_nw_strs, harm_nw_ints, bus_idx,
-                             ref_bus_ids, non_ref_pos, wts, hunits, nK)
+                             ref_bus_ids, non_ref_pos, wts, active_units, nK)
     alpha_V = Dict{Int, Matrix{Float64}}()
     alpha_I = Dict{Int, Dict{Int, Vector{Float64}}}()
     Nn = length(bus_idx)
@@ -513,7 +526,7 @@ function _worst_case_moments(Z_harm, networks, harm_nw_strs, harm_nw_ints, bus_i
         Zr, nw_data = Z_harm[nw_int], networks[nw_str]
         units = Tuple{Int,Float64}[]
         for (d_str, load) in nw_data["load"]
-            d = parse(Int, d_str); d in hunits || continue
+            d = parse(Int, d_str); d in active_units[nw_int] || continue
             bd = bus_idx[load["load_bus"]]; bd in ref_bus_ids && continue
             w  = get(wts, d, 0.0); w == 0.0 || push!(units, (non_ref_pos[bd], w))
         end
@@ -573,11 +586,12 @@ function shhc_master(hdata::Dict, moments, optimizer)
     # constraints.
     model = JuMP.Model(optimizer)
     # U_h = Σ w_d over the HARMONIC units at harmonic h, i.e., the total hosting
-    # per unit of I_h (the number of units under absolute equality); normal loads
+    # per unit of I_h (the number of participating units under absolute equality); normal loads
     # are present in the network but inject nothing.
     hunit_set = Set(pce["harmonic_units"])
+    active_units = get(moments, :active_units, Dict(h => hunit_set for h in harm_nw_ints))
     U_h = Dict(nw_int => sum((wts[parse(Int, d)] for d in keys(hdata["nw"]["$nw_int"]["load"])
-                              if parse(Int, d) in hunit_set); init = 0.0)
+                              if parse(Int, d) in active_units[nw_int]); init = 0.0)
                for nw_int in harm_nw_ints)
 
     # Scaling: I_h ≈ 1e-3 and g_h = I_h² ≈ 1e-7 p.u. sit at the edge of the conic
@@ -614,12 +628,12 @@ function shhc_master(hdata::Dict, moments, optimizer)
     # and makes it disagree with the dHHC/QCQP wherever the rating binds.
     for h in harm_nw_ints
         caps = [ld["c_rating"] / wts[parse(Int, d)] for (d, ld) in hdata["nw"]["$h"]["load"]
-                if parse(Int, d) in hunit_set && haskey(ld, "c_rating")]
+                if parse(Int, d) in active_units[h] && haskey(ld, "c_rating")]
         isempty(caps) && continue
         JuMP.set_upper_bound(Ip_h[h], minimum(caps) / s_h[h])
         JuMP.set_upper_bound(gp_h[h], (minimum(caps) / s_h[h])^2)
     end
-    # a unit with no zero-sequence path to earth cannot inject at that harmonic
+    # No harmonic unit has a return path: fix the otherwise unbounded capacity to zero.
     for h in get(moments, :blocked, Set{Int}())
         JuMP.set_upper_bound(Ip_h[h], 0.0)
         JuMP.set_upper_bound(gp_h[h], 0.0)
@@ -824,7 +838,10 @@ Steps
    (a conic solver, e.g. Mosek or Clarabel — not HiGHS).
 
 Returns a result Dict with `"termination_status"`, `"objective_value"`, and
-`"solution"` (Dict mapping harmonic nw id → optimal I_h; unit d hosts w_d·I_h).
+`"solution"` (Dict mapping harmonic nw id → optimal I_h; a participating unit d hosts
+w_d·I_h). At a zero-sequence harmonic, floating units inject zero and are omitted
+from its moments, ratings and objective weights; only an entirely floating set of
+harmonic units forces I_h to zero.
 
 Only principles with fixed allocation ratios are representable in this
 formulation: the single scalar I_h per harmonic is what makes the squared
