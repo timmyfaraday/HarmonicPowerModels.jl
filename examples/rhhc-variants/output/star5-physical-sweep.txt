@@ -1,4 +1,4 @@
-git commit: 48145492b6ac3c5aee5eb10db398fc6f830d83f8
+git commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
 LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
 case: examples/rhhc-variants/cases/star5-physical.toml
 threads: 16; solver: Clarabel

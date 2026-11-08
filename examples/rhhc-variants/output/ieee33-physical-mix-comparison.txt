@@ -1,0 +1,35 @@
+Uncertainty levels and transfer to the source case
+HPM commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+Cases: cases/ieee33-physical-mix.toml, cases/ieee33-mix.toml
+Threads: 16; solver: Clarabel; unchanged runner settings.
+Method parameters: (difference_step = 0.0001, zero_band = 1.0e-6, subdivision_depth = 6, sharing_tolerance = 1.0e-10, verification_samples = 4096, admission_threshold = 0.001, interior_starts = (corners = true, center = true), interior_tolerance = 1.0e-10, interior_iterations = 32)
+level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination | nominal termination
+ieee33-physical-mix | 0.009020975842148027 | 0.008884972880879262 | 0.008884974251720513 | 1.5428758851068776e-7 | 2 | 84354 | 52.26845954 | true | OPTIMAL | OPTIMAL
+ieee33-mix | 0.008277004649027895 | 0.007659788450362305 | 0.007659788450362305 | 0.0 | 2 | 0 | 15.380899588 | true | OPTIMAL | OPTIMAL
+level | harmonic | robust / nominal | robust current
+ieee33-physical-mix | 5 | 0.9794100122969407 | 8.503964937067866e-5
+ieee33-physical-mix | 7 | 0.9856596685893918 | 0.00011374066598275236
+ieee33-physical-mix | 11 | 0.9897071934195307 | 5.017056943898634e-5
+ieee33-physical-mix | 13 | 0.9901435457919154 | 2.8704517735059568e-5
+ieee33-mix | 5 | 0.9168495244659023 | 6.980476769495341e-5
+ieee33-mix | 7 | 0.9250902900034438 | 9.681435166300586e-5
+ieee33-mix | 11 | 0.9334629933251198 | 4.5654899836928555e-5
+ieee33-mix | 13 | 0.9356498570473963 | 2.709436987893418e-5
+Posterior checks: 1024 random points, public HPM defaults (seed 2, tolerance 0.0001).
+Checks below evaluate positive-limit constraints. An infeasible nominal has no feasible capacity.
+solution | target case | maximum normalized violation | constraint | violated fraction
+ieee33-physical-mix | ieee33-physical-mix | -0.005625787423364059 | (:ihd, (13, 18)) | 0.0
+ieee33-physical-mix | ieee33-mix | 0.47250384204250717 | (:ihd, (5, 18)) | 1.0
+ieee33-mix | ieee33-physical-mix | -0.11405358664957244 | (:ihd, (13, 18)) | 0.0
+ieee33-mix | ieee33-mix | -0.007003394730168755 | (:ihd, (13, 18)) | 0.0
+Corner adversary: nominal finite-difference signs, unique predicted corners.
+Positive own-case violations refute reported feasibility and its lower-bound certificate.
+Positive transfer violations refute feasibility of the level's solution on the source box.
+A transfer failure alone does not refute an own-case certificate.
+The adversary is not a proof of feasibility: resonance constraints can be nonmonotone.
+solution | target case | corners evaluated | maximum normalized violation | constraint | case-coordinate point
+ieee33-physical-mix | ieee33-physical-mix | 15 | -0.00021438536002826858 | (:ihd, (5, 18)) | (theta_ACSR = 75.0, rho_EARTH = 1000.0, rho_aluminium_ACSR = 2.8264e-8, lay_outer_ACSR = 10.0, lay_middle_ACSR = 10.0, lay_inner_ACSR = 13.0, ambient_O13 = 45.0, d_steel_ACSR = -1.0, rho_steel_ACSR = 1.79e-7, mu_steel_ACSR = 300.0, d_aluminium_ACSR = -1.0)
+ieee33-physical-mix | ieee33-mix | 2 | 0.4841327526537169 | (:ihd, (5, 18)) | (kR_ohl = 1.2, kL_ohl = 1.05)
+ieee33-mix | ieee33-physical-mix | 18 | -0.10925126650661288 | (:ihd, (13, 18)) | (theta_ACSR = 75.0, rho_EARTH = 1000.0, rho_aluminium_ACSR = 2.8264e-8, lay_outer_ACSR = 10.0, lay_middle_ACSR = 10.0, lay_inner_ACSR = 16.0, ambient_O13 = 45.0, d_steel_ACSR = -1.0, rho_steel_ACSR = 1.79e-7, mu_steel_ACSR = 300.0, d_aluminium_ACSR = -1.0)
+ieee33-mix | ieee33-mix | 2 | -5.070255326700135e-11 | (:ihd, (7, 18)) | (kR_ohl = 1.2, kL_ohl = 1.05)

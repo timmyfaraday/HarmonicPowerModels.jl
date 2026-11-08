@@ -1,0 +1,13 @@
+git commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+case: examples/rhhc-variants/cases/star3-physical-mix.toml
+threads: 16; solver: Clarabel
+../shhc/data/3node_test.m, 2 branches from LineCableModels, 2 units, ε = 0.05, gaussian, 16 threads
+nominal stochastic: 0.146297 (OPTIMAL)
+resonances at the nominal point: 
+robust: 0.145733  [LB 0.145733, UB 0.145734, gap 8.3e-06], 2 iterations, 13 s, signed off
+robust master termination: OPTIMAL
+per harmonic, robust / nominal: h5 0.996, h7 0.996, h11 0.996, h13 0.997
+per sequence, Σ_h I_h nominal → robust [pu]: positive 0.031554 → 0.031438, negative 0.041594 → 0.041428, zero 0.000000 → 0.000000
+a posteriori (1024 random points): worst -8.72e-04 ((:ihd, (13, 3))), violated at 0.0 %
+LineCableModels solves (sum of circuit table sizes): 20919

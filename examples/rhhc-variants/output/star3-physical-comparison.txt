@@ -1,35 +1,35 @@
 Uncertainty levels and transfer to the source case
-HPM commit: 48145492b6ac3c5aee5eb10db398fc6f830d83f8
+HPM commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
 LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
 Cases: cases/star3-physical.toml, cases/star3.toml
 Threads: 16; solver: Clarabel; unchanged runner settings.
 Method parameters: (difference_step = 0.0001, zero_band = 1.0e-6, subdivision_depth = 6, sharing_tolerance = 1.0e-10, verification_samples = 4096, admission_threshold = 0.001, interior_starts = (corners = true, center = true), interior_tolerance = 1.0e-10, interior_iterations = 32)
 level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination | nominal termination
-star3-physical | 0.1351216853517375 | 0.1346710335733023 | 0.13467193698953248 | 6.708273827352528e-6 | 2 | 16025 | 23.591573896 | true | OPTIMAL | OPTIMAL
-star3 | 0.13114849162826483 | 0.12665235174943132 | 0.12665235174943132 | 0.0 | 2 | 0 | 0.949537753 | true | OPTIMAL | OPTIMAL
+star3-physical | 0.13670698515698881 | 0.13624886315259832 | 0.1362497887487625 | 6.79337687556386e-6 | 2 | 15992 | 12.451097551 | true | OPTIMAL | OPTIMAL
+star3 | 0.13257131646065745 | 0.1279913690355159 | 0.1279913690355159 | 0.0 | 2 | 0 | 0.480707738 | true | OPTIMAL | OPTIMAL
 level | harmonic | robust / nominal | robust current
-star3-physical | 5 | 0.9965663969871332 | 0.029516151508702074
-star3-physical | 7 | 0.9965669951665455 | 0.020764826160915285
-star3-physical | 11 | 0.9968920075861788 | 0.00938887647685927
-star3-physical | 13 | 0.9970310020222674 | 0.00766566264017451
-star3 | 5 | 0.9654005125704728 | 0.027241700520303315
-star3 | 7 | 0.9656313539396126 | 0.019363518829839374
-star3 | 11 | 0.9662088309734828 | 0.009090908961097996
-star3 | 13 | 0.9664811176646592 | 0.007630047563474958
+star3-physical | 5 | 0.9965714728853042 | 0.02964676701037275
+star3-physical | 7 | 0.9965533033675837 | 0.02094897223359631
+star3-physical | 11 | 0.9968386268703306 | 0.009615182620706143
+star3-physical | 13 | 0.9969614973056183 | 0.007913509711623959
+star3 | 5 | 0.965334418497829 | 0.0273548087252927
+star3 | 7 | 0.9654359960035679 | 0.01951994010357833
+star3 | 11 | 0.9656241684852007 | 0.00928158934877157
+star3 | 13 | 0.9657062367846508 | 0.00783934634011535
 Posterior checks: 1024 random points, public HPM defaults (seed 2, tolerance 0.0001).
 Checks below evaluate positive-limit constraints. An infeasible nominal has no feasible capacity.
 solution | target case | maximum normalized violation | constraint | violated fraction
-star3-physical | star3-physical | -0.0007707318989322864 | (:ihd, (13, 3)) | 0.0
-star3-physical | star3 | 0.17304894695417272 | (:ihd, (5, 2)) | 1.0
-star3 | star3-physical | -0.010034107470137332 | (:ihd, (13, 3)) | 0.0
-star3 | star3 | -0.0004099456263911838 | (:ihd, (13, 2)) | 0.0
+star3-physical | star3-physical | -0.0007874513204002564 | (:ihd, (13, 3)) | 0.0
+star3-physical | star3 | 0.1737752147209619 | (:ihd, (5, 2)) | 1.0
+star3 | star3-physical | -0.019428415396777865 | (:ihd, (13, 3)) | 0.0
+star3 | star3 | -0.00037656295091081926 | (:ihd, (13, 2)) | 0.0
 Corner adversary: nominal finite-difference signs, unique predicted corners.
 Positive own-case violations refute reported feasibility and its lower-bound certificate.
 Positive transfer violations refute feasibility of the level's solution on the source box.
 A transfer failure alone does not refute an own-case certificate.
 The adversary is not a proof of feasibility: resonance constraints can be nonmonotone.
 solution | target case | corners evaluated | maximum normalized violation | constraint | case-coordinate point
-star3-physical | star3-physical | 8 | -3.8011168127183304e-5 | (:ihd, (5, 3)) | (theta_ACSR = 75.0, rho_EARTH = 1000.0, ambient_O132 = 45.0, rho_aluminium_ACSR = 2.8264e-8, lay_middle_ACSR = 10.0, lay_inner_ACSR = 16.0, diameter_O132 = 0.0031000000000000003, d_steel_ACSR = -1.0, rho_steel_O132 = 2.155e-7, mu_steel_O132 = 300.0, d_aluminium_ACSR = -1.0)
-star3-physical | star3 | 2 | 0.17395387350223013 | (:ihd, (5, 3)) | (kR_ohl = 1.2, kL_ohl = 1.05)
-star3 | star3-physical | 9 | -0.009309805865189924 | (:ihd, (13, 2)) | (theta_ACSR = 75.0, rho_EARTH = 1000.0, ambient_O132 = 45.0, rho_aluminium_ACSR = 2.8264e-8, lay_middle_ACSR = 10.0, lay_inner_ACSR = 16.0, diameter_O132 = 0.0031000000000000003, d_steel_ACSR = -1.0, rho_steel_O132 = 2.155e-7, mu_steel_O132 = 300.0, d_aluminium_ACSR = -1.0)
-star3 | star3 | 2 | -6.588961598552601e-10 | (:ihd, (5, 3)) | (kR_ohl = 1.2, kL_ohl = 1.05)
+star3-physical | star3-physical | 9 | -3.863077238797086e-5 | (:ihd, (5, 3)) | (theta_ACSR = 75.0, rho_EARTH = 1000.0, ambient_O132 = 45.0, rho_aluminium_ACSR = 2.8264e-8, lay_middle_ACSR = 10.0, lay_inner_ACSR = 16.0, diameter_O132 = 0.0031000000000000003, d_steel_ACSR = -1.0, rho_steel_O132 = 2.155e-7, mu_steel_O132 = 300.0, d_aluminium_ACSR = -1.0)
+star3-physical | star3 | 2 | 0.17459274982153095 | (:ihd, (5, 3)) | (kR_ohl = 1.2, kL_ohl = 1.05)
+star3 | star3-physical | 9 | -0.018697631401686454 | (:ihd, (13, 2)) | (theta_ACSR = 75.0, rho_EARTH = 1000.0, ambient_O132 = 45.0, rho_aluminium_ACSR = 2.8264e-8, lay_middle_ACSR = 10.0, lay_inner_ACSR = 16.0, diameter_O132 = 0.0031000000000000003, d_steel_ACSR = -1.0, rho_steel_O132 = 2.155e-7, mu_steel_O132 = 300.0, d_aluminium_ACSR = -1.0)
+star3 | star3 | 2 | -1.461524234969147e-10 | (:ihd, (5, 3)) | (kR_ohl = 1.2, kL_ohl = 1.05)

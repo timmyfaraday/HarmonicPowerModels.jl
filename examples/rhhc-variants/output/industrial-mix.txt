@@ -1,0 +1,13 @@
+git commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+case: examples/rhhc-variants/cases/industrial-mix.toml
+threads: 16; solver: Clarabel
+../shhc/data/industrial_network_shhc.m, 0 branches from LineCableModels, 4 units, ε = 0.05, gaussian, 16 threads
+nominal stochastic: 0.005499 (OPTIMAL)
+resonances at the nominal point: 
+robust: 0.005476  [LB 0.005476, UB 0.005476, gap 0.0e+00], 2 iterations, 1 s, signed off
+robust master termination: OPTIMAL
+per harmonic, robust / nominal: h5 1.000, h7 0.991, h11 0.991, h13 0.991
+per sequence, Σ_h I_h nominal → robust [pu]: positive 0.000511 → 0.000507, negative 0.000863 → 0.000862, zero 0.000000 → 0.000000
+a posteriori (1024 random points): worst -1.82e-04 ((:thd, 8)), violated at 0.0 %
+LineCableModels solves (sum of circuit table sizes): 0

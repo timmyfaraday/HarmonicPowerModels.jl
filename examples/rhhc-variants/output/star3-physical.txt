@@ -1,13 +1,13 @@
-git commit: 48145492b6ac3c5aee5eb10db398fc6f830d83f8
+git commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
 LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
 case: examples/rhhc-variants/cases/star3-physical.toml
 threads: 16; solver: Clarabel
-../shhc/data/3node_test.m, 2 branches from LineCableModels, 2 units, ε = 0.05, cantelli, 16 threads
-nominal stochastic: 0.135122 (OPTIMAL)
+../shhc/data/3node_test.m, 2 branches from LineCableModels, 2 units, ε = 0.05, gaussian, 16 threads
+nominal stochastic: 0.136707 (OPTIMAL)
 resonances at the nominal point: 
-robust: 0.134671  [LB 0.134671, UB 0.134672, gap 6.7e-06], 2 iterations, 24 s, signed off
+robust: 0.136249  [LB 0.136249, UB 0.136250, gap 6.8e-06], 2 iterations, 12 s, signed off
 robust master termination: OPTIMAL
 per harmonic, robust / nominal: h5 0.997, h7 0.997, h11 0.997, h13 0.997
-per sequence, Σ_h I_h nominal → robust [pu]: positive 0.028525 → 0.028430, negative 0.039036 → 0.038905, zero 0.000000 → 0.000000
-a posteriori (1024 random points): worst -7.71e-04 ((:ihd, (13, 3))), violated at 0.0 %
-LineCableModels solves (sum of circuit table sizes): 16025
+per sequence, Σ_h I_h nominal → robust [pu]: positive 0.028959 → 0.028862, negative 0.039394 → 0.039262, zero 0.000000 → 0.000000
+a posteriori (1024 random points): worst -7.87e-04 ((:ihd, (13, 3))), violated at 0.0 %
+LineCableModels solves (sum of circuit table sizes): 15992

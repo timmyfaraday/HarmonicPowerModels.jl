@@ -1,4 +1,4 @@
-git commit: 6059a624be0eae211cec2ecba8446177d9970db0
+git commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
 LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
 case: examples/rhhc-variants/cases/antwerp-physical.toml
 threads: 16; solver: Clarabel

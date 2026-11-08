@@ -1,4 +1,4 @@
-git commit: 48145492b6ac3c5aee5eb10db398fc6f830d83f8
+git commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
 LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
 case: examples/rhhc-variants/cases/ieee30-tom.toml
 threads: 16; solver: Clarabel
@@ -23,12 +23,12 @@ assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA
 branch 36 (28–27): vg=Yy0 gnd1=1 gnd2=1 re1=0.0 xe1=0.0 re2=1.7493112947658402 xe2=0.0 [pu]
 YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance.
 assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA
-IEEE 30-bus, inductive_cable33, 22 branches from LineCableModels, 21 units, ε = 0.05, cantelli, 16 threads
-nominal stochastic: 0.050179 (OPTIMAL)
+IEEE 30-bus, inductive_cable33, 22 branches from LineCableModels, 21 units, ε = 0.05, gaussian, 16 threads
+nominal stochastic: 0.052095 (OPTIMAL)
 resonances at the nominal point: h = 6.86
-robust: 0.043700  [LB 0.043700, UB 0.043720, gap 4.4e-04], 2 iterations, 16 s, signed off
+robust: 0.045243  [LB 0.045243, UB 0.045263, gap 4.4e-04], 2 iterations, 15 s, signed off
 robust master termination: OPTIMAL
-per harmonic, robust / nominal: h5 0.834, h7 0.895, h11 0.867, h13 0.905
-per sequence, Σ_h I_h nominal → robust [pu]: positive 0.000934 → 0.000845, negative 0.001455 → 0.001236, zero 0.000000 → 0.000000
-a posteriori (1024 random points): worst -1.12e-03 ((:ihd, (7, 30))), violated at 0.0 %
-LineCableModels solves (sum of circuit table sizes): 11835
+per harmonic, robust / nominal: h5 0.834, h7 0.896, h11 0.865, h13 0.899
+per sequence, Σ_h I_h nominal → robust [pu]: positive 0.000990 → 0.000890, negative 0.001490 → 0.001265, zero 0.000000 → 0.000000
+a posteriori (1024 random points): worst -1.11e-03 ((:ihd, (7, 30))), violated at 0.0 %
+LineCableModels solves (sum of circuit table sizes): 11778

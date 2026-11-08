@@ -1,13 +1,13 @@
-git commit: 48145492b6ac3c5aee5eb10db398fc6f830d83f8
+git commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
 LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
 case: examples/rhhc-variants/cases/ieee39.toml
 threads: 16; solver: Clarabel
-networks/ieee39.json, 0 branches from LineCableModels, 19 units, ε = 0.05, cantelli, 16 threads
-nominal stochastic: 0.245875 (OPTIMAL)
+networks/ieee39.json, 0 branches from LineCableModels, 19 units, ε = 0.05, gaussian, 16 threads
+nominal stochastic: 0.251663 (OPTIMAL)
 resonances at the nominal point: h = 5.42, h = 9.57, h = 14.27
-robust: 0.220481  [LB 0.220481, UB 0.220481, gap 0.0e+00], 2 iterations, 17 s, signed off
+robust: 0.225562  [LB 0.225562, UB 0.225562, gap 0.0e+00], 2 iterations, 14 s, signed off
 robust master termination: OPTIMAL
-per harmonic, robust / nominal: h5 0.823, h7 0.935, h11 0.893, h13 0.774
-per sequence, Σ_h I_h nominal → robust [pu]: positive 0.008184 → 0.007554, negative 0.004757 → 0.004050, zero 0.000000 → 0.000000
-a posteriori (1024 random points): worst -2.92e-04 ((:ihd, (11, 45))), violated at 0.0 %
+per harmonic, robust / nominal: h5 0.823, h7 0.935, h11 0.892, h13 0.774
+per sequence, Σ_h I_h nominal → robust [pu]: positive 0.008371 → 0.007721, negative 0.004875 → 0.004151, zero 0.000000 → 0.000000
+a posteriori (1024 random points): worst -4.72e-04 ((:ihd, (11, 45))), violated at 0.0 %
 LineCableModels solves (sum of circuit table sizes): 0
