@@ -1,0 +1,95 @@
+[d_c]
+nominal = {value = 0.0496, register = "U155.d_c"}
+lower = {value = 0.0496, register = "U155.d_c"}
+upper = {value = 0.0508, register = "U155.d_c"}
+
+[R20]
+nominal = {value = 1.13e-05, register = "U155.R20"}
+lower = {value = 1.0458715462762823e-05, register = "U155.R20"}
+upper = {value = 1.13e-05, register = "U155.R20"}
+
+[theta]
+nominal = {value = 90, register = "U155.theta"}
+lower = {value = 20, register = "U155.theta"}
+upper = {value = 90, register = "U155.theta"}
+
+[t_ins]
+nominal = {value = 0.019, register = "U155.t_ins"}
+lower = {value = 0.01805, register = "U155.t_ins"}
+upper = {value = 0.01995, register = "U155.t_ins"}
+
+[t_jkt]
+nominal = {value = 0.00568, register = "U155.t_jkt"}
+lower = {value = 0.00564, register = "U155.t_jkt"}
+upper = {value = 0.006218, register = "U155.t_jkt"}
+
+[eps]
+nominal = {value = 2.4, register = "U155.eps"}
+lower = {value = 2.1, register = "U155.eps"}
+upper = {value = 2.5, register = "U155.eps"}
+
+[rho_ins]
+nominal = {value = 110000000000000.0, register = "U155.rho_ins"}
+lower = {value = 100000000000000.0, register = "U155.rho_ins"}
+upper = {value = 1e+16, register = "U155.rho_ins"}
+scale = "log"
+
+[tand]
+nominal = {value = 0.0003, register = "U155.tand"}
+lower = {value = 0.00016, register = "U155.tand"}
+upper = {value = 0.004, register = "U155.tand"}
+
+[eps_jacket]
+nominal = {value = 2.3, register = "U155.eps_jacket"}
+lower = {value = 2.1, register = "U155.eps_jacket"}
+upper = {value = 2.5, register = "U155.eps_jacket"}
+
+[rho_jacket]
+nominal = {value = 100000000000000.0, register = "U155.rho_jacket"}
+lower = {value = 100000000000000.0, register = "U155.rho_jacket"}
+upper = {value = 1e+16, register = "U155.rho_jacket"}
+scale = "log"
+
+[depth]
+nominal = {value = 1.0, register = "U155.depth"}
+lower = {value = 0.9, register = "U155.depth"}
+upper = {value = 1.2, register = "U155.depth"}
+
+[t_sc1]
+nominal = {value = 0.0021, register = "U155.t_sc1"}
+lower = {value = 0.00189, register = "U155.t_sc1"}
+upper = {value = 0.00231, register = "U155.t_sc1"}
+
+[t_sc2]
+nominal = {value = 0.0015, register = "U155.t_sc2"}
+lower = {value = 0.00135, register = "U155.t_sc2"}
+upper = {value = 0.00165, register = "U155.t_sc2"}
+
+[d_wire]
+nominal = {value = 0.00142, register = "U155.d_wire"}
+lower = {value = 0.0014058, register = "U155.d_wire"}
+upper = {value = 0.0014342, register = "U155.d_wire"}
+
+[rho_copper]
+nominal = {value = 1.7241e-08, register = "U155.rho_copper"}
+lower = {value = 1.707e-08, register = "U155.rho_copper"}
+upper = {value = 1.786e-08, register = "U155.rho_copper"}
+scale = "log"
+
+[rho_inner]
+nominal = {value = 1000, register = "U155.rho_inner"}
+lower = {value = 14, register = "U155.rho_inner"}
+upper = {value = 1000, register = "U155.rho_inner"}
+scale = "log"
+
+[rho_outer]
+nominal = {value = 500, register = "U155.rho_outer"}
+lower = {value = 9, register = "U155.rho_outer"}
+upper = {value = 500, register = "U155.rho_outer"}
+scale = "log"
+
+[eps_semicon]
+nominal = {value = 1000, register = "U155.eps_semicon"}
+lower = {value = 100, register = "U155.eps_semicon"}
+upper = {value = 10000, register = "U155.eps_semicon"}
+scale = "log"

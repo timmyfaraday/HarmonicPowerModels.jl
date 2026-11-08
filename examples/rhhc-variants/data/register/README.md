@@ -533,3 +533,19 @@ Source routes are 1500, 200 and 70 m. Fixed physical limits are 24.5, 6.58
 and 0.382 MVA. The current fields encode these rounded MVA limits exactly.
 Transformer records retain their source ratings and vector groups.
 The sweep report gives the 30 coordinates admitted at 0.1 percent.
+
+## Antwerp cable family
+
+The 21 `U155.*` rows describe U155-Cu1600. The candidate study, sections 3.4,
+3.5 and 7, supplies the radial stack, screen count and routes. The manufacturing
+input tables supply the diameter, resistance and layer intervals (N4, N5, N7,
+C2 and S1). Material intervals use the existing XLPE family as an assumption.
+The effective jacket includes 0.5 mm bedding and 0.2 mm aluminum barrier as
+dielectric material. Its interval adds their supplier bands to the PE interval.
+The screen is an equal-area copper tube with the wire radial envelope retained.
+
+The Milliken core becomes round compacted copper of equal DC resistance.
+Cross-bonded screens become screens bonded and grounded at both ends. The source
+300 MVA limit remains because the candidate study's 1390 A applies to
+cross-bonding, whereas both-end bonds add circulating screen losses. Burial is
+1 m, with an assumed 0.9–1.2 m interval. Ideal transposition is retained.
