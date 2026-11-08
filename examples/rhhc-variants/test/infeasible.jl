@@ -1,6 +1,5 @@
 @testset "Infeasible nominal reports" begin
-    mkpath(joinpath(STUDIES, "tmp"))
-    directory = mktempdir(joinpath(STUDIES, "tmp"))
+    directory = mktempdir()
     label = basename(directory)
     paths = [joinpath(directory, label * suffix * ".toml")
              for suffix in ("-infeasible", "-feasible")]

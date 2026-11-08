@@ -581,8 +581,30 @@ end
 harmonic_units(ids::Tuple, data) = collect(ids)
 
 function study(path; all_coordinates = false)
+    get(ENV, "SHHC_UNIT", "diode") == "diode" ||
+        throw(ArgumentError("SHHC_UNIT must be unset or diode for these studies"))
     file = isfile(path) ? abspath(path) : joinpath(STUDIES, path)
-    config = readrecord(file)
+    rows = TOML.parsefile(file)
+    if haskey(rows, "base")
+        name = rows["base"]
+        basename(name) == name && !endswith(name, ".toml") ||
+            throw(ArgumentError("base must name a case without a path or extension"))
+        base = TOML.parsefile(joinpath(STUDIES, "cases", name * ".toml"))
+        haskey(base, "base") && throw(ArgumentError("a base case cannot have a base"))
+        rows = merge(base, rows)
+    end
+    config = record(rows)
+    recombination = get(config, :recombination, true)
+    if haskey(config, :population)
+        config.population in ("diode", "thyristor", "mix") ||
+            throw(ArgumentError("population must be diode, thyristor or mix"))
+        recombination || throw(ArgumentError("population requires recombination"))
+        all(
+            h -> haskey(PCE_PARAMS["harmonics"], h) &&
+                 haskey(PCE_PARAMS_THYRISTOR["harmonics"], h),
+            config.harmonics) ||
+            throw(ArgumentError("population requires Table III and IV harmonic orders"))
+    end
     mat = readrecord(joinpath(STUDIES, "data", "materials.toml"))
     families = (;
         (Symbol(splitext(name)[1]) =>
@@ -674,11 +696,24 @@ function study(path; all_coordinates = false)
         parse(Int, k) in units || delete!(hd["nw"][string(h)]["load"], k)
     end
     pce = Dict{String, Any}(deepcopy(PCE_PARAMS)...)
-    recombination = get(config, :recombination, true)
     pce["recombination"] = recombination
     pce["harmonics"] = Dict{Int, Any}(h => (PCE_PARAMS["harmonics"][h].v_min,
                                           PCE_PARAMS["harmonics"][h].v_max)
     for h in config.harmonics if recombination || haskey(PCE_PARAMS["harmonics"], h))
+    population = get(config, :population, "diode")
+    if population == "thyristor"
+        pce["alpha_hat"] = PCE_PARAMS_THYRISTOR["alpha_hat"]
+        pce["beta_hat"] = PCE_PARAMS_THYRISTOR["beta_hat"]
+        pce["harmonics"] = Dict{Int, Any}(h => Tuple(PCE_PARAMS_THYRISTOR["harmonics"][h])
+        for h in config.harmonics)
+    elseif population == "mix"
+        kind = Dict(d => (iseven(i) ? PCE_PARAMS_THYRISTOR : PCE_PARAMS)
+        for (i, d) in enumerate(sort(units)))
+        pce["harmonics"] = Dict{Int, Any}(h => Dict(d => Tuple(kind[d]["harmonics"][h])
+                                          for d in units) for h in config.harmonics)
+        pce["unit_shapes"] = Dict(d => (kind[d]["alpha_hat"], kind[d]["beta_hat"])
+        for d in units)
+    end
     pce["harmonic_units"] = units
     pce["bound"] = config.bound
     pce["epsilon"] = config.epsilon

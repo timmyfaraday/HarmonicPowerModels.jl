@@ -2,6 +2,7 @@
     Ext = Base.get_extension(HPM, :HarmonicPowerModelsLineCableModelsExt)
     for file in sort(readdir(joinpath(STUDIES, "cases")))
         endswith(file, ".toml") || continue
+        haskey(TOML.parsefile(joinpath(STUDIES, "cases", file)), "base") && continue
         @testset "$file" begin
             s = study(joinpath("cases", file); all_coordinates = true)
             p = nominal_point(s.box)
@@ -60,8 +61,7 @@ end
         end
     end
 
-    mkpath(joinpath(STUDIES, "tmp"))
-    directory = mktempdir(joinpath(STUDIES, "tmp"))
+    directory = mktempdir()
     try
         config = TOML.parsefile(joinpath(STUDIES, "cases", "ieee30-physical-length.toml"))
         for row in values(config["branches"])

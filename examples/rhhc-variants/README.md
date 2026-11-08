@@ -22,6 +22,54 @@ Cable lengths follow the scenario's retained routes. The overhead lengths follow
 
 The equivalent and surrogate levels live on the branch `experimental/surrogates`.
 
+## Converter populations and case variants
+
+A case selects its converter population with a cited record:
+
+```toml
+population = {value = "mix", origin = "examples/shhc/paper_mix_ab.jl"}
+```
+
+`diode` and an omitted key use the existing Table III parameters, without a
+`unit_shapes` entry. `thyristor` uses the Table IV Beta shape and angle ranges from
+`PCE_PARAMS_THYRISTOR` in `examples/shhc/pce_params.jl`. `mix` sorts the harmonic
+load ids and assigns diode bridges to odd positions and thyristor bridges to even positions. The 21-unit IEEE30
+population has 11 diode bridges and 10 thyristor bridges. Each unit receives its
+own angle range at each harmonic and its own Beta shape.
+
+The builder refuses a population with `recombination = false` or a harmonic order
+outside the Table III and IV data (5, 7, 11 and 13). It also refuses an unknown
+population. Run studies with `SHHC_UNIT` unset or equal to `diode`. Other values are refused
+when building a study. `examples/shhc/pce_params.jl` merges the thyristor inputs into
+`PCE_PARAMS` when `SHHC_UNIT` is `thyristor`.
+
+The 20 cases with recombination have `-mix` variants. Each variant contains only its
+base case name and the population record:
+
+```toml
+base = "ieee30-physical"
+population = {value = "mix", origin = "examples/shhc/paper_mix_ab.jl"}
+```
+
+`base` names a TOML case in `cases/`, without its path or extension. The builder
+reads that file and replaces its top-level keys with the variant's keys. A record
+is replaced as a whole. A base case that itself declares `base` is refused.
+The variant retains its own filename in the reports. Its box and network model
+come from the base case. The population record changes the converter inputs.
+
+The five `ieee30-zs-*` cases use worst-case alignment without recombination and
+have no population variants. `compare.jl` accepts the paired variants through the
+same two paths as their bases:
+
+```sh
+julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/compare.jl \
+    cases/ieee9-physical-mix.toml cases/ieee9-mix.toml
+```
+
+The variants write capacity and comparison reports. Their sequences and physical
+input sweeps are those of their bases. The inventory lists those reports with
+the bases.
+
 ## Gaussian factor
 
 Every case selects `bound = "gaussian"`. HPM uses
@@ -90,6 +138,7 @@ points, compute directly without entering the table.
 
 The study test moves each undeclared coordinate alone to latent positions -1, -0.5,
 0.5 and 1 at 50 and 650 Hz. All other coordinates retain their nominal values.
+It covers each base case once and skips cases that declare `base`.
 It bypasses the table to check the problem's actual dependencies and checks exact
 sequence equality with the projected-table result.
 
@@ -647,6 +696,13 @@ for case in antwerp ieee33 ieee39 ieee9 industrial star3 star5; do
     julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/compare.jl \
         "cases/$case-physical.toml" "cases/$case.toml"
 done
+for case in ieee30-tom ieee30-u33 ieee30-physical ieee30-full hello-world ieee30-physical-length; do
+    julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/run.jl "cases/$case-mix.toml"
+done
+for case in antwerp ieee33 ieee39 ieee9 industrial star3 star5; do
+    julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/compare.jl \
+        "cases/$case-physical-mix.toml" "cases/$case-mix.toml"
+done
 for case in ieee30-tom ieee30-u33 ieee30-physical ieee30-full hello-world ieee30-physical-length \
     antwerp-physical ieee33-physical ieee39-physical ieee9-physical industrial-physical star3-physical star5-physical; do
     julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/scan.jl "cases/$case.toml"
@@ -661,7 +717,7 @@ A zero-sequence IEEE30 case needs about 11 GB of memory.
 
 ## Cases and output inventory
 
-The case files below and their generated outputs form the complete study inventory.
+The table lists the case files and the outputs of the reproduction commands.
 A comparison file is listed with its physical case. It also evaluates the source case.
 
 | Case file | Generated outputs |
@@ -691,6 +747,26 @@ A comparison file is listed with its physical case. It also evaluates the source
 | `cases/star3.toml` | `output/star3.txt` |
 | `cases/star5-physical.toml` | `output/star5-physical-comparison.txt`, `output/star5-physical-scan.txt`, `output/star5-physical-sequences.csv`, `output/star5-physical-sweep.txt`, `output/star5-physical.txt` |
 | `cases/star5.toml` | `output/star5.txt` |
+| `cases/antwerp-mix.toml` | `output/antwerp-mix.txt` |
+| `cases/antwerp-physical-mix.toml` | `output/antwerp-physical-mix-comparison.txt`, `output/antwerp-physical-mix.txt` |
+| `cases/hello-world-mix.toml` | `output/hello-world-mix.txt` |
+| `cases/ieee30-full-mix.toml` | `output/ieee30-full-mix.txt` |
+| `cases/ieee30-physical-length-mix.toml` | `output/ieee30-physical-length-mix.txt` |
+| `cases/ieee30-physical-mix.toml` | `output/ieee30-physical-mix.txt` |
+| `cases/ieee30-tom-mix.toml` | `output/ieee30-tom-mix.txt` |
+| `cases/ieee30-u33-mix.toml` | `output/ieee30-u33-mix.txt` |
+| `cases/ieee33-mix.toml` | `output/ieee33-mix.txt` |
+| `cases/ieee33-physical-mix.toml` | `output/ieee33-physical-mix-comparison.txt`, `output/ieee33-physical-mix.txt` |
+| `cases/ieee39-mix.toml` | `output/ieee39-mix.txt` |
+| `cases/ieee39-physical-mix.toml` | `output/ieee39-physical-mix-comparison.txt`, `output/ieee39-physical-mix.txt` |
+| `cases/ieee9-mix.toml` | `output/ieee9-mix.txt` |
+| `cases/ieee9-physical-mix.toml` | `output/ieee9-physical-mix-comparison.txt`, `output/ieee9-physical-mix.txt` |
+| `cases/industrial-mix.toml` | `output/industrial-mix.txt` |
+| `cases/industrial-physical-mix.toml` | `output/industrial-physical-mix-comparison.txt`, `output/industrial-physical-mix.txt` |
+| `cases/star3-mix.toml` | `output/star3-mix.txt` |
+| `cases/star3-physical-mix.toml` | `output/star3-physical-mix-comparison.txt`, `output/star3-physical-mix.txt` |
+| `cases/star5-mix.toml` | `output/star5-mix.txt` |
+| `cases/star5-physical-mix.toml` | `output/star5-physical-mix-comparison.txt`, `output/star5-physical-mix.txt` |
 
 ## Script inventory
 
@@ -704,6 +780,7 @@ A comparison file is listed with its physical case. It also evaluates the source
 | `networks/convert.jl` | Reproduce the saved IEEE9 and IEEE39 network inputs from PowerImpedance. |
 | `data/register/derive.py` | Reproduce the register arithmetic in `data/register/derived.json`. |
 | `test/runtests.jl` | Run the study suite. |
+| `test/populations.jl` | Check converter parameters, variant networks and refused combinations. |
 | `test/coordinates.jl` | Check declarations, undeclared-coordinate probes and installed length. |
 | `test/stars.jl` | Check Falcon constructions, exact π-models and sequence references. |
 | `test/transmission.jl` | Check the physical transmission cases and Cardinal construction. |

@@ -1,6 +1,7 @@
 using Test
 include(joinpath(@__DIR__, "..", "compare.jl"))
 
+include("populations.jl")
 include("coordinates.jl")
 
 @testset "Corner adversary" begin
