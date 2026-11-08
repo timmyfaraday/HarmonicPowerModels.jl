@@ -17,6 +17,7 @@ module HarmonicPowerModels
     using ProgressMeter
 
     # import pkgs
+    import ForwardDiff
     import JuMP
     import MathOptInterface
 

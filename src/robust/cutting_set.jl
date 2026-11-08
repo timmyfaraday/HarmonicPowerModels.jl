@@ -27,7 +27,7 @@
     solve_rhhc(hdata, model, box, optimizer; pce_params, hpf_optimizer = optimizer,
                nbackground = 1024, use_seeds = true, effort = (ncons = 5, starts = 3, iters = 10),
                signoff = (ncons = 20, margin = 0.1, starts = 3, iters = 20), tol = 1e-3,
-               maxiter = 50, verbose = false) -> Dict
+               maxiter = 50, verbose = false, branch_derivative = :central) -> Dict
 
 Robust (stochastic-angle, worst-case-network) harmonic hosting capacity by the cutting-set
 method, for the uncertain branches of `model` over the parameter box `box`.
@@ -41,6 +41,9 @@ method, for the uncertain branches of `model` over the parameter box `box`.
 - Each iteration runs the oracle at `effort`; when it finds no violation above `tol`, the
   sign-off reruns it at `signoff` effort before stopping: by default the 20 most violated
   constraints within 10 % of their limit somewhere in the dictionary are refined.
+- `branch_derivative = :central` differentiates branch data by central differences;
+  `:dual` uses ForwardDiff in the adjoint gradient of both oracle calls, and needs branch
+  data that carry dual numbers through (see [`fast_violation_gradient`](@ref)).
 - The gap of the bounds is 1 − 1/√(1 + v), so `tol` = 1e-3 stops at a gap below 5e-4. A
   tighter `tol` mainly makes the method chase violations at the resolution of the oracle's
   finite differences, one cut per iteration, with no visible change in the bounds.
@@ -67,7 +70,8 @@ function solve_rhhc(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox,
                     effort = (ncons = 5, starts = 3, iters = 10),
                     signoff = (ncons = 20, margin = 0.1, starts = 3, iters = 20),
                     tol::Real = 1e-3, maxiter::Int = 50, posterior::Int = 0,
-                    verbose::Bool = false)
+                    verbose::Bool = false, branch_derivative = :central)
+    _check_branch_derivative(branch_derivative)
     principle = get(hdata, "principle", "absolute equality")
     principle in ("absolute equality", "weighted equality") || error(
         "solve_rhhc: fairness principle \"$principle\" is not representable in the second-" *
@@ -117,10 +121,10 @@ function solve_rhhc(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox,
         Iv = Dict(h => max(JuMP.value(I_h[h]), 0.0) for h in H)
         g  = Dict(h => Iv[h]^2 for h in H)
 
-        r  = pessimize!(dict, hdata, model, g; ce, effort...)
+        r  = pessimize!(dict, hdata, model, g; ce, branch_derivative, effort...)
         v  = maximum(r.violation[pos]; init = 0.0)
         if v <= tol
-            r = pessimize!(dict, hdata, model, g; ce, signoff...) # sign-off at maximum effort
+            r = pessimize!(dict, hdata, model, g; ce, branch_derivative, signoff...) # sign-off at maximum effort
             v = maximum(r.violation[pos]; init = 0.0)
             signed_off = v <= tol
         end

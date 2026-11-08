@@ -267,7 +267,7 @@ end
 # adjoint v = Y⁻¹ s, s the scatter of q onto the unit buses. One LU and two solves per
 # harmonic give the whole gradient; ∂Y/∂p only involves the stamps of the uncertain
 # branches the parameter changes, whose data are differentiated by central differences
-# (no linear algebra).
+# or ForwardDiff dual numbers (no linear algebra).
 
 # ∂(z_k)/∂x of z = galerkin_product(pb, x, x), contracted with β: Σ_k β_k ∂z_k/∂x
 function _galerkin_grad(pb, β::AbstractVector, x::AbstractVector)
@@ -301,14 +301,91 @@ function _dependencies(nc::NetworkCache, box::ParameterBox, h::Int)
     return deps
 end
 
+# HPM tag and maximum number of latent partials in one branch evaluation
+struct _BranchDerivativeTag end
+const _BRANCH_DERIVATIVE_CHUNK = 32
+
+function _check_branch_derivative(branch_derivative)
+    (branch_derivative === :central || branch_derivative === :dual) || throw(ArgumentError(
+        "branch_derivative must be :central or :dual, got $(repr(branch_derivative))"))
+    return nothing
+end
+
+# preserve the original diagnostic when a model cannot evaluate a dual point
+function _dual_branch_call(f, b)
+    try
+        return f()
+    catch err
+        err isa MethodError || rethrow()
+        error("branch $b: the data do not accept dual numbers; use " *
+              "branch_derivative = :central. Original error: " * sprint(showerror, err))
+    end
+end
+
+function _dual_branch_data(model::AbstractNetworkModel, branches, p, h, sequence)
+    return Dict(b => _dual_branch_call(() -> branch_data(model, b, p, h, sequence), b)
+                for b in branches)
+end
+
+function _dual_branch_data(model::ExactPiModel, branches, p, h, sequence)
+    groups = Vector{Int}[]
+    for b in branches
+        k = findfirst(bs -> model.branches[first(bs)].zy === model.branches[b].zy, groups)
+        k === nothing ? push!(groups, [b]) : push!(groups[k], b)
+    end
+    data = Dict{Int,NamedTuple}()
+    for bs in groups
+        b = first(bs)
+        z, y = _dual_branch_call(() -> model.branches[b].zy(p, model.f1 * h, sequence), b)
+        for b in bs
+            br = model.branches[b]
+            data[b] = _dual_branch_call(b) do
+                len = br.len isa Function ? br.len(p) : br.len
+                _exact_pi(br, len, z, y)
+            end
+        end
+    end
+    return data
+end
+
+# only the partials enter the adjoint; its values remain those of the plain forward pass
+_branch_partial(x::Real, i) = 0.0
+_branch_partial(x::ForwardDiff.Dual, i) = ForwardDiff.partials(x)[i]
+
+function _dual_branch_derivatives(ce, ξ, h, sequence)
+    d = length(ξ)
+    data = Dict{Tuple{Int,Int},NamedTuple}()
+    for lo in 1:_BRANCH_DERIVATIVE_CHUNK:d
+        coords = lo:min(lo + _BRANCH_DERIVATIVE_CHUNK - 1, d)
+        branches = sort(unique(vcat(ce.deps[coords]...)))
+        isempty(branches) && continue
+        n = length(coords)
+        ξd = [ForwardDiff.Dual{_BranchDerivativeTag}(ξ[i],
+                  ntuple(k -> i == coords[k] ? 1.0 : 0.0, n)) for i in 1:d]
+        bd = _dual_branch_data(ce.nc.model, branches, latent(ce.box, ξd), h, sequence)
+        for (k, i) in enumerate(coords), b in ce.deps[i]
+            data[(i, b)] = map(x -> _branch_partial(x, k), bd[b])
+        end
+    end
+    return data
+end
+
 """
-    fast_violation_gradient(ce, j, ξ, g; δ = 1e-6) -> (value, gradient)
+    fast_violation_gradient(ce, j, ξ, g; δ = 1e-6, branch_derivative = :central) -> (value, gradient)
 
 Normalized violation of constraint `j` at the latent point `ξ` and its gradient with respect
 to `ξ`, by the adjoint of the transfer impedances (see the comment above). The branch data of
-the uncertain branches are differentiated by central differences with step `δ`.
+the uncertain branches are differentiated by central differences with step `δ`
+(`branch_derivative = :central`) or ForwardDiff dual numbers (`:dual`).
+
+`:dual` needs branch data that carry the partials of a dual point through. A model that drops
+them without an error, for example by solving an equation by bisection on plain bounds,
+indexing a table by a value, or taking the value of a dual number, gives a wrong gradient.
+Compare the two options on the model before relying on `:dual`.
 """
-function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVector, g; δ::Real = 1e-6)
+function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVector, g;
+                                 δ::Real = 1e-6, branch_derivative = :central)
+    _check_branch_derivative(branch_derivative)
     c   = ce.cons[j]
     nc  = ce.nc
     d   = length(ξ)
@@ -401,15 +478,23 @@ function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVe
         v  = fw[h].F \ s
         r  = fw[h].r
         seq = harmonic_sequence(h)
+        db = branch_derivative === :dual ? _dual_branch_derivatives(ce, ξ, h, seq) : nothing
         for i in 1:d, b in deps[i]
-            e = zeros(d); e[i] = δ
-            x₊ = branch_data(nc.model, b, latent(ce.box, ξ .+ e), h, seq)
-            x₋ = branch_data(nc.model, b, latent(ce.box, ξ .- e), h, seq)
             x  = fw[h].bd[b]
             ys = 1.0 / (x.br_r + im * x.br_x)
-            dys  = -ys^2 * ((x₊.br_r - x₋.br_r) + im * (x₊.br_x - x₋.br_x)) / (2δ)
-            dyfr = ((x₊.g_fr - x₋.g_fr) + im * (x₊.b_fr - x₋.b_fr)) / (2δ)
-            dyto = ((x₊.g_to - x₋.g_to) + im * (x₊.b_to - x₋.b_to)) / (2δ)
+            if branch_derivative === :central
+                e = zeros(d); e[i] = δ
+                x₊ = branch_data(nc.model, b, latent(ce.box, ξ .+ e), h, seq)
+                x₋ = branch_data(nc.model, b, latent(ce.box, ξ .- e), h, seq)
+                dys  = -ys^2 * ((x₊.br_r - x₋.br_r) + im * (x₊.br_x - x₋.br_x)) / (2δ)
+                dyfr = ((x₊.g_fr - x₋.g_fr) + im * (x₊.b_fr - x₋.b_fr)) / (2δ)
+                dyto = ((x₊.g_to - x₋.g_to) + im * (x₊.b_to - x₋.b_to)) / (2δ)
+            else
+                dx = db[(i, b)]
+                dys  = -ys^2 * (dx.br_r + im * dx.br_x)
+                dyfr = dx.g_fr + im * dx.b_fr
+                dyto = dx.g_to + im * dx.b_to
+            end
             f, t, tc = nc.ubr[b]
             # rᵀ dY v over the four stamp entries, kept buses only
             acc = zero(ComplexF64)

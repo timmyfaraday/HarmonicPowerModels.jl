@@ -86,6 +86,17 @@
         ps = posterior_check(hd, model, box, res["solution"]; n = 64, method = :sobol)
         @test ps.max_violation ≤ 1e-6
         @test_throws ArgumentError posterior_check(hd, model, box, res["solution"]; method = :grid)
+
+        @testset "dual branch derivatives" begin
+            dual_hd = HPM.replicate(deepcopy(data); H)
+            dual = solve_rhhc(dual_hd, ScaledBranchModel(dual_hd, classes), box, solver_soc;
+                              pce_params = deepcopy(pp), hpf_optimizer = solver_nlp,
+                              nbackground = 64, branch_derivative = :dual)
+            @test dual["signed_off"]
+            @test isapprox(dual["lower_bound"], res["lower_bound"]; rtol = 1e-3)
+            @test_throws ArgumentError solve_rhhc(Dict{String,Any}(), model, box, solver_soc;
+                                                  pce_params = pp, branch_derivative = :other)
+        end
     end
 
     @testset "posterior check from solve_rhhc" begin

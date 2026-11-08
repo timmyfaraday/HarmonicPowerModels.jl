@@ -175,6 +175,11 @@ function branch_data(model::ExactPiModel, b::Int, p, h::Real, sequence::Symbol)
     br  = model.branches[b]
     len = br.len isa Function ? br.len(p) : br.len
     z, y = br.zy(p, model.f1 * h, sequence)
+    return _exact_pi(br, len, z, y)
+end
+
+# exact π data from per-unit-length impedance and admittance
+function _exact_pi(br, len, z, y)
     γ, zc = sqrt(z * y), sqrt(z / y)
     zser  = zc * sinh(γ * len)
     yhalf = tanh(γ * len / 2) / zc
