@@ -30,7 +30,7 @@ include(joinpath(@__DIR__, "ieee30_scenarios.jl"))
 
 ipopt = optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
 mosek = optimizer_with_attributes(Mosek.Optimizer, "QUIET" => true)
-harm  = [5, 7, 11, 13]
+harm  = SHHC_H25 ? [5, 7, 11, 13, 17, 19, 23, 25] : [5, 7, 11, 13]
 H     = [1; harm]
 α̂, β̂  = PCE_PARAMS["alpha_hat"], PCE_PARAMS["beta_hat"]
 Eω    = α̂ / (α̂ + β̂)

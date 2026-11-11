@@ -510,6 +510,68 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
         alpha_I[nw_int] = AI
     end
 
+    # ── Step 5b (optional): exact moments instead of the expansion ────────────
+    # With pce_params["moments"] = "exact", the mean and the covariance over the
+    # harmonics of |V_{n,h}|² and |I_{b,h}|² are computed exactly from the units'
+    # angle distributions (see `exact_quadratic_moments`), so the bound does not
+    # depend on the degree δ. They replace α_V and α_I in the same layout, with
+    # K = 0:H and unit norms, so the constraints below are unchanged.
+    if get(pce, "moments", "pce") == "exact"
+        isempty(pce["unit_type"]) || error("solve_shhc (sHHC_SOC): moments = \"exact\" " *
+            "requires independent units; shared type germs are not supported.")
+        hl    = [h for h in harm_nw_ints if haskey(Z_harm, h) && haskey(pce["angle_ranges"], h)]
+        units = pce["harmonic_units"]
+        shp   = [Tuple(Float64.(pce["germ_shapes"][pce["germ_dim"][d]])) for d in units]
+        rngs  = [[pce["angle_ranges"][h][d] for d in units] for h in hl]
+        # response per unit of hosting current: bus voltages, then branch currents
+        Rbus = Dict{Int, Vector{Vector{ComplexF64}}}()
+        for n in 1:Nn
+            n in ref_bus_ids && continue
+            Rbus[n] = [zeros(ComplexF64, length(units)) for _ in hl]
+        end
+        for (i, h) in enumerate(hl), (j, d) in enumerate(units)
+            ld = hdata["nw"]["$h"]["load"]["$d"]
+            bus_d = bus_idx[ld["load_bus"]]
+            bus_d in ref_bus_ids && continue
+            for n in keys(Rbus)
+                Rbus[n][i][j] = get(wts, d, 0.0) * Z_harm[h][non_ref_pos[n], non_ref_pos[bus_d]]
+            end
+        end
+        zero_r = [zeros(ComplexF64, length(units)) for _ in hl]
+        Rbr = Dict{Int, Vector{Vector{ComplexF64}}}()
+        for (b_str, br) in hdata["nw"]["$(hl[1])"]["branch"]
+            f, t = bus_idx[br["f_bus"]], bus_idx[br["t_bus"]]
+            Rb = Vector{Vector{ComplexF64}}(undef, length(hl))
+            ok = true
+            for (i, h) in enumerate(hl)
+                bh = hdata["nw"]["$h"]["branch"][b_str]
+                r, x = bh["br_r"], bh["br_x"]
+                (abs(r) + abs(x) > 0.0) || (ok = false; break)
+                ys = 1.0 / (r + im * x)
+                tm = get(bh, "tap", 1.0); tm == 0.0 && (tm = 1.0)
+                ct = 1.0 / (tm * cis(get(bh, "shift", 0.0)))
+                Rb[i] = ys .* (ct .* get(Rbus, f, zero_r)[i] .- get(Rbus, t, zero_r)[i])
+            end
+            ok && (Rbr[parse(Int, b_str)] = Rb)
+        end
+        rules  = _beta_gauss_rules(shp, get(pce, "nquad", 60))
+        bkeys  = sort(collect(keys(Rbus))); rkeys = sort(collect(keys(Rbr)))
+        mom    = _exact_quadratic_moments(vcat([Rbus[n] for n in bkeys], [Rbr[b] for b in rkeys]),
+                                          rngs, shp, rules)
+        H      = length(hl)
+        alpha_V = Dict(h => zeros(Nn, H + 1) for h in hl)
+        alpha_I = Dict(h => Dict{Int, Vector{Float64}}() for h in hl)
+        for (q, n) in enumerate(bkeys)
+            c = _moment_coefficients(mom[q]...)
+            for (i, h) in enumerate(hl); alpha_V[h][n, :] .= c[i]; end
+        end
+        for (q, b) in enumerate(rkeys)
+            c = _moment_coefficients(mom[length(bkeys) + q]...)
+            for (i, h) in enumerate(hl); alpha_I[h][b] = c[i]; end
+        end
+        K = 0:H; psi_norms = ones(H + 1)
+    end
+
     # ── Step 6: build the SOCP ────────────────────────────────────────────────
     # Variables I_h ≥ 0 (hosting capacity per harmonic) and g_h = I_h² ≥ 0.
     #   • IHD (per bus, per harmonic): Cantelli on |V_{n,h}|² ⇒ a LINEAR bound

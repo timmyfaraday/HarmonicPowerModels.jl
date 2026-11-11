@@ -54,6 +54,7 @@ PMs.silence()
     # PCE utilities for SHHC
     @testset "PCE Utilities" begin
         include("test_pce.jl")
+        include("test_exact_moments.jl")
     end
 
     # Constructive worst-case angle utilities
