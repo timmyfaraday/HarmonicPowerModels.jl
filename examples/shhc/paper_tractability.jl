@@ -55,7 +55,7 @@ u21 = paper_units(base)
 for pop in POPULATIONS
     row("populations", "base", base, NS, pop, harm, timed_soc(base, u21, pop, harm))
 end
-for n in 1:4
+for n in 1:length(harm)
     hs = harm[1:n]; row("harmonics", "base", base, NS, "diode", hs, timed_soc(base, u21, "diode", hs))
 end
 for s in ("inductive", "inductive_cable33")
