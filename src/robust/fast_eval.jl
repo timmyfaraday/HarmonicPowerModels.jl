@@ -136,6 +136,7 @@ struct ConstraintEvaluator{M<:AbstractNetworkModel}
     psi_norms::Vector{Float64}
     E::Dict{Int,Matrix{ComplexF64}}            # h => injected-current PCE rows w_d(cos + j sin)
     upos::Dict{Int,Vector{Int}}                # h => position in the reduced Y of each row's bus
+    ids::Dict{Int,Vector{Int}}                 # h => unit (load) id of each row
     pos::Dict{Int,Int}                         # matrix index => position in the reduced Y
     cons::Vector{ShhcConstraint}               # nominal records (kind, key, harmonics, limit, λ)
     brinfo::Dict{Int,Tuple{Int,Int,ComplexF64}}   # branch => (from, to, tap) for :rmsi
@@ -143,6 +144,8 @@ struct ConstraintEvaluator{M<:AbstractNetworkModel}
     recomb::Bool                               # false: worst-case alignment (no recombination)
     W::Dict{Int,Vector{Float64}}               # h => allocation weight w_d of each unit row
     active_units::Dict{Int,Set{Int}}            # h => units with a return path at the nominal point
+    exact::Bool                                # true: exact moments (`exact_quadratic_moments`)
+    rules::Dict{Tuple{Float64,Float64},Tuple{Vector{Float64},Vector{Float64}}}   # Gauss rules per shape
 end
 
 # PCE injection rows in the original load order; omit only floating harmonic units.
@@ -151,7 +154,7 @@ function _injection_rows(hdata, h, bus_idx, pos, wts, units, nk)
     pce = hdata["pce"]
     hunits = Set(pce["harmonic_units"])
     recomb = get(pce, "recombination", true)
-    rows = Vector{ComplexF64}[]; ps = Int[]; ws = Float64[]
+    rows = Vector{ComplexF64}[]; ps = Int[]; ws = Float64[]; ids = Int[]
     for (d_str, load) in hdata["nw"]["$h"]["load"]
         d = parse(Int, d_str)
         d in hunits && d ∉ units && continue
@@ -160,15 +163,15 @@ function _injection_rows(hdata, h, bus_idx, pos, wts, units, nk)
         w = get(wts, d, 0.0)
         recomb || (d in hunits && w != 0.0) || continue
         push!(rows, w .* (pce["cos_phi"][h][d] .+ im .* pce["sin_phi"][h][d]))
-        push!(ps, pos[bd]); push!(ws, w)
+        push!(ps, pos[bd]); push!(ws, w); push!(ids, d)
     end
     E = isempty(rows) ? zeros(ComplexF64, 0, nk) : permutedims(reduce(hcat, rows))
-    return (; E, upos = ps, W = ws)
+    return (; E, upos = ps, W = ws, ids)
 end
 
 # Rebuild the rows if a zero-sequence realization changes which units can inject.
 function _point_injections(ce::ConstraintEvaluator, h, floating)
-    rows = (E = ce.E[h], upos = ce.upos[h], W = ce.W[h])
+    rows = (E = ce.E[h], upos = ce.upos[h], W = ce.W[h], ids = ce.ids[h])
     harmonic_sequence(h) === :zero || return rows
     hd = ce.nc.hdata
     hunits = Set(hd["pce"]["harmonic_units"])
@@ -187,18 +190,23 @@ function ConstraintEvaluator(hdata::Dict, model::AbstractNetworkModel, box::Para
     wts  = fairness_weights(hdata, pce["harmonic_units"])
     E    = Dict{Int,Matrix{ComplexF64}}(); upos = Dict{Int,Vector{Int}}()
     recomb = get(pce, "recombination", true)
-    W = Dict{Int,Vector{Float64}}()
+    W = Dict{Int,Vector{Float64}}(); ids = Dict{Int,Vector{Int}}()
     for h in m0.harm_nw_ints
         haskey(pce["cos_phi"], h) || continue
         rows = _injection_rows(hdata, h, nc.bus_idx, pos, wts, m0.active_units[h], length(m0.K))
-        E[h] = rows.E; upos[h] = rows.upos; W[h] = rows.W
+        E[h] = rows.E; upos[h] = rows.upos; W[h] = rows.W; ids[h] = rows.ids
     end
+    exact = get(pce, "moments", "pce") == "exact"
+    shapes = exact ? [Tuple(Float64.(pce["germ_shapes"][pce["germ_dim"][d]]))
+                      for d in pce["harmonic_units"]] : Tuple{Float64,Float64}[]
+    rules = _beta_gauss_rules(shapes, get(pce, "nquad", 60))
     fund   = hdata["nw"]["1"]["branch"]
     brinfo = Dict(parse(Int, k) => (nc.bus_idx[b["f_bus"]], nc.bus_idx[b["t_bus"]], _tap(b))
                   for (k, b) in fund)
     deps   = _dependencies(nc, box, minimum(m0.harm_nw_ints))
     return ConstraintEvaluator(nc, box, m0.pb, collect(m0.K), collect(Float64, m0.psi_norms), E,
-                               upos, pos, shhc_constraints(hdata, m0), brinfo, deps, recomb, W, m0.active_units)
+                               upos, ids, pos, shhc_constraints(hdata, m0), brinfo, deps, recomb, W,
+                               m0.active_units, exact, rules)
 end
 
 # PCE coefficients (re, im) of the voltage response at matrix index n, from the factorised
@@ -248,6 +256,7 @@ function fast_violation(ce::ConstraintEvaluator, j::Int, ξ, g)
     c  = ce.cons[j]
     p  = latent(ce.box, ξ)
     coef = Dict{Int,Vector{Float64}}()
+    exact_rows = Dict{Int,Any}()
     for h in keys(c.coef)
         seq = harmonic_sequence(h)
         Yr = fast_admittance(ce.nc, p, h; sequence = seq)[ce.nc.keep, ce.nc.keep]
@@ -255,6 +264,17 @@ function fast_violation(ce::ConstraintEvaluator, j::Int, ξ, g)
         seq === :zero && ((Yr, floating) = _earth_floating(Yr))
         rows = _point_injections(ce, h, floating)
         Ft = lu(transpose(Yr))
+        if ce.exact && ce.recomb
+            if c.kind === :rmsi
+                f, t, tc, ys = _branch_terminals(ce, c.key, p, h)
+                u = ys .* ((1.0 / tc) .* _zrow(ce, Ft, f) .- _zrow(ce, Ft, t))
+            else
+                bus = c.kind === :ihd ? c.key[2] : c.key
+                u = _zrow(ce, Ft, ce.nc.bus_idx[bus])
+            end
+            exact_rows[h] = (r = rows.W .* u[rows.upos], ids = rows.ids)
+            continue
+        end
         if !ce.recomb
             if c.kind === :rmsi
                 f, t, tc, ys = _branch_terminals(ce, c.key, p, h)
@@ -281,8 +301,28 @@ function fast_violation(ce::ConstraintEvaluator, j::Int, ξ, g)
             coef[h] = galerkin_product(ce.pb, ar, ar) .+ galerkin_product(ce.pb, ai, ai)
         end
     end
+    isempty(exact_rows) || merge!(coef, _exact_coef(ce, exact_rows))
     F = ShhcConstraint(c.kind, c.key, coef, c.limit, c.λ)
     return normalized_violation(F, g, (K = ce.K, psi_norms = ce.psi_norms))
+end
+
+# Exact-moment coefficients of one constraint over its own harmonics (`exact_quadratic_moments`),
+# in the layout K = 0:H of the full evaluation, from the responses per unit row at each harmonic
+function _exact_coef(ce::ConstraintEvaluator, rows::Dict)
+    pce   = ce.nc.hdata["pce"]
+    hs    = sort(collect(keys(rows)))
+    units = sort(unique(reduce(vcat, [rows[h].ids for h in hs]; init = Int[])))
+    upos  = Dict(d => i for (i, d) in enumerate(units))
+    R     = [zeros(ComplexF64, length(units)) for _ in hs]
+    for (i, h) in enumerate(hs), (a, d) in enumerate(rows[h].ids)
+        R[i][upos[d]] += rows[h].r[a]
+    end
+    rngs  = [[get(pce["angle_ranges"][h], d, (0.0, 0.0)) for d in units] for h in hs]
+    shp   = [Tuple(Float64.(pce["germ_shapes"][pce["germ_dim"][d]])) for d in units]
+    mean, C = _exact_quadratic_moments([R], rngs, shp, ce.rules)[1]
+    cs    = _moment_coefficients(mean, C)
+    nk    = length(ce.K)
+    return Dict(h => (v = zeros(nk); v[1:length(cs[i])] .= cs[i]; v) for (i, h) in enumerate(hs))
 end
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -418,6 +458,16 @@ Compare the two options on the model before relying on `:dual`.
 function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVector, g;
                                  δ::Real = 1e-6, branch_derivative = :central)
     _check_branch_derivative(branch_derivative)
+    if ce.exact && ce.recomb
+        # exact moments: central differences in the latent coordinates (no adjoint yet)
+        val = fast_violation(ce, j, ξ, g)
+        h = 1e-6
+        grad = map(eachindex(ξ)) do i
+            e = zeros(length(ξ)); e[i] = h
+            (fast_violation(ce, j, ξ .+ e, g) - fast_violation(ce, j, ξ .- e, g)) / (2h)
+        end
+        return val, grad
+    end
     c   = ce.cons[j]
     nc  = ce.nc
     d   = length(ξ)

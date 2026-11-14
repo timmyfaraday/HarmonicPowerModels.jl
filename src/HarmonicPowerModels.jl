@@ -29,6 +29,7 @@ module HarmonicPowerModels
     import Distributions
     import Random
     import Statistics
+    import LinearAlgebra
 
     # import function to overwrite
     import InfrastructureModels: replicate
@@ -57,6 +58,7 @@ module HarmonicPowerModels
     # include
     include("core/base.jl")
     include("core/pce_basis.jl")    # unified PolyChaos-based PCE workspace
+    include("core/exact_moments.jl") # exact moments of squared harmonic magnitudes
     include("core/types.jl")
     include("core/constraint_template.jl")
     include("core/data.jl")

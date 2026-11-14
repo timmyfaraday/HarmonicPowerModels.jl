@@ -1,0 +1,14 @@
+git commit: c7e4b25b5b23b40ffe188af9c12933fa8e7be3b7
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+case: examples/rhhc-variants/cases/hello-world-exact.toml
+threads: 10; solver: Clarabel
+angle tables: refitted up to the 25th harmonic (SHHC_HMAX=25); moments: exact
+../rhhc/data/hello_world.m, 3 branches from LineCableModels, 3 units, ε = 0.05, gaussian, 10 threads
+nominal stochastic: 0.046019 (OPTIMAL)
+resonances at the nominal point: h = 7.03
+robust: 0.039951  [LB 0.039951, UB 0.039951, gap 2.8e-08], 3 iterations, 11 s, signed off
+robust master termination: OPTIMAL
+per harmonic, robust / nominal: h5 0.940, h7 6.029, h11 0.731, h13 0.776, h17 0.809, h19 0.817, h23 0.995, h25 0.996
+per sequence, Σ_h I_h nominal → robust [pu]: positive 0.006519 → 0.005659, negative 0.008821 → 0.007658, zero 0.000000 → 0.000000
+a posteriori (1024 random points): worst -5.15e-04 ((:thd, 3)), violated at 0.0 %
+LineCableModels solves (sum of circuit table sizes): 53933

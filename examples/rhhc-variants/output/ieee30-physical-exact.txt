@@ -1,0 +1,35 @@
+git commit: c7e4b25b5b23b40ffe188af9c12933fa8e7be3b7
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+case: examples/rhhc-variants/cases/ieee30-physical-exact.toml
+threads: 10; solver: Clarabel
+angle tables: refitted up to the 25th harmonic (SHHC_HMAX=25); moments: exact
+Transformer vector groups are applied to tapped branches.
+HPM applies winding earthing in the zero sequence.
+branch 11 (6–9): vg=Yy0 gnd1=1 gnd2=0 re1=0.0 xe1=0.0 re2=0.0 xe2=0.0 [pu]
+Three-winding unit at bus 6, star point 9. The 132 kV winding is YN, solidly earthed. Bus 9 represents the star point.
+branch 12 (6–10): vg=Yy0 gnd1=1 gnd2=1 re1=0.0 xe1=0.0 re2=1.7493112947658402 xe2=0.0 [pu]
+YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance.
+assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA
+branch 13 (9–11): vg=Yd11 gnd1=0 gnd2=0 re1=0.0 xe1=0.0 re2=0.0 xe2=0.0 [pu]
+Three-winding unit, star point 9. The 11 kV winding is delta and supplies the condenser at bus 11.
+branch 14 (9–10): vg=Yy0 gnd1=0 gnd2=1 re1=0.0 xe1=0.0 re2=1.7493112947658402 xe2=0.0 [pu]
+Three-winding unit, star point 9. The 33 kV winding is yn, earthed through a resistance.
+assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA
+branch 15 (4–12): vg=Yy0 gnd1=1 gnd2=1 re1=0.0 xe1=0.0 re2=1.7493112947658402 xe2=0.0 [pu]
+YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance.
+assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA
+branch 16 (12–13): vg=Yd11 gnd1=1 gnd2=0 re1=1.7493112947658402 xe1=0.0 re2=0.0 xe2=0.0 [pu]
+YNd11 step-up of the condenser at bus 13. The delta is on the 11 kV side. The 33 kV YN neutral is earthed through a resistance.
+assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA
+branch 36 (28–27): vg=Yy0 gnd1=1 gnd2=1 re1=0.0 xe1=0.0 re2=1.7493112947658402 xe2=0.0 [pu]
+YNyn0. The 132 kV neutral is solidly earthed. The 33 kV neutral is earthed through a resistance.
+assumption to agree with Tom: limits a 33 kV earth fault to 1.0 kA
+IEEE 30-bus, inductive_cable33, 34 branches from LineCableModels, 21 units, ε = 0.05, gaussian, 10 threads
+nominal stochastic: 0.099250 (OPTIMAL)
+resonances at the nominal point: h = 6.27, h = 12.32, h = 16.86, h = 18.21, h = 19.12, h = 19.65, h = 22.72, h = 29.92, h = 30.70
+robust: 0.079737  [LB 0.079737, UB 0.079737, gap 0.0e+00], 2 iterations, 66 s, signed off
+robust master termination: OPTIMAL
+per harmonic, robust / nominal: h5 0.884, h7 0.483, h11 0.885, h13 0.623, h17 0.867, h19 0.989, h23 0.929, h25 0.738
+per sequence, Σ_h I_h nominal → robust [pu]: positive 0.001924 → 0.001323, negative 0.002802 → 0.002474, zero 0.000000 → 0.000000
+a posteriori (1024 random points): worst -2.22e-03 ((:ihd, (11, 28))), violated at 0.0 %
+LineCableModels solves (sum of circuit table sizes): 155860

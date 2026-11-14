@@ -594,6 +594,12 @@ function study(path; all_coordinates = false)
         rows = merge(base, rows)
     end
     config = record(rows)
+    # the angle tables are fixed when pce_params.jl is loaded: a case that needs the
+    # refitted tables up to the 25th harmonic must run with SHHC_HMAX=25
+    tables = get(config, :angle_tables, "h13")
+    tables in ("h13", "h25") || throw(ArgumentError("angle_tables must be h13 or h25"))
+    (tables == "h25") == SHHC_H25 || throw(ArgumentError(
+        "angle_tables = \"$tables\" needs SHHC_HMAX=$(tables == "h25" ? "25" : "13") (or unset)"))
     recombination = get(config, :recombination, true)
     if haskey(config, :population)
         config.population in ("diode", "thyristor", "mix") ||
@@ -697,6 +703,10 @@ function study(path; all_coordinates = false)
     end
     pce = Dict{String, Any}(deepcopy(PCE_PARAMS)...)
     pce["recombination"] = recombination
+    # "exact": the exact squared-magnitude moments instead of the expansion's
+    moments = get(config, :moments, "pce")
+    moments in ("pce", "exact") || throw(ArgumentError("moments must be pce or exact"))
+    pce["moments"] = moments
     pce["harmonics"] = Dict{Int, Any}(h => (PCE_PARAMS["harmonics"][h].v_min,
                                           PCE_PARAMS["harmonics"][h].v_max)
     for h in config.harmonics if recombination || haskey(PCE_PARAMS["harmonics"], h))
@@ -734,6 +744,8 @@ function header(io, s)
         TOML.parsefile(joinpath(STUDIES, "Manifest.toml"))["deps"]["LineCableModels"][1]["repo-rev"])
     println(io, "case: ", relpath(s.file, dirname(dirname(STUDIES))))
     println(io, "threads: ", Threads.nthreads(), "; solver: Clarabel")
+    println(io, "angle tables: ", SHHC_H25 ? "refitted up to the 25th harmonic (SHHC_HMAX=25)" :
+                "up to the 13th harmonic", "; moments: ", get(s.pce, "moments", "pce"))
 end
 
 function declarations(io, s)

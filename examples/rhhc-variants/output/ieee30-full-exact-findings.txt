@@ -1,0 +1,41 @@
+git commit: ed4e0c95a3d43c4d0fb5bebf87fa7bba927afa61
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+case: examples/rhhc-variants/cases/ieee30-full-exact.toml
+threads: 10; solver: Clarabel
+angle tables: refitted up to the 25th harmonic (SHHC_HMAX=25); moments: exact
+1. sign-predicted corners (191 in the dictionary)
+   with corners     robust 0.076917, 3 iterations, signed off, 180 s; posterior worst -3.11e-02 (0.0 % violated); worst at the corners -6.61e-04
+   without corners  robust 0.076980, 5 iterations, signed off, 253 s; posterior worst -2.82e-02 (0.0 % violated); worst at the corners +1.62e-03
+2. binding constraint (:ihd, (23, 3)): violation +4.44e-16 (refined); its worst predicted corner -6.61e-04:
+   Rscreen_U33                0.000251  (lower; interval 0.000251 to 0.000263)
+   theta_ACSR                       -5  (lower; interval -5 to 75)
+   eps_semicon_U33                 100  (lower; interval 100 to 10000)
+   t_ins_U33                    0.0084  (upper; interval 0.0076 to 0.0084)
+   rho_EARTH                        10  (lower; interval 10 to 1000)
+   t_sc1_U33                         1  (upper; interval -1 to 1)
+   eps_U33                         2.1  (lower; interval 2.1 to 2.5)
+   ambient_O132                     -5  (lower; interval -5 to 45)
+   R20_U33                          -1  (lower; interval -1 to 0)
+   rho_aluminium_ACSR         2.79e-08  (lower; interval 2.79e-08 to 2.8264e-08)
+   lay_outer_ACSR                   14  (upper; interval 10 to 14)
+   lay_inner_ACSR                   16  (upper; interval 10 to 16)
+   theta_U33                        10  (lower; interval 10 to 90)
+   d_steel_ACSR                     -1  (lower; interval -1 to 1)
+   diameter_O132                0.0032  (upper; interval 0.0031 to 0.0032)
+   rho_steel_ACSR            2.155e-07  (upper; interval 1.79e-07 to 2.155e-07)
+   mu_steel_ACSR                    50  (lower; interval 50 to 300)
+   rho_steel_O132             1.79e-07  (lower; interval 1.79e-07 to 2.155e-07)
+   d_c_U33                           0  (lower; interval 0 to 1)
+   t_sc2_U33                   0.00099  (upper; interval 0.00081 to 0.00099)
+   mu_steel_O132                    50  (lower; interval 50 to 300)
+   t_jkt_U33                         0  (lower; interval 0 to 1)
+   d_aluminium_ACSR                  1  (upper; interval -1 to 1)
+3. √h scaling of the 50 Hz parameters
+   nominal: scaled 0.078624, physical 0.099250 (-20.8 %); scaled solution on the physical model: violation +8.68e+00 at the nominal point
+   factor kR_cable  0.9045 to 1.2309
+   factor kL_cable  0.9810 to 1.0438
+   factor kC_cable  0.8324 to 1.1052
+   factor kR_line   0.8688 to 1.2658
+   factor kL_line   0.9976 to 1.0039
+   factor kC_line   0.9982 to 1.0018
+   robust over the factor box: 0.055999 (signed off); on the physical model: worst +6.50e+00, violated at 100.0 % of 1024 random points (physical robust 0.076917)
