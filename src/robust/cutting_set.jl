@@ -70,7 +70,8 @@ function solve_rhhc(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox,
                     effort = (ncons = 5, starts = 3, iters = 10),
                     signoff = (ncons = 20, margin = 0.1, starts = 3, iters = 20),
                     tol::Real = 1e-3, maxiter::Int = 50, posterior::Int = 0,
-                    verbose::Bool = false, branch_derivative = :central)
+                    verbose::Bool = false, branch_derivative = :central,
+                    corners::Union{Nothing,Bool} = nothing)
     _check_branch_derivative(branch_derivative)
     principle = get(hdata, "principle", "absolute equality")
     principle in ("absolute equality", "weighted equality") || error(
@@ -94,7 +95,10 @@ function solve_rhhc(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox,
 
     # oracle dictionary
     seeds = use_seeds ? resonance_seeds(hdata, model, box) : Seed[]
-    dict  = build_dictionary(hdata, model, box; seeds, nbackground)
+    # corners = nothing keeps the default of `build_dictionary` (vertices up to d = 10,
+    # sign-predicted corners above); false drops the corners, e.g., to study their effect
+    dict  = corners === nothing ? build_dictionary(hdata, model, box; seeds, nbackground) :
+            build_dictionary(hdata, model, box; seeds, nbackground, corners)
     ce    = ConstraintEvaluator(hdata, model, box)      # targeted evaluation for the ascents
     pos   = dict.limit .> 0.0
 
