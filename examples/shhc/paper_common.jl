@@ -13,7 +13,9 @@ include(joinpath(@__DIR__, "recomb_ieee30.jl"))
 include(joinpath(@__DIR__, "converter_types.jl"))
 
 const NS        = 21
-const PAPER_OUT = joinpath(@__DIR__, "output", (get(ENV, "SHHC_UNIT", "diode") == "thyristor" ? "paper_thyristor" : "paper") * (SHHC_H25 ? "_h25" : "")); mkpath(PAPER_OUT)
+# ENV["SHHC_MOMENTS"] = "exact": exact squared-magnitude moments instead of the expansion
+const SHHC_EXACT = get(ENV, "SHHC_MOMENTS", "pce") == "exact"
+const PAPER_OUT = joinpath(@__DIR__, "output", (get(ENV, "SHHC_UNIT", "diode") == "thyristor" ? "paper_thyristor" : "paper") * (SHHC_H25 ? "_h25" : "") * (SHHC_EXACT ? "_exact" : "")); mkpath(PAPER_OUT)
 const PAPER_SCENARIOS = ["inductive", "inductive_bank", "inductive_cable33", "inductive_cable132c"]
 
 "The first `N` loads of `data`, sorted, as harmonic units."
@@ -63,6 +65,7 @@ function paper_pce(units, types; bound = "gaussian", eps = PCE_PARAMS["epsilon"]
         p["harmonics"] = Dict{Int,Any}(h => ranges[h] for h in harm); p["unit_shapes"] = shapes
     end
     p["bound"] = bound; p["epsilon"] = eps
+    SHHC_EXACT && (p["moments"] = "exact")
     types === nothing || (p["type_germs"] = types)
     return p
 end

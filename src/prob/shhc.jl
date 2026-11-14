@@ -430,6 +430,17 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
                   ref_bus_ids, harm_nw_strs, harm_nw_ints, wts, active_units, blocked)
     end
 
+    # ── Exact moments: mean and covariance of the squared magnitudes, δ-free ──
+    if get(pce, "moments", "pce") == "exact"
+        isempty(pce["unit_type"]) || error("shhc_moments: moments = \"exact\" requires " *
+            "independent units; shared type germs are not supported.")
+        alpha_V, alpha_I, Kx = _exact_moments_soc(pce, Z_harm, networks, harm_nw_strs,
+            harm_nw_ints, bus_idx, ref_bus_ids, non_ref_pos, wts, active_units, Nn)
+        return (; pb, K = Kx, psi_norms = ones(length(Kx)), alpha_re, alpha_im, alpha_V,
+                  alpha_I, Nn, bus_idx, ref_bus_ids, harm_nw_strs, harm_nw_ints, wts,
+                  active_units, blocked)
+    end
+
     for (nw_str, nw_int) in zip(harm_nw_strs, harm_nw_ints)
         haskey(Z_harm, nw_int) || continue
         haskey(cos_phi, nw_int) || continue
@@ -558,6 +569,68 @@ function _worst_case_moments(Z_harm, networks, harm_nw_strs, harm_nw_ints, bus_i
         alpha_I[nw_int] = AI
     end
     return alpha_V, alpha_I
+end
+
+# Exact moments (`exact_quadratic_moments`) of every bus voltage and series branch current,
+# in the layout of the expansion with K = 0:H and unit norms: entry 1 the mean of |Y_h|², the
+# others a factor L of the covariance over the harmonics (L Lᵀ = Cov), so the constraints are
+# unchanged. The responses per unit of hosting current follow the networks as given, i.e., the
+# zero-sequence views and the units with a path to earth.
+function _exact_moments_soc(pce, Z_harm, networks, harm_nw_strs, harm_nw_ints, bus_idx,
+                            ref_bus_ids, non_ref_pos, wts, active_units, Nn)
+    hl    = [h for h in harm_nw_ints if haskey(Z_harm, h) && haskey(pce["angle_ranges"], h)]
+    units = sort(collect(pce["harmonic_units"]))
+    shp   = [Tuple(Float64.(pce["germ_shapes"][pce["germ_dim"][d]])) for d in units]
+    rngs  = [[get(pce["angle_ranges"][h], d, (0.0, 0.0)) for d in units] for h in hl]
+    H, U  = length(hl), length(units)
+    nwof  = Dict(parse(Int, nw) => nw for nw in harm_nw_strs)
+    # bus responses per unit of hosting current, w_d Z[n, bus(d)]
+    Rbus = Dict(n => [zeros(ComplexF64, U) for _ in 1:H] for n in 1:Nn if n ∉ ref_bus_ids)
+    for (i, h) in enumerate(hl), (j, d) in enumerate(units)
+        d in active_units[h] || continue
+        ld = get(networks[nwof[h]]["load"], "$d", nothing); ld === nothing && continue
+        bd = bus_idx[ld["load_bus"]]; bd in ref_bus_ids && continue
+        w = get(wts, d, 0.0); w == 0.0 && continue
+        for n in keys(Rbus)
+            Rbus[n][i][j] = w * Z_harm[h][non_ref_pos[n], non_ref_pos[bd]]
+        end
+    end
+    zero_r = [zeros(ComplexF64, U) for _ in 1:H]
+    Rbr = Dict{Int, Vector{Vector{ComplexF64}}}()
+    for b_str in keys(networks[nwof[hl[1]]]["branch"])
+        Rb = Vector{Vector{ComplexF64}}(undef, H); any_ok = false
+        for (i, h) in enumerate(hl)
+            bh = networks[nwof[h]]["branch"][b_str]
+            r, x = bh["br_r"], bh["br_x"]
+            if abs(r) + abs(x) == 0.0          # open at this harmonic (zero sequence)
+                Rb[i] = zeros(ComplexF64, U); continue
+            end
+            any_ok = true
+            ys = 1.0 / (r + im * x)
+            tm = get(bh, "tap", 1.0); tm == 0.0 && (tm = 1.0)
+            ct = 1.0 / (tm * cis(get(bh, "shift", 0.0)))
+            f, t = bus_idx[bh["f_bus"]], bus_idx[bh["t_bus"]]
+            vf = get(bh, "earth_fr", false) ? zero_r[i] : get(Rbus, f, zero_r)[i]
+            vt = get(bh, "earth_to", false) ? zero_r[i] : get(Rbus, t, zero_r)[i]
+            Rb[i] = ys .* (ct .* vf .- vt)
+        end
+        any_ok && (Rbr[parse(Int, b_str)] = Rb)
+    end
+    rules = _beta_gauss_rules(shp, get(pce, "nquad", 60))
+    bkeys = sort(collect(keys(Rbus))); rkeys = sort(collect(keys(Rbr)))
+    mom   = _exact_quadratic_moments(vcat([Rbus[n] for n in bkeys], [Rbr[b] for b in rkeys]),
+                                     rngs, shp, rules)
+    alpha_V = Dict(h => zeros(Nn, H + 1) for h in hl)
+    alpha_I = Dict(h => Dict{Int, Vector{Float64}}() for h in hl)
+    for (q, n) in enumerate(bkeys)
+        c = _moment_coefficients(mom[q]...)
+        for (i, h) in enumerate(hl); alpha_V[h][n, :] .= c[i]; end
+    end
+    for (q, b) in enumerate(rkeys)
+        c = _moment_coefficients(mom[length(bkeys) + q]...)
+        for (i, h) in enumerate(hl); alpha_I[h][b] = c[i]; end
+    end
+    return alpha_V, alpha_I, collect(0:H)
 end
 
 """
@@ -951,6 +1024,10 @@ function solve_shhc_calibrated(hdata::Dict, ::Type{M}, optimizer;
                                pce_params::Dict, nsamp::Int=20000, maxiter::Int=6,
                                tol::Real=1e-3, init_bound::String="gaussian",
                                verbose::Bool=false, kwargs...) where {M}
+    get(pce_params, "moments", "pce") == "exact" && throw(ArgumentError(
+        "solve_shhc_calibrated: the empirical factor is calibrated on the moments of the " *
+        "expansion; use moments = \"pce\" (exact moments do not need the calibration " *
+        "to correct the truncation of the basis)."))
     # workspace with PCE data (angle ranges, ε, α̂β̂) for λ* sampling. The
     # fundamental power flow runs first, as in solve_shhc: with the local angle
     # reference the sampled angles must include the offsets h·θ_i it produces.
