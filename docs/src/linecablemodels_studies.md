@@ -37,6 +37,7 @@ examples/rhhc-variants/
     networks/                saved converted networks and conversion script
     run.jl                   capacity and posterior reports
     compare.jl               paired capacity and corner reports
+    findings.jl              exact-moment corner and harmonic-scaling comparisons
     scan.jl                  sequence tables and modal scans
     sweep.jl                 physical-input admission study
     output/                  saved reports and sequence tables
@@ -149,6 +150,8 @@ diameter sets touching-trefoil spacing.
 | `units` | A count of the first loads or an explicit list of load IDs. |
 | `epsilon`, `bound` | Chance-constraint risk and factor. The supplied cases use `"gaussian"`. RHHC also accepts `"cantelli"`. |
 | `recombination` | Defaults to `true`. `false` uses worst-case alignment without angle statistics. |
+| `moments` | `"pce"` uses the expansion moments; `"exact"` uses exact squared-magnitude moments. An omitted key preserves the default PCE parameters. |
+| `angle_tables` | `"h13"` (default) uses the original angle tables; `"h25"` uses the refitted tables through harmonic 25 and requires `SHHC_HMAX=25` before Julia loads the parameters. |
 | `population` | `"diode"`, `"thyristor"` or `"mix"`. Requires recombination and the supplied table harmonics. |
 | `base` | One case stem whose top-level records are replaced by this variant's records. Nested bases are refused. |
 | `f1` | Fundamental frequency in Hz. |
@@ -228,7 +231,8 @@ population has 11 diode bridges and 10 thyristor bridges. Each unit receives its
 own angle range at each harmonic and its own Beta shape.
 
 The builder refuses a population with `recombination = false` or a harmonic order
-outside the Table III and IV data (5, 7, 11 and 13). It also refuses an unknown
+outside the loaded Table III and IV data (5, 7, 11 and 13 by default;
+also 17, 19, 23 and 25 with the refitted tables). It also refuses an unknown
 population. Run studies with `SHHC_UNIT` unset or equal to `diode`. Other values are refused
 when building a study. `examples/shhc/pce_params.jl` merges the thyristor inputs into
 `PCE_PARAMS` when `SHHC_UNIT` is `thyristor`.
@@ -258,6 +262,33 @@ julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/compare.jl \
 
 The variants write capacity and comparison reports. Their sequences and physical
 input sweeps are those of their bases. The README inventory lists those reports with their bases.
+
+## Exact moments and angle tables
+
+The five cases `hello-world-exact`, `ieee30-tom-exact`, `ieee30-u33-exact`,
+`ieee30-physical-exact` and `ieee30-full-exact` inherit their bases' physical inputs,
+parameter boxes and network models. They select `moments = "exact"`,
+`angle_tables = "h25"` and harmonic orders 5, 7, 11, 13, 17, 19, 23 and 25.
+The Gaussian factor and risk remain those of the base case.
+
+The angle tables are fixed when `examples/shhc/pce_params.jl` loads. Start Julia
+with `SHHC_HMAX=25` for an `h25` case. For an `h13` case, leave the variable unset
+or set it to `13`. The builder refuses a mismatch between the case's table selection
+and the loaded tables; changing the environment after loading does not replace them.
+The refit also changes angle ranges at the lower harmonic orders.
+
+`findings.jl` uses `ieee30-full-exact` for three comparisons. It solves with and
+without the sign-predicted corners and checks both solutions at those corners and
+independent random points. It reports the physical inputs at the worst predicted
+corner of the binding constraint. It then compares nominal capacity and robust hosting
+capacity from the physical model with square-root harmonic scaling of the nominal
+50 Hz parameters. The scaling-factor intervals come from the physical box's predicted
+corners and 1024 random points. The script writes
+`output/ieee30-full-exact-findings.txt`.
+
+Each case run writes `output/<case>-exact.txt`. The study suite checks these variants
+in a child Julia process with `SHHC_HMAX=25`. The reproduction commands below set
+the required environment for the case runs and the findings script.
 
 ## Gaussian factor
 
@@ -683,6 +714,11 @@ for case in ieee30-full antwerp-physical ieee33-physical ieee39-physical ieee9-p
     industrial-physical star3-physical star5-physical; do
     julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/sweep.jl "cases/$case.toml"
 done
+for case in hello-world ieee30-tom ieee30-u33 ieee30-physical ieee30-full; do
+    SHHC_HMAX=25 julia -t 10 --project=examples/rhhc-variants \
+        examples/rhhc-variants/run.jl "cases/$case-exact.toml"
+done
+SHHC_HMAX=25 julia -t 10 --project=examples/rhhc-variants examples/rhhc-variants/findings.jl
 ```
 
 A zero-sequence IEEE30 case needs about 11 GB of memory.

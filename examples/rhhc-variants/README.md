@@ -314,6 +314,26 @@ done
 
 A zero-sequence IEEE30 case needs about 11 GB of memory.
 
+The five `-exact` cases use exact squared-magnitude moments and the refitted angle
+tables at orders 5, 7, 11, 13, 17, 19, 23 and 25. Each keeps its base's physical
+inputs, box and network model. Set `SHHC_HMAX=25` before Julia loads the shared
+parameters. The builder refuses a mismatch with `angle_tables`. The original
+`h13` cases require the variable unset or set to `13`.
+
+```sh
+for case in hello-world ieee30-tom ieee30-u33 ieee30-physical ieee30-full; do
+    SHHC_HMAX=25 julia -t 10 --project=examples/rhhc-variants \
+        examples/rhhc-variants/run.jl "cases/$case-exact.toml"
+done
+SHHC_HMAX=25 julia -t 10 --project=examples/rhhc-variants examples/rhhc-variants/findings.jl
+```
+
+`findings.jl` uses `ieee30-full-exact` to compare the cutting-set method with and
+without predicted corners. It reports the binding constraint's worst predicted
+corner in physical inputs. It also compares the physical model with square-root
+harmonic scaling of its nominal 50 Hz parameters. The report includes nominal capacity,
+robust hosting capacity and posterior checks.
+
 ## Cases and output inventory
 
 The table lists the case files and the outputs of the reproduction commands.
@@ -366,6 +386,11 @@ A comparison file is listed with its physical case. It also evaluates the source
 | `cases/star3-physical-mix.toml` | `output/star3-physical-mix-comparison.txt`, `output/star3-physical-mix.txt` |
 | `cases/star5-mix.toml` | `output/star5-mix.txt` |
 | `cases/star5-physical-mix.toml` | `output/star5-physical-mix-comparison.txt`, `output/star5-physical-mix.txt` |
+| `cases/hello-world-exact.toml` | `output/hello-world-exact.txt` |
+| `cases/ieee30-full-exact.toml` | `output/ieee30-full-exact.txt`, `output/ieee30-full-exact-findings.txt` |
+| `cases/ieee30-physical-exact.toml` | `output/ieee30-physical-exact.txt` |
+| `cases/ieee30-tom-exact.toml` | `output/ieee30-tom-exact.txt` |
+| `cases/ieee30-u33-exact.toml` | `output/ieee30-u33-exact.txt` |
 
 ## Script inventory
 
@@ -374,12 +399,14 @@ A comparison file is listed with its physical case. It also evaluates the source
 | `builders.jl` | Decode cases, construct physical inputs and declare circuit coordinates. |
 | `run.jl` | Write nominal capacity, robust hosting capacity and posterior checks. |
 | `compare.jl` | Write paired capacity reports, transfer checks and corner checks. |
+| `findings.jl` | Write exact-moment corner comparisons, binding physical inputs and harmonic-scaling comparisons. |
 | `scan.jl` | Write sequence tables, nominal resonances and physical checks. |
 | `sweep.jl` | Write endpoint sensitivities and coordinate admission decisions. |
 | `networks/convert.jl` | Reproduce the saved IEEE9 and IEEE39 network inputs from PowerImpedance. |
 | `data/register/derive.py` | Reproduce the register arithmetic in `data/register/derived.json`. |
 | `test/runtests.jl` | Run the study suite. |
 | `test/populations.jl` | Check converter parameters, variant networks and refused combinations. |
+| `test/exact_moments.jl` | Check the five exact variants in a child process with the refitted angle tables. |
 | `test/coordinates.jl` | Check declarations, undeclared-coordinate probes and installed length. |
 | `test/stars.jl` | Check Falcon constructions, exact π-models and sequence references. |
 | `test/transmission.jl` | Check the physical transmission cases and Cardinal construction. |

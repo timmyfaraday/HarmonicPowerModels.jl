@@ -263,6 +263,13 @@ mixed_result = solve_shhc(hdata_at(hdata, model, p), sHHC_SOC, conic;
 @assert harmonic_sequence.([3, 5, 7]) == [:zero, :negative, :positive]
 ```
 
+Set `"moments" => "exact"` in `pce_params` to use exact means and covariances of
+squared voltage and current magnitudes in `sHHC_SOC` and RHHC for independent units.
+This includes covariance across harmonics for total distortion. The default `"pce"`
+uses the expansion moments. Use a fixed Gaussian or Cantelli factor with exact moments;
+`solve_shhc_calibrated` refuses this option. RHHC gradients with exact moments
+require `branch_derivative = :central`.
+
 For a fixed-network SHHC calculation, empirical factors use sampled quantiles.
 With `"empirical_moments" => "pce"` (the default), `sHHC_SOC` recalibrates each factor
 on the expansion mean and standard deviation to equate its moment bound to the sampled

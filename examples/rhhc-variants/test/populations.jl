@@ -107,7 +107,7 @@ end
 @testset "Population variants preserve the network" begin
     files = sort(filter(endswith(".toml"), readdir(joinpath(STUDIES, "cases"))))
     bases = filter(file -> !haskey(TOML.parsefile(joinpath(STUDIES, "cases", file)), "base"), files)
-    variants = setdiff(files, bases)
+    variants = filter(file -> haskey(TOML.parsefile(joinpath(STUDIES, "cases", file)), "population"), files)
     expected = [replace(file, ".toml" => "-mix.toml")
                 for file in bases
                 if get(readrecord(joinpath(STUDIES, "cases", file)), :recombination, true)]
@@ -139,4 +139,10 @@ end
             end
         end
     end
+end
+
+@testset "Exact variants in a process with the h25 tables" begin
+    script = joinpath(@__DIR__, "exact_moments.jl")
+    command = `$(Base.julia_cmd()) --startup-file=no --project=$STUDIES $script`
+    @test success(pipeline(addenv(command, "SHHC_HMAX" => "25"); stdout, stderr))
 end
