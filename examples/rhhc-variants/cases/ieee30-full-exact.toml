@@ -1,0 +1,4 @@
+base = "ieee30-full"
+harmonics = {value = [5, 7, 11, 13, 17, 19, 23, 25], origin = "SHHC paper, characteristic harmonics up to the 25th"} # 1
+moments = {value = "exact", origin = "RHHC paper, Section III: risk factor on exact moments"}
+angle_tables = {value = "h25", origin = "examples/shhc/pce_params.jl, SHHC_HMAX=25"}
