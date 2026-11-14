@@ -1,0 +1,29 @@
+[ambient]
+field = "ambient"
+nominal = {value = 20, register = "O132.ambient.theta"}
+lower = {value = -5, register = "O132.ambient.theta"}
+upper = {value = 45, register = "O132.ambient.theta"}
+
+[phase_sag]
+field = "phase_sag"
+nominal = {value = 1.5, register = "O13.phase.reference"}
+lower = {value = 1.5, register = "O13.phase.reference"}
+upper = {value = 1.515, register = "O13.phase.reference"}
+
+[span]
+field = "span"
+nominal = {value = 100.0, register = "O13.span"}
+lower = {value = 100.0, register = "O13.span"}
+upper = {value = 100.0, register = "O13.span"}
+
+[reference_theta]
+field = "reference_theta"
+nominal = {value = 20, register = "O132.reference.theta"}
+lower = {value = 20, register = "O132.reference.theta"}
+upper = {value = 20, register = "O132.reference.theta"}
+
+[gravity]
+field = "gravity"
+nominal = {value = 9.80665, register = "O132.gravity"}
+lower = {value = 9.80665, register = "O132.gravity"}
+upper = {value = 9.80665, register = "O132.gravity"}

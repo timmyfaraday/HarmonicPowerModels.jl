@@ -13,7 +13,7 @@ include(joinpath(@__DIR__, "recomb_ieee30.jl"))
 include(joinpath(@__DIR__, "converter_types.jl"))
 
 const NS        = 21
-const PAPER_OUT = joinpath(@__DIR__, "output", "paper"); mkpath(PAPER_OUT)
+const PAPER_OUT = joinpath(@__DIR__, "output", get(ENV, "SHHC_UNIT", "diode") == "thyristor" ? "paper_thyristor" : "paper"); mkpath(PAPER_OUT)
 const PAPER_SCENARIOS = ["inductive", "inductive_bank", "inductive_cable33", "inductive_cable132c"]
 
 "The first `N` loads of `data`, sorted, as harmonic units."
@@ -28,6 +28,23 @@ WORKING ASSUMPTION for the controlled types, see converter_types.jl.
 types_spread(units, T; span = 60.0, w = 30.0) =
     T == 1 ? nothing : types_cyclic(units, [span * (t - 1) / T for t in 1:T]; w = w)
 
+"""
+Converter population over the sorted `units`: "diode" (§II, Table III), "thyristor"
+(§II-D, Table IV, firing delay independent per unit) or "mix" (alternating diode,
+thyristor, …). Returns the per-harmonic, per-unit angle ranges [rad] and the
+per-unit Beta shapes.
+"""
+function population(units, pop)
+    diode = (PCE_PARAMS["alpha_hat"], PCE_PARAMS["beta_hat"], PCE_PARAMS["harmonics"])
+    thyr  = (PCE_PARAMS_THYRISTOR["alpha_hat"], PCE_PARAMS_THYRISTOR["beta_hat"], PCE_PARAMS_THYRISTOR["harmonics"])
+    kind  = Dict(d => pop == "diode" ? diode : pop == "thyristor" ? thyr : (iseven(i) ? thyr : diode)
+                 for (i, d) in enumerate(units))
+    ranges = Dict(h => Dict(d => (kind[d][3][h].v_min, kind[d][3][h].v_max) for d in units) for h in harm)
+    shapes = Dict(d => (kind[d][1], kind[d][2]) for d in units)
+    return ranges, shapes
+end
+const POPULATIONS = ["diode", "thyristor", "mix"]
+
 "Replicated data restricted to `units` as harmonic units, local angle reference."
 function restricted(data, units)
     hd = HPM.replicate(deepcopy(data), H = H); hd["angle_reference"] = "local"
@@ -37,18 +54,22 @@ function restricted(data, units)
     return hd
 end
 
-"PCE parameters for `units`, with optional shared type random variables."
-function paper_pce(units, types; bound = "gaussian", eps = PCE_PARAMS["epsilon"])
+"PCE parameters for `units`, with optional shared type random variables or a converter population."
+function paper_pce(units, types; bound = "gaussian", eps = PCE_PARAMS["epsilon"], pop = nothing)
     p = Dict{String,Any}(deepcopy(PCE_PARAMS)...)
     p["harmonics"] = Dict{Int,Any}(h => rng[h] for h in harm); p["harmonic_units"] = units
+    if pop !== nothing
+        ranges, shapes = population(units, pop)
+        p["harmonics"] = Dict{Int,Any}(h => ranges[h] for h in harm); p["unit_shapes"] = shapes
+    end
     p["bound"] = bound; p["epsilon"] = eps
     types === nothing || (p["type_germs"] = types)
     return p
 end
 
 "Hosting current per harmonic of sHHC_SOC for `bound` ∈ cantelli, gaussian, empirical."
-function soc_hosting(data, units, types, bound; eps = PCE_PARAMS["epsilon"])
-    p = paper_pce(units, types; bound = bound == "empirical" ? "gaussian" : bound, eps = eps)
+function soc_hosting(data, units, types, bound; eps = PCE_PARAMS["epsilon"], pop = nothing)
+    p = paper_pce(units, types; bound = bound == "empirical" ? "gaussian" : bound, eps = eps, pop = pop)
     sol = bound == "empirical" ?
         HPM.solve_shhc_calibrated(restricted(data, units), sHHC_SOC, mosek; pce_params = p,
                                   hpf_optimizer = ipopt, nsamp = 20000) :

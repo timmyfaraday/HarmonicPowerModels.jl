@@ -1,0 +1,29 @@
+family = "ACSR"
+n_steel = {value = 1, register = "ACSR.Rabbit.st"}
+n_aluminium = {value = 6, register = "ACSR.Rabbit.al"}
+R20 = {value = 0.0005426, register = "ACSR.Rabbit.R20"}
+courses = {value = [6], register = "ACSR.Rabbit.courses"}
+mass_al = {value = 0.14760113006287168, register = "ACSR.Rabbit.mass.al"}
+mass_st = {value = 0.06857393831430278, register = "ACSR.Rabbit.mass.st"}
+E = {value = 70.0, register = "ACSR.Rabbit.E"}
+expansion = {value = 1.93e-05, register = "ACSR.Rabbit.expansion"}
+
+[d_steel]
+nominal = {value = 0.00335, register = "ACSR.Rabbit.st"}
+lower = {value = 0.0033000000000000004, register = "ACSR.Rabbit.st"}
+upper = {value = 0.0034, register = "ACSR.Rabbit.st"}
+
+[d_aluminium]
+nominal = {value = 0.00335, register = "ACSR.Rabbit.al"}
+lower = {value = 0.0033165, register = "ACSR.Rabbit.al"}
+upper = {value = 0.0033835000000000002, register = "ACSR.Rabbit.al"}
+
+[diameter]
+nominal = {value = 0.01005, register = "ACSR.Rabbit.d"}
+lower = {value = 0.0099495, register = "ACSR.Rabbit.d"}
+upper = {value = 0.0101505, register = "ACSR.Rabbit.d"}
+
+[mass]
+nominal = {value = 0.21617506837717446, register = "ACSR.Rabbit.mass"}
+lower = {value = 0.21185156700963095, register = "ACSR.Rabbit.mass"}
+upper = {value = 0.22049856974471796, register = "ACSR.Rabbit.mass"}

@@ -1,0 +1,29 @@
+family = "ACSR"
+n_steel = {value = 19, register = "ACSR.Falcon.st"}
+n_aluminium = {value = 54, register = "ACSR.Falcon.al"}
+R20 = {value = 0.00003601, register = "ACSR.Falcon.R20"}
+courses = {value = [12, 18, 24], register = "ACSR.Falcon.courses"}
+mass_al = {value = 2.243, register = "ACSR.Falcon.mass.al"}
+mass_st = {value = 0.799, register = "ACSR.Falcon.mass.st"}
+E = {value = 66.68522, register = "ACSR.Falcon.E"}
+expansion = {value = 0.0000194, register = "ACSR.Falcon.expansion"}
+
+[d_steel]
+nominal = {value = 0.00262, register = "ACSR.Falcon.st"}
+lower = {value = 0.00258, register = "ACSR.Falcon.st"}
+upper = {value = 0.00266, register = "ACSR.Falcon.st"}
+
+[d_aluminium]
+nominal = {value = 0.00436, register = "ACSR.Falcon.al"}
+lower = {value = 0.0043164, register = "ACSR.Falcon.al"}
+upper = {value = 0.0044036, register = "ACSR.Falcon.al"}
+
+[diameter]
+nominal = {value = 0.03926, register = "ACSR.Falcon.d"}
+lower = {value = 0.0388674, register = "ACSR.Falcon.d"}
+upper = {value = 0.0396526, register = "ACSR.Falcon.d"}
+
+[mass]
+nominal = {value = 3.042, register = "ACSR.Falcon.mass"}
+lower = {value = 2.9811599999999996, register = "ACSR.Falcon.mass"}
+upper = {value = 3.10284, register = "ACSR.Falcon.mass"}

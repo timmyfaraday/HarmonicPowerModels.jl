@@ -1,0 +1,35 @@
+Uncertainty levels and transfer to the source case
+HPM commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+Cases: cases/antwerp-physical-mix.toml, cases/antwerp-mix.toml
+Threads: 16; solver: Clarabel; unchanged runner settings.
+Method parameters: (difference_step = 0.0001, zero_band = 1.0e-6, subdivision_depth = 6, sharing_tolerance = 1.0e-10, verification_samples = 4096, admission_threshold = 0.001, interior_starts = (corners = true, center = true), interior_tolerance = 1.0e-10, interior_iterations = 32)
+level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination | nominal termination
+antwerp-physical-mix | 0.7212110179330535 | 0.6833011747419389 | 0.6833011747419389 | 0.0 | 2 | 19783 | 13.002908181 | true | OPTIMAL | OPTIMAL
+antwerp-mix | 0.774961078812561 | 0.7251098387956219 | 0.7251098387956219 | 0.0 | 2 | 0 | 2.53066596 | true | OPTIMAL | OPTIMAL
+level | harmonic | robust / nominal | robust current
+antwerp-physical-mix | 5 | 0.99291369407617 | 0.058318703148089436
+antwerp-physical-mix | 7 | 0.9748900988305463 | 0.035195219261021905
+antwerp-physical-mix | 11 | 0.19454560047661448 | 0.00014092024500327103
+antwerp-physical-mix | 13 | 0.5301292323695602 | 0.003959610880448084
+antwerp-mix | 5 | 0.990555163034548 | 0.057091639869359195
+antwerp-mix | 7 | 0.9683417765958519 | 0.03242817854688083
+antwerp-mix | 11 | 0.5706932891484484 | 0.00396540593634834
+antwerp-mix | 13 | 0.7994560328131269 | 0.010101895475357602
+Posterior checks: 1024 random points, public HPM defaults (seed 2, tolerance 0.0001).
+Checks below evaluate positive-limit constraints. An infeasible nominal has no feasible capacity.
+solution | target case | maximum normalized violation | constraint | violated fraction
+antwerp-physical-mix | antwerp-physical-mix | -0.003029276337916831 | (:ihd, (5, 100)) | 0.0
+antwerp-physical-mix | antwerp-mix | 0.17715596046760784 | (:ihd, (7, 100)) | 1.0
+antwerp-mix | antwerp-physical-mix | 758.759795381598 | (:ihd, (11, 20)) | 1.0
+antwerp-mix | antwerp-mix | -0.00019667378646481826 | (:ihd, (5, 100)) | 0.0
+Corner adversary: nominal finite-difference signs, unique predicted corners.
+Positive own-case violations refute reported feasibility and its lower-bound certificate.
+Positive transfer violations refute feasibility of the level's solution on the source box.
+A transfer failure alone does not refute an own-case certificate.
+The adversary is not a proof of feasibility: resonance constraints can be nonmonotone.
+solution | target case | corners evaluated | maximum normalized violation | constraint | case-coordinate point
+antwerp-physical-mix | antwerp-physical-mix | 24 | -1.7245904704310533e-10 | (:ihd, (7, 100)) | (d_wire_U155 = 0.0014058, rho_EARTH = 100.0, R20_U155 = 1.13e-5, rho_copper_U155 = 1.786e-8, t_ins_U155 = 0.01805, t_sc1_U155 = 0.00231, t_sc2_U155 = 0.00165, t_jkt_U155 = 0.00564, d_c_U155 = 0.0508, theta_U155 = 90.0, eps_semicon_U155 = 10000.0, eps_U155 = 2.5)
+antwerp-physical-mix | antwerp-mix | 11 | 0.17793747606473231 | (:ihd, (7, 100)) | (kR_cable = 1.2, kL_cable = 1.05, kC_cable = 1.1)
+antwerp-mix | antwerp-physical-mix | 19 | 28.968937996016173 | (:ihd, (11, 20)) | (d_wire_U155 = 0.00142, rho_EARTH = 100.0, R20_U155 = 1.13e-5, rho_copper_U155 = 1.7241e-8, t_ins_U155 = 0.019, t_sc1_U155 = 0.0021, t_sc2_U155 = 0.0015, t_jkt_U155 = 0.00568, d_c_U155 = 0.0496, theta_U155 = 90.0, eps_semicon_U155 = 1000.0, eps_U155 = 2.4)
+antwerp-mix | antwerp-mix | 11 | -1.414313111069987e-10 | (:ihd, (5, 100)) | (kR_cable = 1.2, kL_cable = 1.05, kC_cable = 1.1)

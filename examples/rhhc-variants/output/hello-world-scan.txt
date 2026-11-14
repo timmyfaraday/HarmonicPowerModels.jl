@@ -1,5 +1,5 @@
-git commit: 20bca09bbde082cc988e71ec91b1791746a212b8
-LCM commit: 59cc3f2329e5df9b33929f52009e996cee1d4784
+git commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
 case: examples/rhhc-variants/cases/hello-world.toml
 threads: 16; solver: Clarabel
 Sequence file: hello-world-sequences.csv; 763 frequencies per circuit.

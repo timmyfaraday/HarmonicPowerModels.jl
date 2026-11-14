@@ -31,6 +31,11 @@
     # ── C. an xfmr and its unit-tap branch have the same phase stamp ──────────
     @testset "xfmr ≡ branch with vg" begin
         data = HPM.parse_file(joinpath(case_path, "industrial_network_hhc.m"))
+        # Declare equal line data in both sequences for this representation test.
+        for br in values(data["branch"])
+            br["br_r0"], br["br_x0"] = br["br_r"], br["br_x"]
+            br["b0_fr"], br["b0_to"] = br["b_fr"], br["b_to"]
+        end
         id = first(sort([id for (id, x) in data["xfmr"] if x["vg"] in ("Yd11", "Dy11")]))
         branch_data = deepcopy(data)
         xfmr = pop!(branch_data["xfmr"], id)
@@ -40,6 +45,8 @@
             "br_r" => xfmr["r1"] + xfmr["r2"], "br_x" => xfmr["xsc"],
             "g_fr" => 0.0, "g_to" => 0.0, "b_fr" => 0.0, "b_to" => 0.0,
             "tap" => 1.0, "shift" => 0.0, "vg" => xfmr["vg"],
+            "gnd1" => xfmr["gnd1"], "gnd2" => xfmr["gnd2"], "re1" => xfmr["re1"],
+            "xe1" => xfmr["xe1"], "re2" => xfmr["re2"], "xe2" => xfmr["xe2"],
             "rate_a" => xfmr["rateA"] / data["baseMVA"], "br_status" => 1)
         bus_ids, bus_idx = HPM._bus_id_map(data)
         hd_xfmr = HPM.replicate(deepcopy(data); H = H)
@@ -67,9 +74,12 @@
             Y_branch = HPM.build_harmonic_Ybus(branch_data, h)
             @test isapprox(Y_xfmr, Y_branch; atol = 1e-12, rtol = 0)
             if HPM.harmonic_sequence(h) === :zero
-                delta_bus = uppercase(xfmr["vg"][1]) == 'D' ? xfmr["f_bus"] : xfmr["t_bus"]
-                @test all(iszero, Y_branch[bus_idx[delta_bus], :])
-                @test all(iszero, Y_branch[:, bus_idx[delta_bus]])
+                # a delta winding blocks the zero sequence between the two sides, but does
+                # not disconnect the delta-side bus from the rest of its network
+                f, t = bus_idx[xfmr["f_bus"]], bus_idx[xfmr["t_bus"]]
+                @test iszero(Y_branch[f, t]) && iszero(Y_branch[t, f])
+                delta_bus = uppercase(xfmr["vg"][1]) == 'D' ? f : t
+                @test !all(iszero, Y_branch[delta_bus, :])
             end
         end
     end

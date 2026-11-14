@@ -1,0 +1,29 @@
+family = "ACSR"
+n_steel = {value = 7, register = "ACSR.Dog.st"}
+n_aluminium = {value = 6, register = "ACSR.Dog.al"}
+R20 = {value = 0.0002733, register = "ACSR.Dog.R20"}
+courses = {value = [6], register = "ACSR.Dog.courses"}
+mass_al = {value = 0.29301109520986224, register = "ACSR.Dog.mass.al"}
+mass_st = {value = 0.10643627271367084, register = "ACSR.Dog.mass.st"}
+E = {value = 70.0, register = "ACSR.Dog.E"}
+expansion = {value = 1.93e-05, register = "ACSR.Dog.expansion"}
+
+[d_steel]
+nominal = {value = 0.00157, register = "ACSR.Dog.st"}
+lower = {value = 0.0015400000000000001, register = "ACSR.Dog.st"}
+upper = {value = 0.0016, register = "ACSR.Dog.st"}
+
+[d_aluminium]
+nominal = {value = 0.004719999999999999, register = "ACSR.Dog.al"}
+lower = {value = 0.0046727999999999995, register = "ACSR.Dog.al"}
+upper = {value = 0.0047672, register = "ACSR.Dog.al"}
+
+[diameter]
+nominal = {value = 0.01415, register = "ACSR.Dog.d"}
+lower = {value = 0.0140085, register = "ACSR.Dog.d"}
+upper = {value = 0.014291499999999999, register = "ACSR.Dog.d"}
+
+[mass]
+nominal = {value = 0.3994473679235331, register = "ACSR.Dog.mass"}
+lower = {value = 0.3914584205650624, register = "ACSR.Dog.mass"}
+upper = {value = 0.40743631528200375, register = "ACSR.Dog.mass"}

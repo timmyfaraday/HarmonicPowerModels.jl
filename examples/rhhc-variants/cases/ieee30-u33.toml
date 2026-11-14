@@ -1,7 +1,7 @@
 box_names = ["R20_U33", "eps_U33", "t_ins_U33", "rho_EARTH"]
 network = {kind = "scenario", scenario = "inductive_cable33"}
 model = "exact"
-bound = "cantelli"
+bound = "gaussian"
 harmonics = {value = [5, 7, 11, 13], origin = "examples/rhhc/ieee30_lcm.jl:102"} # 1
 units = {value = 21, origin = "examples/rhhc/ieee30_lcm.jl:106"} # 1
 epsilon = {value = 0.05, origin = "examples/shhc/pce_params.jl:20"} # 1

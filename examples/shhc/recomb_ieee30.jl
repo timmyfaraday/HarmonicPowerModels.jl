@@ -37,8 +37,10 @@ voltage limit at the hosting current `eval_I[h]` (returned as `:viol`).
 (name => Dict("units" => …, "shift" => Dict(h => (s_lo, s_hi)))): every unit of a
 type gets the extra shift s_lo + (s_hi − s_lo)·ω_t with one ω_t per type. The
 robust bound then maximises over ω_t on a grid as well.
+`shapes[d] = (α̂, β̂)` sets a per-unit Beta shape (e.g., mixing converter types);
+by default every unit takes the §II shape.
 """
-function recombination(scen, N, aref; ranges = nothing, types = nothing, data = nothing, eval_I = nothing, prob = 0.95)
+function recombination(scen, N, aref; ranges = nothing, types = nothing, shapes = nothing, data = nothing, eval_I = nothing, prob = 0.95)
     data = data === nothing ? ieee30_scenario(scen, ipopt) : data
     units = sort(parse.(Int, collect(keys(data["load"]))))[1:N]
     hd = HPM.replicate(deepcopy(data), H = H)
@@ -51,6 +53,9 @@ function recombination(scen, N, aref; ranges = nothing, types = nothing, data = 
     f = hd["nw"]["1"]
     ubus = Dict(d => f["load"]["$d"]["load_bus"] for d in units)
     beta = Beta(α̂, β̂); Random.seed!(1)
+    betas = shapes === nothing ? nothing : [Beta(shapes[d]...) for d in units]
+    Eu = shapes === nothing ? Eω : mean.(betas)
+    draw() = shapes === nothing ? rand(beta, N) : rand.(betas)
     res = Dict{Int,Dict{Symbol,Float64}}()
     for h in harm
         off = [deg2rad(get(hd["nw"]["$h"]["load"]["$d"], "angle_offset", 0.0)) for d in units]
@@ -62,8 +67,8 @@ function recombination(scen, N, aref; ranges = nothing, types = nothing, data = 
              [([d in tt["units"] for d in units], tt["shift"][h]) for tt in values(types)]
         tshift(ζ) = isempty(tg) ? zeros(N) :
                     sum(mask .* (sh[1] + (sh[2] - sh[1]) * ζ[i]) for (i, (mask, sh)) in enumerate(tg))
-        φE = lo_j .+ wd .* Eω .+ tshift(fill(Eω, length(tg)))
-        W  = [lo_j .+ wd .* rand(beta, N) .+ tshift(rand(beta, length(tg))) for _ in 1:20_000]
+        φE = lo_j .+ wd .* Eu .+ tshift(fill(Eω, length(tg)))
+        W  = [lo_j .+ wd .* draw() .+ tshift(rand(beta, length(tg))) for _ in 1:20_000]
         # robust bound: exact over a grid of the type germ for at most one type; with
         # several types the type shifts are bounded per unit (a conservative bound)
         function robust_types(z)

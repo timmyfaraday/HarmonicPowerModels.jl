@@ -38,7 +38,9 @@ function reduced_admittance(hdata::Dict, model::AbstractNetworkModel, p, h::Real
     fund   = hdata["nw"]["1"]["bus"]
     buses  = sort([b["bus_i"] for b in values(fund) if !get(b, "is_clean", false)])
     keep   = [idx[b] for b in buses]
-    return Y[keep, keep], buses
+    Yr     = Y[keep, keep]
+    sequence === :zero && (Yr = first(_earth_floating(Yr)))
+    return Yr, buses
 end
 
 # Eigenpairs of the complex symmetric Y, with eigenvectors normalised as tᵀt = 1 (Huang,
@@ -244,7 +246,8 @@ function _mode_at(hdata, model, box, ξ, h, t; nc::NetworkCache = NetworkCache(h
 end
 
 # Projected gradient descent of |η_m(h; ξ)| over the coordinates `active`, central
-# finite differences, backtracking; ξ stays in [-1, 1].
+# finite differences in parallel, serial backtracking; ξ stays in [-1, 1]. The result
+# does not depend on the number of threads.
 function _min_eta(hdata, model, box, ξ0, h, t; active, iters = 12, fd = 1e-3,
                   nc::NetworkCache = NetworkCache(hdata, model))
     ξ = copy(ξ0)
@@ -252,7 +255,7 @@ function _min_eta(hdata, model, box, ξ0, h, t; active, iters = 12, fd = 1e-3,
     fξ = f(ξ)
     for _ in 1:iters
         g = zeros(length(ξ))
-        for i in active
+        _tforeach(active) do i
             e = zeros(length(ξ)); e[i] = fd
             g[i] = (f(clamp.(ξ .+ e, -1, 1)) - f(clamp.(ξ .- e, -1, 1))) / (2fd)
         end
@@ -285,7 +288,11 @@ resonance and harmonic in `harmonics` (default: the harmonics of `hdata`):
   point that moves only the `top` most sensitive coordinates.
 
 Each seed is scored by the dominant-mode estimate (see [`Seed`](@ref)) over the buses of
-the harmonic units `units` (default: the load buses).
+the harmonic units `units` (default: the load buses). Sensitivities are computed first,
+with their coordinates in parallel, then the (resonance, harmonic) pairs and the central
+differences within each descent step run in parallel. Seeds are collected in resonance
+then harmonic order before sorting by score; the result does not depend on the number
+of threads.
 """
 function resonance_seeds(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox;
                          harmonics = sort([parse(Int, nw) for nw in keys(hdata["nw"]) if nw != "1"]),
@@ -296,38 +303,39 @@ function resonance_seeds(hdata::Dict, model::AbstractNetworkModel, box::Paramete
     ubus = units === nothing ?
            unique(ld["load_bus"] for ld in values(hdata["nw"]["1"]["load"])) :
            unique(hdata["nw"]["1"]["load"]["$u"]["load_bus"] for u in units)
-    seeds = Seed[]
-    for r in res
-        s     = resonance_sensitivity(hdata, model, box, r; nc)
+    sens = [resonance_sensitivity(hdata, model, box, r; nc) for r in res]
+    groups = _tmap([(i, h) for i in eachindex(res) for h in harmonics]) do (i, h)
+        r, s  = res[i], sens[i]
         reach = sum(abs, s)
         order = sortperm(abs.(s); rev = true)
         act   = order[1:min(top, d)]
         upos  = [findfirst(==(b), r.buses) for b in ubus if b in r.buses]
-        for h in harmonics
-            crosses = abs(h - r.h) <= reach
-            cands = Vector{Float64}[]
-            if crosses
-                ξ = norm(s) > 0 ? clamp.(s .* (h - r.h) ./ sum(abs2, s), -1, 1) : zeros(d)
-                push!(cands, _min_eta(hdata, model, box, ξ, h, r.t; active = act, nc))
-            else
-                # the frequency coordinates push the resonance towards h; the coordinates
-                # that hardly move it (e.g., resistance: damping, not tuning) are then set by
-                # minimising |η_m(h)| with the frequency coordinates held
-                dir  = sign(h - r.h)
-                tune = [i for i in 1:d if abs(s[i]) > 1e-3 * maximum(abs, s)]
-                rest = setdiff(1:d, tune)
-                v = zeros(d); v[tune] = dir .* sign.(s[tune])
-                isempty(rest) || (v = _min_eta(hdata, model, box, v, h, r.t; active = rest, nc))
-                push!(cands, v)
-                f = zeros(d); f[act] = dir .* sign.(s[act]); push!(cands, f)
-            end
-            for ξ in unique(cands)
-                η, t = _mode_at(hdata, model, box, ξ, h, r.t; nc)
-                sc = isempty(upos) ? 0.0 : maximum(abs, t) * maximum(abs.(t[upos])) / abs(η)
-                push!(seeds, Seed(ξ, r, h, crosses, sc))
-            end
+        group = Seed[]
+        crosses = abs(h - r.h) <= reach
+        cands = Vector{Float64}[]
+        if crosses
+            ξ = norm(s) > 0 ? clamp.(s .* (h - r.h) ./ sum(abs2, s), -1, 1) : zeros(d)
+            push!(cands, _min_eta(hdata, model, box, ξ, h, r.t; active = act, nc))
+        else
+            # the frequency coordinates push the resonance towards h; the coordinates
+            # that hardly move it (e.g., resistance: damping, not tuning) are then set by
+            # minimising |η_m(h)| with the frequency coordinates held
+            dir  = sign(h - r.h)
+            tune = [i for i in 1:d if abs(s[i]) > 1e-3 * maximum(abs, s)]
+            rest = setdiff(1:d, tune)
+            v = zeros(d); v[tune] = dir .* sign.(s[tune])
+            isempty(rest) || (v = _min_eta(hdata, model, box, v, h, r.t; active = rest, nc))
+            push!(cands, v)
+            f = zeros(d); f[act] = dir .* sign.(s[act]); push!(cands, f)
         end
+        for ξ in unique(cands)
+            η, t = _mode_at(hdata, model, box, ξ, h, r.t; nc)
+            sc = isempty(upos) ? 0.0 : maximum(abs, t) * maximum(abs.(t[upos])) / abs(η)
+            push!(group, Seed(ξ, r, h, crosses, sc))
+        end
+        return group
     end
+    seeds = reduce(vcat, groups; init = Seed[])
     return sort!(seeds; by = s -> -s.score)
 end
 
@@ -353,6 +361,24 @@ end
 # Dictionary
 # ──────────────────────────────────────────────────────────────────────────────
 
+# Second moments grouped by the number of harmonics of each constraint.
+struct _SecondMoments
+    single::Vector{Float64}
+    full::Array{Float64,3}
+    subset::Vector{Float64}
+end
+
+const _EMPTY_SECOND_MOMENTS = Float64[]
+const _EMPTY_FULL_MOMENTS = zeros(0, 0, 0)
+
+# Shared indices of one constraint in the point's means and second moments.
+struct _ConstraintBlock
+    n::Int                            # number of harmonics
+    position::Int                     # position of a single harmonic
+    μ::UnitRange{Int}
+    M::Int                            # index in its second-moment group
+end
+
 """
     ParameterDictionary
 
@@ -360,10 +386,14 @@ The points of the oracle with their constraints in compact form. For a constrain
 the hosting variables g (a vector over `harmonics`), E[S] = μᵀg and Var[S] = gᵀMg with
 M[h,h'] = Σ_{k≥1} ψ_k·a_{h,k}·a_{h',k}, so
 
-    F_c(g) = μᵀg + λ·√(gᵀMg) ≤ limit,
+    F_c(g) = μᵀg + λ·√(gᵀMg) ≤ limit.
 
-which needs |H| + |H|² numbers per constraint and point instead of the full PCE
-coefficients. `keys[j]` is `(kind, key)` of constraint j, in the order of
+Each point stores |H_c| means and |H_c|² second moments per constraint. The means
+are flat blocks in `μ`; `M` groups single-harmonic scalars, full-harmonic matrices
+in a column-major array, and the remaining blocks in a flat vector. `positions[j]`
+records the positions of its harmonics in `harmonics`; `blocks[j]` records its mean
+range and second-moment index, shared by all points. `keys[j]` is `(kind, key)` of
+constraint j, in the order of
 [`shhc_constraints`](@ref); `labels[s]` is `:nominal`, `:vertex`, `:corner`, `:seed`, `:background`
 or `:refined` (added by the oracle). Points are appended with [`add_point!`](@ref).
 """
@@ -375,24 +405,60 @@ struct ParameterDictionary
     λ::Vector{Float64}
     points::Vector{Vector{Float64}}
     labels::Vector{Symbol}
-    μ::Vector{Matrix{Float64}}          # per point: (|H|, constraints)
-    M::Vector{Array{Float64,3}}         # per point: (|H|, |H|, constraints)
+    positions::Vector{Vector{Int}}     # per constraint: positions in harmonics
+    blocks::Vector{_ConstraintBlock}   # per constraint: indices in μ and M
+    sizes::NTuple{3,Int}               # single scalars, full matrices, subset entries
+    μ::Vector{Vector{Float64}}         # per point: means of each constraint
+    M::Vector{_SecondMoments}          # per point: grouped second-moment blocks
 end
 
-# compact (μ, M) of the constraints at one point, in the harmonic order `H`
-function _compact(cons, moments, H)
+# Ranges and group indices are shared by every point in the dictionary.
+function _dictionary_layout(H, positions)
+    blocks = _ConstraintBlock[]
+    start = 1
+    single, full, subset = 0, 0, 0
+    for pos in positions
+        n = length(pos)
+        if n == 1
+            single += 1; idx = single
+        elseif n == length(H)
+            full += 1; idx = full
+        else
+            idx = subset + 1; subset += n^2
+        end
+        push!(blocks, _ConstraintBlock(n, n == 1 ? only(pos) : 0, start:start+n-1, idx))
+        start += n
+    end
+    return blocks, (single, full, subset)
+end
+
+# Compact means in flat constraint blocks and second moments grouped by harmonic count.
+# Full-harmonic blocks retain the original three-dimensional array views for dot.
+# The harmonic positions, mean ranges and second-moment indices are shared by all points.
+function _compact(cons, moments, H, positions, blocks, sizes)
     (; K, psi_norms) = moments
-    nc = length(cons)
-    μ  = zeros(length(H), nc)
-    M  = zeros(length(H), length(H), nc)
+    μ = zeros(isempty(blocks) ? 0 : last(last(blocks).μ))
+    M = _SecondMoments(sizes[1] == 0 ? _EMPTY_SECOND_MOMENTS : zeros(sizes[1]),
+                       sizes[2] == 0 ? _EMPTY_FULL_MOMENTS : zeros(length(H), length(H), sizes[2]),
+                       sizes[3] == 0 ? _EMPTY_SECOND_MOMENTS : zeros(sizes[3]))
     for (j, c) in enumerate(cons)
-        for (a, h) in enumerate(H)
-            haskey(c.coef, h) || continue
-            μ[a, j] = c.coef[h][1]
-            for (b, h2) in enumerate(H)
-                haskey(c.coef, h2) || continue
-                M[a, b, j] = sum(psi_norms[k+1] * c.coef[h][k+1] * c.coef[h2][k+1]
-                                 for k in K if k != 0; init = 0.0)
+        pos = positions[j]
+        block = blocks[j]
+        n = block.n
+        for (b, i2) in enumerate(pos)
+            B = c.coef[H[i2]]
+            μ[first(block.μ) + b - 1] = B[1]
+            for (a, i) in enumerate(pos)
+                A = c.coef[H[i]]
+                value = sum(psi_norms[k+1] * A[k+1] * B[k+1]
+                            for k in K if k != 0; init = 0.0)
+                if n == 1
+                    M.single[block.M] = value
+                elseif n == length(H)
+                    M.full[a, b, block.M] = value
+                else
+                    M.subset[block.M + a - 1 + (b - 1) * n] = value
+                end
             end
         end
     end
@@ -403,9 +469,16 @@ end
 function _compact_point(dict::ParameterDictionary, hdata, model, ξ)
     m = moments_at(hdata, model, latent(dict.box, ξ))
     c = shhc_constraints(hdata, m)
-    [(x.kind, x.key) for x in c] == dict.keys ||
+    length(c) == length(dict.keys) ||
         error("add_point!: the constraint set changed at ξ = $ξ")
-    return _compact(c, m, dict.harmonics)
+    for (j, x) in enumerate(c)
+        x.kind === first(dict.keys[j]) && x.key == last(dict.keys[j]) ||
+            error("add_point!: the constraint set changed at ξ = $ξ")
+        pos = dict.positions[j]
+        length(x.coef) == length(pos) && all(haskey(x.coef, dict.harmonics[i]) for i in pos) ||
+            error("add_point!: the constraint harmonics changed at ξ = $ξ")
+    end
+    return _compact(c, m, dict.harmonics, dict.positions, dict.blocks, dict.sizes)
 end
 
 """
@@ -452,7 +525,9 @@ function _mean_corners(dict::ParameterDictionary, hdata, model)
     points = Vector{Float64}[]
     for c in eachindex(dict.keys), h in eachindex(dict.harmonics)
         dict.limit[c] > 0.0 || continue
-        s = [sensitivities[j][h, c] for j in 1:d]
+        a = findfirst(==(h), dict.positions[c])
+        s = a === nothing ? zeros(d) :
+            [sensitivities[j][first(dict.blocks[c].μ) + a - 1] for j in 1:d]
         threshold = 1e-6 * maximum(abs, s; init = 0.0)
         push!(points, [abs(x) <= threshold ? 0.0 : sign(x) for x in s])
     end
@@ -483,9 +558,13 @@ function build_dictionary(hdata::Dict, model::AbstractNetworkModel, box::Paramet
     d  = length(box)
     m0 = moments_at(hdata, model, nominal_point(box))
     c0 = shhc_constraints(hdata, m0)
-    dict = ParameterDictionary(box, sort(m0.harm_nw_ints), [(c.kind, c.key) for c in c0],
+    H   = sort(m0.harm_nw_ints)
+    pos = [findall(h -> haskey(c.coef, h), H) for c in c0]
+    blocks, sizes = _dictionary_layout(H, pos)
+    dict = ParameterDictionary(box, H, [(c.kind, c.key) for c in c0],
                                [c.limit for c in c0], [c.λ for c in c0],
-                               Vector{Float64}[], Symbol[], Matrix{Float64}[], Array{Float64,3}[])
+                               Vector{Float64}[], Symbol[], pos, blocks, sizes,
+                               Vector{Float64}[], _SecondMoments[])
     add_point!(dict, hdata, model, zeros(d), :nominal)
     if vertices
         add_points!(dict, hdata, model,
@@ -498,11 +577,40 @@ function build_dictionary(hdata::Dict, model::AbstractNetworkModel, box::Paramet
     return dict
 end
 
+# Dense arrays preserve the reduction order of harmonic subsets.
+function _subset_moments(dict::ParameterDictionary, j, μ, M, gv)
+    μfull = zeros(length(gv))
+    Mfull = zeros(length(gv), length(gv), 1)
+    pos = dict.positions[j]
+    block = dict.blocks[j]
+    n   = block.n
+    for (b, i2) in enumerate(pos)
+        μfull[i2] = μ[first(block.μ) + b - 1]
+        for (a, i) in enumerate(pos)
+            Mfull[i, i2, 1] = M.subset[block.M + a - 1 + (b - 1) * n]
+        end
+    end
+    return dot(μfull, gv), dict.λ[j] <= 0.0 ? 0.0 : dot(gv, view(Mfull, :, :, 1), gv)
+end
+
 # normalized violation of constraint j from its compact form at one point
-function _compact_violation(dict::ParameterDictionary, j::Int, μ, M, gv)
-    μg = dot(view(μ, :, j), gv)
-    F  = dict.λ[j] <= 0.0 ? μg : μg + dict.λ[j] * sqrt(max(dot(gv, view(M, :, :, j), gv), 0.0))
-    L  = dict.limit[j]
+@inline function _compact_violation(dict::ParameterDictionary, j::Int, μ, M, gv)
+    block = dict.blocks[j]
+    n   = block.n
+    if n == 1
+        g  = gv[block.position]
+        μg = μ[first(block.μ)] * g
+        F  = dict.λ[j] <= 0.0 ? μg :
+             μg + dict.λ[j] * sqrt(max((M.single[block.M] * g) * g, 0.0))
+    elseif n == length(gv)
+        μg = dot(view(μ, block.μ), gv)
+        F  = dict.λ[j] <= 0.0 ? μg :
+             μg + dict.λ[j] * sqrt(max(dot(gv, view(M.full, :, :, block.M), gv), 0.0))
+    else
+        μg, σ² = _subset_moments(dict, j, μ, M, gv)
+        F = dict.λ[j] <= 0.0 ? μg : μg + dict.λ[j] * sqrt(max(σ², 0.0))
+    end
+    L = dict.limit[j]
     return L > 0.0 ? F / L - 1.0 : F - L
 end
 
@@ -515,10 +623,17 @@ limit return F_c(g) − limit, as [`normalized_violation`](@ref).
 """
 function dictionary_violations(dict::ParameterDictionary, g)
     gv = [g[h] for h in dict.harmonics]
-    nc, np = length(dict.keys), length(dict.points)
-    V = zeros(nc, np)
-    for s in 1:np, j in 1:nc
-        V[j, s] = _compact_violation(dict, j, dict.μ[s], dict.M[s], gv)
+    V  = Matrix{Float64}(undef, length(dict.keys), length(dict.points))
+    return _dictionary_violations!(V, dict, gv)
+end
+
+# Fill the violations with a decision vector shared by the scan and oracle updates.
+@inline function _dictionary_violations!(V, dict::ParameterDictionary, gv)
+    for s in eachindex(dict.points)
+        μ, M = dict.μ[s], dict.M[s]
+        @inbounds for j in eachindex(dict.keys)
+            V[j, s] = _compact_violation(dict, j, μ, M, gv)
+        end
     end
     return V
 end

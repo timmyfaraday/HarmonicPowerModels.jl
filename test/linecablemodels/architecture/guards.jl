@@ -1413,8 +1413,8 @@ function admitted_types(T)
     T isa Core.TypeofVararg ? Any[] : Any[Base.unwrap_unionall(T)]
 end
 
-# Names. A name's chunks are its pieces between underline characters and case transitions, without
-# leading underline characters, a leading `@` or a trailing `!`. A piece is lowercase, except that a
+# Names. A name's chunks are its pieces between underscores and case transitions, without
+# leading underscores, a leading `@` or a trailing `!`. A piece is lowercase, except that a
 # one-letter piece keeps its case. Digits stay with their piece.
 function chunks(name)
     text = replace(string(name), r"^[_@]+" => "", r"!$" => "")
@@ -1456,7 +1456,7 @@ function vocabulary(names, path)
 end
 
 # The splits of `name` into terms with the fewest terms. A term matches whole chunks, several
-# chunks joined by underline characters (a compound) or part of a chunk (a squashed word).
+# chunks joined by underscores (a compound) or part of a chunk (a squashed word).
 function splits(name, terms)
     text = collect(join(chunks(name), "_"))
     candidates = [collect(term) for term in keys(terms)]

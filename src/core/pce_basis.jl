@@ -45,7 +45,9 @@ w.r.t. the probability measure (see file header).
 
 # Fields
 - `N`, `deg`, `dim` — germ count, total degree δ, basis size P = C(N+δ, δ).
-- `uni`             — shared univariate `Beta01OrthoPoly` (with quadrature).
+- `uni`             — univariate `Beta01OrthoPoly` of germ 1 (with quadrature).
+- `unis`            — univariate `Beta01OrthoPoly` per germ; all equal to `uni`
+                      unless the germs have different Beta shapes.
 - `mop`             — `MultiOrthoPoly` product basis.
 - `ind`             — P×N multi-index matrix (`mop.ind`, degree-graded).
 - `sp2`             — ⟨Ψ_k,Ψ_k⟩, length P; `sp2[1] == 1`.
@@ -57,6 +59,7 @@ struct PCEBasis
     deg  ::Int
     dim  ::Int
     uni  ::PolyChaos.Beta01OrthoPoly
+    unis ::Vector{PolyChaos.Beta01OrthoPoly}
     mop  ::PolyChaos.MultiOrthoPoly
     ind  ::Matrix{Int}
     sp2  ::Vector{Float64}
@@ -71,22 +74,34 @@ degree `δ`. `nrec` controls the number of recurrence coefficients and thereby
 the quadrature size (`nrec − 1` nodes); the default integrates the degree-3δ
 triple products of the Galerkin tensor exactly.
 """
-function PCEBasis(N::Int, α̂::Real, β̂::Real, δ::Int; nrec::Int = 3δ + 2)
+PCEBasis(N::Int, α̂::Real, β̂::Real, δ::Int; nrec::Int = 3δ + 2) =
+    PCEBasis(fill((Float64(α̂), Float64(β̂)), N), δ; nrec = nrec)
+
+"""
+    PCEBasis(shapes, δ; nrec = 3δ + 2) -> PCEBasis
+
+Build the PCE workspace for independent germs with their own Beta shapes,
+`shapes[u] = (α̂_u, β̂_u)`, e.g., units of different converter types. Germs with
+the same shape share one univariate basis.
+"""
+function PCEBasis(shapes::AbstractVector{<:Tuple}, δ::Int; nrec::Int = 3δ + 2)
+    N = length(shapes)
     N ≥ 1 || error("PCEBasis: N must be ≥ 1")
-    uni = Beta01OrthoPoly(δ, α̂, β̂; Nrec = nrec)
-    mop = MultiOrthoPoly([uni for _ in 1:N], δ)
-    ind = mop.ind
-    P   = mop.dim
+    lib  = Dict(s => Beta01OrthoPoly(δ, s...; Nrec = nrec) for s in unique(shapes))
+    unis = [lib[s] for s in shapes]
+    mop  = MultiOrthoPoly(unis, δ)
+    ind  = mop.ind
+    P    = mop.dim
 
     # multivariate norms ⟨Ψ_k,Ψ_k⟩ = ∏_u ⟨ψ_{κ_u},ψ_{κ_u}⟩
     # (computeSP2(::MultiOrthoPoly) is broken in PolyChaos 1.1 — see header)
-    sp2_uni = computeSP2(uni)
-    sp2     = [prod(sp2_uni[ind[k, u] + 1] for u in 1:N) for k in 1:P]
+    sp2_lib = Dict(s => computeSP2(u) for (s, u) in lib)
+    sp2     = [prod(sp2_lib[shapes[u]][ind[k, u] + 1] for u in 1:N) for k in 1:P]
 
     # sparse Galerkin tensor: M[j,l,k] = ⟨Ψ_jΨ_l,Ψ_k⟩/⟨Ψ_k,Ψ_k⟩, j ≤ l
-    M_nz = galerkin_nonzeros(uni, ind, sp2, δ)
+    M_nz = galerkin_nonzeros(unis, ind, sp2, δ)
 
-    return PCEBasis(N, δ, P, uni, mop, ind, sp2, M_nz)
+    return PCEBasis(N, δ, P, unis[1], unis, mop, ind, sp2, M_nz)
 end
 
 """
@@ -102,10 +117,15 @@ c > 0, an entry can only be nonzero when k is supported on the germs of j and l,
 at most 2δ of them. Enumerating those k per pair (j, l) costs O(P²) instead of
 the O(P³) quadratures of PolyChaos's `Tensor(3, ·)`, with identical values.
 """
-function galerkin_nonzeros(uni, ind::AbstractMatrix{<:Integer}, sp2::AbstractVector, δ::Int)
+galerkin_nonzeros(uni, ind::AbstractMatrix{<:Integer}, sp2::AbstractVector, δ::Int) =
+    galerkin_nonzeros(fill(uni, size(ind, 2)), ind, sp2, δ)
+
+function galerkin_nonzeros(unis::AbstractVector, ind::AbstractMatrix{<:Integer}, sp2::AbstractVector, δ::Int)
     P, N = size(ind)
-    t1 = Tensor(3, uni)
-    e  = [t1.get([a, b, c]) for a in 0:δ, b in 0:δ, c in 0:δ]      # e[a+1, b+1, c+1]
+    # univariate triple products per distinct germ basis, e_u[a+1, b+1, c+1]
+    elib = IdDict(u => (t1 = Tensor(3, u); [t1.get([a, b, c]) for a in 0:δ, b in 0:δ, c in 0:δ])
+                  for u in unique(unis))
+    eu   = [elib[u] for u in unis]
     pos   = Dict(Tuple(view(ind, k, :)) => k for k in 1:P)
     supp  = [findall(!iszero, view(ind, k, :)) for k in 1:P]
     # multi-index degree patterns of total degree ≤ δ on m germs, m = 0 … 2δ
@@ -118,7 +138,7 @@ function galerkin_nonzeros(uni, ind::AbstractMatrix{<:Integer}, sp2::AbstractVec
         for pat in pats[length(S) + 1]
             v = 1.0
             for (i, u) in enumerate(S)
-                v *= e[ind[j, u] + 1, ind[l, u] + 1, pat[i] + 1]
+                v *= eu[u][ind[j, u] + 1, ind[l, u] + 1, pat[i] + 1]
                 iszero(v) && break
             end
             abs(v) > 1e-14 || continue
@@ -131,9 +151,9 @@ function galerkin_nonzeros(uni, ind::AbstractMatrix{<:Integer}, sp2::AbstractVec
     return M_nz
 end
 
-# Bases depend only on (N, α̂, β̂, δ, nrec): sweeps and calibration iterations
+# Bases depend only on (germ shapes, δ, nrec): sweeps and calibration iterations
 # reuse them instead of rebuilding identical tensors.
-const _PCEBASIS_CACHE = Dict{Tuple{Int,Float64,Float64,Int,Int},Any}()
+const _PCEBASIS_CACHE = Dict{Tuple{Vector{Tuple{Float64,Float64}},Int,Int},Any}()
 
 """
     cached_pce_basis(N, α̂, β̂, δ; nrec = 3δ + 2) -> PCEBasis
@@ -141,8 +161,13 @@ const _PCEBASIS_CACHE = Dict{Tuple{Int,Float64,Float64,Int,Int},Any}()
 `PCEBasis(N, α̂, β̂, δ; nrec)`, built once per argument set and then reused.
 """
 cached_pce_basis(N::Int, α̂::Real, β̂::Real, δ::Int; nrec::Int = 3δ + 2) =
-    get!(() -> PCEBasis(N, α̂, β̂, δ; nrec = nrec), _PCEBASIS_CACHE,
-         (N, Float64(α̂), Float64(β̂), δ, nrec))::PCEBasis
+    cached_pce_basis(fill((Float64(α̂), Float64(β̂)), N), δ; nrec = nrec)
+
+"`PCEBasis(shapes, δ; nrec)`, built once per argument set and then reused."
+function cached_pce_basis(shapes::AbstractVector{<:Tuple}, δ::Int; nrec::Int = 3δ + 2)
+    s = [(Float64(a), Float64(b)) for (a, b) in shapes]
+    return get!(() -> PCEBasis(s, δ; nrec = nrec), _PCEBASIS_CACHE, (s, δ, nrec))::PCEBasis
+end
 
 """
     dense_tensor(pb::PCEBasis) -> Array{Float64,3}
@@ -200,7 +225,7 @@ function affine_pce(pb::PCEBasis, u::Int, v_min::Real, v_max::Real)
         c[1] = Float64(v_min)          # constant term at the k=0 (constant) index
         return c
     end
-    c_uni = convert2affinePCE(Float64(v_min), Float64(v_max), pb.uni)  # [c₀, c₁]
+    c_uni = convert2affinePCE(Float64(v_min), Float64(v_max), pb.unis[u])  # [c₀, c₁]
     return Vector{Float64}(assign2multi(c_uni, u, pb.ind))
 end
 
@@ -258,7 +283,7 @@ with `v_min`, `v_max` in **radians** and `u` the germ dimension.
 Because φ depends on the single germ ω_u, cos(φ) and sin(φ) do too, so their
 PCE is supported on that germ's univariate indices. The coefficients are the
 exact Galerkin projections, evaluated with the Gauss rule that already lives
-in `pb.uni`:
+in `pb.unis[u]`:
 
     c_j = Σ_q w_q · f(φ(ξ_q)) · ψ_j(ξ_q) / ⟨ψ_j, ψ_j⟩ ,   f ∈ {cos, sin},
 
@@ -280,9 +305,10 @@ function affine_trig_pce(pb::PCEBasis, u::Int, v_min::Real, v_max::Real)
         return cos_c, sin_c
     end
 
-    nodes   = pb.uni.quad.nodes
-    weights = pb.uni.quad.weights          # Beta01 PROBABILITY measure: Σ w = 1
-    sp2_uni = computeSP2(pb.uni)
+    uni     = pb.unis[u]
+    nodes   = uni.quad.nodes
+    weights = uni.quad.weights             # Beta01 PROBABILITY measure: Σ w = 1
+    sp2_uni = computeSP2(uni)
 
     φ  = v_min .+ (v_max - v_min) .* nodes
     cφ = cos.(φ)
@@ -291,7 +317,7 @@ function affine_trig_pce(pb::PCEBasis, u::Int, v_min::Real, v_max::Real)
     cos_uni = zeros(pb.deg + 1)
     sin_uni = zeros(pb.deg + 1)
     for j in 0:pb.deg
-        ψ = evaluate(j, nodes, pb.uni)
+        ψ = evaluate(j, nodes, uni)
         cos_uni[j+1] = sum(weights .* cφ .* ψ) / sp2_uni[j+1]
         sin_uni[j+1] = sum(weights .* sφ .* ψ) / sp2_uni[j+1]
     end
@@ -300,15 +326,16 @@ function affine_trig_pce(pb::PCEBasis, u::Int, v_min::Real, v_max::Real)
            Vector{Float64}(assign2multi(sin_uni, u, pb.ind))
 end
 
-"Univariate Galerkin coefficients (length deg+1) of cos/sin of φ = lo + (hi − lo)·ω."
-function _uni_trig(pb::PCEBasis, lo::Real, hi::Real)
-    nodes, weights = pb.uni.quad.nodes, pb.uni.quad.weights
-    sp2_uni = computeSP2(pb.uni)
+"Univariate Galerkin coefficients (length deg+1) of cos/sin of φ = lo + (hi − lo)·ω_g."
+function _uni_trig(pb::PCEBasis, g::Int, lo::Real, hi::Real)
+    uni = pb.unis[g]
+    nodes, weights = uni.quad.nodes, uni.quad.weights
+    sp2_uni = computeSP2(uni)
     φ = lo .+ (hi - lo) .* nodes
     cφ, sφ = cos.(φ), sin.(φ)
     c = zeros(pb.deg + 1); s = zeros(pb.deg + 1)
     for j in 0:pb.deg
-        ψ = evaluate(j, nodes, pb.uni)
+        ψ = evaluate(j, nodes, uni)
         c[j+1] = sum(weights .* cφ .* ψ) / sp2_uni[j+1]
         s[j+1] = sum(weights .* sφ .* ψ) / sp2_uni[j+1]
     end
@@ -330,13 +357,13 @@ a converter type's firing delay:
 and sin φ = sin φ₁ cos φ₂ + cos φ₁ sin φ₂ are sums of products of functions of
 independent germs, and the basis is the tensor product of the univariate ones,
 the projection is the product of the univariate projections (each exact by the
-Gauss rule in `pb.uni`), truncated to total degree `pb.deg`.
+Gauss rule in each germ's `pb.unis` entry), truncated to total degree `pb.deg`.
 """
 function affine2_trig_pce(pb::PCEBasis, u::Int, v_min::Real, v_max::Real,
                           t::Int, s_min::Real, s_max::Real)
     u == t && error("affine2_trig_pce: the two germs must differ")
-    c1, s1 = _uni_trig(pb, v_min, v_max)
-    c2, s2 = _uni_trig(pb, s_min, s_max)
+    c1, s1 = _uni_trig(pb, u, v_min, v_max)
+    c2, s2 = _uni_trig(pb, t, s_min, s_max)
     cos_c = zeros(pb.dim); sin_c = zeros(pb.dim)
     for k in 1:pb.dim
         row = view(pb.ind, k, :)

@@ -1,0 +1,30 @@
+family = "ACSR"
+n_steel = {value = 7, register = "ACSR.Cardinal.st"}
+n_aluminium = {value = 54, register = "ACSR.Cardinal.al"}
+R20 = {value = 0.00005992, register = "ACSR.Cardinal.R20"}
+courses = {value = [12, 18, 24], register = "ACSR.Cardinal.courses"}
+mass_al = {value = 1.3487363340027083, register = "ACSR.Cardinal.mass.al"}
+mass_st = {value = 0.49331435514222144, register = "ACSR.Cardinal.mass.st"}
+E = {value = 70.0, register = "ACSR.Cardinal.E"}
+expansion = {value = 0.0000193, register = "ACSR.Cardinal.expansion"}
+
+
+[d_steel]
+nominal = {value = 0.00338, register = "ACSR.Cardinal.st"}
+lower = {value = 0.00333, register = "ACSR.Cardinal.st"}
+upper = {value = 0.00343, register = "ACSR.Cardinal.st"}
+
+[d_aluminium]
+nominal = {value = 0.00338, register = "ACSR.Cardinal.al"}
+lower = {value = 0.0033462, register = "ACSR.Cardinal.al"}
+upper = {value = 0.0034138, register = "ACSR.Cardinal.al"}
+
+[diameter]
+nominal = {value = 0.03042, register = "ACSR.Cardinal.d"}
+lower = {value = 0.030115799999999998, register = "ACSR.Cardinal.d"}
+upper = {value = 0.0307242, register = "ACSR.Cardinal.d"}
+
+[mass]
+nominal = {value = 1.8420506891449298, register = "ACSR.Cardinal.mass"}
+lower = {value = 1.805209675362031, register = "ACSR.Cardinal.mass"}
+upper = {value = 1.8788917029278285, register = "ACSR.Cardinal.mass"}

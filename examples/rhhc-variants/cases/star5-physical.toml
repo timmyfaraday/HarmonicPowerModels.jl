@@ -1,0 +1,179 @@
+# Study premise: solid grounding of screens and earth wires at both ends.
+# This case assumes ideal transposition. The study omits cross-bonding.
+model = "exact"
+bound = "gaussian"
+harmonics = {value = [5, 7, 11, 13], origin = "examples/rhhc/ieee30_robust.jl:32"}
+epsilon = {value = 0.05, origin = "examples/shhc/pce_params.jl:20"}
+posterior = {value = 1024, origin = "examples/rhhc/ieee30_robust.jl:83"}
+f1 = {value = 50.0, origin = "examples/shhc/ieee30_scenarios.jl:40"} # Hz
+box_names = ["theta_ACSR", "rho_EARTH", "ambient_O132", "rho_aluminium_ACSR", "lay_middle_ACSR", "lay_inner_ACSR", "diameter_O132", "d_steel_ACSR", "rho_steel_O132", "mu_steel_O132", "d_aluminium_ACSR"]
+network = {kind = "matpower", file = "../shhc/data/5node_test.m"}
+units = {value = [1, 2, 3, 4], origin = "examples/shhc/data/5node_test.m:25-29,59-63; load order from PowerModels"}
+note = "Falcon physical replacement with charging and shared inputs. O132-D supports, span, reference sag and earthwire are adopted study assumptions at 100 kV, without a surveyed tower. Mechanical constants and material intervals transferred to Falcon are analogies. Fitted routes are fixed. The candidate study supplies the fixed length and physical rating."
+
+[classes]
+ohl = [1, 2, 3, 4] # `examples/shhc/data/5node_test.m:25-29,59-63`
+
+[routes.spoke]
+length_m = {value = 513.8081286697541, register = "STAR5.length"}
+source_X_ohm = {value = 0.2, origin = "5node_test.m: branch x=0.002 on 100 ohm base"}
+origin = "Candidate study branch-candidates.csv Star5; fitted jointly to R and X"
+
+[ratings.Falcon]
+current_A = {value = 1372.8443238788311, register = "ACSR.Falcon.rating"}
+source_MVA = {value = 100.0, origin = "examples/shhc/data/5node_test.m branch rateA"}
+conditions = "Candidate study IEEE 738 reference conditions; fixed physical rating, not recomputed with the electrical box."
+
+[branches."1"]
+spec = "Falcon"
+formation = "O132-D"
+route = "spoke"
+rating = "Falcon"
+origin = "candidate study: Falcon on O132-D with GW-7x3.15"
+
+[branches."2"]
+spec = "Falcon"
+formation = "O132-D"
+route = "spoke"
+rating = "Falcon"
+origin = "candidate study: Falcon on O132-D with GW-7x3.15"
+
+[branches."3"]
+spec = "Falcon"
+formation = "O132-D"
+route = "spoke"
+rating = "Falcon"
+origin = "candidate study: Falcon on O132-D with GW-7x3.15"
+
+[branches."4"]
+spec = "Falcon"
+formation = "O132-D"
+route = "spoke"
+rating = "Falcon"
+origin = "candidate study: Falcon on O132-D with GW-7x3.15"
+
+[box.theta_ACSR]
+family = "ACSR"
+coordinate = "theta"
+register = "ACSR.op.theta"
+
+[box.rho_aluminium_ACSR]
+family = "ACSR"
+coordinate = "rho_aluminium"
+register = "ACSR.al.rho"
+
+[box.rho_steel_ACSR]
+family = "ACSR"
+coordinate = "rho_steel"
+register = "ACSR.st.rho"
+
+[box.mu_steel_ACSR]
+family = "ACSR"
+coordinate = "mu_steel"
+register = "ACSR.st.mu"
+
+[box.lay_steel_ACSR]
+family = "ACSR"
+coordinate = "lay_steel"
+register = "ACSR.lay.st6"
+
+[box.lay_inner_ACSR]
+family = "ACSR"
+coordinate = "lay_inner"
+register = "ACSR.lay.alin"
+
+[box.lay_outer_ACSR]
+family = "ACSR"
+coordinate = "lay_outer"
+register = "ACSR.lay.alout"
+
+[box.d_aluminium_ACSR]
+family = "ACSR"
+coordinate = "d_aluminium"
+register = "ACSR.al.d"
+
+[box.d_steel_ACSR]
+family = "ACSR"
+coordinate = "d_steel"
+register = "ACSR.st.d"
+
+[box.ambient_O132]
+family = "O132"
+coordinate = "ambient"
+register = "O132.ambient.theta"
+
+[box.phase_sag_O132]
+family = "O132"
+coordinate = "phase_sag"
+register = "O132.phase.reference"
+
+[box.shield_sag_O132]
+family = "O132"
+coordinate = "shield_sag"
+register = "O132.gw.reference"
+
+[box.diameter_O132]
+family = "O132"
+coordinate = "diameter"
+register = "O132.gw.d"
+
+[box.lay_O132]
+family = "O132"
+coordinate = "lay"
+register = "O132.gw.lay"
+
+[box.E_O132]
+family = "O132"
+coordinate = "E"
+register = "O132.gw.E"
+
+[box.rho_steel_O132]
+family = "O132"
+coordinate = "rho_steel"
+register = "ACSR.st.rho"
+
+[box.mu_steel_O132]
+family = "O132"
+coordinate = "mu_steel"
+register = "ACSR.st.mu"
+
+[box.rho_EARTH]
+family = "EARTH"
+coordinate = "rho"
+register = "EARTH.rho"
+
+[bindings.ACSR]
+theta = "theta_ACSR"
+rho_aluminium = "rho_aluminium_ACSR"
+rho_steel = "rho_steel_ACSR"
+mu_steel = "mu_steel_ACSR"
+lay_steel = "lay_steel_ACSR"
+lay_inner = "lay_inner_ACSR"
+lay_middle = "lay_middle_ACSR"
+lay_steel_outer = "lay_steel_outer_ACSR"
+lay_outer = "lay_outer_ACSR"
+d_aluminium = "d_aluminium_ACSR"
+d_steel = "d_steel_ACSR"
+
+[bindings.O132]
+ambient = "ambient_O132"
+phase_sag = "phase_sag_O132"
+shield_sag = "shield_sag_O132"
+diameter = "diameter_O132"
+lay = "lay_O132"
+E = "E_O132"
+rho_steel = "rho_steel_O132"
+mu_steel = "mu_steel_O132"
+
+[bindings.EARTH]
+rho = "rho_EARTH"
+
+[box.lay_middle_ACSR]
+family = "ACSR"
+coordinate = "lay_middle"
+register = "ACSR.Falcon.lay.middle"
+
+[box.lay_steel_outer_ACSR]
+family = "ACSR"
+coordinate = "lay_steel_outer"
+register = "ACSR.lay.st12"

@@ -1,0 +1,477 @@
+# Study premise: solid grounding of screens and earth wires at both ends.
+# This case assumes ideal transposition. The study omits cross-bonding.
+model = "exact"
+bound = "gaussian"
+harmonics = {value = [5, 7, 11, 13], origin = "examples/rhhc/ieee30_robust.jl:32"}
+epsilon = {value = 0.05, origin = "examples/shhc/pce_params.jl:20"}
+posterior = {value = 1024, origin = "examples/rhhc/ieee30_robust.jl:83"}
+f1 = {value = 50.0, origin = "examples/shhc/ieee30_scenarios.jl:40"} # Hz
+box_names = ["theta_ACSR", "rho_EARTH", "rho_aluminium_ACSR", "lay_outer_ACSR", "lay_middle_ACSR", "lay_inner_ACSR", "ambient_O13", "d_steel_ACSR", "rho_steel_ACSR", "mu_steel_ACSR", "d_aluminium_ACSR"]
+network = {kind = "matpower", file = "../shhc/data/33bus_network_shhc.m"}
+units = {value = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32], origin = "examples/shhc/data/33bus_network_shhc.m:24-64,108-141; load order from PowerModels"}
+note = "Candidate study overhead assignments and fitted routes, with LCM charging. Assumption: ideal transposition on an unshielded pole; fixed IEEE738 reference-weather ratings. No source routes are supplied. Fixed 70 GPa modulus and 19.3 microunits per kelvin expansion serve every feeder conductor. The source rating is 10 MVA; physical limits exceed the nominal fundamental currents on every branch."
+
+[classes]
+ohl = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32] # `examples/shhc/data/33bus_network_shhc.m:24-64,108-141`
+
+
+[ratings.Rabbit]
+current_A = {value = 247.46793564164852, register = "ACSR.Rabbit.rating"}
+source_MVA = {value = 10.0, origin = "33bus_network_shhc.m branch rateA"}
+
+[ratings.Weasel]
+current_A = {value = 179.12681382123264, register = "ACSR.Weasel.rating"}
+source_MVA = {value = 10.0, origin = "33bus_network_shhc.m branch rateA"}
+
+[ratings.Dog]
+current_A = {value = 380.9237707219876, register = "ACSR.Dog.rating"}
+source_MVA = {value = 10.0, origin = "33bus_network_shhc.m branch rateA"}
+
+[ratings.Tiger]
+current_A = {value = 441.82594389942705, register = "ACSR.Tiger.rating"}
+source_MVA = {value = 10.0, origin = "33bus_network_shhc.m branch rateA"}
+
+[ratings.Wolf]
+current_A = {value = 496.84220560547675, register = "ACSR.Wolf.rating"}
+source_MVA = {value = 10.0, origin = "33bus_network_shhc.m branch rateA"}
+
+[ratings.Bison]
+current_A = {value = 857.1332070839111, register = "ACSR.Bison.rating"}
+source_MVA = {value = 10.0, origin = "33bus_network_shhc.m branch rateA"}
+
+[routes."1"]
+length_m = {value = 141.01389123364703, register = "IEEE33.length.1"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."1"]
+spec = "Rabbit"
+formation = "O13-F"
+route = "1"
+rating = "Rabbit"
+origin = "Candidate study IEEE33 branch 1"
+
+[routes."2"]
+length_m = {value = 753.6201458270274, register = "IEEE33.length.2"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."2"]
+spec = "Rabbit"
+formation = "O13-F"
+route = "2"
+rating = "Rabbit"
+origin = "Candidate study IEEE33 branch 2"
+
+[routes."3"]
+length_m = {value = 559.4631132611091, register = "IEEE33.length.3"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."3"]
+spec = "Rabbit"
+formation = "O13-F"
+route = "3"
+rating = "Rabbit"
+origin = "Candidate study IEEE33 branch 3"
+
+[routes."4"]
+length_m = {value = 582.5596266578104, register = "IEEE33.length.4"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."4"]
+spec = "Rabbit"
+formation = "O13-F"
+route = "4"
+rating = "Rabbit"
+origin = "Candidate study IEEE33 branch 4"
+
+[routes."5"]
+length_m = {value = 2346.5199029461733, register = "IEEE33.length.5"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."5"]
+spec = "Dog"
+formation = "O13-F"
+route = "5"
+rating = "Dog"
+origin = "Candidate study IEEE33 branch 5"
+
+[routes."6"]
+length_m = {value = 2160.205585253421, register = "IEEE33.length.6"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."6"]
+spec = "Bison"
+formation = "O13-F"
+route = "6"
+rating = "Bison"
+origin = "Candidate study IEEE33 branch 6"
+
+[routes."7"]
+length_m = {value = 3054.2807989586345, register = "IEEE33.length.7"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."7"]
+spec = "Rabbit"
+formation = "O13-F"
+route = "7"
+rating = "Rabbit"
+origin = "Candidate study IEEE33 branch 7"
+
+[routes."8"]
+length_m = {value = 1835.491324965535, register = "IEEE33.length.8"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."8"]
+spec = "Rabbit"
+formation = "O13-F"
+route = "8"
+rating = "Rabbit"
+origin = "Candidate study IEEE33 branch 8"
+
+[routes."9"]
+length_m = {value = 1847.5125659685336, register = "IEEE33.length.9"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."9"]
+spec = "Rabbit"
+formation = "O13-F"
+route = "9"
+rating = "Rabbit"
+origin = "Candidate study IEEE33 branch 9"
+
+[routes."10"]
+length_m = {value = 183.421377932975, register = "IEEE33.length.10"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."10"]
+spec = "Weasel"
+formation = "O13-F"
+route = "10"
+rating = "Weasel"
+origin = "Candidate study IEEE33 branch 10"
+
+[routes."11"]
+length_m = {value = 349.3311863159148, register = "IEEE33.length.11"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."11"]
+spec = "Weasel"
+formation = "O13-F"
+route = "11"
+rating = "Weasel"
+origin = "Candidate study IEEE33 branch 11"
+
+[routes."12"]
+length_m = {value = 3950.641512856012, register = "IEEE33.length.12"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."12"]
+spec = "Dog"
+formation = "O13-F"
+route = "12"
+rating = "Dog"
+origin = "Candidate study IEEE33 branch 12"
+
+[routes."13"]
+length_m = {value = 2196.1080572167343, register = "IEEE33.length.13"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."13"]
+spec = "Tiger"
+formation = "O13-F"
+route = "13"
+rating = "Tiger"
+origin = "Candidate study IEEE33 branch 13"
+
+[routes."14"]
+length_m = {value = 1726.2961096725833, register = "IEEE33.length.14"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."14"]
+spec = "Dog"
+formation = "O13-F"
+route = "14"
+rating = "Dog"
+origin = "Candidate study IEEE33 branch 14"
+
+[routes."15"]
+length_m = {value = 1336.8002129780637, register = "IEEE33.length.15"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."15"]
+spec = "Rabbit"
+formation = "O13-F"
+route = "15"
+rating = "Rabbit"
+origin = "Candidate study IEEE33 branch 15"
+
+[routes."16"]
+length_m = {value = 5261.213662321466, register = "IEEE33.length.16"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."16"]
+spec = "Tiger"
+formation = "O13-F"
+route = "16"
+rating = "Tiger"
+origin = "Candidate study IEEE33 branch 16"
+
+[routes."17"]
+length_m = {value = 1965.284895382918, register = "IEEE33.length.17"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."17"]
+spec = "Dog"
+formation = "O13-F"
+route = "17"
+rating = "Dog"
+origin = "Candidate study IEEE33 branch 17"
+
+[routes."18"]
+length_m = {value = 499.33705874485963, register = "IEEE33.length.18"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."18"]
+spec = "Dog"
+formation = "O13-F"
+route = "18"
+rating = "Dog"
+origin = "Candidate study IEEE33 branch 18"
+
+[routes."19"]
+length_m = {value = 4427.400996894892, register = "IEEE33.length.19"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."19"]
+spec = "Dog"
+formation = "O13-F"
+route = "19"
+rating = "Dog"
+origin = "Candidate study IEEE33 branch 19"
+
+[routes."20"]
+length_m = {value = 1561.918528213941, register = "IEEE33.length.20"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."20"]
+spec = "Tiger"
+formation = "O13-F"
+route = "20"
+rating = "Tiger"
+origin = "Candidate study IEEE33 branch 20"
+
+[routes."21"]
+length_m = {value = 2880.4112512649563, register = "IEEE33.length.21"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."21"]
+spec = "Tiger"
+formation = "O13-F"
+route = "21"
+rating = "Tiger"
+origin = "Candidate study IEEE33 branch 21"
+
+[routes."22"]
+length_m = {value = 790.5157667941538, register = "IEEE33.length.22"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."22"]
+spec = "Rabbit"
+formation = "O13-F"
+route = "22"
+rating = "Rabbit"
+origin = "Candidate study IEEE33 branch 22"
+
+[routes."23"]
+length_m = {value = 2422.8702535458583, register = "IEEE33.length.23"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."23"]
+spec = "Dog"
+formation = "O13-F"
+route = "23"
+rating = "Dog"
+origin = "Candidate study IEEE33 branch 23"
+
+[routes."24"]
+length_m = {value = 2401.919275209565, register = "IEEE33.length.24"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."24"]
+spec = "Dog"
+formation = "O13-F"
+route = "24"
+rating = "Dog"
+origin = "Candidate study IEEE33 branch 24"
+
+[routes."25"]
+length_m = {value = 310.32442474430474, register = "IEEE33.length.25"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."25"]
+spec = "Rabbit"
+formation = "O13-F"
+route = "25"
+rating = "Rabbit"
+origin = "Candidate study IEEE33 branch 25"
+
+[routes."26"]
+length_m = {value = 434.34897508167114, register = "IEEE33.length.26"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."26"]
+spec = "Rabbit"
+formation = "O13-F"
+route = "26"
+rating = "Rabbit"
+origin = "Candidate study IEEE33 branch 26"
+
+[routes."27"]
+length_m = {value = 3075.2213350060124, register = "IEEE33.length.27"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."27"]
+spec = "Dog"
+formation = "O13-F"
+route = "27"
+rating = "Dog"
+origin = "Candidate study IEEE33 branch 27"
+
+[routes."28"]
+length_m = {value = 2317.6867823246007, register = "IEEE33.length.28"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."28"]
+spec = "Dog"
+formation = "O13-F"
+route = "28"
+rating = "Dog"
+origin = "Candidate study IEEE33 branch 28"
+
+[routes."29"]
+length_m = {value = 775.8146794060021, register = "IEEE33.length.29"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."29"]
+spec = "Rabbit"
+formation = "O13-F"
+route = "29"
+rating = "Rabbit"
+origin = "Candidate study IEEE33 branch 29"
+
+[routes."30"]
+length_m = {value = 3025.2185303913766, register = "IEEE33.length.30"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."30"]
+spec = "Dog"
+formation = "O13-F"
+route = "30"
+rating = "Dog"
+origin = "Candidate study IEEE33 branch 30"
+
+[routes."31"]
+length_m = {value = 1182.783221714124, register = "IEEE33.length.31"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."31"]
+spec = "Tiger"
+formation = "O13-F"
+route = "31"
+rating = "Tiger"
+origin = "Candidate study IEEE33 branch 31"
+
+[routes."32"]
+length_m = {value = 1664.8400249688818, register = "IEEE33.length.32"}
+origin = "Candidate study joint relative R/X fit; no surveyed route"
+
+[branches."32"]
+spec = "Wolf"
+formation = "O13-F"
+route = "32"
+rating = "Wolf"
+origin = "Candidate study IEEE33 branch 32"
+
+[box.theta_ACSR]
+family = "ACSR"
+coordinate = "theta"
+register = "ACSR.op.theta"
+
+[box.rho_aluminium_ACSR]
+family = "ACSR"
+coordinate = "rho_aluminium"
+register = "ACSR.al.rho"
+
+[box.rho_steel_ACSR]
+family = "ACSR"
+coordinate = "rho_steel"
+register = "ACSR.st.rho"
+
+[box.mu_steel_ACSR]
+family = "ACSR"
+coordinate = "mu_steel"
+register = "ACSR.st.mu"
+
+[box.lay_steel_ACSR]
+family = "ACSR"
+coordinate = "lay_steel"
+register = "ACSR.lay.st6"
+
+[box.lay_inner_ACSR]
+family = "ACSR"
+coordinate = "lay_inner"
+register = "ACSR.lay.alin"
+
+[box.lay_outer_ACSR]
+family = "ACSR"
+coordinate = "lay_outer"
+register = "ACSR.lay.alout"
+
+[box.d_aluminium_ACSR]
+family = "ACSR"
+coordinate = "d_aluminium"
+register = "ACSR.al.d"
+
+[box.d_steel_ACSR]
+family = "ACSR"
+coordinate = "d_steel"
+register = "ACSR.st.d"
+
+[box.rho_EARTH]
+family = "EARTH"
+coordinate = "rho"
+register = "EARTH.rho"
+
+[bindings.ACSR]
+theta = "theta_ACSR"
+rho_aluminium = "rho_aluminium_ACSR"
+rho_steel = "rho_steel_ACSR"
+mu_steel = "mu_steel_ACSR"
+lay_steel = "lay_steel_ACSR"
+lay_inner = "lay_inner_ACSR"
+lay_middle = "lay_middle_ACSR"
+lay_outer = "lay_outer_ACSR"
+d_aluminium = "d_aluminium_ACSR"
+d_steel = "d_steel_ACSR"
+
+[bindings.EARTH]
+rho = "rho_EARTH"
+
+[box.lay_middle_ACSR]
+family = "ACSR"
+coordinate = "lay_middle"
+register = "ACSR.Falcon.lay.middle"
+
+
+[box.ambient_O13]
+family = "O13"
+coordinate = "ambient"
+register = "O132.ambient.theta"
+
+[box.phase_sag_O13]
+family = "O13"
+coordinate = "phase_sag"
+register = "O13.phase.reference"
+
+[bindings.O13]
+ambient = "ambient_O13"
+phase_sag = "phase_sag_O13"

@@ -70,7 +70,7 @@ end
 
 """
     pessimize!(dict, hdata, model, g; ncons = 5, starts = 3, iters = 10, fd = 1e-3,
-               margin = Inf, ce = nothing, gradient = :adjoint) -> OracleResult
+               margin = Inf, ce = nothing, gradient = :adjoint, branch_derivative = :central) -> OracleResult
 
 Approximate pessimizing oracle for the hosting variables `g` (h ⇒ g_h = I_h²):
 
@@ -86,7 +86,10 @@ Approximate pessimizing oracle for the hosting variables `g` (h ⇒ g_h = I_h²)
 
 The ascent's gradient is analytic (`gradient = :adjoint`, see
 [`fast_violation_gradient`](@ref)) or by central finite differences of step `fd`
-(`gradient = :fd`). Each ascent evaluates only its own constraint, through a [`ConstraintEvaluator`](@ref)
+(`gradient = :fd`). `branch_derivative = :central` selects central differences of the
+branch data; `:dual` uses ForwardDiff, and needs branch data that carry dual numbers through
+(see [`fast_violation_gradient`](@ref)). It has an effect only with `gradient = :adjoint`.
+Each ascent evaluates only its own constraint, through a [`ConstraintEvaluator`](@ref)
 (`ce`, built here when not given): its harmonics and the transfer-impedance rows it needs,
 with the admittance of the fixed network elements cached. The ascents, and the finite
 differences within each ascent step, run in parallel on the available threads; the result
@@ -97,10 +100,12 @@ cutting-set method should run at maximum effort (Mutapcic & Boyd 2009, §5.1).
 """
 function pessimize!(dict::ParameterDictionary, hdata::Dict, model::AbstractNetworkModel, g;
                     ncons::Int = 5, starts::Int = 3, iters::Int = 10, fd::Real = 1e-3,
-                    margin::Real = Inf, ce = nothing, gradient::Symbol = :adjoint)
+                    margin::Real = Inf, ce = nothing, gradient::Symbol = :adjoint,
+                    branch_derivative = :central)
+    _check_branch_derivative(branch_derivative)
     gv  = [g[h] for h in dict.harmonics]
-    V   = dictionary_violations(dict, g)
     nc  = length(dict.keys)
+    V   = _dictionary_violations!(Matrix{Float64}(undef, nc, length(dict.points)), dict, gv)
     best = [maximum(view(V, j, :)) for j in 1:nc]
     arg  = [argmax(view(V, j, :)) for j in 1:nc]
 
@@ -114,7 +119,7 @@ function pessimize!(dict::ParameterDictionary, hdata::Dict, model::AbstractNetwo
                     for s in sortperm(V[j, :]; rev = true)[1:min(starts, size(V, 2))]]
     asc   = _tmap(pairs) do (j, s)
         _ascend(x -> fast_violation(ce, j, x, g), dict.points[s]; iters, fd,
-                grad = gradient === :adjoint ? (x -> last(fast_violation_gradient(ce, j, x, g))) : nothing)
+                grad = gradient === :adjoint ? (x -> last(fast_violation_gradient(ce, j, x, g; branch_derivative))) : nothing)
     end
     new   = [ξ for ((j, _), (ξ, f)) in zip(pairs, asc) if f > best[j]]
     for idx in add_points!(dict, hdata, model, new, :refined)

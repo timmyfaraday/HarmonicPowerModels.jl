@@ -1,0 +1,178 @@
+# Study premise: solid grounding of screens and earth wires at both ends.
+# This case assumes ideal transposition. The study omits cross-bonding.
+model = "exact"
+bound = "gaussian"
+harmonics = {value = [5, 7, 11, 13], origin = "examples/rhhc/ieee30_robust.jl:32"}
+epsilon = {value = 0.05, origin = "examples/shhc/pce_params.jl:20"}
+posterior = {value = 1024, origin = "examples/rhhc/ieee30_robust.jl:83"}
+f1 = {value = 50.0, origin = "examples/shhc/ieee30_scenarios.jl:40"} # Hz
+box_names = ["theta_ACSR", "rho_steel_O230", "rho_EARTH", "mu_steel_O230", "rho_aluminium_ACSR", "lay_middle_ACSR", "lay_inner_ACSR", "ambient_O230", "diameter_O230", "d_aluminium_ACSR"]
+network = {kind = "converted", file = "networks/ieee9.json"}
+units = {value = [1, 2, 3], origin = "networks/ieee9.json:1, load table from networks/convert.jl, save_network"}
+note = "Cardinal physical replacement on supplied routes, with LCM charging. Source transformer leakage, ratios and capacitances remain. Assumption: generator-side delta and grid-side grounded star, proposed Dy11 with solid grid neutral; vector groups are notes only. Source line rating 1000 MVA; physical rating follows the candidate study. Assumption: shared O230 mechanical inputs serve both transmission voltage levels."
+
+[classes]
+ohl = [1, 2, 3, 4, 5, 6] # `networks/ieee9.json:1`, length_m in the branch table
+
+
+[ratings.Cardinal]
+current_A = {value = 994.5173367327438, register = "ACSR.Cardinal.rating"}
+source_MVA = {value = 1000.0, origin = "networks/ieee9.json branch rate_a on its baseMVA"}
+conditions = "Candidate study IEEE738 reference weather; fixed current ceiling."
+
+[branches."1"]
+spec = "Cardinal"
+formation = "O230-F"
+rating = "Cardinal"
+origin = "Candidate study Cardinal; networks/ieee9.json supplied length_m 76000.0 m"
+
+[branches."2"]
+spec = "Cardinal"
+formation = "O230-F"
+rating = "Cardinal"
+origin = "Candidate study Cardinal; networks/ieee9.json supplied length_m 106000.0 m"
+
+[branches."3"]
+spec = "Cardinal"
+formation = "O230-F"
+rating = "Cardinal"
+origin = "Candidate study Cardinal; networks/ieee9.json supplied length_m 170000.0 m"
+
+[branches."4"]
+spec = "Cardinal"
+formation = "O230-F"
+rating = "Cardinal"
+origin = "Candidate study Cardinal; networks/ieee9.json supplied length_m 179000.0 m"
+
+[branches."5"]
+spec = "Cardinal"
+formation = "O230-F"
+rating = "Cardinal"
+origin = "Candidate study Cardinal; networks/ieee9.json supplied length_m 89000.0 m"
+
+[branches."6"]
+spec = "Cardinal"
+formation = "O230-F"
+rating = "Cardinal"
+origin = "Candidate study Cardinal; networks/ieee9.json supplied length_m 97000.0 m"
+
+[box.theta_ACSR]
+family = "ACSR"
+coordinate = "theta"
+register = "ACSR.op.theta"
+
+[box.rho_aluminium_ACSR]
+family = "ACSR"
+coordinate = "rho_aluminium"
+register = "ACSR.al.rho"
+
+[box.rho_steel_ACSR]
+family = "ACSR"
+coordinate = "rho_steel"
+register = "ACSR.st.rho"
+
+[box.mu_steel_ACSR]
+family = "ACSR"
+coordinate = "mu_steel"
+register = "ACSR.st.mu"
+
+[box.lay_steel_ACSR]
+family = "ACSR"
+coordinate = "lay_steel"
+register = "ACSR.lay.st6"
+
+[box.lay_inner_ACSR]
+family = "ACSR"
+coordinate = "lay_inner"
+register = "ACSR.lay.alin"
+
+[box.lay_outer_ACSR]
+family = "ACSR"
+coordinate = "lay_outer"
+register = "ACSR.lay.alout"
+
+[box.d_aluminium_ACSR]
+family = "ACSR"
+coordinate = "d_aluminium"
+register = "ACSR.al.d"
+
+[box.d_steel_ACSR]
+family = "ACSR"
+coordinate = "d_steel"
+register = "ACSR.st.d"
+
+[box.ambient_O230]
+family = "O230"
+coordinate = "ambient"
+register = "O132.ambient.theta"
+
+[box.phase_sag_O230]
+family = "O230"
+coordinate = "phase_sag"
+register = "O230.phase.reference"
+
+[box.shield_sag_O230]
+family = "O230"
+coordinate = "shield_sag"
+register = "O230.gw.reference"
+
+[box.diameter_O230]
+family = "O230"
+coordinate = "diameter"
+register = "O132.gw.d"
+
+[box.lay_O230]
+family = "O230"
+coordinate = "lay"
+register = "O132.gw.lay"
+
+[box.E_O230]
+family = "O230"
+coordinate = "E"
+register = "O132.gw.E"
+
+[box.rho_steel_O230]
+family = "O230"
+coordinate = "rho_steel"
+register = "ACSR.st.rho"
+
+[box.mu_steel_O230]
+family = "O230"
+coordinate = "mu_steel"
+register = "ACSR.st.mu"
+
+[box.rho_EARTH]
+family = "EARTH"
+coordinate = "rho"
+register = "EARTH.rho"
+
+[bindings.ACSR]
+theta = "theta_ACSR"
+rho_aluminium = "rho_aluminium_ACSR"
+rho_steel = "rho_steel_ACSR"
+mu_steel = "mu_steel_ACSR"
+lay_steel = "lay_steel_ACSR"
+lay_inner = "lay_inner_ACSR"
+lay_middle = "lay_middle_ACSR"
+lay_outer = "lay_outer_ACSR"
+d_aluminium = "d_aluminium_ACSR"
+d_steel = "d_steel_ACSR"
+
+[bindings.O230]
+ambient = "ambient_O230"
+phase_sag = "phase_sag_O230"
+shield_sag = "shield_sag_O230"
+diameter = "diameter_O230"
+lay = "lay_O230"
+E = "E_O230"
+rho_steel = "rho_steel_O230"
+mu_steel = "mu_steel_O230"
+
+[bindings.EARTH]
+rho = "rho_EARTH"
+
+[box.lay_middle_ACSR]
+family = "ACSR"
+coordinate = "lay_middle"
+register = "ACSR.Cardinal.lay.middle"
+

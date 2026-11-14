@@ -11,4 +11,4 @@ TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 
 [sources]
 HarmonicPowerModels = {path = "../.."}
-LineCableModels = {url = "https://github.com/Electa-Git/LineCableModels.jl", rev = "59cc3f2329e5df9b33929f52009e996cee1d4784"}
+LineCableModels = {url = "https://github.com/Electa-Git/LineCableModels.jl", rev = "e180b435e39495eeb7eb16dbdaa5193d374a9f60"}

@@ -1,0 +1,29 @@
+family = "ACSR"
+n_steel = {value = 1, register = "ACSR.Weasel.st"}
+n_aluminium = {value = 6, register = "ACSR.Weasel.al"}
+R20 = {value = 0.0009077, register = "ACSR.Weasel.R20"}
+courses = {value = [6], register = "ACSR.Weasel.courses"}
+mass_al = {value = 0.0882266108776787, register = "ACSR.Weasel.mass.al"}
+mass_st = {value = 0.040989158886716365, register = "ACSR.Weasel.mass.st"}
+E = {value = 70.0, register = "ACSR.Weasel.E"}
+expansion = {value = 1.93e-05, register = "ACSR.Weasel.expansion"}
+
+[d_steel]
+nominal = {value = 0.00259, register = "ACSR.Weasel.st"}
+lower = {value = 0.0025499999999999997, register = "ACSR.Weasel.st"}
+upper = {value = 0.00263, register = "ACSR.Weasel.st"}
+
+[d_aluminium]
+nominal = {value = 0.00259, register = "ACSR.Weasel.al"}
+lower = {value = 0.00256, register = "ACSR.Weasel.al"}
+upper = {value = 0.0026199999999999995, register = "ACSR.Weasel.al"}
+
+[diameter]
+nominal = {value = 0.007769999999999999, register = "ACSR.Weasel.d"}
+lower = {value = 0.007692299999999999, register = "ACSR.Weasel.d"}
+upper = {value = 0.007847699999999999, register = "ACSR.Weasel.d"}
+
+[mass]
+nominal = {value = 0.12921576976439508, register = "ACSR.Weasel.mass"}
+lower = {value = 0.12663145436910717, register = "ACSR.Weasel.mass"}
+upper = {value = 0.131800085159683, register = "ACSR.Weasel.mass"}

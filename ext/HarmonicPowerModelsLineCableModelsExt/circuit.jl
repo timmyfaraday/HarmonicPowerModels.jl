@@ -1,10 +1,11 @@
 """
-    Circuit{B, F, P, V}
+    Circuit{B, F, P, C, K, V}
 
 Serve a three-phase LCM circuit per sequence. Calls at the box's point type and a
 `Float64` frequency share stored results. Other point or frequency types compute directly.
 """
-struct Circuit{B <: Function, F <: AbstractFormulation, P <: NamedTuple, V <: NamedTuple}
+struct Circuit{B <: Function, F <: AbstractFormulation,
+    P <: NamedTuple, C, K <: NamedTuple, V <: NamedTuple}
     "User function from a point and frequency \\[Hz\\] to an LCM problem."
     problem::B
     "LCM formulation built once and passed unchanged to each computation."
@@ -12,25 +13,29 @@ struct Circuit{B <: Function, F <: AbstractFormulation, P <: NamedTuple, V <: Na
     "Three-phase sequence transformation."
     fortescue::Fortescue
     "Sequences in \\[Ω/m\\] and \\[S/m\\], keyed by point and frequency \\[Hz\\]."
-    sequences::Dict{Tuple{P, Float64}, V}
+    sequences::Dict{Tuple{K, Float64}, V}
     "Lock that guards access to the sequences."
     lock::ReentrantLock
 
     @doc """
-        Circuit(problem::Function, formulation::AbstractFormulation, box::ParameterBox)
+        Circuit(problem::Function, formulation::AbstractFormulation, box::ParameterBox, coordinates::Tuple = keys(nominal_point(box)))
 
     Construct a circuit whose `problem(p, f)` returns an LCM `LineParametersProblem`
-    at frequency `f` \\[Hz\\]. The stored point type comes from `box`.
+    at frequency `f` \\[Hz\\]. The full point type comes from `box`.
+    `coordinates` selects the stored key.
     """
-    function Circuit(problem::Function, formulation::AbstractFormulation, box::ParameterBox)
+    function Circuit(problem::Function, formulation::AbstractFormulation,
+            box::ParameterBox, coordinates::Tuple = keys(nominal_point(box)))
         P = typeof(nominal_point(box))
+        validate(coordinates, box)
+        K = typeof(NamedTuple{coordinates}(nominal_point(box)))
         V = NamedTuple{(:zero, :positive, :negative),
             Tuple{
                 NamedTuple{(:z, :y), Tuple{ComplexF64, ComplexF64}},
                 NamedTuple{(:z, :y), Tuple{ComplexF64, ComplexF64}},
                 NamedTuple{(:z, :y), Tuple{ComplexF64, ComplexF64}}}}
-        return new{typeof(problem), typeof(formulation), P, V}(
-            problem, formulation, Fortescue(3), Dict{Tuple{P, Float64}, V}(), ReentrantLock())
+        return new{typeof(problem), typeof(formulation), P, coordinates, K, V}(
+            problem, formulation, Fortescue(3), Dict{Tuple{K, Float64}, V}(), ReentrantLock())
     end
 end
 
@@ -77,20 +82,22 @@ function validate(M::AbstractMatrix, c::Circuit)
 end
 
 """
-    (c::Circuit{B, F, P})(p::P, f::Float64) where {B<:Function, F<:AbstractFormulation, P<:NamedTuple}
+    (c::Circuit{B, F, P, C})(p::P, f::Float64) where {B<:Function, F<:AbstractFormulation, P<:NamedTuple, C}
 
 Return all sequences at point `p` and frequency `f` \\[Hz\\]. Store the first
 written result under a lock. Compute outside the lock when the key is absent.
 The members `z` and `y` have units \\[Ω/m\\] and \\[S/m\\].
 """
-function (c::Circuit{B, F, P})(
-        p::P, f::Float64) where {B <: Function, F <: AbstractFormulation, P <: NamedTuple}
+function (c::Circuit{B, F, P, C})(
+        p::P, f::Float64) where {
+        B <: Function, F <: AbstractFormulation, P <: NamedTuple, C}
+    q = NamedTuple{C}(p)
     @lock c.lock begin
-        haskey(c.sequences, (p, f)) && return c.sequences[(p, f)]
+        haskey(c.sequences, (q, f)) && return c.sequences[(q, f)]
     end
     result = compute(c, p, f)
     @lock c.lock begin
-        return get!(c.sequences, (p, f), result)
+        return get!(c.sequences, (q, f), result)
     end
 end
 
@@ -122,3 +129,28 @@ Return positive-sequence `(z, y)` in \\[Ω/m\\] and \\[S/m\\] at `p` and `f` \\[
 Return negative-sequence `(z, y)` in \\[Ω/m\\] and \\[S/m\\] at `p` and `f` \\[Hz\\].
 """
 (c::Circuit)(p, f, ::NegativeSequence) = c(p, f).negative
+
+"""
+    validate(coordinates::Tuple, c::Circuit)
+
+Return `coordinates` unchanged when the declaration equals the circuit's stored
+coordinates. Throw `ArgumentError` when branches sharing a problem disagree.
+"""
+function validate(coordinates::Tuple, c::Circuit{B, F, P, C}) where {B, F, P, C}
+    coordinates == C ||
+        throw(ArgumentError("coordinates $coordinates must equal the circuit coordinates $C"))
+    return coordinates
+end
+
+"""
+    validate(coordinates::Tuple, box::ParameterBox)
+
+Return `coordinates` unchanged when every declared name belongs to `box`.
+Throw `ArgumentError` naming any unknown coordinates.
+"""
+function validate(coordinates::Tuple, box::ParameterBox)
+    unknown = filter(n -> n ∉ keys(nominal_point(box)), coordinates)
+    isempty(unknown) ||
+        throw(ArgumentError("unknown coordinates $unknown in the parameter box declaration"))
+    return coordinates
+end

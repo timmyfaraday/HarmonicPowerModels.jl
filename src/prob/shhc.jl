@@ -246,6 +246,7 @@ admittance, and the transformer 2-port. Dropping any of them silently breaks the
 dHHC ≡ sHHC_SOC equivalence on networks where it is non-zero.
 """
 function _harmonic_admittance(nw_data::Dict, bus_idx::Dict{Int,Int})
+    nw_data = _zero_sequence_view(nw_data)   # the network itself unless zero sequence
     Nn = length(nw_data["bus"])
     Yh = zeros(ComplexF64, Nn, Nn)
 
@@ -265,7 +266,14 @@ function _harmonic_admittance(nw_data::Dict, bus_idx::Dict{Int,Int})
         # QCQP's KCL, where its current enters as (g_fr*vr − b_fr*vi)/tm².
         y_fr = get(branch, "g_fr", 0.0) + im * get(branch, "b_fr", 0.0)
         y_to = get(branch, "g_to", 0.0) + im * get(branch, "b_to", 0.0)
-        _stamp_branch!(Yh, f, t, r, x, y_fr, y_to, tc)
+        # zero sequence: a winding pair that earths one side (`_zero_sequence_view`)
+        if get(branch, "earth_to", false)
+            Yh[f, f] += (1 / (r + im * x) + y_fr) / abs2(tc)
+        elseif get(branch, "earth_fr", false)
+            Yh[t, t] += 1 / (r + im * x) + y_to
+        else
+            _stamp_branch!(Yh, f, t, r, x, y_fr, y_to, tc)
+        end
     end
 
     # Bus shunt stamp: a bus shunt (capacitor bank, shunt filter, shunt reactor)
@@ -319,6 +327,11 @@ function _accumulate_response!(ar, ai, n, nk, rz, iz, cp_d, sp_d)
     return nothing
 end
 
+# Harmonic units that have a return path, with floating matrix indices excluded.
+_harmonic_units(nw, hunits, bus_idx, floating) = Set{Int}(
+    parse(Int, d) for (d, ld) in nw["load"]
+    if parse(Int, d) in hunits && bus_idx[ld["load_bus"]] ∉ floating)
+
 """
     shhc_moments(hdata; networks = hdata["nw"]) -> NamedTuple
 
@@ -330,6 +343,9 @@ The harmonic admittances, loads and branch impedances are read from `networks` (
 string ⇒ network data), which defaults to `hdata["nw"]`. Passing the networks of another
 realization of the network parameters gives that realization's moments, with the same
 buses, units and PCE data — the oracle of the robust (cutting-set) formulation.
+`active_units[h]` records the participating load IDs: floating zero-sequence units
+have zero injection and allocation weight at that harmonic; the base fairness
+weights `wts` still apply at harmonics where those units participate.
 """
 function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
     pce      = hdata["pce"]
@@ -348,6 +364,8 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
 
     harm_nw_strs = sort([nw for nw in keys(hdata["nw"]) if nw != "1"])
     harm_nw_ints = parse.(Int, harm_nw_strs)
+    # zero-sequence harmonics: the zero-sequence equivalent networks
+    networks = Dict(nw => _zero_sequence_view(networks[nw]) for nw in harm_nw_strs)
 
     # ── Step 3: Z_h via Kron elimination of clean buses ───────────────────────
     # Clean buses (bus_type 4) are ideal harmonic grounds (V=0); they are
@@ -362,11 +380,25 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
     non_ref_ids = [i for i in 1:Nn if i ∉ ref_bus_ids]   # row/col indices
 
     Z_harm = Dict{Int, Matrix{ComplexF64}}()
+    # Floating units inject nothing at this harmonic and drop out of its rows and weights.
+    # Block the shared capacity only when every harmonic unit floats: no injection remains
+    # to bound it. Units in earthed parts retain their common hosting capacity.
+    blocked = Set{Int}()
+    hunits  = Set(get(pce, "harmonic_units", Int[]))
+    active_units = Dict{Int,Set{Int}}()
     for (nw_str, nw_int) in zip(harm_nw_strs, harm_nw_ints)
         nw_data = networks[nw_str]
         Yh      = _harmonic_admittance(nw_data, bus_idx)
         Y_red   = Yh[non_ref_ids, non_ref_ids]
         nr      = length(non_ref_ids)
+        fl      = Set{Int}()
+        if get(nw_data, "harmonic_sequence", :positive) === :zero
+            Y_red, floating = _earth_floating(Y_red)
+            fl = Set(non_ref_ids[i] for idx in floating for i in idx)
+        end
+        active_units[nw_int] = _harmonic_units(nw_data, hunits, bus_idx, fl)
+        all_units = _harmonic_units(nw_data, hunits, bus_idx, Set{Int}())
+        !isempty(all_units) && isempty(active_units[nw_int]) && push!(blocked, nw_int)
         try
             Z_harm[nw_int] = Y_red \ Matrix{ComplexF64}(_eye, nr, nr)
         catch
@@ -390,6 +422,14 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
 
     non_ref_pos = Dict(id => idx for (idx, id) in enumerate(non_ref_ids))
 
+    # ── No recombination: worst-case alignment of the unit contributions ─────
+    if !get(pce, "recombination", true)
+        alpha_V, alpha_I = _worst_case_moments(Z_harm, networks, harm_nw_strs, harm_nw_ints,
+            bus_idx, ref_bus_ids, non_ref_pos, wts, active_units, length(K))
+        return (; pb, K, psi_norms, alpha_re, alpha_im, alpha_V, alpha_I, Nn, bus_idx,
+                  ref_bus_ids, harm_nw_strs, harm_nw_ints, wts, active_units, blocked)
+    end
+
     for (nw_str, nw_int) in zip(harm_nw_strs, harm_nw_ints)
         haskey(Z_harm, nw_int) || continue
         haskey(cos_phi, nw_int) || continue
@@ -407,6 +447,7 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
             n_pos = non_ref_pos[n]
             for (d_str, load) in nw_data["load"]
                 d     = parse(Int, d_str)
+                d in hunits && d ∉ active_units[nw_int] && continue
                 bus_d = bus_idx[load["load_bus"]]
                 bus_d in ref_bus_ids && continue
                 d_pos  = non_ref_pos[bus_d]
@@ -454,8 +495,11 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
             # on the from side, as in the QCQP's Ohm's law and the dHHC
             tm   = get(br, "tap", 1.0); tm == 0.0 && (tm = 1.0)
             ct   = 1.0 / (tm * cis(get(br, "shift", 0.0))); cr, ci = real(ct), imag(ct)
-            dVr  = (cr .* view(ar, f, :) .- ci .* view(ai, f, :)) .- view(ar, t, :)
-            dVi  = (cr .* view(ai, f, :) .+ ci .* view(ar, f, :)) .- view(ai, t, :)
+            # zero sequence: an earthed side of a winding pair has zero voltage
+            ef   = get(br, "earth_fr", false) ? 0.0 : 1.0
+            et   = get(br, "earth_to", false) ? 0.0 : 1.0
+            dVr  = ef .* (cr .* view(ar, f, :) .- ci .* view(ai, f, :)) .- et .* view(ar, t, :)
+            dVi  = ef .* (cr .* view(ai, f, :) .+ ci .* view(ar, f, :)) .- et .* view(ai, t, :)
             Ibr  = gy .* dVr .- by .* dVi
             Ibi  = gy .* dVi .+ by .* dVr
             AI[parse(Int, b_str)] = galerkin_product(pb, Ibr, Ibr) .+
@@ -465,7 +509,55 @@ function shhc_moments(hdata::Dict; networks::Dict = hdata["nw"])
     end
 
     return (; pb, K, psi_norms, alpha_re, alpha_im, alpha_V, alpha_I, Nn, bus_idx,
-              ref_bus_ids, harm_nw_strs, harm_nw_ints, wts)
+              ref_bus_ids, harm_nw_strs, harm_nw_ints, wts, active_units, blocked)
+end
+
+# Moments without recombination: every unit contribution aligns in the worst case, so a
+# squared quantity per unit g_h is the square of the arithmetic sum of the magnitudes,
+#   |V_{n,h}|² / g_h = (Σ_d w_d |Z_{n,d}|)²,  |I_{b,h}|² / g_h = (Σ_d w_d |y_s (Z_{f,d}/t − Z_{t,d})|)²,
+# stored as the mean (k = 0) with zero variance. Normal loads inject nothing.
+function _worst_case_moments(Z_harm, networks, harm_nw_strs, harm_nw_ints, bus_idx,
+                             ref_bus_ids, non_ref_pos, wts, active_units, nK)
+    alpha_V = Dict{Int, Matrix{Float64}}()
+    alpha_I = Dict{Int, Dict{Int, Vector{Float64}}}()
+    Nn = length(bus_idx)
+    for (nw_str, nw_int) in zip(harm_nw_strs, harm_nw_ints)
+        haskey(Z_harm, nw_int) || continue
+        Zr, nw_data = Z_harm[nw_int], networks[nw_str]
+        units = Tuple{Int,Float64}[]
+        for (d_str, load) in nw_data["load"]
+            d = parse(Int, d_str); d in active_units[nw_int] || continue
+            bd = bus_idx[load["load_bus"]]; bd in ref_bus_ids && continue
+            w  = get(wts, d, 0.0); w == 0.0 || push!(units, (non_ref_pos[bd], w))
+        end
+        zrow(n) = n in ref_bus_ids ? nothing : non_ref_pos[n]
+        A = zeros(Nn, nK)
+        for n in 1:Nn
+            pn = zrow(n); pn === nothing && continue
+            A[n, 1] = sum((w * abs(Zr[pn, pd]) for (pd, w) in units); init = 0.0)^2
+        end
+        alpha_V[nw_int] = A
+        AI = Dict{Int, Vector{Float64}}()
+        for (b_str, br) in nw_data["branch"]
+            r, x = br["br_r"], br["br_x"]
+            (abs(r) + abs(x) > 0.0) || continue
+            ys = 1.0 / (r + im * x)
+            tm = get(br, "tap", 1.0); tm == 0.0 && (tm = 1.0)
+            ct = 1.0 / (tm * cis(get(br, "shift", 0.0)))
+            pf = get(br, "earth_fr", false) ? nothing : zrow(bus_idx[br["f_bus"]])
+            pt = get(br, "earth_to", false) ? nothing : zrow(bus_idx[br["t_bus"]])
+            a  = zero(Float64)
+            for (pd, w) in units
+                zf = pf === nothing ? zero(ComplexF64) : Zr[pf, pd]
+                zt = pt === nothing ? zero(ComplexF64) : Zr[pt, pd]
+                a += w * abs(ys * (ct * zf - zt))
+            end
+            v = zeros(nK); v[1] = a^2
+            AI[parse(Int, b_str)] = v
+        end
+        alpha_I[nw_int] = AI
+    end
+    return alpha_V, alpha_I
 end
 
 """
@@ -494,11 +586,12 @@ function shhc_master(hdata::Dict, moments, optimizer)
     # constraints.
     model = JuMP.Model(optimizer)
     # U_h = Σ w_d over the HARMONIC units at harmonic h, i.e., the total hosting
-    # per unit of I_h (the number of units under absolute equality); normal loads
+    # per unit of I_h (the number of participating units under absolute equality); normal loads
     # are present in the network but inject nothing.
     hunit_set = Set(pce["harmonic_units"])
+    active_units = get(moments, :active_units, Dict(h => hunit_set for h in harm_nw_ints))
     U_h = Dict(nw_int => sum((wts[parse(Int, d)] for d in keys(hdata["nw"]["$nw_int"]["load"])
-                              if parse(Int, d) in hunit_set); init = 0.0)
+                              if parse(Int, d) in active_units[nw_int]); init = 0.0)
                for nw_int in harm_nw_ints)
 
     # Scaling: I_h ≈ 1e-3 and g_h = I_h² ≈ 1e-7 p.u. sit at the edge of the conic
@@ -535,10 +628,15 @@ function shhc_master(hdata::Dict, moments, optimizer)
     # and makes it disagree with the dHHC/QCQP wherever the rating binds.
     for h in harm_nw_ints
         caps = [ld["c_rating"] / wts[parse(Int, d)] for (d, ld) in hdata["nw"]["$h"]["load"]
-                if parse(Int, d) in hunit_set && haskey(ld, "c_rating")]
+                if parse(Int, d) in active_units[h] && haskey(ld, "c_rating")]
         isempty(caps) && continue
         JuMP.set_upper_bound(Ip_h[h], minimum(caps) / s_h[h])
         JuMP.set_upper_bound(gp_h[h], (minimum(caps) / s_h[h])^2)
+    end
+    # No harmonic unit has a return path: fix the otherwise unbounded capacity to zero.
+    for h in get(moments, :blocked, Set{Int}())
+        JuMP.set_upper_bound(Ip_h[h], 0.0)
+        JuMP.set_upper_bound(gp_h[h], 0.0)
     end
 
     # objective normalised by S = Σ_h U_h·s_h; the reported value is rescaled
@@ -582,6 +680,21 @@ function shhc_constraints(hdata::Dict, moments)
     # λ for a given constraint: per-constraint empirical value if available, else scalar
     λfor(kind, key) = (lambdas !== nothing && haskey(lambdas[kind], key)) ?
                        lambdas[kind][key] : lambda
+    # With empirical_moments = "pce", λ is recalibrated so that the bound built on the
+    # expansion's own mean and standard deviation equals the sampled (1−ε) quantile;
+    # the aggregates are evaluated at the hosting decision g of the calibration.
+    pce_moments = get(pce, "empirical_moments", "pce") == "pce" &&
+                  lambdas !== nothing && haskey(lambdas, :q)
+    function λfor(kind, key, coef)
+        pce_moments && haskey(lambdas[:q][kind], key) || return λfor(kind, key)
+        g  = lambdas[:g]; gv(h) = kind == :ihd ? 1.0 : get(g, h, 0.0)
+        E  = sum(coef[h][1] * gv(h) for h in keys(coef))
+        σ  = sqrt(sum(psi_norms[k+1] * sum(coef[h][k+1] * gv(h) for h in keys(coef))^2
+                      for k in K if k != 0; init = 0.0))
+        return σ > 0.0 ? max((lambdas[:q][kind][key] - E) / σ, 0.0) : 0.0
+    end
+    psi_norms = pce["psi_norms"]
+    K = pce["K"]
 
     cons = ShhcConstraint[]
 
@@ -595,7 +708,7 @@ function shhc_constraints(hdata::Dict, moments)
             v_fund = fund_nw["bus"][bi_str]["vm"]
             push!(cons, ShhcConstraint(:ihd, (nw_int, bus["bus_i"]),
                 Dict(nw_int => A[n, :]), (bus["ihdmax"] * v_fund)^2,
-                λfor(:ihd, (nw_int, bus["bus_i"]))))
+                λfor(:ihd, (nw_int, bus["bus_i"]), Dict(nw_int => view(A, n, :)))))
         end
     end
 
@@ -605,7 +718,7 @@ function shhc_constraints(hdata::Dict, moments)
         n in ref_bus_ids && continue
         coef   = Dict(h => alpha_V[h][n, :] for h in harm_nw_ints if haskey(alpha_V, h))
         v_fund = fbus["vm"]
-        λ      = λfor(:agg, fbus["bus_i"])
+        λ      = λfor(:agg, fbus["bus_i"], coef)
         haskey(fbus, "thdmax")  && push!(cons, ShhcConstraint(:thd, fbus["bus_i"], coef,
                                              (fbus["thdmax"] * v_fund)^2, λ))
         haskey(fbus, "vmaxrms") && push!(cons, ShhcConstraint(:rmsv, fbus["bus_i"], coef,
@@ -620,7 +733,7 @@ function shhc_constraints(hdata::Dict, moments)
                     if haskey(alpha_I, h) && haskey(alpha_I[h], b))
         isempty(coef) && continue
         push!(cons, ShhcConstraint(:rmsi, b, coef,
-                                   fbr["c_rating"]^2 - get(fbr, "cm_fr", 0.0)^2, λfor(:rmsi, b)))
+                                   fbr["c_rating"]^2 - get(fbr, "cm_fr", 0.0)^2, λfor(:rmsi, b, coef)))
     end
     return cons
 end
@@ -740,7 +853,10 @@ Steps
    (a conic solver, e.g. Mosek or Clarabel — not HiGHS).
 
 Returns a result Dict with `"termination_status"`, `"objective_value"`, and
-`"solution"` (Dict mapping harmonic nw id → optimal I_h; unit d hosts w_d·I_h).
+`"solution"` (Dict mapping harmonic nw id → optimal I_h; a participating unit d hosts
+w_d·I_h). At a zero-sequence harmonic, floating units inject zero and are omitted
+from its moments, ratings and objective weights; only an entirely floating set of
+harmonic units forces I_h to zero.
 
 Only principles with fixed allocation ratios are representable in this
 formulation: the single scalar I_h per harmonic is what makes the squared
@@ -766,7 +882,13 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
 
     moments = shhc_moments(hdata)
     master  = shhc_master(hdata, moments, optimizer)
-    add_shhc_constraints!(master, hdata, moments)
+    cons = shhc_constraints(hdata, moments)
+    used = Dict(:ihd => Dict{Any,Float64}(), :agg => Dict{Any,Float64}(), :rmsi => Dict{Any,Float64}())
+    for c in cons
+        add_shhc_constraint!(master, c, moments)
+        kind = c.kind in (:thd, :rmsv) ? :agg : c.kind
+        used[kind][c.key] = c.λ
+    end
     (; model, I_h, S) = master
     (; alpha_re, alpha_im, alpha_V, alpha_I, harm_nw_ints) = moments
     pce = hdata["pce"]
@@ -781,6 +903,7 @@ function solve_shhc(hdata::Dict, ::Type{sHHC_SOC}, optimizer;
         "termination_status" => JuMP.termination_status(model),
         "objective_value"    => JuMP.has_values(model) ? S * JuMP.objective_value(model) : NaN,
         "solve_time"         => JuMP.solve_time(model),
+        "lambdas_used"       => used,     # λ per constraint as applied (:ihd, :agg, :rmsi)
         "solution"           => JuMP.has_values(model) ?
                                     Dict(h => JuMP.value(I_h[h]) for h in harm_nw_ints) :
                                     Dict{Int, Float64}(),

@@ -17,7 +17,10 @@ function runstudy(s, io)
     label = source.kind == "scenario" ? "IEEE 30-bus, " * source.scenario : source.file
     report(io, label, ", ", length(s.details),
         " branches from LineCableModels, ", length(s.pce["harmonic_units"]), " units, ε = ",
-        s.config.epsilon, ", Cantelli, ", Threads.nthreads(), " threads")
+        s.config.epsilon, ", ", s.pce["bound"],
+        get(s.pce, "recombination", true) ? "" :
+        ", no recombination (worst-case alignment)",
+        ", ", Threads.nthreads(), " threads")
     box = s.box
     box0 = ParameterBox(box.names, box.nominal, box.nominal, box.nominal, box.scale)
     nom = solve_rhhc(deepcopy(s.hd), s.model, box0, s.conic;
@@ -25,8 +28,7 @@ function runstudy(s, io)
         nbackground = 0, use_seeds = false)
     report(io, @sprintf("nominal stochastic: %.6f (%s)",
         nom["upper_bound"], nom["termination_status"]))
-    report(io, "zero-width iterations: ", nom["iterations"],
-        "; lower bound: ", nom["lower_bound"], "; upper bound: ", nom["upper_bound"])
+    isempty(nom["solution"]) && report(io, "nominal solution: ", nom["solution"])
     flush(io)
     report(io, "resonances at the nominal point: ",
         join(
@@ -39,30 +41,49 @@ function runstudy(s, io)
         pce_params = deepcopy(s.pce), hpf_optimizer = s.ipopt,
         posterior = s.config.posterior, verbose = true)
     report(io,
-        @sprintf("robust HHC: %.6f  [LB %.6f, UB %.6f, gap %.1e], %d iterations, %.0f s, %s",
+        @sprintf("robust: %.6f  [LB %.6f, UB %.6f, gap %.1e], %d iterations, %.0f s, %s",
             res["lower_bound"], res["lower_bound"], res["upper_bound"], res["gap"],
             res["iterations"], t, res["signed_off"] ? "signed off" : "NOT signed off"))
-    report(io, "master termination: ", res["termination_status"])
-    report(io, "per harmonic, robust HHC / nominal: ",
-        join(
-            [@sprintf("h%d %.3f", h, res["solution"][h] / nom["master_solution"][h])
-             for h in s.config.harmonics],
-            ", "))
-    labels = res["dictionary"].labels
-    report(io, "oracle dictionary labels: ",
-        join(
-            [string(label, "=", count(==(label), labels))
-             for label in (:nominal, :vertex, :corner, :seed, :background, :refined)],
-            ", "))
-    pr = res["posterior"]
-    report(io,
-        @sprintf("a posteriori (%d random points): worst %+.2e (%s), violated at %.1f %%",
-            s.config.posterior, pr.max_violation, string(pr.constraint),
-            100pr.violated_fraction))
+    report(io, "robust master termination: ", res["termination_status"])
+    isempty(res["solution"]) && report(io, "solution: ", res["solution"])
+    if isempty(res["solution"]) || isempty(nom["master_solution"])
+        report(io, "Harmonic ratios not evaluated: an empty solution has no harmonic currents.")
+    else
+        report(io, "per harmonic, robust / nominal: ",
+            join(
+                [@sprintf("h%d %.3f", h, res["solution"][h] / nom["master_solution"][h])
+                 for h in s.config.harmonics], ", "))
+    end
+    if !isempty(nom["master_solution"]) && !isempty(res["solution"])
+        report(io, "per sequence, Σ_h I_h nominal → robust [pu]: ",
+            join(
+                [@sprintf("%s %.6f → %.6f", sequence,
+                     sum(
+                         (get(nom["master_solution"], h, 0.0)
+                         for h in s.config.harmonics
+                         if HPM.harmonic_sequence(h) === sequence);
+                         init = 0.0),
+                     sum(
+                         (get(res["solution"], h, 0.0)
+                         for h in s.config.harmonics
+                         if HPM.harmonic_sequence(h) === sequence);
+                         init = 0.0))
+                 for sequence in (:positive, :negative, :zero)],
+                ", "))
+    end
+    if isempty(res["solution"])
+        report(io, "Posterior check not evaluated: the solution is empty.")
+    else
+        pr = res["posterior"]
+        report(io,
+            @sprintf("a posteriori (%d random points): worst %+.2e (%s), violated at %.1f %%",
+                s.config.posterior, pr.max_violation, string(pr.constraint),
+                100pr.violated_fraction))
+    end
     solves = lcm_solves(s)
     report(io, "LineCableModels solves (sum of circuit table sizes): ", solves)
     flush(io)
-    return (; result = res, nominal = nom, hdata = prepared, elapsed = t, solves)
+    return (; robust = res, nominal = nom, hdata = prepared, elapsed = t, solves)
 end
 
 function main(path)

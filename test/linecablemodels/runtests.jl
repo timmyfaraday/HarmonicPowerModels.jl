@@ -18,5 +18,6 @@ include("fixtures.jl")
     include("sequence.jl")
     include("circuit.jl")
     include("protocol.jl")
+    include("manual.jl")
     include("architecture/architecture.jl")
 end

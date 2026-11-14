@@ -1,0 +1,25 @@
+# Study premise: solid grounding of screens and earth wires at both ends.
+# This case assumes ideal transposition. The study omits cross-bonding.
+model = "scaled"
+bound = "gaussian"
+harmonics = {value = [5, 7, 11, 13], origin = "examples/rhhc/ieee30_robust.jl:32"}
+epsilon = {value = 0.05, origin = "examples/shhc/pce_params.jl:20"}
+posterior = {value = 1024, origin = "examples/rhhc/ieee30_robust.jl:83"}
+f1 = {value = 50.0, origin = "examples/shhc/ieee30_scenarios.jl:40"} # Hz
+box_names = ["kR_ohl", "kL_ohl"]
+network = {kind = "converted", file = "networks/ieee39.json"}
+units = {value = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19], origin = "networks/ieee39.json:1, load table from networks/convert.jl, save_network"}
+note = "Converted source data with R and L factors on the overhead lines. Capacitance stays at its source value. Candidate specs await audit. This case assumes solid grounding at both ends and ideal transposition. It omits cross-bonding, including for the candidate HV cable insertion. Source impedances and transformers keep their source data."
+
+[classes]
+ohl = [23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56] # `networks/ieee39.json:1`, length_m in the branch table
+
+[box.kR_ohl]
+nominal = {value = 1.0, origin = "examples/rhhc/ieee30_robust.jl:58-60"}
+lower = {value = 0.8, origin = "examples/rhhc/ieee30_robust.jl:58-60"}
+upper = {value = 1.2, origin = "examples/rhhc/ieee30_robust.jl:58-60"}
+
+[box.kL_ohl]
+nominal = {value = 1.0, origin = "examples/rhhc/ieee30_robust.jl:58-60"}
+lower = {value = 0.95, origin = "examples/rhhc/ieee30_robust.jl:58-60"}
+upper = {value = 1.05, origin = "examples/rhhc/ieee30_robust.jl:58-60"}

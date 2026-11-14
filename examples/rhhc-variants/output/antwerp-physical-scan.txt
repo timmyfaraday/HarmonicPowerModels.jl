@@ -1,0 +1,40 @@
+git commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+case: examples/rhhc-variants/cases/antwerp-physical.toml
+threads: 16; solver: Clarabel
+Sequence file: antwerp-physical-sequences.csv; 763 frequencies per circuit.
+branch,buses,kV,spec,formation,length_m,circuit,source_X_ohm_per_km,scenario_C_uF_per_km
+3,20–30,155.0,U155-Cu1600,trefoil,10600.0,U155-Cu1600/trefoil,0.1260179245283019,0.31200405940823367
+4,20–30,155.0,U155-Cu1600,trefoil,10600.0,U155-Cu1600/trefoil,0.1260179245283019,0.31200405940823367
+5,10–40,155.0,U155-Cu1600,trefoil,1917.0,U155-Cu1600/trefoil,0.1215662493479395,0.3199967806598067
+6,10–40,155.0,U155-Cu1600,trefoil,1810.0,U155-Cu1600/trefoil,0.11946132596685083,0.3299833775628583
+7,10–40,155.0,U155-Cu1600,trefoil,1850.0,U155-Cu1600/trefoil,0.11947567567567567,0.330010283327594
+8,30–40,155.0,U155-Cu1600,trefoil,2039.0,U155-Cu1600/trefoil,0.1213621873467386,0.320018982485685
+9,30–40,155.0,U155-Cu1600,trefoil,2039.0,U155-Cu1600/trefoil,0.1213621873467386,0.320018982485685
+50 Hz sequences per meter: circuit,z0,z1,y0,y1
+U155-Cu1600/trefoil,0.00024387161618676415 + 8.33192150730338e-5im,2.994829746284598e-5 + 0.00010389655148018936im,-3.883392218846124e-44 + 7.84606230454222e-8im,-1.6542661750157872e-24 + 7.846062304542218e-8im
+resonances at the nominal point: h = 10.8578
+Data checks. DC uses the positive-sequence real impedance at 0.01 Hz and 20 °C.
+All values below are per km. R and X are in Ω/km. C is in µF/km.
+spec | DC LCM | catalogue R20 | R50 at 20 °C | R50 at 90 °C | Olex R90 | X50 | Olex X | C50 | Olex C | diameter mm | catalogue mm
+TOM-630 | 0.044870 | unavailable | 0.053111 | unavailable | unavailable | 0.097625 | unavailable | 0.298556 | unavailable | 53.120 | unavailable
+U33-400 | 0.077800 | 0.077800 | 0.089553 | 0.109096 | 0.101000 | 0.106870 | 0.116000 | 0.267196 | 0.267000 | 50.900 | 50.900
+U33 bonding check U33-400: R90 Olex+screen 0.109148, LCM 0.109096, difference -0.047 %; X50 classical 0.109171, minus screen 0.107886, LCM 0.106870, difference -0.941 % [Ω/km].
+U33-500 | 0.060500 | 0.060500 | 0.072368 | 0.087005 | 0.079700 | 0.102364 | 0.111000 | 0.296939 | 0.297000 | 54.600 | 54.600
+U33 bonding check U33-500: R90 Olex+screen 0.087723, LCM 0.087005, difference -0.819 %; X50 classical 0.104680, minus screen 0.103424, LCM 0.102364, difference -1.025 % [Ω/km].
+U33-630 | 0.046900 | 0.046900 | 0.058964 | 0.069724 | 0.062900 | 0.099162 | 0.108000 | 0.329092 | 0.329000 | 58.600 | 58.600
+U33 bonding check U33-630: R90 Olex+screen 0.070802, LCM 0.069724, difference -1.523 %; X50 classical 0.101538, minus screen 0.100310, LCM 0.099162, difference -1.144 % [Ω/km].
+U33-800 | 0.036700 | 0.036700 | 0.049131 | 0.056947 | 0.050700 | 0.095515 | 0.104000 | 0.365399 | 0.366000 | 63.400 | 63.400
+U33 bonding check U33-800: R90 Olex+screen 0.058565, LCM 0.056947, difference -2.763 %; X50 classical 0.098042, minus screen 0.096823, LCM 0.095515, difference -1.351 % [Ω/km].
+ACSR: spec | DC LCM | catalogue R20 | R50 at 20 °C | X50 LCM | source X50 | C50 LCM | scenario C50
+Panther | 0.132840 | 0.136300 | 0.133342 | 0.400219 | 0.400000 | 0.009062 | 0.000000
+ACSR steel conductance share Panther: 3.328002 % (wire areas and resistivities).
+Lion | 0.118227 | 0.121200 | 0.118780 | 0.396553 | 0.400000 | 0.009149 | 0.000000
+ACSR steel conductance share Lion: 3.328002 % (wire areas and resistivities).
+Bear | 0.106532 | 0.109300 | 0.107136 | 0.393275 | 0.400000 | 0.009228 | 0.000000
+ACSR steel conductance share Bear: 3.328002 % (wire areas and resistivities).
+Goat | 0.086861 | 0.089100 | 0.087580 | 0.386846 | 0.400000 | 0.009386 | 0.000000
+ACSR steel conductance share Goat: 3.328002 % (wire areas and resistivities).
+GW-7x3.15 DC LCM 3.545151 Ω/km. Register O132.gw.R20: 3.55 Ω/km, interval 3.30–4.01 Ω/km.
+The earth-wire check uses three copies as phases at the same mean-height formation.
+At 0.01 Hz their real positive-sequence impedance approaches the wire's DC resistance.

@@ -177,8 +177,43 @@ lacks AS/NZS 1429.1. Table 1 of IEC 60287-1-1 gives the copper value of IEC 6002
 | IEEE738 | IEEE 738-2023, 4.4 and 4.6.1.1, heat balance and illustrative rating weather | local corpus copy |
 | ASTM B3 | the ASTM standard for annealed copper wire, by analogy only | not read |
 
-The O33-H formation used by hello-world cites audited rows `O33.geom` and
-`O33.sag`. Its Goat conductor and U33-630 cables have audited specs.
+## Specs pending audit
+
+The alternative-system candidate study defines the designs below. They await audit and
+have no rows in `inputs.csv`. The pipeline cases retain their source electrical data with
+`ScaledBranchModel`. Industrial and Antwerp vary R, L and C. IEEE33, IEEE9, IEEE39
+and the stars vary R and L, with capacitance fixed. The ranges come from
+`examples/rhhc/ieee30_robust.jl:58-60`. These ranges describe network parameters. They are
+not manufacturing tolerances. Source equivalents, transformers and reactors retain their
+source data. The stars retain their identical branches.
+
+The definitions below come from an unaudited candidate study that is not part of the
+repository. The table gives the conductor and cable constructions. The following paragraph
+gives the structure geometry. These definitions await audit.
+
+| System | Cable specs pending audit | Overhead specs pending audit |
+| --- | --- | --- |
+| IEEE33 | U22-Al95, U22-Al150, U22-Al240, U22-Al300, U22-Al400, U22-Al500, U22-Al630 and U22-Al1200: 12.7/22 kV aluminum/XLPE, copper wire screens, PVC jackets, touching trefoil at 0.8 m depth | Rabbit, Dog, Bison, Weasel, Tiger and Wolf ACSR on O13-F |
+| Industrial | U36-Al400: 20.8/36 kV aluminum/XLPE, 35 mm² copper screen, PE jacket. U11-Al240: 6.35/11 kV aluminum/XLPE, copper screen, PVC jacket. Both in touching trefoil at 0.8 m depth. NYY-Cu240-120: three 240 mm² copper phases and one 120 mm² core, PVC insulation and jacket | O36-F with Goat and O10-F with Panther. The conductors are audited, the structures await audit. The elevated NYY installation at 6 m also awaits audit |
+| Antwerp | U155-Cu1600: 87/150–161 kV, five-sector copper core, 19 mm XLPE, 95 mm² screen of copper wires, aluminum barrier and PE jacket, 1 m depth | Twin Falcon ACSR on O155-D2, 0.45 m bundle spacing. Steel earth wire |
+| IEEE9 | U230-Cu1200: 127/220–230 kV, five-sector copper core, 21 mm XLPE, 150 mm² screen of copper wires, aluminum barrier and PE jacket, 1 m depth | Cardinal ACSR on O230-F, with ACS 20SA earth wires, 19 wires of 2.5 mm diameter |
+| IEEE39 | U345-Cu1600: 200/345 kV, five-sector copper core, 28 mm XLPE, 2.5 mm lead sheath and PE jacket, flat 0.45 m spacing at 1.2 m depth | Cardinal ACSR on O345-F with the same ACS earth wires as O230-F |
+| Three- and five-node stars | U155-Cu1600, as above | Falcon ACSR on O100-D, with steel earth wire |
+
+The source defines O13-F and O10-F with phase centers at horizontal coordinates
+−0.8, 0 and 0.8 m, mean height 10 m, with no earth wire. O36-F has coordinates
+−1.5, 0 and 1.5 m, mean height 10.5 m, with no earth wire. O100-D and O155-D2
+have phase centers (−2.5, 14), (0, 18.330) and (2.5, 14) m, and an earth wire at
+(0, 25.4) m. O230-F and O345-F have phase centers at −10, 0 and 10 m, mean
+height 23.333 m, and proposed earth wires at ±8 m, mean height 30.833 m.
+All of these structure definitions await audit, including their sag and support data.
+The O33-H formation used by hello-world instead cites audited rows `O33.geom` and
+`O33.sag`. Its Goat conductor and U33-630 cables already have audited specs.
+
+The candidate HV cable ratings assume cross-bonding. The pipeline cases assume solid grounding of screens and earth wires at both ends.
+They use ideal transposition and omit cross-bonding. Their electrical parameters come
+from the source files. The candidate compensation and thermal ratings also await audit. These cases keep the
+source ratings and compensation.
 
 ## Full-uncertainty IEEE30 inputs
 
@@ -312,3 +347,218 @@ Family fields name physical quantities. Case coordinates append the family name,
 `R20_U33`, `t_ins_U33` and `rho_EARTH`. The `registered` scale identifies a normalized
 position: zero is nominal, minus one is the registered lower bound and plus one is the
 registered upper bound. One-sided intervals retain the applicable half of that interval.
+
+## Falcon and the physical star cases
+
+The twelve `ACSR.Falcon.*` rows and `STAR3.length`, `STAR5.length` supply the two
+physical star cases. The conductor library and strand table in
+`local/codex/alternative-test-cases/physical-candidates.md` give the 54 aluminum
+wires of 4.36 mm and the 19 steel wires of 2.62 mm, arranged as 12/18/24 aluminum
+courses over a steel center and 6/12 courses. The component masses are 2243 and
+799 kg/km, from Trefinasa printed p. 4. Wire dimensions give
+39.26 mm outside diameter. The candidate library gives 39.24 mm.
+
+The diameter intervals come from the Falcon rows of
+`local/codex/manufacturing-tolerances/physical-input-tolerances.csv`: aluminum
+4.3164 to 4.4036 mm, steel 2.58 to 2.66 mm. Aggregate diameter and mass limits use
+EN 50182 by analogy. The middle aluminum lay adopts the inner-course interval
+10 to 16, midpoint 13. The second steel course uses `ACSR.lay.st12`, 14 to 22,
+midpoint 18. Outward lays are capped by the preceding course. Every course
+contributes to the mass and lay calculation.
+
+Material assumption: the conductor uses the registered ACSR material laws and intervals,
+including steel relative permeability 50 to 300, nominal 100.
+
+Assumption: the Trefinasa printed p. 3 calculation values for 54+19 construction,
+66.68522 GPa modulus and 0.0000194 per kelvin expansion, are fixed for Falcon.
+The 30/7 mechanical coordinates do not act on Falcon.
+
+Installation assumption: O132-D serves the 100 kV stars. It retains the existing
+supports and the 300 m span with the reference sags. GW-7x3.15 has both-end grounding,
+and each circuit has ideal transposition. Phase temperature is at least ambient temperature.
+
+The candidate study's `scratch/branch-candidates.csv` supplies the shared fitted
+lengths: 25690.406433487706 m for star3 and 513.8081286697541 m for star5.
+`derive.py` reproduces its joint relative R/X fit. These fixed study lengths
+have no surveyed route interval. The physical cases retain LCM charging.
+
+The current rating is an imported result of the candidate study's heat balance.
+The same candidate table supplies the physical current rating, 1372.8443238788311 A,
+or 237.783612 MVA at 100 kV. The source rating is 100 MVA, or 577.350269 A.
+Its IEEE 738 reference conditions are 75 °C conductor, 25 °C ambient, 0.6 m/s
+perpendicular wind, sea level, 1000 W/m² solar flux, emissivity and absorptivity
+0.5. Assumption: this fixed reference ceiling serves the electrical study without
+recomputing a weather-dependent rating at each point.
+
+`sweep.jl` admits eleven coordinates at 0.1 percent for each physical case.
+One coordinate per input and family acts on every spoke. Both lay coordinates
+remain separate. The mechanical values are fixed.
+The source cases remain in `cases/star3.toml` and `cases/star5.toml`.
+
+## Cardinal and the physical transmission cases
+
+The twelve `ACSR.Cardinal.*` rows and `O230.geom`, `O230.phase.reference`,
+`O230.gw.reference` supply the IEEE9 and IEEE39 physical cases. The candidate study's
+conductor library and strand table specify 54 aluminum and seven steel wires,
+all 3.38 mm in diameter. Aluminum courses contain 12, 18 and 24 wires around
+the steel center and six-wire course. The resulting diameter is 30.42 mm.
+the catalog DC resistance is 0.05992 ohm/km.
+
+The manufacturing tolerance study gives aluminum wire diameters 3.3462 to
+3.4138 mm and steel wire diameters 3.33 to 3.43 mm. The existing ACSR wire
+realization applies the shared material intervals, lay ordering, aggregate
+one percent diameter and two percent mass limits. The middle aluminum course
+uses the inner-course lay interval 10 to 16, nominal 13, by analogy.
+The steel lay is 16 to 26, nominal 21, and the outer aluminum lay is
+10 to 14, nominal 12. There is one coordinate per input and family.
+
+Assumption: aluminum density 2700 kg/m3 and steel density 7780 kg/m3 determine
+nominal component masses from wire circles and helical lengths, giving
+1.3487363340027083 and 0.49331435514222144 kg/m, respectively.
+For wire area A, each course contributes density times A times its wire count
+times sqrt(1 + (pi/lay)^2). The straight steel center contributes density times A.
+Assumption: the fixed final modulus is 70 GPa and thermal expansion is
+0.0000193 per kelvin for this 54/7 construction. The 30/7 mechanical values
+are replaced by these values for Cardinal.
+
+O230-F and O345-F share the O230 family. The source geometry gives phase
+supports at x = -10, 0, 10 m and height 30 m, earth-wire supports at
+x = -3.25, 3.25 m and height 37.5 m, and reference sags of 10 m for both.
+The source's 6.5 m earth-wire separation is retained. The candidate study's
+16 m separation is superseded by the source geometry. Mean height subtracts
+two thirds of the sag. Assumption: two GW-7x3.15 earth wires replace the
+source's unspecified earth wires, with both-end grounding and ideal transposition.
+Assumption: the towers share the existing span of 300 m and reference temperature.
+The ambient interval and earth-wire mechanical and material inputs also apply.
+The existing setting allowance gives reference sag intervals 10 to 10.1 m.
+The phase temperature remains at least ambient temperature.
+
+The physical cases use every supplied `length_m` in their network JSON.
+Each branch assignment cites its fixed source route. The lengths have no
+uncertainty coordinate. LCM supplies charging.
+The candidate study's fixed thermal current is 994.5173367327438 A, equivalent
+to 396.1875479327156 MVA at 230 kV and 594.2813218990733 MVA at 345 kV.
+Both source systems rate their lines at 1000 MVA.
+Assumption: this fixed current ceiling uses the candidate study's IEEE 738
+reference weather without recalculating ampacity at each electrical point.
+
+IEEE39 branch 31 (27-29) keeps its source 1000 MVA rating. Its nominal
+fundamental terminal currents are 0.676359489 and 0.677167628 per unit,
+above the physical current limit 0.660312580 per unit that HPM derives from
+594.2813218990733 MVA and the source minimum voltage of 0.9 per unit.
+The source current limit is 1.111111111 per unit. Every other IEEE39 line
+keeps the physical rating. The fundamental power flow selects this exception.
+
+The transformer representation stays in the source branch records. IEEE9's
+case notes propose Dy11 in generator-to-grid order with a solid grid neutral.
+IEEE39's notes propose Yd11 on generator-connected records and Yy0 on internal
+records, with solid grid-side grounding. These assumed vector groups remain
+notes because the source branch representation does not apply winding groups.
+The IEEE39 generator source impedances and capacitive load components remain.
+
+Both sweeps admit ten coordinates at 0.1 percent: phase temperature, earth
+resistivity, aluminum resistivity and diameter, inner and middle aluminum lays,
+and ambient temperature, wire diameter, steel resistivity and permeability
+of the earth-wire family. The remaining registered coordinates stay nominal.
+
+## IEEE33 physical feeder
+
+The 66 `ACSR.Rabbit.*`, `ACSR.Weasel.*`, `ACSR.Dog.*`, `ACSR.Tiger.*`,
+`ACSR.Wolf.*` and `ACSR.Bison.*` rows supply six conductor constructions and
+fixed current ratings. The candidate study's conductor library and
+`scratch/strand-patterns.csv` give their counts and wire diameters.
+The study of manufacturing tolerances supplies each wire's diameter interval.
+The existing ACSR material intervals, ordered lays and joint diameter and
+mass limits apply. Bison's middle aluminum course adopts the registered
+inner-course lay interval by analogy.
+
+Assumption: component masses follow aluminum density 2700 kg/m3 and steel
+density 7780 kg/m3, wire circles and nominal helical lengths. Every conductor
+uses fixed final modulus 70 GPa and expansion 0.0000193 per kelvin.
+Assumption: where six aluminum wires need more room than the steel envelope,
+the envelope expands to one aluminum wire diameter. This admits Dog's rounded
+catalog dimensions and wire tolerance endpoints without overlapping wires.
+The nominal Dog outside diameter is 14.16 mm versus the catalog 14.15 mm.
+
+`O13.geom`, `O13.phase.reference` and `O13.span` define the candidate study's
+12.66 kV pole: phase supports at x = -0.8, 0 and 0.8 m, height 11 m,
+reference sag 1.5 m and span 100 m. It has zero earth wires. Mean phase height
+is 10 m at the reference state. Assumption: the existing ambient interval,
+reference temperature, gravity and sag-setting allowance apply to this pole.
+The sag state equation follows conductor temperature and construction.
+Every circuit assumes ideal transposition.
+
+The 32 `IEEE33.length.*` rows retain every fitted length from the candidate
+study's `scratch/branch-candidates.csv`. These fixed routes have no surveyed
+length interval. The physical case retains LCM charging and the source case
+remains beside it. The preliminary fit used 50 degrees Celsius and a fixed
+AC allowance. LCM supplies frequency-dependent impedance at the registered
+nominal 20 degrees Celsius. Deviations refer to that nominal physical state.
+
+Assumption: fixed conductor ratings use the candidate study's IEEE738
+reference weather, as described for Cardinal above. The physical ratings admit the nominal fundamental operating point
+on every branch. The source rating is 10 MVA. The case uses one coordinate per input and
+family. The sweep report records admission at 0.1 percent.
+
+## Industrial cables
+
+The 52 `U36.*`, `U11.*` and `NYY.*` rows describe the three industrial cable
+routes. The cable library and radial layouts of the candidate study supply U36-Al400
+and U11-Al240. Intervals for layer thickness, conductor diameter, screen wires and conductor
+resistance come from the register of manufacturing tolerances.
+The phase conductors are solid equivalents with registered DC resistance.
+Screens are equal-area copper tubes within the wire-layer radial envelope.
+Assumption: resistance and finished conductor diameter vary independently in
+this electrical dataset, as in U33. The screen has no helical length correction.
+U11 retains the reference 68.7 mm2 screen, versus the source 25 mm2 screen.
+
+The coaxial formulation accepts one concentric assembly per cable.
+Variant: the LV multicore cable is represented by three unscreened 240 mm2
+copper/PVC single cores in touching trefoil, with ideal transposition.
+The neutral is omitted. The phase insulation is 2.2 mm with a 0 to 5 percent
+interval, and the assumed single-core jacket is 3 mm with a 0 to 10 percent
+interval. The source multicore outside diameter does not apply to this variant.
+Assumption: PVC loss tangent is 0.01, with interval 0.005 to 0.02.
+
+Assumption: the existing U33 material intervals serve the MV insulation and
+semiconducting layers. The study of manufacturing tolerances supplies PVC relative
+permittivity 4.5 [3.6, 6] and resistivity 1e12 [1e11, 1e13] ohm m.
+PE uses relative permittivity 2.3 [2.1, 2.5] by analogy with XLPE and the
+existing insulating-polymer resistivity interval. Burial depth is assumed
+0.8 [0.7, 1.0] m. Temperature is 90 [20, 90] degrees Celsius for MV and
+70 [20, 70] degrees Celsius for LV. Both-end screen grounding applies.
+Assumption: screens share the phase conductor temperature.
+
+Source routes are 1500, 200 and 70 m. Fixed physical limits are 24.5, 6.58
+and 0.382 MVA. The current fields encode these rounded MVA limits exactly.
+Transformer records retain their source ratings and vector groups.
+The sweep report gives the 30 coordinates admitted at 0.1 percent.
+
+## Antwerp cable family
+
+The 21 `U155.*` rows describe U155-Cu1600. The candidate study, sections 3.4,
+3.5 and 7, supplies the radial stack, screen count and routes. The manufacturing
+input tables supply the diameter, resistance and layer intervals (N4, N5, N7,
+C2 and S1). Material intervals use the existing XLPE family as an assumption.
+The effective jacket includes 0.5 mm bedding and 0.2 mm aluminum barrier as
+dielectric material. Its interval adds their supplier bands to the PE interval.
+The screen is an equal-area copper tube with the wire radial envelope retained.
+
+The Milliken core becomes round compacted copper of equal DC resistance.
+Cross-bonded screens become screens bonded and grounded at both ends. The source
+300 MVA limit remains because the candidate study's 1390 A applies to
+cross-bonding, whereas both-end bonds add circulating screen losses. Burial is
+1 m, with an assumed 0.9–1.2 m interval. Ideal transposition is retained.
+
+## Installed length
+
+A branch's `length_m` holds its length in meters: `value` alone fixes it, while
+`value`, `lower` and `upper` make it uncertain. The builder appends the linear
+coordinate `length_<branch index>` after `box_names`, in numeric branch order.
+Without the key, the branch keeps its route length.
+
+Row `LINK.length_m` supplies the adopted ±1 percent installation interval (class ENV).
+Its nominal is the retained route length, and its bounds are `value × 0.99` and
+`value × 1.01`. The as-laid length departs from the retained route through route
+deviations, snaking, and slack at joints and terminations. Each branch's `length_m`
+cites this row and stores its nominal and bounds in meters.

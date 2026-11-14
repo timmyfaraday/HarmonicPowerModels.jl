@@ -1,0 +1,29 @@
+family = "ACSR"
+n_steel = {value = 7, register = "ACSR.Bison.st"}
+n_aluminium = {value = 54, register = "ACSR.Bison.al"}
+R20 = {value = 7.573000000000001e-05, register = "ACSR.Bison.R20"}
+courses = {value = [12, 18, 24], register = "ACSR.Bison.courses"}
+mass_al = {value = 1.062517681981056, register = "ACSR.Bison.mass.al"}
+mass_st = {value = 0.3886269034942747, register = "ACSR.Bison.mass.st"}
+E = {value = 70.0, register = "ACSR.Bison.E"}
+expansion = {value = 1.93e-05, register = "ACSR.Bison.expansion"}
+
+[d_steel]
+nominal = {value = 0.003, register = "ACSR.Bison.st"}
+lower = {value = 0.0029500000000000004, register = "ACSR.Bison.st"}
+upper = {value = 0.0030499999999999998, register = "ACSR.Bison.st"}
+
+[d_aluminium]
+nominal = {value = 0.003, register = "ACSR.Bison.al"}
+lower = {value = 0.00297, register = "ACSR.Bison.al"}
+upper = {value = 0.0030299999999999997, register = "ACSR.Bison.al"}
+
+[diameter]
+nominal = {value = 0.026999999999999996, register = "ACSR.Bison.d"}
+lower = {value = 0.026729999999999997, register = "ACSR.Bison.d"}
+upper = {value = 0.027269999999999996, register = "ACSR.Bison.d"}
+
+[mass]
+nominal = {value = 1.4511445854753307, register = "ACSR.Bison.mass"}
+lower = {value = 1.422121693765824, register = "ACSR.Bison.mass"}
+upper = {value = 1.4801674771848372, register = "ACSR.Bison.mass"}

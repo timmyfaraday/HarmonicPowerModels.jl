@@ -593,5 +593,24 @@
         45
       ]
     }
+  },
+  "Falcon_diameter_m": 0.03926,
+  "star_routes": {
+    "star3": {
+      "source_R_ohm": 1.0,
+      "source_X_ohm": 10.0,
+      "length_m": 25690.406433487704,
+      "physical_rating_A": 1372.8443238788311,
+      "physical_rating_MVA": 237.78361198406785,
+      "source_rating_MVA": 100.0
+    },
+    "star5": {
+      "source_R_ohm": 0.02,
+      "source_X_ohm": 0.2,
+      "length_m": 513.8081286697541,
+      "physical_rating_A": 1372.8443238788311,
+      "physical_rating_MVA": 237.78361198406785,
+      "source_rating_MVA": 100.0
+    }
   }
 }

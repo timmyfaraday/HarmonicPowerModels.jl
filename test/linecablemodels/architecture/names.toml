@@ -45,12 +45,12 @@ vflat = "flat"
 # circuit, problem, formulation: LCM `examples/cable_30kv_630mm2_trefoil.jl`.
 # fortescue, matrix: LCM `v0.0.0:src/engine/transforms/fortescue.jl`.
 # sequence, sequences: HPM `src/core/data.jl`, harmonic_sequence.
-# lock: HPM threaded evaluations and `Base.ReentrantLock`.
+# lock: HPM `src/robust/threads.jl` and `Base.ReentrantLock`.
 nouns = ["circuit", "fortescue", "sequence", "problem", "formulation", "sequences", "lock", "matrix"]
 # HPM `src/core/data.jl`, harmonic_sequence.
 qualifiers = ["zero", "positive", "negative"]
 # tol: LCM `v0.0.0:src/engine/transforms/fortescue.jl`.
-# f1: HPM `ExactPiModel`.
+# f1: HPM `src/robust/network_model.jl`, ExactPiModel.
 symbols = ["tol", "f1"]
 
 [register.HarmonicPowerModelsLineCableModelsExt]

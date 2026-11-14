@@ -1,0 +1,29 @@
+family = "ACSR"
+n_steel = {value = 7, register = "ACSR.Wolf.st"}
+n_aluminium = {value = 30, register = "ACSR.Wolf.al"}
+R20 = {value = 0.0001828, register = "ACSR.Wolf.R20"}
+courses = {value = [12, 18], register = "ACSR.Wolf.courses"}
+mass_al = {value = 0.4402939157841777, register = "ACSR.Wolf.mass.al"}
+mass_st = {value = 0.28966090348110485, register = "ACSR.Wolf.mass.st"}
+E = {value = 70.0, register = "ACSR.Wolf.E"}
+expansion = {value = 1.93e-05, register = "ACSR.Wolf.expansion"}
+
+[d_steel]
+nominal = {value = 0.00259, register = "ACSR.Wolf.st"}
+lower = {value = 0.0025499999999999997, register = "ACSR.Wolf.st"}
+upper = {value = 0.00263, register = "ACSR.Wolf.st"}
+
+[d_aluminium]
+nominal = {value = 0.00259, register = "ACSR.Wolf.al"}
+lower = {value = 0.00256, register = "ACSR.Wolf.al"}
+upper = {value = 0.0026199999999999995, register = "ACSR.Wolf.al"}
+
+[diameter]
+nominal = {value = 0.01813, register = "ACSR.Wolf.d"}
+lower = {value = 0.0179487, register = "ACSR.Wolf.d"}
+upper = {value = 0.0183113, register = "ACSR.Wolf.d"}
+
+[mass]
+nominal = {value = 0.7299548192652825, register = "ACSR.Wolf.mass"}
+lower = {value = 0.7153557228799768, register = "ACSR.Wolf.mass"}
+upper = {value = 0.7445539156505881, register = "ACSR.Wolf.mass"}

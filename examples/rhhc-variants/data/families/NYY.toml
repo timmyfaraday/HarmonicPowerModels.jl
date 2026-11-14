@@ -1,0 +1,56 @@
+[d_c]
+nominal = {value = 0.017480774889473267, register = "NYY.d_c"}
+lower = {value = 0.017305967140578533, register = "NYY.d_c"}
+upper = {value = 0.017655582638368, register = "NYY.d_c"}
+
+[R20]
+nominal = {value = 7.5e-05, register = "NYY.R20"}
+lower = {value = 6.972476975175215e-05, register = "NYY.R20"}
+upper = {value = 7.5e-05, register = "NYY.R20"}
+
+[theta]
+nominal = {value = 70, register = "NYY.theta"}
+lower = {value = 20, register = "NYY.theta"}
+upper = {value = 70, register = "NYY.theta"}
+
+[t_ins]
+nominal = {value = 0.0022, register = "NYY.t_ins"}
+lower = {value = 0.0022, register = "NYY.t_ins"}
+upper = {value = 0.0023100000000000004, register = "NYY.t_ins"}
+
+[t_jkt]
+nominal = {value = 0.003, register = "NYY.t_jkt"}
+lower = {value = 0.003, register = "NYY.t_jkt"}
+upper = {value = 0.0033000000000000004, register = "NYY.t_jkt"}
+
+[eps]
+nominal = {value = 4.5, register = "NYY.eps"}
+lower = {value = 3.6, register = "NYY.eps"}
+upper = {value = 6.0, register = "NYY.eps"}
+
+[rho_ins]
+nominal = {value = 1000000000000.0, register = "NYY.rho_ins"}
+lower = {value = 100000000000.0, register = "NYY.rho_ins"}
+upper = {value = 10000000000000.0, register = "NYY.rho_ins"}
+scale = "log"
+
+[tand]
+nominal = {value = 0.01, register = "NYY.tand"}
+lower = {value = 0.005, register = "NYY.tand"}
+upper = {value = 0.02, register = "NYY.tand"}
+
+[eps_jacket]
+nominal = {value = 4.5, register = "NYY.eps_jacket"}
+lower = {value = 3.6, register = "NYY.eps_jacket"}
+upper = {value = 6.0, register = "NYY.eps_jacket"}
+
+[rho_jacket]
+nominal = {value = 1000000000000.0, register = "NYY.rho_jacket"}
+lower = {value = 100000000000.0, register = "NYY.rho_jacket"}
+upper = {value = 10000000000000.0, register = "NYY.rho_jacket"}
+scale = "log"
+
+[depth]
+nominal = {value = 0.8, register = "NYY.depth"}
+lower = {value = 0.7, register = "NYY.depth"}
+upper = {value = 1.0, register = "NYY.depth"}

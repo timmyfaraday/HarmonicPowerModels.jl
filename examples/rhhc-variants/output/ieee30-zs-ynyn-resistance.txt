@@ -1,0 +1,29 @@
+git commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+case: examples/rhhc-variants/cases/ieee30-zs-ynyn-resistance.toml
+threads: 16; solver: Clarabel
+Transformer vector groups are applied to tapped branches.
+HPM applies winding earthing in the zero sequence.
+branch 11 (6–9): vg=Yy0 gnd1=1 gnd2=0 re1=0.0 xe1=0.0 re2=0.0 xe2=0.0 [pu]
+Tom Van Acker zero-sequence variant: Yy0; from side solidly earthed; to side without a neutral connection to earth.
+branch 12 (6–10): vg=Yy0 gnd1=1 gnd2=1 re1=0.0 xe1=0.0 re2=1.7493112947658402 xe2=0.0 [pu]
+Tom Van Acker zero-sequence variant: Yy0; from side solidly earthed; to side earthed through 19.05 Ω (Tom Van Acker assumption).
+branch 13 (9–11): vg=Yd11 gnd1=0 gnd2=0 re1=0.0 xe1=0.0 re2=0.0 xe2=0.0 [pu]
+Tom Van Acker zero-sequence variant: Yd11; from side without a neutral connection to earth; to side without a neutral connection to earth.
+branch 14 (9–10): vg=Yy0 gnd1=0 gnd2=1 re1=0.0 xe1=0.0 re2=1.7493112947658402 xe2=0.0 [pu]
+Tom Van Acker zero-sequence variant: Yy0; from side without a neutral connection to earth; to side earthed through 19.05 Ω (Tom Van Acker assumption).
+branch 15 (4–12): vg=Yy0 gnd1=1 gnd2=1 re1=0.0 xe1=0.0 re2=1.7493112947658402 xe2=0.0 [pu]
+Tom Van Acker zero-sequence variant: Yy0; from side solidly earthed; to side earthed through 19.05 Ω (Tom Van Acker assumption).
+branch 16 (12–13): vg=Yd11 gnd1=1 gnd2=0 re1=1.7493112947658402 xe1=0.0 re2=0.0 xe2=0.0 [pu]
+Tom Van Acker zero-sequence variant: Yd11; from side earthed through 19.05 Ω (Tom Van Acker assumption); to side without a neutral connection to earth.
+branch 36 (28–27): vg=Yy0 gnd1=1 gnd2=1 re1=0.0 xe1=0.0 re2=1.7493112947658402 xe2=0.0 [pu]
+Tom Van Acker zero-sequence variant: Yy0; from side solidly earthed; to side earthed through 19.05 Ω (Tom Van Acker assumption).
+IEEE 30-bus, inductive_cable33, 34 branches from LineCableModels, 21 units, ε = 0.05, gaussian, no recombination (worst-case alignment), 16 threads
+nominal stochastic: 0.303335 (OPTIMAL)
+resonances at the nominal point: h = 6.27, h = 12.32, h = 16.86, h = 18.21, h = 19.12, h = 19.65, h = 22.72, h = 29.92, h = 30.70, h = 31.39, h = 31.93, h = 35.76, h = 35.97, h = 36.47, h = 37.89, h = 43.47, h = 43.85, h = 46.38, h = 46.87, h = 48.67, h = 51.75, h = 52.78, h = 56.21
+robust: 0.273286  [LB 0.273286, UB 0.273307, gap 7.7e-05], 2 iterations, 445 s, signed off
+robust master termination: OPTIMAL
+per harmonic, robust / nominal: h2 0.992, h3 0.971, h4 0.951, h5 0.884, h6 0.874, h7 0.483, h8 0.745, h9 0.847, h10 0.948, h11 0.971, h12 0.897, h13 0.621, h14 0.773, h15 0.907, h16 0.943, h17 0.952, h18 0.989, h19 0.990, h20 0.823, h21 0.905, h22 0.890, h23 0.899, h24 0.680, h25 0.722, h26 0.739, h27 0.942, h28 0.867, h29 0.949, h30 0.636, h31 0.972, h32 0.926, h33 0.953, h34 0.951, h35 0.947, h36 0.938, h37 0.941, h38 0.938, h39 0.921, h40 0.938, h41 0.940, h42 0.807, h43 0.945, h44 0.969, h45 0.948, h46 0.965, h47 0.852, h48 0.712, h49 0.995, h50 0.787
+per sequence, Σ_h I_h nominal → robust [pu]: positive 0.004063 → 0.003442, negative 0.006858 → 0.006441, zero 0.003523 → 0.003130
+a posteriori (256 random points): worst -1.66e-03 ((:ihd, (45, 5))), violated at 0.0 %
+LineCableModels solves (sum of circuit table sizes): 696644

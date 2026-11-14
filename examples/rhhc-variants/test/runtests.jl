@@ -1,49 +1,48 @@
 using Test
-include(joinpath(@__DIR__, "..", "run.jl"))
+include(joinpath(@__DIR__, "..", "compare.jl"))
 
-@testset "IEEE30 physical-input study" begin
-    for name in ("ieee30-tom", "ieee30-u33", "ieee30-physical", "ieee30-full")
-        @testset "$name" begin
-            s = study("cases/$name.toml")
-            result = runstudy(s, devnull)
-            nom, res = result.nominal, result.result
-            @testset "Zero-width box" begin
-                @test nom["iterations"] == 1
-                @test nom["signed_off"]
-                @test nom["lower_bound"] ≈ nom["upper_bound"] rtol = 1e-3
-                @test all(isapprox(nom["solution"][h], nom["master_solution"][h]; rtol = 1e-3)
-                for h in s.config.harmonics)
-            end
-            @testset "50 Hz per-unit magnitudes" begin
-                p = nominal_point(s.box)
-                for b in circuits(s)
-                    d = s.details[b]
-                    row = branch_data(s.model, b, p, 1.0, :positive)
-                    per_km = d.len / 1e3 / s.model.branches[b].zbase
-                    r, x = row.br_r / per_km, row.br_x / per_km
-                    c = (row.b_fr + row.b_to) /
-                        (2π * s.config.f1 * s.model.branches[b].zbase * d.len) * 1e9
-                    println(name, " 50 Hz branch ", b, ": ", row,
-                        "; R/X/C per km: ", (r, x, c))
-                    if d.kv == 33
-                        @test 0.01 < r < 0.2
-                        @test 0.05 < x < 0.2
-                        @test 0.15 < c < 0.5
-                    else
-                        @test 0.01 < r < 0.3
-                        @test 0.2 < x < 0.6
-                        @test 0.001 < c < 0.03
-                    end
-                end
-            end
-            @testset "Capacity bounds and posterior" begin
-                @test res["lower_bound"] <= nom["upper_bound"]
-                for h in s.config.harmonics
-                    @test res["solution"][h] / nom["master_solution"][h] <= 1
-                end
-                @test res["signed_off"]
-                @test res["posterior"].violated_fraction == 0
-            end
-        end
-    end
+include("populations.jl")
+include("coordinates.jl")
+
+@testset "Corner adversary" begin
+    s = study("cases/ieee30-tom.toml")
+    fixed = ParameterBox(
+        s.box.names, s.box.nominal, s.box.nominal, s.box.nominal, s.box.scale)
+    prepared = deepcopy(s.hd)
+    nominal = solve_rhhc(prepared, s.model, fixed, s.conic;
+        pce_params = deepcopy(s.pce), hpf_optimizer = s.ipopt,
+        nbackground = 0, use_seeds = false)
+    solution = nominal["solution"]
+    result = corner_adversary(prepared, s.model, s.box, solution)
+    independently_checked = [posterior_check(prepared, s.model,
+                                 ParameterBox(
+                                     s.box.names, point, point, point, s.box.scale), solution; n = 1)
+                             for point in result.corners]
+    worst = argmax([p.max_violation for p in independently_checked])
+    @test result.max_violation ≈ independently_checked[worst].max_violation rtol = 1e-12
+    @test result.constraint == independently_checked[worst].constraint
+    @test result.count > 1
+    @test any(!iszero, result.sensitivities.signs)
+    stationary = corner_adversary(prepared, s.model, fixed, solution)
+    direct = posterior_check(prepared, s.model, fixed, solution; n = 1)
+    @test stationary.count == 1
+    @test stationary.point == nominal_point(fixed)
+    @test stationary.max_violation ≈ direct.max_violation rtol = 1e-12
+    doubled = corner_adversary(prepared, s.model, fixed, Dict(h => 2current
+    for (h, current) in solution))
+    @test doubled.max_violation ≈ 4(stationary.max_violation + 1) - 1 rtol = 1e-12
 end
+
+include("stars.jl")
+
+include("transmission.jl")
+
+include("distribution.jl")
+
+include("infeasible.jl")
+
+include("antwerp.jl")
+
+include("hdata_at.jl")
+
+include("manual.jl")

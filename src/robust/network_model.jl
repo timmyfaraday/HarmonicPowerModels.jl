@@ -175,6 +175,11 @@ function branch_data(model::ExactPiModel, b::Int, p, h::Real, sequence::Symbol)
     br  = model.branches[b]
     len = br.len isa Function ? br.len(p) : br.len
     z, y = br.zy(p, model.f1 * h, sequence)
+    return _exact_pi(br, len, z, y)
+end
+
+# exact π data from per-unit-length impedance and admittance
+function _exact_pi(br, len, z, y)
     γ, zc = sqrt(z * y), sqrt(z / y)
     zser  = zc * sinh(γ * len)
     yhalf = tanh(γ * len / 2) / zc
@@ -198,6 +203,7 @@ function _override_branches(ntw::Dict, model::AbstractNetworkModel, p, h::Real,
         for (k, v) in pairs(branch_data(model, b, p, h, sequence))
             br[string(k)] = v
         end
+        br["sequence_data"] = sequence      # the model's data hold for this sequence
         out["branch"]["$b"] = br
     end
     return out
@@ -216,6 +222,24 @@ function networks_at(hdata::Dict, model::AbstractNetworkModel, p)
         nw == "1" && continue
         h = parse(Int, nw)
         out[nw] = _override_branches(ntw, model, p, h, harmonic_sequence(h))
+    end
+    return out
+end
+
+"""
+    hdata_at(hdata, model, p) -> Dict
+
+A deep copy of `hdata` with the uncertain branches of `model` evaluated at the parameter
+point `p`: the fundamental at order 1 in the positive sequence, and every harmonic network
+at its own order and sequence. All other data are preserved. The result shares no mutable
+state with `hdata` and can be passed to HPM's solvers, which may modify their input.
+Pass `nominal_point(box)` as `p` for the nominal network.
+"""
+function hdata_at(hdata::Dict, model::AbstractNetworkModel, p)
+    out = deepcopy(hdata)
+    for (nw, ntw) in out["nw"]
+        h = parse(Int, nw)
+        out["nw"][nw] = _override_branches(ntw, model, p, h, harmonic_sequence(h))
     end
     return out
 end

@@ -52,6 +52,76 @@
         end
     end
 
+    @testset "dual branch derivatives" begin
+        zy = (p, f, seq) -> (0.0001 * sqrt(f / 50) * p.kR_cable +
+                             im * 2π * f * 3e-7 * p.kL_cable,
+                             im * 2π * f * 3e-10 * p.kC_cable)
+        branches = Dict(b => (zy = zy, len = b == 2 ? p -> 15000p.kL_cable : 10000.0,
+                               zbase = 10.0) for b in (2, 3))
+        exact = ExactPiModel(branches)
+        points = ([0.2, -0.4, 0.6], [-0.7, 0.5, -0.1], [0.0, 0.0, 0.0],
+                  [0.7, -0.3, 1.0], [-1.0, 1.0, -0.4])
+        for m in (model, exact)
+            ce = ConstraintEvaluator(hd, m, box)
+            for kind in (:ihd, :thd, :rmsv, :rmsi), ξ in points
+                j = findfirst(c -> c.kind === kind, ce.cons)
+                @test j !== nothing
+                v, gd = fast_violation_gradient(ce, j, ξ, g; branch_derivative = :dual)
+                vc, gc = fast_violation_gradient(ce, j, ξ, g)
+                @test v === vc
+                @test isapprox(gd, gc; rtol = 1e-6)
+                fdg = [(fast_violation(ce, j, ξ .+ 1e-6 .* (1:3 .== i), g) -
+                        fast_violation(ce, j, ξ .- 1e-6 .* (1:3 .== i), g)) / 2e-6 for i in 1:3]
+                @test isapprox(gd, fdg; rtol = 1e-4, atol = 1e-8)
+            end
+            @test_throws ArgumentError fast_violation_gradient(ce, 1, zeros(3), g;
+                                                                branch_derivative = :other)
+            # used coordinates in both chunks, with unused padding in between
+            entries = [box.names[i] => (box.nominal[i], box.lower[i], box.upper[i]) for i in 1:2]
+            append!(entries, [Symbol("unused_", i) => (1.0, 0.5, 1.5) for i in 3:32])
+            push!(entries, box.names[3] => (box.nominal[3], box.lower[3], box.upper[3]))
+            wide = ParameterBox(entries...)
+            cw = ConstraintEvaluator(hd, m, wide)
+            ξ = collect(range(-0.7, 0.6; length = 33))
+            for kind in (:ihd, :thd, :rmsv, :rmsi)
+                j = findfirst(c -> c.kind === kind, cw.cons)
+                @test isapprox(last(fast_violation_gradient(cw, j, ξ, g; branch_derivative = :dual)),
+                               last(fast_violation_gradient(cw, j, ξ, g)); rtol = 1e-6)
+            end
+        end
+
+        calls = Ref(0)
+        counted = function (p, f, seq)
+            any(x -> x isa HPM.ForwardDiff.Dual, values(p)) && (calls[] += 1)
+            zy(p, f, seq)
+        end
+        shared = ExactPiModel(Dict(b => merge(br, (zy = counted,)) for (b, br) in branches))
+        zy2 = (p, f, seq) -> zy(p, f, seq)
+        separate = ExactPiModel(Dict(b => merge(br, (zy = b == 3 ? zy2 : zy,))
+                                     for (b, br) in branches))
+        @test shared.branches[2].zy === shared.branches[3].zy
+        @test separate.branches[2].zy !== separate.branches[3].zy
+        cs, ct = ConstraintEvaluator(hd, shared, box), ConstraintEvaluator(hd, separate, box)
+        for kind in (:ihd, :thd, :rmsv, :rmsi)
+            j = findfirst(c -> c.kind === kind, cs.cons)
+            calls[] = 0
+            vs, gs = fast_violation_gradient(cs, j, first(points), g; branch_derivative = :dual)
+            vt, gt = fast_violation_gradient(ct, j, first(points), g; branch_derivative = :dual)
+            @test calls[] == length(cs.cons[j].coef)
+            @test vs === vt
+            @test gs == gt
+        end
+
+        float_zy = (p::NamedTuple{(:kC_cable, :kL_cable, :kR_cable),Tuple{Float64,Float64,Float64}},
+                    f, seq) -> zy(p, f, seq)
+        plain = ExactPiModel(Dict(2 => merge(branches[2], (zy = float_zy,))))
+        cp = ConstraintEvaluator(hd, plain, box)
+        j = findfirst(c -> c.kind === :ihd, cp.cons)
+        @test_throws r"^branch 2: the data do not accept dual numbers; use branch_derivative = :central\. Original error: MethodError:.*$"s fast_violation_gradient(
+            cp, j, first(points), g; branch_derivative = :dual)
+        @test all(isfinite, last(fast_violation_gradient(cp, j, first(points), g)))
+    end
+
     @testset "default effort" begin
         dict = build_dictionary(hd, model, box; seeds, nbackground = 64)
         pre  = vec(maximum(dictionary_violations(dict, g); dims = 2))

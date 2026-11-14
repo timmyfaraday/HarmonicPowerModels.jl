@@ -1,0 +1,13 @@
+git commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+case: examples/rhhc-variants/cases/ieee33-mix.toml
+threads: 16; solver: Clarabel
+../shhc/data/33bus_network_shhc.m, 0 branches from LineCableModels, 32 units, ε = 0.05, gaussian, 16 threads
+nominal stochastic: 0.008277 (OPTIMAL)
+resonances at the nominal point: 
+robust: 0.007660  [LB 0.007660, UB 0.007660, gap 0.0e+00], 2 iterations, 15 s, signed off
+robust master termination: OPTIMAL
+per harmonic, robust / nominal: h5 0.917, h7 0.925, h11 0.933, h13 0.936
+per sequence, Σ_h I_h nominal → robust [pu]: positive 0.000134 → 0.000124, negative 0.000125 → 0.000115, zero 0.000000 → 0.000000
+a posteriori (1024 random points): worst -7.00e-03 ((:ihd, (13, 18))), violated at 0.0 %
+LineCableModels solves (sum of circuit table sizes): 0

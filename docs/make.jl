@@ -18,7 +18,9 @@ makedocs(
                          [    "HPF"               => "power_flow.md",
                               "HOPF"              => "optimal_power_flow.md",
                               "HHC"               => "hosting_capacity.md"
-                         ]
+                         ],
+                         "Extensions" => ["LineCableModels" => "linecablemodels.md",
+                                          "Physical-input studies" => "linecablemodels_studies.md"]
                     ]
 )
 

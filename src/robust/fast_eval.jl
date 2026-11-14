@@ -34,6 +34,7 @@ struct NetworkCache{M<:AbstractNetworkModel}
     unc::Vector{Int}                           # uncertain branches
     ubr::Dict{Int,Tuple{Int,Int,ComplexF64}}   # branch => (from index, to index, tap)
     yfix::Dict{Tuple{Float64,Symbol},Matrix{ComplexF64}}
+    zview::Dict{Int,Dict{String,Any}}          # h => zero-sequence view of the fixed branches
     lk::ReentrantLock
 end
 
@@ -48,7 +49,8 @@ function NetworkCache(hdata::Dict, model::AbstractNetworkModel)
     ubr     = Dict(b => (bus_idx[fund["branch"]["$b"]["f_bus"]], bus_idx[fund["branch"]["$b"]["t_bus"]],
                          _tap(fund["branch"]["$b"])) for b in unc)
     return NetworkCache(hdata, model, bus_idx, buses, [bus_idx[b] for b in buses], unc, ubr,
-                        Dict{Tuple{Float64,Symbol},Matrix{ComplexF64}}(), ReentrantLock())
+                        Dict{Tuple{Float64,Symbol},Matrix{ComplexF64}}(),
+                        Dict{Int,Dict{String,Any}}(), ReentrantLock())
 end
 
 # admittance of the fixed elements at harmonic order h (cached)
@@ -83,7 +85,39 @@ end
 As [`reduced_admittance`](@ref) for `(hdata, model, p, h)`, from the cache.
 """
 function reduced_admittance(nc::NetworkCache, p, h::Real; sequence::Symbol = :positive)
-    return fast_admittance(nc, p, h; sequence)[nc.keep, nc.keep], nc.buses
+    Yr = fast_admittance(nc, p, h; sequence)[nc.keep, nc.keep]
+    sequence === :zero && (Yr = first(_earth_floating(Yr)))
+    return Yr, nc.buses
+end
+
+# zero-sequence view of the fixed (not uncertain) branches at the integer harmonic h (cached)
+function _zero_branches(nc::NetworkCache, h::Int)
+    v = lock(() -> get(nc.zview, h, nothing), nc.lk)
+    v === nothing || return v
+    nw  = nc.hdata["nw"]["$h"]
+    ntw = copy(nw)
+    ntw["branch"] = Dict(k => b for (k, b) in nw["branch"] if !(parse(Int, k) in nc.unc))
+    v = _zero_sequence_view(ntw)["branch"]
+    lock(() -> (nc.zview[h] = v), nc.lk)
+    return v
+end
+
+_admittance_of(r, x) = abs(r) + abs(x) > 0.0 ? 1.0 / (r + im * x) : zero(ComplexF64)
+
+# terminals (matrix indices, 0 for earth), tap and series admittance of branch b at (p, h);
+# at a zero-sequence harmonic a fixed branch is read from its zero-sequence view
+function _branch_terminals(ce, b::Int, p, h::Int, bd = nothing)
+    f, t, tc = ce.brinfo[b]
+    nc = ce.nc
+    if harmonic_sequence(h) !== :zero || b in nc.unc
+        ys = bd !== nothing && b in nc.unc ? 1.0 / (bd[b].br_r + im * bd[b].br_x) :
+             _series_admittance(ce, b, p, h)
+        return f, t, tc, ys
+    end
+    br = _zero_branches(nc, h)["$b"]
+    get(br, "earth_fr", false) && (f = 0)
+    get(br, "earth_to", false) && (t = 0)
+    return f, t, _tap(br), _admittance_of(br["br_r"], br["br_x"])
 end
 
 """
@@ -91,6 +125,8 @@ end
 
 Normalized violation of one chance constraint at a latent point, computed from only the
 harmonics and transfer-impedance rows that constraint needs. `hdata` must carry the PCE data.
+Floating zero-sequence units are omitted from `E`, `upos` and `W`; realizations that
+change the participating units use the corresponding injection rows.
 """
 struct ConstraintEvaluator{M<:AbstractNetworkModel}
     nc::NetworkCache{M}
@@ -104,6 +140,43 @@ struct ConstraintEvaluator{M<:AbstractNetworkModel}
     cons::Vector{ShhcConstraint}               # nominal records (kind, key, harmonics, limit, λ)
     brinfo::Dict{Int,Tuple{Int,Int,ComplexF64}}   # branch => (from, to, tap) for :rmsi
     deps::Vector{Vector{Int}}                  # coordinate => uncertain branches it changes
+    recomb::Bool                               # false: worst-case alignment (no recombination)
+    W::Dict{Int,Vector{Float64}}               # h => allocation weight w_d of each unit row
+    active_units::Dict{Int,Set{Int}}            # h => units with a return path at the nominal point
+end
+
+# PCE injection rows in the original load order; omit only floating harmonic units.
+# Recombination retains normal loads and zero weights as all-zero rows.
+function _injection_rows(hdata, h, bus_idx, pos, wts, units, nk)
+    pce = hdata["pce"]
+    hunits = Set(pce["harmonic_units"])
+    recomb = get(pce, "recombination", true)
+    rows = Vector{ComplexF64}[]; ps = Int[]; ws = Float64[]
+    for (d_str, load) in hdata["nw"]["$h"]["load"]
+        d = parse(Int, d_str)
+        d in hunits && d ∉ units && continue
+        bd = bus_idx[load["load_bus"]]
+        haskey(pos, bd) || continue                         # unit at an ideal ground
+        w = get(wts, d, 0.0)
+        recomb || (d in hunits && w != 0.0) || continue
+        push!(rows, w .* (pce["cos_phi"][h][d] .+ im .* pce["sin_phi"][h][d]))
+        push!(ps, pos[bd]); push!(ws, w)
+    end
+    E = isempty(rows) ? zeros(ComplexF64, 0, nk) : permutedims(reduce(hcat, rows))
+    return (; E, upos = ps, W = ws)
+end
+
+# Rebuild the rows if a zero-sequence realization changes which units can inject.
+function _point_injections(ce::ConstraintEvaluator, h, floating)
+    rows = (E = ce.E[h], upos = ce.upos[h], W = ce.W[h])
+    harmonic_sequence(h) === :zero || return rows
+    hd = ce.nc.hdata
+    hunits = Set(hd["pce"]["harmonic_units"])
+    fl = Set(ce.nc.keep[i] for idx in floating for i in idx)
+    units = _harmonic_units(hd["nw"]["$h"], hunits, ce.nc.bus_idx, fl)
+    units == ce.active_units[h] && return rows
+    return _injection_rows(hd, h, ce.nc.bus_idx, ce.pos,
+        fairness_weights(hd, hd["pce"]["harmonic_units"]), units, length(ce.K))
 end
 
 function ConstraintEvaluator(hdata::Dict, model::AbstractNetworkModel, box::ParameterBox)
@@ -113,35 +186,44 @@ function ConstraintEvaluator(hdata::Dict, model::AbstractNetworkModel, box::Para
     pos  = Dict(i => j for (j, i) in enumerate(nc.keep))
     wts  = fairness_weights(hdata, pce["harmonic_units"])
     E    = Dict{Int,Matrix{ComplexF64}}(); upos = Dict{Int,Vector{Int}}()
+    recomb = get(pce, "recombination", true)
+    W = Dict{Int,Vector{Float64}}()
     for h in m0.harm_nw_ints
         haskey(pce["cos_phi"], h) || continue
-        rows = Vector{ComplexF64}[]; ps = Int[]
-        for (d_str, load) in hdata["nw"]["$h"]["load"]
-            d = parse(Int, d_str); bd = nc.bus_idx[load["load_bus"]]
-            haskey(pos, bd) || continue                      # unit at an ideal ground
-            w = get(wts, d, 0.0)
-            push!(rows, w .* (pce["cos_phi"][h][d] .+ im .* pce["sin_phi"][h][d])); push!(ps, pos[bd])
-        end
-        E[h] = isempty(rows) ? zeros(ComplexF64, 0, length(m0.K)) : permutedims(reduce(hcat, rows))
-        upos[h] = ps
+        rows = _injection_rows(hdata, h, nc.bus_idx, pos, wts, m0.active_units[h], length(m0.K))
+        E[h] = rows.E; upos[h] = rows.upos; W[h] = rows.W
     end
     fund   = hdata["nw"]["1"]["branch"]
     brinfo = Dict(parse(Int, k) => (nc.bus_idx[b["f_bus"]], nc.bus_idx[b["t_bus"]], _tap(b))
                   for (k, b) in fund)
     deps   = _dependencies(nc, box, minimum(m0.harm_nw_ints))
     return ConstraintEvaluator(nc, box, m0.pb, collect(m0.K), collect(Float64, m0.psi_norms), E,
-                               upos, pos, shhc_constraints(hdata, m0), brinfo, deps)
+                               upos, pos, shhc_constraints(hdata, m0), brinfo, deps, recomb, W, m0.active_units)
 end
 
 # PCE coefficients (re, im) of the voltage response at matrix index n, from the factorised
 # transpose of the reduced Y (row n of its inverse = transfer impedances from the units)
-function _response(ce::ConstraintEvaluator, Ft, n::Int, h::Int)
+function _response(ce::ConstraintEvaluator, Ft, n::Int, h::Int,
+                   rows = (E = ce.E[h], upos = ce.upos[h]))
     nk = length(ce.K)
     haskey(ce.pos, n) || return zeros(nk), zeros(nk)    # ideal ground: V = 0
     e = zeros(ComplexF64, length(ce.pos)); e[ce.pos[n]] = 1.0
     x = Ft \ e
-    C = isempty(ce.upos[h]) ? zeros(ComplexF64, nk) : vec(transpose(x[ce.upos[h]]) * ce.E[h])
+    C = isempty(rows.upos) ? zeros(ComplexF64, nk) : vec(transpose(x[rows.upos]) * rows.E)
     return real.(C), imag.(C)
+end
+
+# row n of the inverse of the reduced Y (zero for an ideal ground or for earth, n = 0)
+function _zrow(ce::ConstraintEvaluator, Ft, n::Int)
+    haskey(ce.pos, n) || return zeros(ComplexF64, length(ce.pos))
+    e = zeros(ComplexF64, length(ce.pos)); e[ce.pos[n]] = 1.0
+    return Ft \ e
+end
+
+# worst-case (no recombination) coefficient: (Σ_d w_d |u_d|)² as the mean, zero variance
+function _worst_case_coef(ce::ConstraintEvaluator, u::AbstractVector, h::Int, weights = ce.W[h])
+    c = zeros(length(ce.K)); c[1] = sum(weights .* abs.(u); init = 0.0)^2
+    return c
 end
 
 # series admittance of branch b at (p, h): from the model if uncertain, else from the data
@@ -167,12 +249,26 @@ function fast_violation(ce::ConstraintEvaluator, j::Int, ξ, g)
     p  = latent(ce.box, ξ)
     coef = Dict{Int,Vector{Float64}}()
     for h in keys(c.coef)
-        Yr = reduced_admittance(ce.nc, p, h; sequence = harmonic_sequence(h))[1]
+        seq = harmonic_sequence(h)
+        Yr = fast_admittance(ce.nc, p, h; sequence = seq)[ce.nc.keep, ce.nc.keep]
+        floating = Vector{Int}[]
+        seq === :zero && ((Yr, floating) = _earth_floating(Yr))
+        rows = _point_injections(ce, h, floating)
         Ft = lu(transpose(Yr))
+        if !ce.recomb
+            if c.kind === :rmsi
+                f, t, tc, ys = _branch_terminals(ce, c.key, p, h)
+                u = ys .* ((1.0 / tc) .* _zrow(ce, Ft, f) .- _zrow(ce, Ft, t))
+            else
+                bus = c.kind === :ihd ? c.key[2] : c.key
+                u = _zrow(ce, Ft, ce.nc.bus_idx[bus])
+            end
+            coef[h] = _worst_case_coef(ce, u[rows.upos], h, rows.W)
+            continue
+        end
         if c.kind === :rmsi
-            f, t, tc = ce.brinfo[c.key]
-            ys = _series_admittance(ce, c.key, p, h); gy, by = real(ys), imag(ys)
-            arf, aif = _response(ce, Ft, f, h); art, ait = _response(ce, Ft, t, h)
+            f, t, tc, ys = _branch_terminals(ce, c.key, p, h); gy, by = real(ys), imag(ys)
+            arf, aif = _response(ce, Ft, f, h, rows); art, ait = _response(ce, Ft, t, h, rows)
             ct = 1.0 / tc; cr, ci = real(ct), imag(ct)
             dVr = (cr .* arf .- ci .* aif) .- art
             dVi = (cr .* aif .+ ci .* arf) .- ait
@@ -181,7 +277,7 @@ function fast_violation(ce::ConstraintEvaluator, j::Int, ξ, g)
             coef[h] = galerkin_product(ce.pb, Ibr, Ibr) .+ galerkin_product(ce.pb, Ibi, Ibi)
         else
             bus = c.kind === :ihd ? c.key[2] : c.key
-            ar, ai = _response(ce, Ft, ce.nc.bus_idx[bus], h)
+            ar, ai = _response(ce, Ft, ce.nc.bus_idx[bus], h, rows)
             coef[h] = galerkin_product(ce.pb, ar, ar) .+ galerkin_product(ce.pb, ai, ai)
         end
     end
@@ -203,7 +299,7 @@ end
 # adjoint v = Y⁻¹ s, s the scatter of q onto the unit buses. One LU and two solves per
 # harmonic give the whole gradient; ∂Y/∂p only involves the stamps of the uncertain
 # branches the parameter changes, whose data are differentiated by central differences
-# (no linear algebra).
+# or ForwardDiff dual numbers (no linear algebra).
 
 # ∂(z_k)/∂x of z = galerkin_product(pb, x, x), contracted with β: Σ_k β_k ∂z_k/∂x
 function _galerkin_grad(pb, β::AbstractVector, x::AbstractVector)
@@ -237,14 +333,91 @@ function _dependencies(nc::NetworkCache, box::ParameterBox, h::Int)
     return deps
 end
 
+# HPM tag and maximum number of latent partials in one branch evaluation
+struct _BranchDerivativeTag end
+const _BRANCH_DERIVATIVE_CHUNK = 32
+
+function _check_branch_derivative(branch_derivative)
+    (branch_derivative === :central || branch_derivative === :dual) || throw(ArgumentError(
+        "branch_derivative must be :central or :dual, got $(repr(branch_derivative))"))
+    return nothing
+end
+
+# preserve the original diagnostic when a model cannot evaluate a dual point
+function _dual_branch_call(f, b)
+    try
+        return f()
+    catch err
+        err isa MethodError || rethrow()
+        error("branch $b: the data do not accept dual numbers; use " *
+              "branch_derivative = :central. Original error: " * sprint(showerror, err))
+    end
+end
+
+function _dual_branch_data(model::AbstractNetworkModel, branches, p, h, sequence)
+    return Dict(b => _dual_branch_call(() -> branch_data(model, b, p, h, sequence), b)
+                for b in branches)
+end
+
+function _dual_branch_data(model::ExactPiModel, branches, p, h, sequence)
+    groups = Vector{Int}[]
+    for b in branches
+        k = findfirst(bs -> model.branches[first(bs)].zy === model.branches[b].zy, groups)
+        k === nothing ? push!(groups, [b]) : push!(groups[k], b)
+    end
+    data = Dict{Int,NamedTuple}()
+    for bs in groups
+        b = first(bs)
+        z, y = _dual_branch_call(() -> model.branches[b].zy(p, model.f1 * h, sequence), b)
+        for b in bs
+            br = model.branches[b]
+            data[b] = _dual_branch_call(b) do
+                len = br.len isa Function ? br.len(p) : br.len
+                _exact_pi(br, len, z, y)
+            end
+        end
+    end
+    return data
+end
+
+# only the partials enter the adjoint; its values remain those of the plain forward pass
+_branch_partial(x::Real, i) = 0.0
+_branch_partial(x::ForwardDiff.Dual, i) = ForwardDiff.partials(x)[i]
+
+function _dual_branch_derivatives(ce, ξ, h, sequence)
+    d = length(ξ)
+    data = Dict{Tuple{Int,Int},NamedTuple}()
+    for lo in 1:_BRANCH_DERIVATIVE_CHUNK:d
+        coords = lo:min(lo + _BRANCH_DERIVATIVE_CHUNK - 1, d)
+        branches = sort(unique(vcat(ce.deps[coords]...)))
+        isempty(branches) && continue
+        n = length(coords)
+        ξd = [ForwardDiff.Dual{_BranchDerivativeTag}(ξ[i],
+                  ntuple(k -> i == coords[k] ? 1.0 : 0.0, n)) for i in 1:d]
+        bd = _dual_branch_data(ce.nc.model, branches, latent(ce.box, ξd), h, sequence)
+        for (k, i) in enumerate(coords), b in ce.deps[i]
+            data[(i, b)] = map(x -> _branch_partial(x, k), bd[b])
+        end
+    end
+    return data
+end
+
 """
-    fast_violation_gradient(ce, j, ξ, g; δ = 1e-6) -> (value, gradient)
+    fast_violation_gradient(ce, j, ξ, g; δ = 1e-6, branch_derivative = :central) -> (value, gradient)
 
 Normalized violation of constraint `j` at the latent point `ξ` and its gradient with respect
 to `ξ`, by the adjoint of the transfer impedances (see the comment above). The branch data of
-the uncertain branches are differentiated by central differences with step `δ`.
+the uncertain branches are differentiated by central differences with step `δ`
+(`branch_derivative = :central`) or ForwardDiff dual numbers (`:dual`).
+
+`:dual` needs branch data that carry the partials of a dual point through. A model that drops
+them without an error, for example by solving an equation by bisection on plain bounds,
+indexing a table by a value, or taking the value of a dual number, gives a wrong gradient.
+Compare the two options on the model before relying on `:dual`.
 """
-function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVector, g; δ::Real = 1e-6)
+function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVector, g;
+                                 δ::Real = 1e-6, branch_derivative = :central)
+    _check_branch_derivative(branch_derivative)
     c   = ce.cons[j]
     nc  = ce.nc
     d   = length(ξ)
@@ -264,23 +437,42 @@ function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVe
             f, t, tc = nc.ubr[b]; x = bd[b]
             _stamp_branch!(Y, f, t, x.br_r, x.br_x, complex(x.g_fr, x.b_fr), complex(x.g_to, x.b_to), tc)
         end
-        F   = lu(Y[nc.keep, nc.keep])
+        Yr  = Y[nc.keep, nc.keep]
+        floating = Vector{Int}[]
+        seq === :zero && ((Yr, floating) = _earth_floating(Yr))
+        rows = _point_injections(ce, h, floating)
+        F   = lu(Yr)
         row(n) = haskey(ce.pos, n) ? (e = zeros(ComplexF64, length(ce.pos)); e[ce.pos[n]] = 1.0;
                                        transpose(F) \ e) : zeros(ComplexF64, length(ce.pos))
-        resp(rv) = isempty(ce.upos[h]) ? zeros(ComplexF64, nk) : vec(transpose(rv[ce.upos[h]]) * ce.E[h])
+        resp(rv) = isempty(rows.upos) ? zeros(ComplexF64, nk) : vec(transpose(rv[rows.upos]) * rows.E)
+        if !ce.recomb
+            # worst-case alignment: u_d per unit, the sum of magnitudes S_h, D_d = t⁻¹z_f − z_t
+            if c.kind === :rmsi
+                f, t, tc, ys = _branch_terminals(ce, c.key, p, h, bd)
+                Dv = (1.0 / tc) .* row(f) .- row(t)
+                r  = ys .* Dv
+                Du = Dv[rows.upos]
+            else
+                bus = c.kind === :ihd ? c.key[2] : c.key
+                r   = row(nc.bus_idx[bus]); Du = nothing
+            end
+            u  = r[rows.upos]
+            Sh = sum(rows.W .* abs.(u); init = 0.0)
+            fw[h] = (F = F, r = r, C = nothing, D = Du, ys = nothing, bd = bd, rows = rows, u = u, Sh = Sh)
+            coef[h] = _worst_case_coef(ce, u, h, rows.W)
+            continue
+        end
         if c.kind === :rmsi
-            f, t, tc = ce.brinfo[c.key]
-            ys = c.key in nc.unc ? 1.0 / (bd[c.key].br_r + im * bd[c.key].br_x) :
-                 (br = nc.hdata["nw"]["$h"]["branch"]["$(c.key)"]; 1.0 / (br["br_r"] + im * br["br_x"]))
+            f, t, tc, ys = _branch_terminals(ce, c.key, p, h, bd)
             ct = 1.0 / tc
             xf, xt = row(f), row(t)
             r  = ys .* (ct .* xf .- xt)
             D  = resp(ct .* xf .- xt)
-            fw[h] = (F = F, r = r, C = ys .* D, D = D, ys = ys, bd = bd)
+            fw[h] = (F = F, r = r, C = ys .* D, D = D, ys = ys, bd = bd, rows = rows)
         else
             bus = c.kind === :ihd ? c.key[2] : c.key
             r   = row(nc.bus_idx[bus])
-            fw[h] = (F = F, r = r, C = resp(r), D = nothing, ys = nothing, bd = bd)
+            fw[h] = (F = F, r = r, C = resp(r), D = nothing, ys = nothing, bd = bd, rows = rows)
         end
         C = fw[h].C
         coef[h] = galerkin_product(ce.pb, real.(C), real.(C)) .+ galerkin_product(ce.pb, imag.(C), imag.(C))
@@ -299,29 +491,45 @@ function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVe
 
     grad = zeros(d)
     for h in hs
+        rows = fw[h].rows
         β = zeros(nk); β[1] = g[h]
         if c.λ > 0.0 && sd > 0.0
             for k in Kh
                 β[k+1] = c.λ * ce.psi_norms[k+1] * S[k] * g[h] / sd
             end
         end
-        C  = fw[h].C
-        G  = _galerkin_grad(ce.pb, β, real.(C)) .+ im .* _galerkin_grad(ce.pb, β, imag.(C))
-        q  = ce.E[h] * conj.(G)
+        if ce.recomb
+            C  = fw[h].C
+            G  = _galerkin_grad(ce.pb, β, real.(C)) .+ im .* _galerkin_grad(ce.pb, β, imag.(C))
+            q  = rows.E * conj.(G)
+        else
+            # ∂(g_h S_h²)/∂u_d contracted as Re(c_d du_d), c_d = 2 g_h S_h w_d conj(u_d)/|u_d|
+            u  = fw[h].u
+            q  = [abs(u[a]) > 0.0 ? 2 * g[h] * fw[h].Sh * rows.W[a] * conj(u[a]) / abs(u[a]) :
+                  zero(ComplexF64) for a in eachindex(u)]
+        end
         s  = zeros(ComplexF64, length(ce.pos))
-        for (a, pa) in enumerate(ce.upos[h]); s[pa] += q[a]; end
+        for (a, pa) in enumerate(rows.upos); s[pa] += q[a]; end
         v  = fw[h].F \ s
         r  = fw[h].r
         seq = harmonic_sequence(h)
+        db = branch_derivative === :dual ? _dual_branch_derivatives(ce, ξ, h, seq) : nothing
         for i in 1:d, b in deps[i]
-            e = zeros(d); e[i] = δ
-            x₊ = branch_data(nc.model, b, latent(ce.box, ξ .+ e), h, seq)
-            x₋ = branch_data(nc.model, b, latent(ce.box, ξ .- e), h, seq)
             x  = fw[h].bd[b]
             ys = 1.0 / (x.br_r + im * x.br_x)
-            dys  = -ys^2 * ((x₊.br_r - x₋.br_r) + im * (x₊.br_x - x₋.br_x)) / (2δ)
-            dyfr = ((x₊.g_fr - x₋.g_fr) + im * (x₊.b_fr - x₋.b_fr)) / (2δ)
-            dyto = ((x₊.g_to - x₋.g_to) + im * (x₊.b_to - x₋.b_to)) / (2δ)
+            if branch_derivative === :central
+                e = zeros(d); e[i] = δ
+                x₊ = branch_data(nc.model, b, latent(ce.box, ξ .+ e), h, seq)
+                x₋ = branch_data(nc.model, b, latent(ce.box, ξ .- e), h, seq)
+                dys  = -ys^2 * ((x₊.br_r - x₋.br_r) + im * (x₊.br_x - x₋.br_x)) / (2δ)
+                dyfr = ((x₊.g_fr - x₋.g_fr) + im * (x₊.b_fr - x₋.b_fr)) / (2δ)
+                dyto = ((x₊.g_to - x₋.g_to) + im * (x₊.b_to - x₋.b_to)) / (2δ)
+            else
+                dx = db[(i, b)]
+                dys  = -ys^2 * (dx.br_r + im * dx.br_x)
+                dyfr = dx.g_fr + im * dx.b_fr
+                dyto = dx.g_to + im * dx.b_to
+            end
             f, t, tc = nc.ubr[b]
             # rᵀ dY v over the four stamp entries, kept buses only
             acc = zero(ComplexF64)
@@ -333,7 +541,8 @@ function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVe
             grad[i] -= real(acc)
             # a branch-current constraint on an uncertain branch: its own y_s moves too
             if c.kind === :rmsi && b == c.key
-                grad[i] += real(dys * sum(conj.(G) .* fw[h].D))
+                grad[i] += ce.recomb ? real(dys * sum(conj.(G) .* fw[h].D)) :
+                                       real(dys * sum(q .* fw[h].D))
             end
         end
     end

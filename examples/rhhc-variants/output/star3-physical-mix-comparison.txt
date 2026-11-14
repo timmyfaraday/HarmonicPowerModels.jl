@@ -1,0 +1,35 @@
+Uncertainty levels and transfer to the source case
+HPM commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+Cases: cases/star3-physical-mix.toml, cases/star3-mix.toml
+Threads: 16; solver: Clarabel; unchanged runner settings.
+Method parameters: (difference_step = 0.0001, zero_band = 1.0e-6, subdivision_depth = 6, sharing_tolerance = 1.0e-10, verification_samples = 4096, admission_threshold = 0.001, interior_starts = (corners = true, center = true), interior_tolerance = 1.0e-10, interior_iterations = 32)
+level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination | nominal termination
+star3-physical-mix | 0.1462968796395889 | 0.1457325285092148 | 0.14573373607469242 | 8.286108008603716e-6 | 2 | 20919 | 12.540589906 | true | OPTIMAL | OPTIMAL
+star3-mix | 0.1399717572013872 | 0.1345624817052285 | 0.1345624817053797 | 1.12373355513033e-12 | 2 | 0 | 0.496834883 | true | OPTIMAL | OPTIMAL
+level | harmonic | robust / nominal | robust current
+star3-physical-mix | 5 | 0.9959458607017028 | 0.03143949341182895
+star3-physical-mix | 7 | 0.9962161626605326 | 0.024108500858597948
+star3-physical-mix | 11 | 0.9962444515441488 | 0.009988875278870083
+star3-physical-mix | 13 | 0.9966044140150416 | 0.007329394705310429
+star3-mix | 5 | 0.9630947586332433 | 0.02881436164166662
+star3-mix | 7 | 0.9591584077812123 | 0.021970545653154157
+star3-mix | 11 | 0.9606378062601529 | 0.009395256395924496
+star3-mix | 13 | 0.9620656209786076 | 0.007101077161868972
+Posterior checks: 1024 random points, public HPM defaults (seed 2, tolerance 0.0001).
+Checks below evaluate positive-limit constraints. An infeasible nominal has no feasible capacity.
+solution | target case | maximum normalized violation | constraint | violated fraction
+star3-physical-mix | star3-physical-mix | -0.0008723617227106573 | (:ihd, (13, 3)) | 0.0
+star3-physical-mix | star3-mix | 0.2036461959077096 | (:ihd, (7, 3)) | 1.0
+star3-mix | star3-physical-mix | -0.06215035971637073 | (:ihd, (13, 3)) | 0.0
+star3-mix | star3-mix | -0.0003680630677244112 | (:ihd, (7, 3)) | 0.0
+Corner adversary: nominal finite-difference signs, unique predicted corners.
+Positive own-case violations refute reported feasibility and its lower-bound certificate.
+Positive transfer violations refute feasibility of the level's solution on the source box.
+A transfer failure alone does not refute an own-case certificate.
+The adversary is not a proof of feasibility: resonance constraints can be nonmonotone.
+solution | target case | corners evaluated | maximum normalized violation | constraint | case-coordinate point
+star3-physical-mix | star3-physical-mix | 9 | -3.6659171932740264e-5 | (:ihd, (5, 2)) | (theta_ACSR = 75.0, rho_EARTH = 1000.0, ambient_O132 = 45.0, rho_aluminium_ACSR = 2.8264e-8, lay_middle_ACSR = 10.0, lay_inner_ACSR = 16.0, diameter_O132 = 0.0031000000000000003, d_steel_ACSR = -1.0, rho_steel_O132 = 2.155e-7, mu_steel_O132 = 300.0, d_aluminium_ACSR = -1.0)
+star3-physical-mix | star3-mix | 3 | 0.20408937673752625 | (:ihd, (7, 3)) | (kR_ohl = 0.8, kL_ohl = 1.05)
+star3-mix | star3-physical-mix | 10 | -0.061386613054917105 | (:ihd, (13, 3)) | (theta_ACSR = 75.0, rho_EARTH = 1000.0, ambient_O132 = 45.0, rho_aluminium_ACSR = 2.8264e-8, lay_middle_ACSR = 10.0, lay_inner_ACSR = 16.0, diameter_O132 = 0.0031000000000000003, d_steel_ACSR = -1.0, rho_steel_O132 = 2.155e-7, mu_steel_O132 = 300.0, d_aluminium_ACSR = -1.0)
+star3-mix | star3-mix | 3 | 0.0 | (:ihd, (7, 3)) | (kR_ohl = 0.8, kL_ohl = 1.05)

@@ -1,0 +1,25 @@
+# Study premise: solid grounding of screens and earth wires at both ends.
+# This case assumes ideal transposition. The study omits cross-bonding.
+model = "scaled"
+bound = "gaussian"
+harmonics = {value = [5, 7, 11, 13], origin = "examples/rhhc/ieee30_robust.jl:32"}
+epsilon = {value = 0.05, origin = "examples/shhc/pce_params.jl:20"}
+posterior = {value = 1024, origin = "examples/rhhc/ieee30_robust.jl:83"}
+f1 = {value = 50.0, origin = "examples/shhc/ieee30_scenarios.jl:40"} # Hz
+box_names = ["kR_ohl", "kL_ohl"]
+network = {kind = "matpower", file = "../shhc/data/5node_test.m"}
+units = {value = [1, 2, 3, 4], origin = "examples/shhc/data/5node_test.m:25-29,59-63; load order from PowerModels"}
+note = "Source electrical data with R and L factors. Candidate specs await audit. The study assumes both-end solid grounding and ideal transposition; cross-bonding is omitted."
+
+[classes]
+ohl = [1, 2, 3, 4] # `examples/shhc/data/5node_test.m:25-29,59-63`
+
+[box.kR_ohl]
+nominal = {value = 1.0, origin = "examples/rhhc/ieee30_robust.jl:58-60"}
+lower = {value = 0.8, origin = "examples/rhhc/ieee30_robust.jl:58-60"}
+upper = {value = 1.2, origin = "examples/rhhc/ieee30_robust.jl:58-60"}
+
+[box.kL_ohl]
+nominal = {value = 1.0, origin = "examples/rhhc/ieee30_robust.jl:58-60"}
+lower = {value = 0.95, origin = "examples/rhhc/ieee30_robust.jl:58-60"}
+upper = {value = 1.05, origin = "examples/rhhc/ieee30_robust.jl:58-60"}

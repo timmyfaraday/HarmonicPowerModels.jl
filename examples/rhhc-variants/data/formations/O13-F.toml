@@ -1,0 +1,5 @@
+kind = "overhead"
+structure = "O13"
+phase_x = {value = [-0.8, 0.0, 0.8], register = "O13.geom"}
+phase_height = {value = [11.0, 11.0, 11.0], register = "O13.geom"}
+# Candidate study: zero earth wires. The mean reference phase height is 10 m.

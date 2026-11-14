@@ -1,0 +1,35 @@
+Uncertainty levels and transfer to the source case
+HPM commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+Cases: cases/ieee9-physical.toml, cases/ieee9.toml
+Threads: 16; solver: Clarabel; unchanged runner settings.
+Method parameters: (difference_step = 0.0001, zero_band = 1.0e-6, subdivision_depth = 6, sharing_tolerance = 1.0e-10, verification_samples = 4096, admission_threshold = 0.001, interior_starts = (corners = true, center = true), interior_tolerance = 1.0e-10, interior_iterations = 32)
+level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination | nominal termination
+ieee9-physical | 0.017554240684272762 | 0.017461434424643336 | 0.017461487151738876 | 3.019622273991742e-6 | 2 | 17982 | 16.269913805 | true | OPTIMAL | OPTIMAL
+ieee9 | 0.016186996170771864 | 0.014753023803409352 | 0.014753023803409352 | 0.0 | 2 | 0 | 1.254408963 | true | OPTIMAL | OPTIMAL
+level | harmonic | robust / nominal | robust current
+ieee9-physical | 5 | 0.9970938892703336 | 0.0013014098517055545
+ieee9-physical | 7 | 0.9945884992070717 | 0.0008592854458506797
+ieee9-physical | 11 | 0.92872763760831 | 0.0002179779457836595
+ieee9-physical | 13 | 0.9983353423075779 | 0.0034418048982078854
+ieee9 | 5 | 0.9527600023755156 | 0.001232837415055989
+ieee9 | 7 | 0.9661612638460146 | 0.0005721433153586658
+ieee9 | 11 | 0.8820303118530844 | 0.0015001265304144566
+ieee9 | 13 | 0.8915350022091723 | 0.0016125673403073384
+Posterior checks: 1024 random points, public HPM defaults (seed 2, tolerance 0.0001).
+Checks below evaluate positive-limit constraints. An infeasible nominal has no feasible capacity.
+solution | target case | maximum normalized violation | constraint | violated fraction
+ieee9-physical | ieee9-physical | -0.00018497504985504065 | (:ihd, (13, 5)) | 0.0
+ieee9-physical | ieee9 | 3.5478665328828116 | (:ihd, (13, 5)) | 1.0
+ieee9 | ieee9-physical | 44.737861414946885 | (:ihd, (11, 7)) | 1.0
+ieee9 | ieee9 | -5.147143168460211e-5 | (:ihd, (7, 3)) | 0.0
+Corner adversary: nominal finite-difference signs, unique predicted corners.
+Positive own-case violations refute reported feasibility and its lower-bound certificate.
+Positive transfer violations refute feasibility of the level's solution on the source box.
+A transfer failure alone does not refute an own-case certificate.
+The adversary is not a proof of feasibility: resonance constraints can be nonmonotone.
+solution | target case | corners evaluated | maximum normalized violation | constraint | case-coordinate point
+ieee9-physical | ieee9-physical | 14 | -6.0393265507441285e-6 | (:ihd, (11, 7)) | (theta_ACSR = -5.0, rho_steel_O230 = 1.79e-7, rho_EARTH = 1000.0, mu_steel_O230 = 50.0, rho_aluminium_ACSR = 2.79e-8, lay_middle_ACSR = 16.0, lay_inner_ACSR = 16.0, ambient_O230 = -5.0, diameter_O230 = 0.0032, d_aluminium_ACSR = -1.0)
+ieee9-physical | ieee9 | 7 | 3.5555076143431377 | (:ihd, (13, 5)) | (kR_ohl = 0.8, kL_ohl = 1.05)
+ieee9 | ieee9-physical | 15 | 46.361783671870405 | (:ihd, (11, 7)) | (theta_ACSR = -5.0, rho_steel_O230 = 1.79e-7, rho_EARTH = 1000.0, mu_steel_O230 = 50.0, rho_aluminium_ACSR = 2.79e-8, lay_middle_ACSR = 16.0, lay_inner_ACSR = 16.0, ambient_O230 = -5.0, diameter_O230 = 0.0032, d_aluminium_ACSR = -1.0)
+ieee9 | ieee9 | 6 | -7.110200206383865e-10 | (:ihd, (5, 3)) | (kR_ohl = 0.8, kL_ohl = 1.05)

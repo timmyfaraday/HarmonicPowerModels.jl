@@ -31,7 +31,8 @@ end
 Assemble the (n_bus × n_bus) nodal admittance matrix for harmonic order `h`.
 
 Bus IDs are sorted from `data["bus"]` and mapped to 1-indexed Julia rows/cols.
-The fundamental-frequency `data` values are scaled to harmonic `h` internally:
+For positive and negative sequences, the fundamental-frequency `data` values are
+scaled to harmonic `h` internally:
 
   - branch:  br_r·√h,  br_x·h,  b_fr·h,  b_to·h
   - shunt:   gs (frequency-independent),  bs·h if capacitive (bs ≥ 0),
@@ -39,30 +40,29 @@ The fundamental-frequency `data` values are scaled to harmonic `h` internally:
   - xfmr:    xsc·h  (r1, r2 ignored — lossless model)
   - xfmr phase shift: pos-seq (h%3==1) ∠−30·shift°,
                       neg-seq (h%3==2) ∠+30·shift°,
-                      zero-seq (h%3==0) ∠0°
+                      zero-seq (h%3==0): winding polarity below
 
 Branches carrying `vg` use the same unit phase factor as `xfmr` records;
-branches without `vg` retain their existing stamp. Branch shunts are unchanged.
+branches without `vg` retain their existing stamp in positive and negative sequences.
 
-**Zero-sequence delta blocking** (h%3==0): for each transformer or branch whose `vg`
-string has 'D' (delta) on the primary or secondary side, the corresponding bus
-row and column are zeroed after all stamps, modelling the isolation of that bus
-from zero-sequence currents.
+**Zero sequence** (h%3==0): scale a copy with `_scale_network_to_harmonic!`, apply
+`_zero_sequence_view` and assemble with `_harmonic_admittance`, using the same sorted
+bus index map. This shares the second-order cone program's line, cable, transformer,
+neutral, generator and earthed-shunt model, including its missing-data errors.
 
-Winding earthing (`gnd`, `re`, `xe`) enters HPM only through the IV
-`constraint_xfmr_winding_config` constraints of `xfmr` records. The stochastic SOC
-admittance (`_harmonic_admittance`) models no zero-sequence winding configuration
-for `xfmr` records either; none is added for branches here.
-
-The magnetising branch (gsh) and winding resistances (r1, r2) are not included.
+For positive and negative sequences the magnetising branch (gsh) and winding
+resistances (r1, r2) are not included.
 """
 function build_harmonic_Ybus(data::Dict, h::Int)
     bus_ids, bus_idx = _bus_id_map(data)
     n_bus = length(bus_ids)
 
-    Y = zeros(ComplexF64, n_bus, n_bus)
     sequence = harmonic_sequence(h)
-    blocked = Set{Int}()
+    if sequence === :zero
+        ntw = _scale_network_to_harmonic!(deepcopy(data), h, sequence)
+        return _harmonic_admittance(_zero_sequence_view(ntw), bus_idx)
+    end
+    Y = zeros(ComplexF64, n_bus, n_bus)
 
     # ── branches (π-model) ────────────────────────────────────────────────────
     for branch in values(data["branch"])
@@ -87,11 +87,6 @@ function build_harmonic_Ybus(data::Dict, h::Int)
             t = cosd(angle) + im * sind(angle)
             Y[fr, to] -= y_s * t
             Y[to, fr] -= conj(t) * y_s
-
-            if sequence === :zero
-                uppercase(vg[1]) == 'D' && push!(blocked, fr)
-                uppercase(vg[2]) == 'D' && push!(blocked, to)
-            end
         else
             Y[fr, to] -= y_s
             Y[to, fr] -= y_s
@@ -112,8 +107,6 @@ function build_harmonic_Ybus(data::Dict, h::Int)
 
     # ── transformers ──────────────────────────────────────────────────────────
     if haskey(data, "xfmr")
-        is_zero_seq  = (h % 3 == 0)
-
         for xfmr in values(data["xfmr"])
             fr = bus_idx[xfmr["f_bus"]]
             to = bus_idx[xfmr["t_bus"]]
@@ -121,8 +114,6 @@ function build_harmonic_Ybus(data::Dict, h::Int)
             y_sc = 1 / (im * xfmr["xsc"] * h)
 
             vg    = get(xfmr, "vg", "Yy0")
-            cnf1  = uppercase(vg[1])
-            cnf2  = uppercase(vg[2])
             angle = _vector_group_angle(vg, sequence)
             tr = cosd(angle); ti = sind(angle)
             t = tr + im * ti
@@ -132,19 +123,7 @@ function build_harmonic_Ybus(data::Dict, h::Int)
             Y[fr, to] -= y_sc * t
             Y[to, fr] -= conj(t) * y_sc
             Y[to, to] += y_sc
-
-            # Collect delta-blocked buses for zero-sequence
-            if is_zero_seq
-                cnf1 == 'D' && push!(blocked, fr)
-                cnf2 == 'D' && push!(blocked, to)
-            end
         end
-    end
-
-    # Zero rows and columns of delta-blocked buses
-    for b in blocked
-        Y[b, :] .= 0
-        Y[:, b] .= 0
     end
 
     return Y
@@ -187,11 +166,18 @@ function harmonic_transfer_impedance(data::Dict, h::Int,
 
     Y_full = build_harmonic_Ybus(data, h)
 
-    # Buses to eliminate: slack + any bus whose Y row is entirely zero
-    # (delta-blocked buses in zero-sequence, isolated buses, etc.)
+    # Buses to eliminate: slack + any bus whose Y row is entirely zero (isolated buses)
+    # and, in zero sequence, the parts of the network with no path to earth
     elim = Set{Int}([slack_mat])
     for i in 1:n_bus
         all(iszero, Y_full[i, :]) && push!(elim, i)
+    end
+    if harmonic_sequence(h) === :zero
+        rest = [i for i in 1:n_bus if i ∉ elim]
+        _, floating = _earth_floating(Y_full[rest, rest])
+        for idx in floating, i in idx
+            push!(elim, rest[i])
+        end
     end
 
     active  = [i for i in 1:n_bus if i ∉ elim]
@@ -351,6 +337,48 @@ function constructive_worst_case_angles(Z::Dict, bus_pos::Dict, hdata::Dict,
     return angles
 end
 
+# Sampling kernel of `empirical_lambdas`: squared voltage and branch current
+# magnitudes per unit of hosting current, per harmonic and sample. Units are drawn
+# in their order, then the types, as one random stream.
+function _sample_aggregates!(aVm::Vector{Matrix{Float64}}, aIm::Vector{Matrix{Float64}}, rng,
+                             Bu::Vector{<:Distributions.Beta}, Bd::Distributions.Beta,
+                             dp::Vector{Int}, lo::Matrix{Float64}, hi::Matrix{Float64},
+                             w::Vector{Float64}, tix::Vector{Int}, slo::Matrix{Float64},
+                             shi::Matrix{Float64}, Zs::Vector{Matrix{ComplexF64}},
+                             brs::Vector{Vector{Tuple{Int,Int,Int,Float64,Float64,Float64,Float64}}},
+                             nsamp::Int, npos::Int)
+    nu, nt = length(dp), size(slo, 2)
+    ωu = zeros(nu); ωt = zeros(nt); Vr = zeros(npos); Vi = zeros(npos)
+    for m in 1:nsamp
+        for u in 1:nu; ωu[u] = rand(rng, Bu[u]); end
+        for t in 1:nt; ωt[t] = rand(rng, Bd); end          # shared by all units of a type
+        for (i, Zh) in enumerate(Zs)
+            fill!(Vr, 0.0); fill!(Vi, 0.0)
+            for u in 1:nu
+                dp[u] == 0 && continue
+                φ = lo[i, u] + (hi[i, u] - lo[i, u]) * ωu[u]
+                t = tix[u]; t > 0 && (φ += slo[i, t] + (shi[i, t] - slo[i, t]) * ωt[t])
+                c = w[u] * cos(φ); s = w[u] * sin(φ)        # unit u injects w_u·I_h
+                @inbounds for p in 1:npos
+                    z = Zh[p, dp[u]]; zr = real(z); zi = imag(z)
+                    Vr[p] += zr * c - zi * s; Vi[p] += zi * c + zr * s
+                end
+            end
+            A = aVm[i]
+            @inbounds for p in 1:npos; A[m, p] = Vr[p]^2 + Vi[p]^2; end
+            B = aIm[i]
+            @inbounds for (j, fp, tp, gy, by, cr, ci) in brs[i]
+                vfr = fp == 0 ? 0.0 : Vr[fp]; vfi = fp == 0 ? 0.0 : Vi[fp]
+                dVr = (cr * vfr - ci * vfi) - (tp == 0 ? 0.0 : Vr[tp])
+                dVi = (cr * vfi + ci * vfr) - (tp == 0 ? 0.0 : Vi[tp])
+                Ir = gy * dVr - by * dVi; Ii = gy * dVi + by * dVr
+                B[m, j] = Ir^2 + Ii^2
+            end
+        end
+    end
+    return nothing
+end
+
 """
     empirical_lambdas(hdata, g; nsamp=20000, seed=1) -> Dict{Symbol,Dict}
 
@@ -401,44 +429,31 @@ function empirical_lambdas(hdata::Dict, g::AbstractDict; nsamp::Int=20000, seed:
         end
     end
 
-    aV = Dict(h => [Vector{Float64}(undef, nsamp) for _ in 1:npos] for h in harm_nws)
-    aI = Dict(h => Dict(t[1] => Vector{Float64}(undef, nsamp) for t in brinfo[h]) for h in harm_nws)
-
     rng = Random.MersenneTwister(seed); Bd = Distributions.Beta(α̂, β̂)
-    Vr = zeros(npos); Vi = zeros(npos)
-    ωu = Dict(d => 0.0 for d in units)
+    gshape = get(pce, "germ_shapes", nothing)
+    Bu = [gshape === nothing ? Bd : Distributions.Beta(gshape[pce["germ_dim"][d]]...) for d in units]
     utype  = get(pce, "unit_type", Dict{Int,String}())
     shifts = get(pce, "type_shifts", Dict{Int,Dict{String,Tuple{Float64,Float64}}}())
-    ωt = Dict(t => 0.0 for t in unique(values(utype)))
+    tnames = collect(keys(Dict(t => 0.0 for t in unique(values(utype)))))   # draw order of the types
     wts = fairness_weights(hdata, units)
-    for m in 1:nsamp
-        for d in units; ωu[d] = rand(rng, Bd); end
-        for t in keys(ωt); ωt[t] = rand(rng, Bd); end   # shared by all units of a type
-        for h in harm_nws
-            fill!(Vr, 0.0); fill!(Vi, 0.0); Zh = Z[h]
-            for d in units
-                haskey(ubus, d) && haskey(bus_pos, ubus[d]) || continue
-                dp = bus_pos[ubus[d]]; lo, hi = ranges[h][d]
-                φ = lo + (hi - lo) * ωu[d]
-                if haskey(utype, d)
-                    s_lo, s_hi = shifts[h][utype[d]]; φ += s_lo + (s_hi - s_lo) * ωt[utype[d]]
-                end
-                c = wts[d] * cos(φ); s = wts[d] * sin(φ)      # unit d injects w_d·I_h
-                @inbounds for p in 1:npos
-                    z = Zh[p, dp]; zr = real(z); zi = imag(z)
-                    Vr[p] += zr * c - zi * s; Vi[p] += zi * c + zr * s
-                end
-            end
-            @inbounds for p in 1:npos; aV[h][p][m] = Vr[p]^2 + Vi[p]^2; end
-            for (bid, fp, tp, gy, by, cr, ci) in brinfo[h]
-                vfr = fp == 0 ? 0.0 : Vr[fp]; vfi = fp == 0 ? 0.0 : Vi[fp]
-                dVr = (cr * vfr - ci * vfi) - (tp == 0 ? 0.0 : Vr[tp])
-                dVi = (cr * vfi + ci * vfr) - (tp == 0 ? 0.0 : Vi[tp])
-                Ir = gy * dVr - by * dVi; Ii = gy * dVi + by * dVr
-                aI[h][bid][m] = Ir^2 + Ii^2
-            end
-        end
-    end
+
+    # concretely typed inputs for the sampling kernel (rows: harmonics, columns: units/types)
+    nh, nu, nt = length(harm_nws), length(units), length(tnames)
+    dp  = [haskey(ubus, d) && haskey(bus_pos, ubus[d]) ? bus_pos[ubus[d]] : 0 for d in units]
+    lo  = [Float64(ranges[h][d][1]) for h in harm_nws, d in units]
+    hi  = [Float64(ranges[h][d][2]) for h in harm_nws, d in units]
+    w   = [Float64(wts[d]) for d in units]
+    tix = [haskey(utype, d) ? findfirst(==(utype[d]), tnames) : 0 for d in units]
+    slo = [Float64(shifts[h][t][1]) for h in harm_nws, t in tnames]
+    shi = [Float64(shifts[h][t][2]) for h in harm_nws, t in tnames]
+    Zs  = [Matrix{ComplexF64}(Z[h]) for h in harm_nws]
+    brs = [[(j, t[2], t[3], t[4], t[5], t[6], t[7]) for (j, t) in enumerate(brinfo[h])] for h in harm_nws]
+    aVm = [Matrix{Float64}(undef, nsamp, npos) for _ in 1:nh]
+    aIm = [Matrix{Float64}(undef, nsamp, length(brinfo[h])) for h in harm_nws]
+    _sample_aggregates!(aVm, aIm, rng, Bu, Bd, dp, lo, hi, w, tix, slo, shi, Zs, brs, nsamp, npos)
+
+    aV = Dict(h => [view(aVm[i], :, p) for p in 1:npos] for (i, h) in enumerate(harm_nws))
+    aI = Dict(h => Dict(t[1] => view(aIm[i], :, j) for (j, t) in enumerate(brinfo[h])) for (i, h) in enumerate(harm_nws))
 
     λstar(x) = (σ = Statistics.std(x); σ > 0 ? max((Statistics.quantile(x, 1 - ε) -
                 Statistics.mean(x)) / σ, 0.0) : 0.0)
@@ -459,7 +474,15 @@ function empirical_lambdas(hdata::Dict, g::AbstractDict; nsamp::Int=20000, seed:
         S = sum((haskey(aI[h], bid) ? aI[h][bid] : zeros(nsamp)) .* gv(h) for h in harm_nws)
         λ_rmsi[bid] = λstar(S)
     end
-    return Dict(:ihd => λ_ihd, :agg => λ_agg, :rmsi => λ_rmsi)
+    # the sampled (1−ε) quantiles themselves, for calibrating λ against the moments
+    # of the polynomial chaos expansion instead (pce_params["empirical_moments"] = "pce")
+    q(x) = Statistics.quantile(x, 1 - ε)
+    q_ihd  = Dict((h, pos2bus[p]) => q(aV[h][p]) for h in harm_nws for p in 1:npos)
+    q_agg  = Dict(pos2bus[p] => q(sum(aV[h][p] .* gv(h) for h in harm_nws)) for p in 1:npos)
+    q_rmsi = Dict(bid => q(sum((haskey(aI[h], bid) ? aI[h][bid] : zeros(nsamp)) .* gv(h) for h in harm_nws))
+                  for bid in allbr)
+    return Dict(:ihd => λ_ihd, :agg => λ_agg, :rmsi => λ_rmsi,
+                :q => Dict(:ihd => q_ihd, :agg => q_agg, :rmsi => q_rmsi), :g => Dict(g))
 end
 
 """

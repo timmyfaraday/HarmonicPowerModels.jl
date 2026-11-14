@@ -1,0 +1,35 @@
+Uncertainty levels and transfer to the source case
+HPM commit: 15cd134779e3c7f298ac207d68722205ac34a5b1
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+Cases: cases/industrial-physical.toml, cases/industrial.toml
+Threads: 16; solver: Clarabel; unchanged runner settings.
+Method parameters: (difference_step = 0.0001, zero_band = 1.0e-6, subdivision_depth = 6, sharing_tolerance = 1.0e-10, verification_samples = 4096, admission_threshold = 0.001, interior_starts = (corners = true, center = true), interior_tolerance = 1.0e-10, interior_iterations = 32)
+level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination | nominal termination
+industrial-physical | 0.004798343916456881 | 0.004789084752054315 | 0.004789084752054315 | 0.0 | 2 | 40424 | 16.516918374 | true | OPTIMAL | OPTIMAL
+industrial | 0.0048213536859839975 | 0.004798963473937356 | 0.004798963473937356 | 0.0 | 2 | 0 | 0.609041987 | true | OPTIMAL | OPTIMAL
+level | harmonic | robust / nominal | robust current
+industrial-physical | 5 | 0.9980391289813441 | 0.0006597556389257934
+industrial-physical | 7 | 0.9980453127458442 | 0.00033552111991983847
+industrial-physical | 11 | 0.9982149037910906 | 0.00011746758765299589
+industrial-physical | 13 | 0.9982124754260264 | 8.452684151495087e-5
+industrial | 5 | 0.9949546997507471 | 0.0006618366298828207
+industrial | 7 | 0.9955415584825897 | 0.00033625979327461217
+industrial | 11 | 0.9963637843850186 | 0.00011733477284562605
+industrial | 13 | 0.9963679199283101 | 8.430967248128041e-5
+Posterior checks: 1024 random points, public HPM defaults (seed 2, tolerance 0.0001).
+Checks below evaluate positive-limit constraints. An infeasible nominal has no feasible capacity.
+solution | target case | maximum normalized violation | constraint | violated fraction
+industrial-physical | industrial-physical | -0.0008285681808837264 | (:thd, 8) | 0.0
+industrial-physical | industrial | -0.004510197055751619 | (:thd, 8) | 0.0
+industrial | industrial-physical | 0.003301498878264697 | (:thd, 8) | 0.6552734375
+industrial | industrial | -0.0004019983477620004 | (:thd, 8) | 0.0
+Corner adversary: nominal finite-difference signs, unique predicted corners.
+Positive own-case violations refute reported feasibility and its lower-bound certificate.
+Positive transfer violations refute feasibility of the level's solution on the source box.
+A transfer failure alone does not refute an own-case certificate.
+The adversary is not a proof of feasibility: resonance constraints can be nonmonotone.
+solution | target case | corners evaluated | maximum normalized violation | constraint | case-coordinate point
+industrial-physical | industrial-physical | 19 | -2.955416291250401e-6 | (:thd, 8) | (d_wire_U36 = 0.0012474, d_c_U36 = 0.023166, d_c_NYY = 0.017305967140578533, R20_U11 = 0.000125, rho_copper_U11 = 1.786e-8, eps_jacket_NYY = 4.5, t_jkt_U36 = 0.004389, t_ins_U11 = 0.00357, t_ins_NYY = 0.0023100000000000004, eps_NYY = 4.5, t_sc2_U36 = 0.0011, d_wire_U11 = 0.0013365, eps_semicon_U11 = 1000.0, t_jkt_NYY = 0.0033000000000000004, t_sc2_U11 = 0.0008800000000000001, R20_U36 = 7.78e-5, rho_copper_U36 = 1.786e-8, t_sc1_U11 = 0.0006050000000000001, t_ins_U36 = 0.009240000000000002, theta_NYY = 70.0, eps_semicon_U36 = 1000.0, eps_U36 = 2.5, rho_EARTH = 100.0, t_sc1_U36 = 0.0011, R20_NYY = 7.5e-5, d_c_U11 = 0.01782, t_jkt_U11 = 0.002475, theta_U11 = 90.0, eps_U11 = 2.5, theta_U36 = 90.0)
+industrial-physical | industrial | 8 | -0.0041095462748419465 | (:thd, 8) | (kR_cable = 1.2, kL_cable = 1.05, kC_cable = 1.1)
+industrial | industrial-physical | 19 | 0.004130069381292456 | (:thd, 8) | (d_wire_U36 = 0.0012474, d_c_U36 = 0.023166, d_c_NYY = 0.017305967140578533, R20_U11 = 0.000125, rho_copper_U11 = 1.786e-8, eps_jacket_NYY = 4.5, t_jkt_U36 = 0.004389, t_ins_U11 = 0.00357, t_ins_NYY = 0.0023100000000000004, eps_NYY = 4.5, t_sc2_U36 = 0.0011, d_wire_U11 = 0.0013365, eps_semicon_U11 = 1000.0, t_jkt_NYY = 0.0033000000000000004, t_sc2_U11 = 0.0008800000000000001, R20_U36 = 7.78e-5, rho_copper_U36 = 1.786e-8, t_sc1_U11 = 0.0006050000000000001, t_ins_U36 = 0.009240000000000002, theta_NYY = 70.0, eps_semicon_U36 = 1000.0, eps_U36 = 2.5, rho_EARTH = 100.0, t_sc1_U36 = 0.0011, R20_NYY = 7.5e-5, d_c_U11 = 0.01782, t_jkt_U11 = 0.002475, theta_U11 = 90.0, eps_U11 = 2.5, theta_U36 = 90.0)
+industrial | industrial | 8 | -3.924316427372787e-11 | (:thd, 8) | (kR_cable = 1.2, kL_cable = 1.05, kC_cable = 1.1)

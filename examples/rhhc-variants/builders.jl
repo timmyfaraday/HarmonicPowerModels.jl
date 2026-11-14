@@ -1,9 +1,14 @@
 using HarmonicPowerModels, LineCableModels, PowerModels, JuMP, Ipopt, Clarabel
 using Printf, LinearAlgebra, TOML
+import LineCableModels.Commons: nominal
 
 const HPM = HarmonicPowerModels
 const STUDIES = @__DIR__
-const METHOD = (admission_threshold = 1e-3,)
+const METHOD = (difference_step = 1e-4, zero_band = 1e-6,
+    subdivision_depth = 6, sharing_tolerance = 1e-10,
+    verification_samples = 4096, admission_threshold = 1e-3,
+    interior_starts = (corners = true, center = true),
+    interior_tolerance = 1e-10, interior_iterations = 32)
 include(joinpath(STUDIES, "..", "shhc", "pce_params.jl"))
 include(joinpath(STUDIES, "..", "shhc", "ieee30_scenarios.jl"))
 PowerModels.silence()
@@ -13,7 +18,8 @@ BLAS.set_num_threads(1)
 record(x) = x
 record(x::AbstractVector) = Tuple(record(v) for v in x)
 function record(x::AbstractDict)
-    haskey(x, "value") && return record(x["value"])
+    haskey(x, "value") && !haskey(x, "lower") && !haskey(x, "upper") &&
+        return record(x["value"])
     return (; (Symbol(k) => record(v) for (k, v) in x)...)
 end
 readrecord(path) = record(TOML.parsefile(path))
@@ -106,34 +112,141 @@ function design(::Val{:U33}, spec, q, mat; temperature = q.theta)
     end
 end
 
+# Candidate study MV cables use a solid core and an equal-area copper screen tube.
+# The jacket fills the difference between the wire envelope and the tube.
+function design(::Union{Val{:U36}, Val{:U11}}, spec, q, mat; temperature = q.theta)
+    radius = q.d_c / 2
+    aluminum = metal(mat.aluminium, mat.reference;
+        rho = q.R20 * π * radius^2, temperature)
+    copper = metal(mat.copper, mat.reference; rho = q.rho_copper, temperature)
+    inner = Material(:semicon, q.rho_inner, q.eps_semicon)
+    outer = Material(:semicon, q.rho_outer, q.eps_semicon)
+    xlpe = Material(:insulator, q.rho_ins, q.eps; tan_delta = q.tand)
+    protection = Material(:insulator, q.rho_jacket, q.eps_jacket)
+    screen_radius = radius + q.t_sc1 + q.t_ins + q.t_sc2
+    area = spec.screen_count * π * q.d_wire^2 / 4
+    tube = sqrt(screen_radius^2 + area / π) - screen_radius
+    return @design spec.name begin
+        @terminal :core begin
+            core(aluminum; r = radius)
+        end
+        screen(inner; t = q.t_sc1, tag = :semicon_inner)
+        insulation(xlpe; t = q.t_ins)
+        screen(outer; t = q.t_sc2, tag = :semicon_outer)
+        @terminal :sheath begin
+            sheath(copper; t = tube)
+        end
+        jacket(protection; t = q.t_jkt + q.d_wire - tube)
+    end
+end
+
+# Variant: round copper core with the Milliken DC resistance.
+function design(::Val{:U155}, spec, q, mat; temperature = q.theta)
+    radius = q.d_c / 2
+    conductor = metal(mat.copper, mat.reference;
+        rho = q.R20 * π * radius^2, temperature)
+    copper = metal(mat.copper, mat.reference; rho = q.rho_copper, temperature)
+    inner = Material(:semicon, q.rho_inner, q.eps_semicon)
+    outer = Material(:semicon, q.rho_outer, q.eps_semicon)
+    xlpe = Material(:insulator, q.rho_ins, q.eps; tan_delta = q.tand)
+    protection = Material(:insulator, q.rho_jacket, q.eps_jacket)
+    screen_radius = radius + q.t_sc1 + q.t_ins + q.t_sc2
+    area = spec.screen_count * π * q.d_wire^2 / 4
+    tube = sqrt(screen_radius^2 + area / π) - screen_radius
+    return @design spec.name begin
+        @terminal :core begin
+            core(conductor; r = radius)
+        end
+        screen(inner; t = q.t_sc1, tag = :semicon_inner)
+        insulation(xlpe; t = q.t_ins)
+        screen(outer; t = q.t_sc2, tag = :semicon_outer)
+        @terminal :sheath begin
+            sheath(copper; t = tube)
+        end
+        jacket(protection; t = q.t_jkt + q.d_wire - tube)
+    end
+end
+
+# The coaxial formulation needs one concentric assembly per cable.
+# Variant: three unscreened single cores replace the NYY multicore construction.
+function design(::Val{:NYY}, spec, q, mat; temperature = q.theta)
+    radius = q.d_c / 2
+    copper = metal(mat.copper, mat.reference;
+        rho = q.R20 * π * radius^2, temperature)
+    pvc = Material(:insulator, q.rho_ins, q.eps; tan_delta = q.tand)
+    protection = Material(:insulator, q.rho_jacket, q.eps_jacket)
+    return @design spec.name begin
+        @terminal :core begin
+            core(copper; r = radius)
+        end
+        insulation(pvc; t = q.t_ins)
+        jacket(protection; t = q.t_jkt)
+    end
+end
+
 # A concentric strand has 1 + 3k(k + 1) wires and spans 2k + 1 diameters.
 strandspan(count) = 2 * ((isqrt(12count - 3) - 3) ÷ 6) + 1
 
 """
+    construction(spec, q, inner, outer)
+
+Resolve the steel course counts and the dimensionless steel and aluminum lay ratios.
+Keep the supplied effective inner and outer aluminum lays unchanged.
+"""
+function construction(spec, q, inner, outer)
+    steel_courses = Tuple(6i for i in 1:((strandspan(spec.n_steel) - 1) ÷ 2))
+    steel_lays = accumulate(min,
+        Tuple(i == 1 ? q.lay_steel : q.lay_steel_outer for i in eachindex(steel_courses)))
+    aluminum_lays = Tuple(i == length(spec.courses) ? outer :
+                          i == 1 ? inner : min(q.lay_middle, inner)
+    for i in eachindex(spec.courses))
+    return (; steel_courses, steel_lays, aluminum_lays)
+end
+
+"""
     construction(spec, q, reference, da, ds, inner, outer)
 
-Compute mass, metal area and outside diameter from effective wire diameters in
-meters and effective lay ratios. The caller supplies already ordered and projected values.
+Compute mass in kg/m, metal area in square meters and outside
+diameter in meters from the supplied wire diameters. Each component mass scales
+with wire area and the ratio of its summed helical wire lengths to their nominal values.
+The caller supplies the effective inner and outer aluminum lays unchanged.
 """
 function construction(spec, q, reference, da, ds, inner, outer)
+    recipe = construction(spec, q, inner, outer)
+    nominal_lays = (i == length(spec.courses) ? reference.lay_outer :
+                    i == 1 ? reference.lay_inner : reference.lay_middle
+    for i in eachindex(spec.courses))
     aluminum = spec.mass_al *
-               (spec.courses[1] * sqrt(1 + (π / inner)^2) +
-                spec.courses[2] * sqrt(1 + (π / outer)^2)) /
-               (spec.courses[1] * sqrt(1 + (π / reference.lay_inner)^2) +
-                spec.courses[2] * sqrt(1 + (π / reference.lay_outer)^2))
-    steel = spec.mass_st * (1 + (spec.n_steel - 1) * sqrt(1 + (π / q.lay_steel)^2)) /
-            (1 + (spec.n_steel - 1) * sqrt(1 + (π / reference.lay_steel)^2))
-    diameter = strandspan(spec.n_steel) * ds + 2length(spec.courses) * da
+               sum(n * sqrt(1 + (π / lay)^2)
+    for (n, lay) in zip(spec.courses, recipe.aluminum_lays)) /
+               sum(n * sqrt(1 + (π / lay)^2)
+    for (n, lay) in zip(spec.courses, nominal_lays))
+    steel = spec.mass_st *
+            (1 + sum(
+        (n * sqrt(1 + (π / lay)^2)
+        for (n, lay) in zip(recipe.steel_courses, recipe.steel_lays)); init = 0.0)) /
+            (1 + sum(
+        (n * sqrt(1 + (π / (i == 1 ? reference.lay_steel : reference.lay_steel_outer))^2)
+        for (i, n) in enumerate(recipe.steel_courses));
+        init = 0.0))
+    # The six-wire aluminum course needs a center circle at least one wire diameter across.
+    core_diameter = first(spec.courses) == 6 ? max(strandspan(spec.n_steel) * ds, da) :
+                    strandspan(spec.n_steel) * ds
+    diameter = core_diameter + 2length(spec.courses) * da
     mass = aluminum * (da / spec.d_aluminium.nominal)^2 +
            steel * (ds / spec.d_steel.nominal)^2
     area = π * (spec.n_aluminium * da^2 + spec.n_steel * ds^2) / 4
-    return (; da, ds, inner, outer, diameter, mass, area)
+    return (;
+        da, ds, inner = first(recipe.aluminum_lays), outer = last(recipe.aluminum_lays),
+        diameter, mass, area)
 end
 
 # EN 50182:2001 5.4 and 5.7.3 constrain diameter and mass jointly.
 function realize(spec, q, reference)
-    inner = q.lay_inner
-    outer = min(q.lay_outer, inner)
+    inner = min(q.lay_inner, spec.n_steel > 7 ?
+                             min(q.lay_steel, q.lay_steel_outer) : q.lay_steel)
+    outer = min(q.lay_outer, inner,
+        length(spec.courses) > 2 ? q.lay_middle : inner)
     da = interpolate(spec.d_aluminium, q.d_aluminium)
     ds = interpolate(spec.d_steel, q.d_steel)
     physical = construction(spec, q, reference, da, ds, inner, outer)
@@ -155,6 +268,31 @@ function realize(spec, q, reference)
             end
         end
         factor = low
+        # The converged feasible point lies on one diameter or mass limit.
+        a0 = spec.d_aluminium.nominal + factor * (da - spec.d_aluminium.nominal)
+        d0 = spec.d_steel.nominal + factor * (ds - spec.d_steel.nominal)
+        physical = construction(spec, q, reference, a0, d0, inner, outer)
+        limits = ((:diameter, spec.diameter.lower), (:diameter, spec.diameter.upper),
+            (:mass, spec.mass.lower), (:mass, spec.mass.upper))
+        active = argmin(map(limits) do (quantity, bound)
+            abs(nominal(getproperty(physical, quantity)) - bound) / abs(bound)
+        end)
+        quantity, bound = limits[active]
+        delta_a = nominal(da) - spec.d_aluminium.nominal
+        delta_d = nominal(ds) - spec.d_steel.nominal
+        if quantity === :diameter
+            slope = 2length(spec.courses) * delta_a + strandspan(spec.n_steel) * delta_d
+        else
+            # Mass is A*a^2 + S*d^2 at fixed lays. Evaluate its two
+            # coefficients on plain inputs, then differentiate analytically.
+            q0, ref0 = map(nominal, q), map(nominal, reference)
+            i0, o0 = nominal(inner), nominal(outer)
+            A = construction(spec, q0, ref0, 1.0, 0.0, i0, o0).mass
+            S = construction(spec, q0, ref0, 0.0, 1.0, i0, o0).mass
+            slope = 2A * nominal(a0) * delta_a + 2S * nominal(d0) * delta_d
+        end
+        correction = (getproperty(physical, quantity) - bound) / slope
+        factor -= correction - nominal(correction)
         da = spec.d_aluminium.nominal + factor * (da - spec.d_aluminium.nominal)
         ds = spec.d_steel.nominal + factor * (ds - spec.d_steel.nominal)
     end
@@ -187,8 +325,7 @@ function physical_inputs(spec, families, layout, bindings, p)
                 coordinates(getproperty(families, layout.structure), get(bindings, layout.structure, (;)), p) :
                 layout
     ground = coordinates(families.EARTH, get(bindings, :EARTH, (;)), p)
-    return physical_inputs(spec.family, spec,
-        effective(spec.family, spec, q, reference, structure, layout), ground)
+    return merge(effective(spec.family, spec, q, reference, structure, layout), (; ground))
 end
 
 """
@@ -209,19 +346,16 @@ function design(::Val{:ACSR}, spec, q, mat; temperature = q.theta, realized)
     steel = metal(mat.s1a, mat.reference; rho = q.rho_steel, mu_r = q.mu_steel, temperature)
     aluminum = metal(mat.al1, mat.reference; rho = q.rho_aluminium, temperature)
     da, ds = realized.da, realized.ds
-    return @design "ACSR" begin
-        @terminal :core begin
-            stranded(steel; center = Circle(ds / 2),
-                shape = Circle(ds / 2), n = (spec.n_steel - 1,),
-                lay = LayRatio(q.lay_steel), boundary = Circle(strandspan(spec.n_steel) *
-                                                               ds / 2),
-                tag = :steel)
-            wires(aluminum; shape = Circle(da / 2), n = spec.courses[1],
-                lay = LayRatio(realized.inner), tag = :aluminium_inner)
-            wires(aluminum; shape = Circle(da / 2), n = spec.courses[2],
-                lay = LayRatio(realized.outer), tag = :aluminium_outer)
-        end
-    end
+    recipe = construction(spec, q, realized.inner, realized.outer)
+    core_diameter = first(spec.courses) == 6 ? max(strandspan(spec.n_steel) * ds, da) :
+                    strandspan(spec.n_steel) * ds
+    core = stranded(steel; center = Circle(ds / 2), shape = Circle(ds / 2),
+        n = recipe.steel_courses, lay = LayRatio.(Tuple(recipe.steel_lays)),
+        boundary = Circle(core_diameter / 2), tag = :steel)
+    courses = Tuple(wires(aluminum; shape = Circle(da / 2), n = count,
+                        lay = LayRatio(lay), tag = Symbol("aluminium_", i))
+    for (i, (count, lay)) in enumerate(zip(spec.courses, recipe.aluminum_lays)))
+    return build(CableDesign, "ACSR", Terminal(:core, Stack(core, courses...)))
 end
 
 function design(::Val{:O132}, spec, q, mat; temperature = q.ambient)
@@ -246,6 +380,13 @@ function system(::Val{:trefoil}, conductor, row)
         connections = [(core = k, sheath = 0) for k in 1:3], id = "trefoil", line_length = 1.0)
 end
 
+function system(::Val{:unscreened}, conductor, row)
+    spacing = 2r_ex(conductor.outer)
+    positions = trefoil(conductor; spacing, at = centre(row.reference, row, spacing))
+    return build(CableSystem, fill(conductor, 3), positions;
+        connections = [(core = k,) for k in 1:3], id = "trefoil", line_length = 1.0)
+end
+
 function system(::Val{:overhead}, conductor, row)
     # The parabolic span's mean height is support height minus two thirds of the sag.
     positions = [Placement(x, h - (2 / 3) * row.phase_sag)
@@ -254,9 +395,12 @@ function system(::Val{:overhead}, conductor, row)
         return build(CableSystem, fill(conductor, 3), positions;
             connections = [(core = k,) for k in 1:3], id = row.name, line_length = 1.0)
     end
-    push!(positions, Placement(row.shield_x, row.shield_height - (2 / 3) * row.shield_sag))
-    return build(CableSystem, [conductor, conductor, conductor, row.shield], positions;
-        connections = [(core = 1,), (core = 2,), (core = 3,), (core = 0,)],
+    append!(positions,
+        [Placement(x, h - (2 / 3) * row.shield_sag)
+         for (x, h) in zip(row.shield_x, row.shield_height)])
+    count = length(positions) - 3
+    return build(CableSystem, vcat(fill(conductor, 3), fill(row.shield, count)), positions;
+        connections = vcat([(core = k,) for k in 1:3], fill((core = 0,), count)),
         id = row.name, line_length = 1.0)
 end
 
@@ -284,7 +428,13 @@ function sag(span, mass, area, modulus, expansion, reference, theta, theta0, gra
             low = value
         end
     end
-    return (low + high) / 2
+    x0 = (low + high) / 2
+    tension = load * span^2 / (8x0)
+    residual = 8(x0^2 - reference^2) / (3span^2) -
+               (tension - tension0) / (modulus * area) - expansion * (theta - theta0)
+    residual_x = 16x0 / (3span^2) + load * span^2 / (8modulus * area * x0^2)
+    correction = residual / residual_x
+    return x0 - (correction - nominal(correction))
 end
 
 function arrangement(::Val{:TOM}, spec, q, reference, structure, row, mat)
@@ -300,12 +450,24 @@ function arrangement(kind, spec, physical, row, mat)
         kind, spec, physical.q, physical.reference, physical.structure, row, mat)
 end
 
+function arrangement(
+        ::Union{Val{:U36}, Val{:U11}, Val{:U155}}, spec, q, reference, structure, row, mat)
+    return design(spec.family, spec, q, mat), merge(row, (depth = q.depth,))
+end
+
+function arrangement(::Val{:NYY}, spec, q, reference, structure, row, mat)
+    return design(spec.family, spec, q, mat),
+    merge(row, (depth = q.depth, kind = Val(:unscreened)))
+end
+
 function arrangement(::Val{:ACSR}, spec, physical, row, mat)
     (; q, structure, temperature, realized) = physical
     conductor = design(spec.family, spec, q, mat; temperature, realized)
     haskey(row, :structure) || return conductor, row
-    phase_sag = sag(structure.span, realized.mass, realized.area, q.E * 1e9, q.expansion,
+    phase_sag = sag(structure.span, realized.mass, realized.area,
+        get(spec, :E, q.E) * 1e9, get(spec, :expansion, q.expansion),
         structure.phase_sag, temperature, structure.reference_theta, structure.gravity)
+    haskey(row, :earth_wire) || return conductor, merge(row, (; phase_sag))
     wire = row.shield_spec
     shield = design(wire.family, wire, structure, mat)
     wire_area = π * structure.diameter^2 / 4
@@ -325,7 +487,11 @@ function arrangement(::Val{:O132}, spec, q, reference, structure, row, mat)
         shield_sag = structure.shield_sag, shield = conductor))
 end
 
-function parameterbox(rows, families, names)
+function parameterbox(rows, families, names, branches)
+    for (name, row) in pairs(branches)
+        haskey(row, :route) && haskey(row, :length_m) &&
+            throw(ArgumentError("branch $name declares both route and length_m"))
+    end
     entries = map(names) do text
         name = Symbol(text)
         row = getproperty(rows, name)
@@ -337,7 +503,12 @@ function parameterbox(rows, families, names)
                 Symbol(get(values, :scale, "linear") == "registered" ? "linear" :
                        get(values, :scale, "linear")))
     end
-    return ParameterBox(entries...)
+    lengths = (Symbol("length_", name) =>
+                   (len.value, len.lower, len.upper, :linear)
+    for (name, row) in sort(collect(pairs(branches)); by = x -> parse(Int, string(first(x))))
+    if haskey(row, :length_m)
+    for len in (row.length_m,) if len isa NamedTuple)
+    return ParameterBox(entries..., lengths...)
 end
 
 function isxfmr(b)
@@ -354,6 +525,11 @@ function transformers(rows, data)
         (br["f_bus"], br["t_bus"]) == (row.f_bus, row.t_bus) ||
             error("transformer $id does not join declared buses $(row.f_bus)–$(row.t_bus)")
         br["vg"] = row.vg
+        br["gnd1"], br["gnd2"] = row.gnd1, row.gnd2
+        zb1 = data["bus"][string(row.f_bus)]["base_kv"]^2 / data["baseMVA"]
+        zb2 = data["bus"][string(row.t_bus)]["base_kv"]^2 / data["baseMVA"]
+        br["re1"], br["xe1"] = row.re1_ohm / zb1, row.xe1_ohm / zb1
+        br["re2"], br["xe2"] = row.re2_ohm / zb2, row.xe2_ohm / zb2
     end
     return rows
 end
@@ -380,11 +556,24 @@ function network(config, ipopt)
 end
 
 function route_length(br, kv, zbase, config)
+    row = getproperty(config.branches, Symbol(br["index"]))
+    haskey(row, :length_m) && return route_length(row.length_m)
+    if haskey(row, :route)
+        return getproperty(config.routes, Symbol(row.route)).length_m
+    end
     haskey(br, "length_m") && return br["length_m"]
     haskey(br, "cable_km") && return 1e3br["cable_km"]
     config.network.kind == "scenario" && return 1e3br["br_x"] * zbase / OHL_X[kv]
     error("LCM branch $(br["index"]) has no route length in its source data")
 end
+
+# Fixed values and bounded records supply the nominal length in meters.
+route_length(len::Real) = len
+route_length(row::NamedTuple) = row.value
+
+# A bounded branch length reads its coordinate in meters.
+route_length(len::Real, b::Int) = len
+route_length(row::NamedTuple, b::Int) = Base.Fix2(getproperty, Symbol("length_", b))
 
 function harmonic_units(count::Integer, data)
     sort(parse.(Int, collect(keys(data["load"]))))[1:count]
@@ -392,18 +581,58 @@ end
 harmonic_units(ids::Tuple, data) = collect(ids)
 
 function study(path; all_coordinates = false)
+    get(ENV, "SHHC_UNIT", "diode") == "diode" ||
+        throw(ArgumentError("SHHC_UNIT must be unset or diode for these studies"))
     file = isfile(path) ? abspath(path) : joinpath(STUDIES, path)
-    config = readrecord(file)
+    rows = TOML.parsefile(file)
+    if haskey(rows, "base")
+        name = rows["base"]
+        basename(name) == name && !endswith(name, ".toml") ||
+            throw(ArgumentError("base must name a case without a path or extension"))
+        base = TOML.parsefile(joinpath(STUDIES, "cases", name * ".toml"))
+        haskey(base, "base") && throw(ArgumentError("a base case cannot have a base"))
+        rows = merge(base, rows)
+    end
+    config = record(rows)
+    recombination = get(config, :recombination, true)
+    if haskey(config, :population)
+        config.population in ("diode", "thyristor", "mix") ||
+            throw(ArgumentError("population must be diode, thyristor or mix"))
+        recombination || throw(ArgumentError("population requires recombination"))
+        all(
+            h -> haskey(PCE_PARAMS["harmonics"], h) &&
+                 haskey(PCE_PARAMS_THYRISTOR["harmonics"], h),
+            config.harmonics) ||
+            throw(ArgumentError("population requires Table III and IV harmonic orders"))
+    end
     mat = readrecord(joinpath(STUDIES, "data", "materials.toml"))
-    records = readrecord(config)
-    families = records.families
+    families = (;
+        (Symbol(splitext(name)[1]) =>
+             readrecord(joinpath(STUDIES, "data", "families", name))
+    for name in sort(readdir(joinpath(STUDIES, "data", "families")))
+    if endswith(name, ".toml"))...)
     box = parameterbox(config.box, families,
-        all_coordinates ? Tuple(string.(keys(config.box))) : config.box_names)
+        all_coordinates ? Tuple(string.(keys(config.box))) : config.box_names,
+        get(config, :branches, (;)))
     ipopt = optimizer_with_attributes(Ipopt.Optimizer, "print_level" => 0)
     conic = optimizer_with_attributes(Clarabel.Optimizer, "verbose" => false)
     data = network(config, ipopt)
     haskey(config, :principle) && (data["principle"] = config.principle)
     transformers(get(config, :transformers, (;)), data)
+    for bus in get(config, :star_points, ())
+        haskey(data["bus"], string(bus)) || error("declared star point $bus is absent")
+        data["bus"][string(bus)]["star_point"] = true
+    end
+    for (name, row) in pairs(get(config, :generators, (;)))
+        id = string(name)
+        haskey(data["gen"], id) || error("declared generator $id is absent")
+        generator = data["gen"][id]
+        if get(row, :zero_sequence_open, false)
+            generator["zero_sequence_open"] = true
+        else
+            generator["rsc0"], generator["xsc0"] = row.rsc0, row.xsc0
+        end
+    end
     bindings = (;
         (k => (; (n => Symbol(v) for (n, v) in pairs(b))...)
     for (k, b) in pairs(get(config, :bindings, (;))))...)
@@ -416,15 +645,29 @@ function study(path; all_coordinates = false)
         kv = data["bus"][string(br["f_bus"])]["base_kv"]
         zbase = kv^2 / data["baseMVA"]
         len = route_length(br, kv, zbase, config)
+        if haskey(row, :rating)
+            rating = getproperty(config.ratings, Symbol(row.rating))
+            br["rate_a"] = sqrt(3) * kv * rating.current_A / (1000data["baseMVA"])
+        end
         key = (row.spec, row.formation)
         if !haskey(definitions, key)
             spec = specification(row.spec)
             definitions[key] = problem(
                 spec, families, formation(row.formation), mat, bindings)
         end
-        branches[b] = (problem = definitions[key], len = len, zbase = zbase)
+        spec = specification(row.spec)
+        layout = formation(row.formation)
+        names = (spec.family_name, :EARTH,
+            (haskey(layout, :structure) ? (layout.structure,) : ())...)
+        declared = Tuple(n
+        for n in keys(nominal_point(box))
+        if any(family -> n in values(get(bindings, family, (;))), names))
+        branches[b] = (problem = definitions[key],
+            coordinates = declared,
+            len = haskey(row, :length_m) ? route_length(row.length_m, b) : len,
+            zbase = zbase)
         details[b] = (branch = b, f_bus = br["f_bus"], t_bus = br["t_bus"], kv = kv,
-            spec = row.spec, formation = row.formation, len = len,
+            spec = row.spec, formation = row.formation, coordinates = declared, len = len,
             circuit = row.spec * "/" * row.formation,
             source_x = br["br_x"] * zbase / (len / 1e3),
             source_c = (br["b_fr"] + br["b_to"]) / (2π * config.f1 * zbase * (len / 1e3)))
@@ -442,15 +685,35 @@ function study(path; all_coordinates = false)
     all(id -> haskey(data["load"], string(id)), units) ||
         error("harmonic unit is absent from the source load table")
     hd = HPM.replicate(deepcopy(data); H = [1; collect(config.harmonics)])
+    if config.model == "scaled"
+        classes = Dict(b => Symbol(name) for (name, ids) in pairs(config.classes)
+        for b in ids)
+        model = ScaledBranchModel(hd, classes)
+    end
     hd["angle_reference"] = "local"
     for h in config.harmonics, k in collect(keys(hd["nw"][string(h)]["load"]))
 
         parse(Int, k) in units || delete!(hd["nw"][string(h)]["load"], k)
     end
     pce = Dict{String, Any}(deepcopy(PCE_PARAMS)...)
+    pce["recombination"] = recombination
     pce["harmonics"] = Dict{Int, Any}(h => (PCE_PARAMS["harmonics"][h].v_min,
                                           PCE_PARAMS["harmonics"][h].v_max)
-    for h in config.harmonics)
+    for h in config.harmonics if recombination || haskey(PCE_PARAMS["harmonics"], h))
+    population = get(config, :population, "diode")
+    if population == "thyristor"
+        pce["alpha_hat"] = PCE_PARAMS_THYRISTOR["alpha_hat"]
+        pce["beta_hat"] = PCE_PARAMS_THYRISTOR["beta_hat"]
+        pce["harmonics"] = Dict{Int, Any}(h => Tuple(PCE_PARAMS_THYRISTOR["harmonics"][h])
+        for h in config.harmonics)
+    elseif population == "mix"
+        kind = Dict(d => (iseven(i) ? PCE_PARAMS_THYRISTOR : PCE_PARAMS)
+        for (i, d) in enumerate(sort(units)))
+        pce["harmonics"] = Dict{Int, Any}(h => Dict(d => Tuple(kind[d]["harmonics"][h])
+                                          for d in units) for h in config.harmonics)
+        pce["unit_shapes"] = Dict(d => (kind[d]["alpha_hat"], kind[d]["beta_hat"])
+        for d in units)
+    end
     pce["harmonic_units"] = units
     pce["bound"] = config.bound
     pce["epsilon"] = config.epsilon
@@ -468,7 +731,7 @@ function header(io, s)
     println(io, "git commit: ", readchomp(`git -C $STUDIES rev-parse HEAD`))
     println(io,
         "LCM commit: ",
-        TOML.parsefile(joinpath(STUDIES, "Project.toml"))["sources"]["LineCableModels"]["rev"])
+        TOML.parsefile(joinpath(STUDIES, "Manifest.toml"))["deps"]["LineCableModels"][1]["repo-rev"])
     println(io, "case: ", relpath(s.file, dirname(dirname(STUDIES))))
     println(io, "threads: ", Threads.nthreads(), "; solver: Clarabel")
 end
@@ -476,7 +739,7 @@ end
 function declarations(io, s)
     isempty(get(s.config, :transformers, (;))) && return
     println(io, "Transformer vector groups are applied to tapped branches.")
-    println(io, "Winding earthing is declared below; HPM applies it only in its IV formulation.")
+    println(io, "HPM applies winding earthing in the zero sequence.")
     for (id, row) in sort(collect(pairs(s.config.transformers)); by = x -> parse(Int, string(first(x))))
         br = s.hd["nw"]["1"]["branch"][string(id)]
         kv1 = s.hd["nw"]["1"]["bus"][string(br["f_bus"])]["base_kv"]
@@ -490,16 +753,5 @@ function declarations(io, s)
         haskey(row, :resistance_note) && println(io, row.resistance_note)
     end
 end
-
-function readrecord(config::NamedTuple)
-    families = (;
-        (Symbol(splitext(name)[1]) =>
-             readrecord(joinpath(STUDIES, "data", "families", name))
-    for name in sort(readdir(joinpath(STUDIES, "data", "families")))
-    if endswith(name, ".toml"))...)
-    return (; families)
-end
-
-physical_inputs(kind, spec, physical, ground) = merge(physical, (; ground))
 
 lcm_solves(s) = sum((length(c.sequences) for c in s.lcm); init = 0)

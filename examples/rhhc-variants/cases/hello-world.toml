@@ -1,9 +1,9 @@
-principle = {value = "absolute equality", origin = "HPM solve_rhhc, default fairness principle, as in the IEEE30 cases"}
+principle = {value = "absolute equality", origin = "src/robust/cutting_set.jl:62, the default of solve_rhhc, as in the IEEE30 cases"}
 note = "The box varies core resistance, XLPE permittivity, insulation thickness and earth resistivity. Screens are solidly grounded at both ends. The circuits use ideal transposition. This case omits cross-bonding and uses absolute equality."
 box_names = ["R20_U33", "eps_U33", "t_ins_U33", "rho_EARTH"]
 network = {kind = "matpower", file = "../rhhc/data/hello_world.m"}
 model = "exact"
-bound = "cantelli"
+bound = "gaussian"
 harmonics = {value = [5, 7, 11, 13], origin = "examples/rhhc/ieee30_lcm.jl:102"} # 1
 units = {value = [1, 2, 3], origin = "examples/rhhc/data/hello_world.m:19-21; load order from PowerModels"} # 1
 epsilon = {value = 0.05, origin = "examples/shhc/pce_params.jl:20"} # 1
