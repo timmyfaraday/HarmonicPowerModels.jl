@@ -43,6 +43,38 @@ const PCE_PARAMS_THYRISTOR = Dict(
         13 => (v_min = deg2rad(-337.52), v_max = deg2rad( 20.25)),  # range = 357.76°
     ),
 )
+# Extension to the 25th harmonic (Jinwen Liu, supplementary tables of the paper,
+# 2026-11-11): the shapes are refitted jointly over h = 5, ..., 25, so the 5th to
+# 13th harmonic ranges change slightly as well. Selected with ENV["SHHC_HMAX"] = "25".
+const SHHC_H25 = get(ENV, "SHHC_HMAX", "13") == "25"
+if SHHC_H25
+    merge!(PCE_PARAMS, Dict(
+        "alpha_hat" => 3.731,
+        "beta_hat"  => 4.439,
+        "harmonics" => Dict(
+            5  => (v_min = deg2rad(   4.80), v_max = deg2rad( 40.90)),
+            7  => (v_min = deg2rad( -22.52), v_max = deg2rad( 27.18)),
+            11 => (v_min = deg2rad(  77.87), v_max = deg2rad(163.96)),
+            13 => (v_min = deg2rad(  48.98), v_max = deg2rad(148.35)),
+            17 => (v_min = deg2rad(-239.51), v_max = deg2rad(-76.70)),
+            19 => (v_min = deg2rad(  80.08), v_max = deg2rad(266.23)),
+            23 => (v_min = deg2rad(-209.79), v_max = deg2rad( 34.31)),
+            25 => (v_min = deg2rad(-246.50), v_max = deg2rad( 15.56)),
+        )))
+    merge!(PCE_PARAMS_THYRISTOR, Dict(
+        "alpha_hat" => 4.1612,
+        "beta_hat"  => 3.5541,
+        "harmonics" => Dict(
+            5  => (v_min = deg2rad(-143.07), v_max = deg2rad( -9.30)),
+            7  => (v_min = deg2rad(-263.84), v_max = deg2rad(-52.49)),
+            11 => (v_min = deg2rad(-248.03), v_max = deg2rad( 46.71)),
+            13 => (v_min = deg2rad(-353.10), v_max = deg2rad(  5.22)),
+            17 => (v_min = deg2rad(-346.15), v_max = deg2rad(104.27)),
+            19 => (v_min = deg2rad(-447.14), v_max = deg2rad( 62.43)),
+            23 => (v_min = deg2rad(-442.00), v_max = deg2rad(161.32)),
+            25 => (v_min = deg2rad(-180.49), v_max = deg2rad(479.68)),
+        )))
+end
 get(ENV, "SHHC_UNIT", "diode") == "thyristor" && merge!(PCE_PARAMS, PCE_PARAMS_THYRISTOR)
 
 # Risk levels for the sensitivity study in §IV.B

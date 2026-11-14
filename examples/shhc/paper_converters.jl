@@ -17,7 +17,7 @@ include(joinpath(@__DIR__, "paper_common.jl"))
 const NETWORKS = ["inductive", "inductive_cable33"]
 
 io = open(joinpath(PAPER_OUT, "converters_results.csv"), "w")
-csvline(io, "network", "population", "arith", "rob", "det", "q95", "iec", "alpha5", "alpha7", "alpha11", "alpha13")
+csvline(io, "network", "population", "arith", "rob", "det", "q95", "iec", ["alpha$h" for h in harm]...)
 for s in NETWORKS
     data  = ieee30_scenario(s, ipopt)
     units = paper_units(data)
@@ -28,4 +28,4 @@ for s in NETWORKS
     end
 end
 close(io)
-println("✓ output/paper/converters_results.csv")
+println("✓ ", joinpath(PAPER_OUT, "converters_results.csv"))
