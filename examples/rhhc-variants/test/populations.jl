@@ -74,8 +74,7 @@
 
         for population in ("diode", "thyristor", "mix")
             for extra in (Dict("recombination" => false),
-                Dict("harmonics" => Dict("value" => [3, 5])),
-                Dict("base" => "ieee30-tom-mix"))
+                Dict("harmonics" => Dict("value" => [3, 5])))
                 rows = merge(
                     Dict("base" => "ieee30-tom",
                         "population" => Dict("value" => population, "origin" => "test")),
@@ -86,6 +85,11 @@
                 @test_throws ArgumentError study(path)
             end
         end
+        open(path, "w") do io
+            TOML.print(io, Dict("base" => "ieee30-tom-mix"))
+        end
+        @test study(path).pce == study("cases/ieee30-tom-mix.toml").pce
+        @test_throws ArgumentError case_rows(path, (path,))
         for population in ("unknown", "")
             open(path, "w") do io
                 TOML.print(io, Dict("base" => "ieee30-tom", "population" =>

@@ -1,0 +1,228 @@
+# Generated. Source: cases/ieee30-full-exact.toml
+# Source commit: ed4e0c95a3d43c4d0fb5bebf87fa7bba927afa61
+# LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+# Method: effective coordinates, subdivision, constrained hull search, exact sharing at 1.0e-10, 0.1 percent admission
+# Regenerate: `SHHC_HMAX=25 julia --project=examples/rhhc-variants examples/rhhc-variants/reduce.jl cases/ieee30-full-exact.toml`
+
+base = "ieee30-full-exact"
+box_names = ["width_ACSR_1", "resistance_ACSR_1", "mu_r_ACSR_1", "resistance_O132_1", "mu_r_O132_1", "y_ACSR_1", "y_O132_1", "rho_EARTH_1", "width_ACSR_2", "resistance_ACSR_2", "mu_r_ACSR_2", "y_ACSR_2", "width_ACSR_3", "resistance_ACSR_3", "mu_r_ACSR_3", "y_ACSR_3", "width_ACSR_4", "resistance_ACSR_4", "mu_r_ACSR_4", "y_ACSR_4", "width_U33_1", "resistance_U33_1", "resistance_U33_2", "width_U33_3", "eps_r_U33_1", "width_U33_4", "eps_r_U33_2", "width_U33_5", "width_U33_6", "resistance_U33_3", "width_U33_8", "resistance_U33_4", "width_U33_10", "resistance_U33_5", "width_U33_12"]
+equivalent_data = "data/equivalent/ieee30-full-exact.toml"
+note = "Generated equivalent intervals with solid grounding and ideal transposition. Source correlations are dropped between independent coordinates. Five screened radial widths keep their nominal values."
+
+[bindings.ACSR]
+mu_r_ACSR_1 = "mu_r_ACSR_1"
+mu_r_ACSR_2 = "mu_r_ACSR_2"
+mu_r_ACSR_3 = "mu_r_ACSR_3"
+mu_r_ACSR_4 = "mu_r_ACSR_4"
+resistance_ACSR_1 = "resistance_ACSR_1"
+resistance_ACSR_2 = "resistance_ACSR_2"
+resistance_ACSR_3 = "resistance_ACSR_3"
+resistance_ACSR_4 = "resistance_ACSR_4"
+width_ACSR_1 = "width_ACSR_1"
+width_ACSR_2 = "width_ACSR_2"
+width_ACSR_3 = "width_ACSR_3"
+width_ACSR_4 = "width_ACSR_4"
+y_ACSR_1 = "y_ACSR_1"
+y_ACSR_2 = "y_ACSR_2"
+y_ACSR_3 = "y_ACSR_3"
+y_ACSR_4 = "y_ACSR_4"
+
+[bindings.EARTH]
+rho_EARTH_1 = "rho_EARTH_1"
+
+[bindings.O132]
+mu_r_O132_1 = "mu_r_O132_1"
+resistance_O132_1 = "resistance_O132_1"
+y_O132_1 = "y_O132_1"
+
+[bindings.U33]
+eps_r_U33_1 = "eps_r_U33_1"
+eps_r_U33_2 = "eps_r_U33_2"
+resistance_U33_1 = "resistance_U33_1"
+resistance_U33_2 = "resistance_U33_2"
+resistance_U33_3 = "resistance_U33_3"
+resistance_U33_4 = "resistance_U33_4"
+resistance_U33_5 = "resistance_U33_5"
+width_U33_1 = "width_U33_1"
+width_U33_10 = "width_U33_10"
+width_U33_12 = "width_U33_12"
+width_U33_3 = "width_U33_3"
+width_U33_4 = "width_U33_4"
+width_U33_5 = "width_U33_5"
+width_U33_6 = "width_U33_6"
+width_U33_8 = "width_U33_8"
+
+[box.eps_r_U33_1]
+coordinate = "eps_r_U33_1"
+family = "U33"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.eps_r_U33_1"
+
+[box.eps_r_U33_2]
+coordinate = "eps_r_U33_2"
+family = "U33"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.eps_r_U33_2"
+
+[box.mu_r_ACSR_1]
+coordinate = "mu_r_ACSR_1"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.mu_r_ACSR_1"
+
+[box.mu_r_ACSR_2]
+coordinate = "mu_r_ACSR_2"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.mu_r_ACSR_2"
+
+[box.mu_r_ACSR_3]
+coordinate = "mu_r_ACSR_3"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.mu_r_ACSR_3"
+
+[box.mu_r_ACSR_4]
+coordinate = "mu_r_ACSR_4"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.mu_r_ACSR_4"
+
+[box.mu_r_O132_1]
+coordinate = "mu_r_O132_1"
+family = "O132"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.mu_r_O132_1"
+
+[box.resistance_ACSR_1]
+coordinate = "resistance_ACSR_1"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.resistance_ACSR_1"
+
+[box.resistance_ACSR_2]
+coordinate = "resistance_ACSR_2"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.resistance_ACSR_2"
+
+[box.resistance_ACSR_3]
+coordinate = "resistance_ACSR_3"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.resistance_ACSR_3"
+
+[box.resistance_ACSR_4]
+coordinate = "resistance_ACSR_4"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.resistance_ACSR_4"
+
+[box.resistance_O132_1]
+coordinate = "resistance_O132_1"
+family = "O132"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.resistance_O132_1"
+
+[box.resistance_U33_1]
+coordinate = "resistance_U33_1"
+family = "U33"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.resistance_U33_1"
+
+[box.resistance_U33_2]
+coordinate = "resistance_U33_2"
+family = "U33"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.resistance_U33_2"
+
+[box.resistance_U33_3]
+coordinate = "resistance_U33_3"
+family = "U33"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.resistance_U33_3"
+
+[box.resistance_U33_4]
+coordinate = "resistance_U33_4"
+family = "U33"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.resistance_U33_4"
+
+[box.resistance_U33_5]
+coordinate = "resistance_U33_5"
+family = "U33"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.resistance_U33_5"
+
+[box.rho_EARTH_1]
+coordinate = "rho_EARTH_1"
+family = "EARTH"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.rho_EARTH_1"
+
+[box.width_ACSR_1]
+coordinate = "width_ACSR_1"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.width_ACSR_1"
+
+[box.width_ACSR_2]
+coordinate = "width_ACSR_2"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.width_ACSR_2"
+
+[box.width_ACSR_3]
+coordinate = "width_ACSR_3"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.width_ACSR_3"
+
+[box.width_ACSR_4]
+coordinate = "width_ACSR_4"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.width_ACSR_4"
+
+[box.width_U33_1]
+coordinate = "width_U33_1"
+family = "U33"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.width_U33_1"
+
+[box.width_U33_10]
+coordinate = "width_U33_10"
+family = "U33"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.width_U33_10"
+
+[box.width_U33_12]
+coordinate = "width_U33_12"
+family = "U33"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.width_U33_12"
+
+[box.width_U33_3]
+coordinate = "width_U33_3"
+family = "U33"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.width_U33_3"
+
+[box.width_U33_4]
+coordinate = "width_U33_4"
+family = "U33"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.width_U33_4"
+
+[box.width_U33_5]
+coordinate = "width_U33_5"
+family = "U33"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.width_U33_5"
+
+[box.width_U33_6]
+coordinate = "width_U33_6"
+family = "U33"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.width_U33_6"
+
+[box.width_U33_8]
+coordinate = "width_U33_8"
+family = "U33"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.width_U33_8"
+
+[box.y_ACSR_1]
+coordinate = "y_ACSR_1"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.y_ACSR_1"
+
+[box.y_ACSR_2]
+coordinate = "y_ACSR_2"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.y_ACSR_2"
+
+[box.y_ACSR_3]
+coordinate = "y_ACSR_3"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.y_ACSR_3"
+
+[box.y_ACSR_4]
+coordinate = "y_ACSR_4"
+family = "ACSR"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.y_ACSR_4"
+
+[box.y_O132_1]
+coordinate = "y_O132_1"
+family = "O132"
+origin = "data/equivalent/ieee30-full-exact.toml, coordinates.y_O132_1"

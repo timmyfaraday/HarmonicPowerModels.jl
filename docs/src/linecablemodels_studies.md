@@ -153,7 +153,7 @@ diameter sets touching-trefoil spacing.
 | `moments` | `"pce"` uses the expansion moments; `"exact"` uses exact squared-magnitude moments. An omitted key preserves the default PCE parameters. |
 | `angle_tables` | `"h13"` (default) uses the original angle tables; `"h25"` uses the refitted tables through harmonic 25 and requires `SHHC_HMAX=25` before Julia loads the parameters. |
 | `population` | `"diode"`, `"thyristor"` or `"mix"`. Requires recombination and the supplied table harmonics. |
-| `base` | One case stem whose top-level records are replaced by this variant's records. Nested bases are refused. |
+| `base` | One case stem whose top-level records are replaced by this variant's records. The builder resolves base chains and refuses cycles. |
 | `f1` | Fundamental frequency in Hz. |
 | `posterior` | Number of posterior points used by the runner. |
 | `principle` | Optional fairness principle replacing the source value. RHHC accepts absolute or weighted equality. |
@@ -247,7 +247,7 @@ population = {value = "mix", origin = "examples/shhc/paper_mix_ab.jl"}
 
 `base` names a TOML case in `cases/`, without its path or extension. The builder
 reads that file and replaces its top-level keys with the variant's keys. A record
-is replaced as a whole. A base case that itself declares `base` is refused.
+is replaced as a whole. The builder resolves base chains recursively and refuses cycles.
 The reports use the variant's own filename. Its box and network model
 come from the base case. The population record changes the converter inputs.
 
@@ -282,13 +282,30 @@ without the sign-predicted corners and checks both solutions at those corners an
 independent random points. It reports the physical inputs at the worst predicted
 corner of the binding constraint. It then compares nominal capacity and robust hosting
 capacity from the physical model with square-root harmonic scaling of the nominal
-50 Hz parameters. The scaling-factor intervals come from the physical box's predicted
-corners and 1024 random points. The script writes
+50 Hz parameters. The scaling-factor intervals come from the generated family hulls over every design
+and the fundamental and harmonic frequencies, with subdivision, interior searches
+and containment checks. The script writes
 `output/ieee30-full-exact-findings.txt`.
 
 Each case run writes `output/<case>-exact.txt`. The study suite checks these variants
 in a child Julia process with `SHHC_HMAX=25`. The reproduction commands below set
 the required environment for the case runs and the findings script.
+
+## Equivalent and surrogate levels
+
+`ieee30-full-exact-equivalent`, `ieee30-full-exact-factor` and
+`ieee30-full-exact-scaled` inherit `ieee30-full-exact`. The equivalent level uses
+plain-tube lumping and shared equivalent coordinates. The R, L and C factors
+of each family multiply the nominal LCM data at each frequency. The scaled level applies
+the same factor intervals to HPM's square-root harmonic scaling of the nominal
+50 Hz branch data. All three keep exact moments, the Gaussian factor and the
+refitted tables through harmonic 25. `findings.jl` uses this same scaled builder.
+
+`reduce.jl` generates the cases and their data in `data/equivalent/` and
+`data/surrogate/`. The [reduction study](https://github.com/amaurigmartins/HarmonicPowerModels.jl/blob/feat/exact-moments-studies/examples/rhhc-variants/REDUCTION.md)
+describes subdivision, containment, the corner adversary, results and reproduction.
+The comparison preserves the source's individual report and writes the three level
+reports plus `output/ieee30-full-exact-comparison.txt`.
 
 ## Gaussian factor
 

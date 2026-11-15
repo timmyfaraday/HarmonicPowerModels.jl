@@ -1,0 +1,1089 @@
+circuit,quantity,nominal,lower,upper,cells,method,escapes
+Bear/O132-D,raw.cable.1.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Bear/O132-D,raw.cable.1.tube.1.r_ex,0.011725000000000001,0.011607749999999717,0.011842250000000283,1,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,raw.cable.1.tube.1.rho,4.6010528205858324e-8,3.9648289930678994e-8,5.8408047175292225e-8,1,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,raw.cable.1.tube.1.mu_r,0.8183086667192967,0.793811124835649,0.8745211544125697,1,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,raw.cable.1.tube.1.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Bear/O132-D,raw.cable.1.x,-2.5,-2.500000000000029,-2.499999999999971,1,fixed,0
+Bear/O132-D,raw.cable.1.y,14.0,12.739237485120668,14.601707149929336,2,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,raw.cable.1.radius,0.011725000000000001,0.011607749999999717,0.011842250000000283,1,verified affine alias,0
+Bear/O132-D,raw.cable.2.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Bear/O132-D,raw.cable.2.tube.1.r_ex,0.011725000000000001,0.011607749999999717,0.011842250000000283,1,verified affine alias,0
+Bear/O132-D,raw.cable.2.tube.1.rho,4.6010528205858324e-8,3.9648289930678994e-8,5.8408047175292225e-8,1,verified affine alias,0
+Bear/O132-D,raw.cable.2.tube.1.mu_r,0.8183086667192967,0.793811124835649,0.8745211544125697,1,verified affine alias,0
+Bear/O132-D,raw.cable.2.tube.1.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Bear/O132-D,raw.cable.2.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Bear/O132-D,raw.cable.2.y,18.33,17.06923748512055,18.93170714992945,2,verified affine alias,0
+Bear/O132-D,raw.cable.2.radius,0.011725000000000001,0.011607749999999717,0.011842250000000283,1,verified affine alias,0
+Bear/O132-D,raw.cable.3.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Bear/O132-D,raw.cable.3.tube.1.r_ex,0.011725000000000001,0.011607749999999717,0.011842250000000283,1,verified affine alias,0
+Bear/O132-D,raw.cable.3.tube.1.rho,4.6010528205858324e-8,3.9648289930678994e-8,5.8408047175292225e-8,1,verified affine alias,0
+Bear/O132-D,raw.cable.3.tube.1.mu_r,0.8183086667192967,0.793811124835649,0.8745211544125697,1,verified affine alias,0
+Bear/O132-D,raw.cable.3.tube.1.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Bear/O132-D,raw.cable.3.x,2.5,2.499999999999971,2.500000000000029,1,fixed,0
+Bear/O132-D,raw.cable.3.y,14.0,12.739237485120668,14.601707149929336,2,verified affine alias,0
+Bear/O132-D,raw.cable.3.radius,0.011725000000000001,0.011607749999999717,0.011842250000000283,1,verified affine alias,0
+Bear/O132-D,raw.cable.4.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Bear/O132-D,raw.cable.4.tube.1.r_ex,0.004725,0.004649999999999888,0.004800000000000113,1,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,raw.cable.4.tube.1.rho,2.4864990074449675e-7,2.1142445232692888e-7,3.048839506988563e-7,1,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,raw.cable.4.tube.1.mu_r,15.429067910490257,8.28610280082756,44.000928349138334,1,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,raw.cable.4.tube.1.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Bear/O132-D,raw.cable.4.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Bear/O132-D,raw.cable.4.y,25.4,24.995792827757814,25.805456600107856,1,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,raw.cable.4.radius,0.004725,0.004649999999999888,0.004800000000000113,1,verified affine alias,0
+Bear/O132-D,raw.earth.1.rho,Inf,Inf,Inf,0,fixed,0
+Bear/O132-D,raw.earth.1.eps_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Bear/O132-D,raw.earth.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Bear/O132-D,raw.earth.1.thickness,Inf,Inf,Inf,0,fixed,0
+Bear/O132-D,raw.earth.2.rho,100.0,9.999999999985445,1000.0000000000148,1,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,raw.earth.2.eps_r,10.0,9.999999999999885,10.000000000000115,1,fixed,0
+Bear/O132-D,raw.earth.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Bear/O132-D,raw.earth.2.thickness,Inf,Inf,Inf,0,fixed,0
+Bear/O132-D,eq.cable.1.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Bear/O132-D,eq.cable.1.tube.1.width,0.011725000000000001,0.011607749999999717,0.011842250000000283,1,verified affine alias,0
+Bear/O132-D,eq.cable.1.tube.1.resistance,0.00010653238344224915,9.176931151412696e-5,0.00013526925858673306,1,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,eq.cable.1.tube.1.mu_r,0.8183086667192967,0.793811124835649,0.8745211544125697,1,verified affine alias,0
+Bear/O132-D,eq.cable.2.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Bear/O132-D,eq.cable.2.tube.1.width,0.011725000000000001,0.011607749999999717,0.011842250000000283,1,verified affine alias,0
+Bear/O132-D,eq.cable.2.tube.1.resistance,0.00010653238344224915,9.176931151412696e-5,0.00013526925858673306,1,verified affine alias,0
+Bear/O132-D,eq.cable.2.tube.1.mu_r,0.8183086667192967,0.793811124835649,0.8745211544125697,1,verified affine alias,0
+Bear/O132-D,eq.cable.3.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Bear/O132-D,eq.cable.3.tube.1.width,0.011725000000000001,0.011607749999999717,0.011842250000000283,1,verified affine alias,0
+Bear/O132-D,eq.cable.3.tube.1.resistance,0.00010653238344224915,9.176931151412696e-5,0.00013526925858673306,1,verified affine alias,0
+Bear/O132-D,eq.cable.3.tube.1.mu_r,0.8183086667192967,0.793811124835649,0.8745211544125697,1,verified affine alias,0
+Bear/O132-D,eq.cable.4.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Bear/O132-D,eq.cable.4.tube.1.width,0.004725,0.004649999999999888,0.004800000000000113,1,verified affine alias,0
+Bear/O132-D,eq.cable.4.tube.1.resistance,0.003545151439459886,0.002920941551938134,0.004488268037748529,1,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,eq.cable.4.tube.1.mu_r,15.429067910490257,8.28610280082756,44.000928349138334,1,verified affine alias,0
+Bear/O132-D,eq.cable.1.x,-2.5,-2.500000000000029,-2.499999999999971,1,fixed,0
+Bear/O132-D,eq.cable.1.y,14.0,12.739237485120668,14.601707149929336,2,verified affine alias,0
+Bear/O132-D,eq.cable.2.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Bear/O132-D,eq.cable.2.y,18.33,17.06923748512055,18.93170714992945,2,verified affine alias,0
+Bear/O132-D,eq.cable.3.x,2.5,2.499999999999971,2.500000000000029,1,fixed,0
+Bear/O132-D,eq.cable.3.y,14.0,12.739237485120668,14.601707149929336,2,verified affine alias,0
+Bear/O132-D,eq.cable.4.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Bear/O132-D,eq.cable.4.y,25.4,24.995792827757814,25.805456600107856,1,verified affine alias,0
+Bear/O132-D,eq.earth.rho,100.0,9.999999999985445,1000.0000000000148,1,verified affine alias,0
+Bear/O132-D,eq.earth.eps_r,10.0,9.999999999999885,10.000000000000115,1,fixed,0
+Bear/O132-D,eq.earth.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Goat/O132-D,raw.cable.1.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Goat/O132-D,raw.cable.1.tube.1.r_ex,0.012985,0.012855149999999718,0.013114850000000282,1,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,raw.cable.1.tube.1.rho,4.6010528205858304e-8,3.9609244047740854e-8,5.8465722955952166e-8,1,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,raw.cable.1.tube.1.mu_r,0.8183086667192221,0.793455560186789,0.8746559128135554,1,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,raw.cable.1.tube.1.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Goat/O132-D,raw.cable.1.x,-2.5,-2.500000000000029,-2.499999999999971,1,fixed,0
+Goat/O132-D,raw.cable.1.y,14.0,12.739320088966986,14.601639607944133,2,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,raw.cable.1.radius,0.012985,0.012855149999999718,0.013114850000000282,1,verified affine alias,0
+Goat/O132-D,raw.cable.2.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Goat/O132-D,raw.cable.2.tube.1.r_ex,0.012985,0.012855149999999718,0.013114850000000282,1,verified affine alias,0
+Goat/O132-D,raw.cable.2.tube.1.rho,4.6010528205858304e-8,3.9609244047740854e-8,5.8465722955952166e-8,1,verified affine alias,0
+Goat/O132-D,raw.cable.2.tube.1.mu_r,0.8183086667192221,0.793455560186789,0.8746559128135554,1,verified affine alias,0
+Goat/O132-D,raw.cable.2.tube.1.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Goat/O132-D,raw.cable.2.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Goat/O132-D,raw.cable.2.y,18.33,17.069320088966865,18.93163960794425,2,verified affine alias,0
+Goat/O132-D,raw.cable.2.radius,0.012985,0.012855149999999718,0.013114850000000282,1,verified affine alias,0
+Goat/O132-D,raw.cable.3.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Goat/O132-D,raw.cable.3.tube.1.r_ex,0.012985,0.012855149999999718,0.013114850000000282,1,verified affine alias,0
+Goat/O132-D,raw.cable.3.tube.1.rho,4.6010528205858304e-8,3.9609244047740854e-8,5.8465722955952166e-8,1,verified affine alias,0
+Goat/O132-D,raw.cable.3.tube.1.mu_r,0.8183086667192221,0.793455560186789,0.8746559128135554,1,verified affine alias,0
+Goat/O132-D,raw.cable.3.tube.1.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Goat/O132-D,raw.cable.3.x,2.5,2.499999999999971,2.500000000000029,1,fixed,0
+Goat/O132-D,raw.cable.3.y,14.0,12.739320088966986,14.601639607944133,2,verified affine alias,0
+Goat/O132-D,raw.cable.3.radius,0.012985,0.012855149999999718,0.013114850000000282,1,verified affine alias,0
+Goat/O132-D,raw.cable.4.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Goat/O132-D,raw.cable.4.tube.1.r_ex,0.004725,0.004649999999999888,0.004800000000000113,1,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,raw.cable.4.tube.1.rho,2.4864990074449675e-7,2.1142445232692888e-7,3.048839506988563e-7,1,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,raw.cable.4.tube.1.mu_r,15.429067910490257,8.28610280082756,44.000928349138334,1,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,raw.cable.4.tube.1.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Goat/O132-D,raw.cable.4.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Goat/O132-D,raw.cable.4.y,25.4,24.995792827757814,25.805456600107856,1,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,raw.cable.4.radius,0.004725,0.004649999999999888,0.004800000000000113,1,verified affine alias,0
+Goat/O132-D,raw.earth.1.rho,Inf,Inf,Inf,0,fixed,0
+Goat/O132-D,raw.earth.1.eps_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Goat/O132-D,raw.earth.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Goat/O132-D,raw.earth.1.thickness,Inf,Inf,Inf,0,fixed,0
+Goat/O132-D,raw.earth.2.rho,100.0,9.999999999985445,1000.0000000000148,1,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,raw.earth.2.eps_r,10.0,9.999999999999885,10.000000000000115,1,fixed,0
+Goat/O132-D,raw.earth.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Goat/O132-D,raw.earth.2.thickness,Inf,Inf,Inf,0,fixed,0
+Goat/O132-D,eq.cable.1.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Goat/O132-D,eq.cable.1.tube.1.width,0.012985,0.012855149999999718,0.013114850000000282,1,verified affine alias,0
+Goat/O132-D,eq.cable.1.tube.1.resistance,8.686072269023333e-5,7.48237152060291e-5,0.00011029121079399282,1,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,eq.cable.1.tube.1.mu_r,0.8183086667192221,0.793455560186789,0.8746559128135554,1,verified affine alias,0
+Goat/O132-D,eq.cable.2.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Goat/O132-D,eq.cable.2.tube.1.width,0.012985,0.012855149999999718,0.013114850000000282,1,verified affine alias,0
+Goat/O132-D,eq.cable.2.tube.1.resistance,8.686072269023333e-5,7.48237152060291e-5,0.00011029121079399282,1,verified affine alias,0
+Goat/O132-D,eq.cable.2.tube.1.mu_r,0.8183086667192221,0.793455560186789,0.8746559128135554,1,verified affine alias,0
+Goat/O132-D,eq.cable.3.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Goat/O132-D,eq.cable.3.tube.1.width,0.012985,0.012855149999999718,0.013114850000000282,1,verified affine alias,0
+Goat/O132-D,eq.cable.3.tube.1.resistance,8.686072269023333e-5,7.48237152060291e-5,0.00011029121079399282,1,verified affine alias,0
+Goat/O132-D,eq.cable.3.tube.1.mu_r,0.8183086667192221,0.793455560186789,0.8746559128135554,1,verified affine alias,0
+Goat/O132-D,eq.cable.4.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Goat/O132-D,eq.cable.4.tube.1.width,0.004725,0.004649999999999888,0.004800000000000113,1,verified affine alias,0
+Goat/O132-D,eq.cable.4.tube.1.resistance,0.003545151439459886,0.002920941551938134,0.004488268037748529,1,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,eq.cable.4.tube.1.mu_r,15.429067910490257,8.28610280082756,44.000928349138334,1,verified affine alias,0
+Goat/O132-D,eq.cable.1.x,-2.5,-2.500000000000029,-2.499999999999971,1,fixed,0
+Goat/O132-D,eq.cable.1.y,14.0,12.739320088966986,14.601639607944133,2,verified affine alias,0
+Goat/O132-D,eq.cable.2.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Goat/O132-D,eq.cable.2.y,18.33,17.069320088966865,18.93163960794425,2,verified affine alias,0
+Goat/O132-D,eq.cable.3.x,2.5,2.499999999999971,2.500000000000029,1,fixed,0
+Goat/O132-D,eq.cable.3.y,14.0,12.739320088966986,14.601639607944133,2,verified affine alias,0
+Goat/O132-D,eq.cable.4.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Goat/O132-D,eq.cable.4.y,25.4,24.995792827757814,25.805456600107856,1,verified affine alias,0
+Goat/O132-D,eq.earth.rho,100.0,9.999999999985445,1000.0000000000148,1,verified affine alias,0
+Goat/O132-D,eq.earth.eps_r,10.0,9.999999999999885,10.000000000000115,1,fixed,0
+Goat/O132-D,eq.earth.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Lion/O132-D,raw.cable.1.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Lion/O132-D,raw.cable.1.tube.1.r_ex,0.011130000000000001,0.01101869999999972,0.011241300000000282,1,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,raw.cable.1.tube.1.rho,4.6010528205858324e-8,3.9623307600587956e-8,5.8444945177706815e-8,1,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,raw.cable.1.tube.1.mu_r,0.8183086667192363,0.7935835510064775,0.874607182495087,1,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,raw.cable.1.tube.1.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Lion/O132-D,raw.cable.1.x,-2.5,-2.500000000000029,-2.499999999999971,1,fixed,0
+Lion/O132-D,raw.cable.1.y,14.0,12.739599111764623,14.601411546601426,2,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,raw.cable.1.radius,0.011130000000000001,0.01101869999999972,0.011241300000000282,1,verified affine alias,0
+Lion/O132-D,raw.cable.2.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Lion/O132-D,raw.cable.2.tube.1.r_ex,0.011130000000000001,0.01101869999999972,0.011241300000000282,1,verified affine alias,0
+Lion/O132-D,raw.cable.2.tube.1.rho,4.6010528205858324e-8,3.9623307600587956e-8,5.8444945177706815e-8,1,verified affine alias,0
+Lion/O132-D,raw.cable.2.tube.1.mu_r,0.8183086667192363,0.7935835510064775,0.874607182495087,1,verified affine alias,0
+Lion/O132-D,raw.cable.2.tube.1.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Lion/O132-D,raw.cable.2.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Lion/O132-D,raw.cable.2.y,18.33,17.069599111764504,18.931411546601545,2,verified affine alias,0
+Lion/O132-D,raw.cable.2.radius,0.011130000000000001,0.01101869999999972,0.011241300000000282,1,verified affine alias,0
+Lion/O132-D,raw.cable.3.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Lion/O132-D,raw.cable.3.tube.1.r_ex,0.011130000000000001,0.01101869999999972,0.011241300000000282,1,verified affine alias,0
+Lion/O132-D,raw.cable.3.tube.1.rho,4.6010528205858324e-8,3.9623307600587956e-8,5.8444945177706815e-8,1,verified affine alias,0
+Lion/O132-D,raw.cable.3.tube.1.mu_r,0.8183086667192363,0.7935835510064775,0.874607182495087,1,verified affine alias,0
+Lion/O132-D,raw.cable.3.tube.1.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Lion/O132-D,raw.cable.3.x,2.5,2.499999999999971,2.500000000000029,1,fixed,0
+Lion/O132-D,raw.cable.3.y,14.0,12.739599111764623,14.601411546601426,2,verified affine alias,0
+Lion/O132-D,raw.cable.3.radius,0.011130000000000001,0.01101869999999972,0.011241300000000282,1,verified affine alias,0
+Lion/O132-D,raw.cable.4.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Lion/O132-D,raw.cable.4.tube.1.r_ex,0.004725,0.004649999999999888,0.004800000000000113,1,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,raw.cable.4.tube.1.rho,2.4864990074449675e-7,2.1142445232692888e-7,3.048839506988563e-7,1,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,raw.cable.4.tube.1.mu_r,15.429067910490257,8.28610280082756,44.000928349138334,1,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,raw.cable.4.tube.1.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Lion/O132-D,raw.cable.4.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Lion/O132-D,raw.cable.4.y,25.4,24.995792827757814,25.805456600107856,1,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,raw.cable.4.radius,0.004725,0.004649999999999888,0.004800000000000113,1,verified affine alias,0
+Lion/O132-D,raw.earth.1.rho,Inf,Inf,Inf,0,fixed,0
+Lion/O132-D,raw.earth.1.eps_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Lion/O132-D,raw.earth.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Lion/O132-D,raw.earth.1.thickness,Inf,Inf,Inf,0,fixed,0
+Lion/O132-D,raw.earth.2.rho,100.0,9.999999999985445,1000.0000000000148,1,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,raw.earth.2.eps_r,10.0,9.999999999999885,10.000000000000115,1,fixed,0
+Lion/O132-D,raw.earth.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Lion/O132-D,raw.earth.2.thickness,Inf,Inf,Inf,0,fixed,0
+Lion/O132-D,eq.cable.1.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Lion/O132-D,eq.cable.1.tube.1.width,0.011130000000000001,0.01101869999999972,0.011241300000000282,1,verified affine alias,0
+Lion/O132-D,eq.cable.1.tube.1.resistance,0.00011822709477281764,0.00010184339014153841,0.00015011859246960238,1,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,eq.cable.1.tube.1.mu_r,0.8183086667192363,0.7935835510064775,0.874607182495087,1,verified affine alias,0
+Lion/O132-D,eq.cable.2.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Lion/O132-D,eq.cable.2.tube.1.width,0.011130000000000001,0.01101869999999972,0.011241300000000282,1,verified affine alias,0
+Lion/O132-D,eq.cable.2.tube.1.resistance,0.00011822709477281764,0.00010184339014153841,0.00015011859246960238,1,verified affine alias,0
+Lion/O132-D,eq.cable.2.tube.1.mu_r,0.8183086667192363,0.7935835510064775,0.874607182495087,1,verified affine alias,0
+Lion/O132-D,eq.cable.3.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Lion/O132-D,eq.cable.3.tube.1.width,0.011130000000000001,0.01101869999999972,0.011241300000000282,1,verified affine alias,0
+Lion/O132-D,eq.cable.3.tube.1.resistance,0.00011822709477281764,0.00010184339014153841,0.00015011859246960238,1,verified affine alias,0
+Lion/O132-D,eq.cable.3.tube.1.mu_r,0.8183086667192363,0.7935835510064775,0.874607182495087,1,verified affine alias,0
+Lion/O132-D,eq.cable.4.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Lion/O132-D,eq.cable.4.tube.1.width,0.004725,0.004649999999999888,0.004800000000000113,1,verified affine alias,0
+Lion/O132-D,eq.cable.4.tube.1.resistance,0.003545151439459886,0.002920941551938134,0.004488268037748529,1,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,eq.cable.4.tube.1.mu_r,15.429067910490257,8.28610280082756,44.000928349138334,1,verified affine alias,0
+Lion/O132-D,eq.cable.1.x,-2.5,-2.500000000000029,-2.499999999999971,1,fixed,0
+Lion/O132-D,eq.cable.1.y,14.0,12.739599111764623,14.601411546601426,2,verified affine alias,0
+Lion/O132-D,eq.cable.2.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Lion/O132-D,eq.cable.2.y,18.33,17.069599111764504,18.931411546601545,2,verified affine alias,0
+Lion/O132-D,eq.cable.3.x,2.5,2.499999999999971,2.500000000000029,1,fixed,0
+Lion/O132-D,eq.cable.3.y,14.0,12.739599111764623,14.601411546601426,2,verified affine alias,0
+Lion/O132-D,eq.cable.4.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Lion/O132-D,eq.cable.4.y,25.4,24.995792827757814,25.805456600107856,1,verified affine alias,0
+Lion/O132-D,eq.earth.rho,100.0,9.999999999985445,1000.0000000000148,1,verified affine alias,0
+Lion/O132-D,eq.earth.eps_r,10.0,9.999999999999885,10.000000000000115,1,fixed,0
+Lion/O132-D,eq.earth.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Panther/O132-D,raw.cable.1.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Panther/O132-D,raw.cable.1.tube.1.r_ex,0.0105,0.010394999999999719,0.010605000000000281,1,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,raw.cable.1.tube.1.rho,4.601052820585832e-8,3.959377591206333e-8,5.848858123370376e-8,1,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,raw.cable.1.tube.1.mu_r,0.8183086667192221,0.7933148858577395,0.874709761046603,1,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,raw.cable.1.tube.1.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Panther/O132-D,raw.cable.1.x,-2.5,-2.500000000000029,-2.499999999999971,1,fixed,0
+Panther/O132-D,raw.cable.1.y,14.0,12.739363600844237,14.601604034573727,2,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,raw.cable.1.radius,0.0105,0.010394999999999719,0.010605000000000281,1,verified affine alias,0
+Panther/O132-D,raw.cable.2.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Panther/O132-D,raw.cable.2.tube.1.r_ex,0.0105,0.010394999999999719,0.010605000000000281,1,verified affine alias,0
+Panther/O132-D,raw.cable.2.tube.1.rho,4.601052820585832e-8,3.959377591206333e-8,5.848858123370376e-8,1,verified affine alias,0
+Panther/O132-D,raw.cable.2.tube.1.mu_r,0.8183086667192221,0.7933148858577395,0.874709761046603,1,verified affine alias,0
+Panther/O132-D,raw.cable.2.tube.1.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Panther/O132-D,raw.cable.2.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Panther/O132-D,raw.cable.2.y,18.33,17.069363600844117,18.931604034573844,2,verified affine alias,0
+Panther/O132-D,raw.cable.2.radius,0.0105,0.010394999999999719,0.010605000000000281,1,verified affine alias,0
+Panther/O132-D,raw.cable.3.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Panther/O132-D,raw.cable.3.tube.1.r_ex,0.0105,0.010394999999999719,0.010605000000000281,1,verified affine alias,0
+Panther/O132-D,raw.cable.3.tube.1.rho,4.601052820585832e-8,3.959377591206333e-8,5.848858123370376e-8,1,verified affine alias,0
+Panther/O132-D,raw.cable.3.tube.1.mu_r,0.8183086667192221,0.7933148858577395,0.874709761046603,1,verified affine alias,0
+Panther/O132-D,raw.cable.3.tube.1.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Panther/O132-D,raw.cable.3.x,2.5,2.499999999999971,2.500000000000029,1,fixed,0
+Panther/O132-D,raw.cable.3.y,14.0,12.739363600844237,14.601604034573727,2,verified affine alias,0
+Panther/O132-D,raw.cable.3.radius,0.0105,0.010394999999999719,0.010605000000000281,1,verified affine alias,0
+Panther/O132-D,raw.cable.4.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Panther/O132-D,raw.cable.4.tube.1.r_ex,0.004725,0.004649999999999888,0.004800000000000113,1,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,raw.cable.4.tube.1.rho,2.4864990074449675e-7,2.1142445232692888e-7,3.048839506988563e-7,1,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,raw.cable.4.tube.1.mu_r,15.429067910490257,8.28610280082756,44.000928349138334,1,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,raw.cable.4.tube.1.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Panther/O132-D,raw.cable.4.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Panther/O132-D,raw.cable.4.y,25.4,24.995792827757814,25.805456600107856,1,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,raw.cable.4.radius,0.004725,0.004649999999999888,0.004800000000000113,1,verified affine alias,0
+Panther/O132-D,raw.earth.1.rho,Inf,Inf,Inf,0,fixed,0
+Panther/O132-D,raw.earth.1.eps_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Panther/O132-D,raw.earth.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Panther/O132-D,raw.earth.1.thickness,Inf,Inf,Inf,0,fixed,0
+Panther/O132-D,raw.earth.2.rho,100.0,9.999999999985445,1000.0000000000148,1,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,raw.earth.2.eps_r,10.0,9.999999999999885,10.000000000000115,1,fixed,0
+Panther/O132-D,raw.earth.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+Panther/O132-D,raw.earth.2.thickness,Inf,Inf,Inf,0,fixed,0
+Panther/O132-D,eq.cable.1.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Panther/O132-D,eq.cable.1.tube.1.width,0.0105,0.010394999999999719,0.010605000000000281,1,verified affine alias,0
+Panther/O132-D,eq.cable.1.tube.1.resistance,0.00013283996368673788,0.00011443123316303307,0.00016867325049884488,1,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,eq.cable.1.tube.1.mu_r,0.8183086667192221,0.7933148858577395,0.874709761046603,1,verified affine alias,0
+Panther/O132-D,eq.cable.2.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Panther/O132-D,eq.cable.2.tube.1.width,0.0105,0.010394999999999719,0.010605000000000281,1,verified affine alias,0
+Panther/O132-D,eq.cable.2.tube.1.resistance,0.00013283996368673788,0.00011443123316303307,0.00016867325049884488,1,verified affine alias,0
+Panther/O132-D,eq.cable.2.tube.1.mu_r,0.8183086667192221,0.7933148858577395,0.874709761046603,1,verified affine alias,0
+Panther/O132-D,eq.cable.3.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Panther/O132-D,eq.cable.3.tube.1.width,0.0105,0.010394999999999719,0.010605000000000281,1,verified affine alias,0
+Panther/O132-D,eq.cable.3.tube.1.resistance,0.00013283996368673788,0.00011443123316303307,0.00016867325049884488,1,verified affine alias,0
+Panther/O132-D,eq.cable.3.tube.1.mu_r,0.8183086667192221,0.7933148858577395,0.874709761046603,1,verified affine alias,0
+Panther/O132-D,eq.cable.4.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Panther/O132-D,eq.cable.4.tube.1.width,0.004725,0.004649999999999888,0.004800000000000113,1,verified affine alias,0
+Panther/O132-D,eq.cable.4.tube.1.resistance,0.003545151439459886,0.002920941551938134,0.004488268037748529,1,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,eq.cable.4.tube.1.mu_r,15.429067910490257,8.28610280082756,44.000928349138334,1,verified affine alias,0
+Panther/O132-D,eq.cable.1.x,-2.5,-2.500000000000029,-2.499999999999971,1,fixed,0
+Panther/O132-D,eq.cable.1.y,14.0,12.739363600844237,14.601604034573727,2,verified affine alias,0
+Panther/O132-D,eq.cable.2.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Panther/O132-D,eq.cable.2.y,18.33,17.069363600844117,18.931604034573844,2,verified affine alias,0
+Panther/O132-D,eq.cable.3.x,2.5,2.499999999999971,2.500000000000029,1,fixed,0
+Panther/O132-D,eq.cable.3.y,14.0,12.739363600844237,14.601604034573727,2,verified affine alias,0
+Panther/O132-D,eq.cable.4.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+Panther/O132-D,eq.cable.4.y,25.4,24.995792827757814,25.805456600107856,1,verified affine alias,0
+Panther/O132-D,eq.earth.rho,100.0,9.999999999985445,1000.0000000000148,1,verified affine alias,0
+Panther/O132-D,eq.earth.eps_r,10.0,9.999999999999885,10.000000000000115,1,fixed,0
+Panther/O132-D,eq.earth.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.1.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,raw.cable.1.tube.1.r_ex,0.0115,0.011499999999999774,0.011700000000000226,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,raw.cable.1.tube.1.rho,3.232400389241806e-8,2.8549208379763136e-8,4.2896621942543984e-8,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,raw.cable.1.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.1.tube.1.mu_r_ins,0.9999999999999998,0.9999999999999853,1.000000000000015,1,fixed,0
+U33-400/trefoil,raw.cable.1.tube.2.r_in,0.02125,0.02067499999999955,0.022025000000000454,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,raw.cable.1.tube.2.r_ex,0.021735439883963925,0.02117362680197681,0.022515885284178333,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,raw.cable.1.tube.2.rho,1.7241e-8,1.656342869999957e-8,2.1983999100000432e-8,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,raw.cable.1.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.1.tube.2.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.1.layer.1.r_in,0.0115,0.011499999999999774,0.011700000000000226,1,verified affine alias,0
+U33-400/trefoil,raw.cable.1.layer.1.r_ex,0.01235,0.012264999999999774,0.012635000000000226,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,raw.cable.1.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,raw.cable.1.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-400/trefoil,raw.cable.1.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.1.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,raw.cable.1.layer.2.r_in,0.01235,0.012264999999999774,0.012635000000000226,1,verified affine alias,0
+U33-400/trefoil,raw.cable.1.layer.2.r_ex,0.02035,0.01986499999999955,0.021035000000000453,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,raw.cable.1.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,raw.cable.1.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-400/trefoil,raw.cable.1.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.1.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-400/trefoil,raw.cable.1.layer.3.r_in,0.02035,0.01986499999999955,0.021035000000000453,1,verified affine alias,0
+U33-400/trefoil,raw.cable.1.layer.3.r_ex,0.02125,0.02067499999999955,0.022025000000000454,1,verified affine alias,0
+U33-400/trefoil,raw.cable.1.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-400/trefoil,raw.cable.1.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-400/trefoil,raw.cable.1.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.1.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,raw.cable.1.layer.4.r_in,0.021735439883963925,0.02117362680197681,0.022515885284178333,1,verified affine alias,0
+U33-400/trefoil,raw.cable.1.layer.4.r_ex,0.02545,0.02487499999999955,0.027225000000000454,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,raw.cable.1.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-400/trefoil,raw.cable.1.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-400/trefoil,raw.cable.1.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.1.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,raw.cable.1.x,1.7994426550365924e-18,1.758787270885429e-18,1.9249440582857477e-18,1,verified affine alias,0
+U33-400/trefoil,raw.cable.1.y,-0.7706128712982481,-0.7712768241078238,-0.7685632778426174,1,verified affine alias,0
+U33-400/trefoil,raw.cable.1.radius,0.02545,0.02487499999999955,0.027225000000000454,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,raw.cable.2.tube.1.r_ex,0.0115,0.011499999999999774,0.011700000000000226,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.tube.1.rho,3.232400389241806e-8,2.8549208379763136e-8,4.2896621942543984e-8,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.2.tube.1.mu_r_ins,0.9999999999999998,0.9999999999999853,1.000000000000015,1,fixed,0
+U33-400/trefoil,raw.cable.2.tube.2.r_in,0.02125,0.02067499999999955,0.022025000000000454,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.tube.2.r_ex,0.021735439883963925,0.02117362680197681,0.022515885284178333,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.tube.2.rho,1.7241e-8,1.656342869999957e-8,2.1983999100000432e-8,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.2.tube.2.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.2.layer.1.r_in,0.0115,0.011499999999999774,0.011700000000000226,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.layer.1.r_ex,0.01235,0.012264999999999774,0.012635000000000226,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-400/trefoil,raw.cable.2.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.2.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,raw.cable.2.layer.2.r_in,0.01235,0.012264999999999774,0.012635000000000226,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.layer.2.r_ex,0.02035,0.01986499999999955,0.021035000000000453,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-400/trefoil,raw.cable.2.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.2.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-400/trefoil,raw.cable.2.layer.3.r_in,0.02035,0.01986499999999955,0.021035000000000453,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.layer.3.r_ex,0.02125,0.02067499999999955,0.022025000000000454,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-400/trefoil,raw.cable.2.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.2.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,raw.cable.2.layer.4.r_in,0.021735439883963925,0.02117362680197681,0.022515885284178333,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.layer.4.r_ex,0.02545,0.02487499999999955,0.027225000000000454,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-400/trefoil,raw.cable.2.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-400/trefoil,raw.cable.2.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.2.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,raw.cable.2.x,-0.025450000000000007,-0.02722500000000046,-0.024874999999999557,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,raw.cable.2.y,-0.814693564350876,-0.815718361078695,-0.8143615879460845,1,verified affine alias,0
+U33-400/trefoil,raw.cable.2.radius,0.02545,0.02487499999999955,0.027225000000000454,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,raw.cable.3.tube.1.r_ex,0.0115,0.011499999999999774,0.011700000000000226,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.tube.1.rho,3.232400389241806e-8,2.8549208379763136e-8,4.2896621942543984e-8,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.3.tube.1.mu_r_ins,0.9999999999999998,0.9999999999999853,1.000000000000015,1,fixed,0
+U33-400/trefoil,raw.cable.3.tube.2.r_in,0.02125,0.02067499999999955,0.022025000000000454,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.tube.2.r_ex,0.021735439883963925,0.02117362680197681,0.022515885284178333,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.tube.2.rho,1.7241e-8,1.656342869999957e-8,2.1983999100000432e-8,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.3.tube.2.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.3.layer.1.r_in,0.0115,0.011499999999999774,0.011700000000000226,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.layer.1.r_ex,0.01235,0.012264999999999774,0.012635000000000226,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-400/trefoil,raw.cable.3.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.3.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,raw.cable.3.layer.2.r_in,0.01235,0.012264999999999774,0.012635000000000226,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.layer.2.r_ex,0.02035,0.01986499999999955,0.021035000000000453,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-400/trefoil,raw.cable.3.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.3.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-400/trefoil,raw.cable.3.layer.3.r_in,0.02035,0.01986499999999955,0.021035000000000453,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.layer.3.r_ex,0.02125,0.02067499999999955,0.022025000000000454,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-400/trefoil,raw.cable.3.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.3.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,raw.cable.3.layer.4.r_in,0.021735439883963925,0.02117362680197681,0.022515885284178333,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.layer.4.r_ex,0.02545,0.02487499999999955,0.027225000000000454,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-400/trefoil,raw.cable.3.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-400/trefoil,raw.cable.3.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.cable.3.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,raw.cable.3.x,0.025449999999999993,0.02487499999999954,0.02722500000000045,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.y,-0.814693564350876,-0.8157183610786951,-0.8143615879460845,1,verified affine alias,0
+U33-400/trefoil,raw.cable.3.radius,0.02545,0.02487499999999955,0.027225000000000454,1,verified affine alias,0
+U33-400/trefoil,raw.earth.1.rho,Inf,Inf,Inf,0,fixed,0
+U33-400/trefoil,raw.earth.1.eps_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.earth.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.earth.1.thickness,Inf,Inf,Inf,0,fixed,0
+U33-400/trefoil,raw.earth.2.rho,100.0,9.999999999985445,1000.0000000000148,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,raw.earth.2.eps_r,10.0,9.999999999999885,10.000000000000115,1,fixed,0
+U33-400/trefoil,raw.earth.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,raw.earth.2.thickness,Inf,Inf,Inf,0,fixed,0
+U33-400/trefoil,eq.cable.1.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,eq.cable.1.tube.1.width,0.0115,0.011499999999999774,0.011700000000000226,1,verified affine alias,0
+U33-400/trefoil,eq.cable.1.tube.1.resistance,7.780000000000001e-5,6.871451999999824e-5,9.974738000000178e-5,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,eq.cable.1.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.1.tube.2.width,0.0004854398839639236,0.00046872072266855916,0.000522171748378566,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,eq.cable.1.tube.2.resistance,0.0002629999999999996,0.00024113569999999256,0.0003353513000000066,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,eq.cable.1.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.1.layer.1.width,0.0008500000000000001,0.000764999999999986,0.0009350000000000142,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,eq.cable.1.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-400/trefoil,eq.cable.1.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-400/trefoil,eq.cable.1.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.1.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,eq.cable.1.layer.2.width,0.008,0.007599999999999775,0.008400000000000227,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,eq.cable.1.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-400/trefoil,eq.cable.1.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-400/trefoil,eq.cable.1.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.1.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-400/trefoil,eq.cable.1.layer.3.width,0.0009000000000000015,0.0008099999999999737,0.0009900000000000295,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,eq.cable.1.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-400/trefoil,eq.cable.1.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-400/trefoil,eq.cable.1.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.1.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,eq.cable.1.layer.4.width,0.0037145601160360753,0.003677828251621335,0.004731279277331539,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,eq.cable.1.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-400/trefoil,eq.cable.1.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-400/trefoil,eq.cable.1.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.1.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,eq.cable.2.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,eq.cable.2.tube.1.width,0.0115,0.011499999999999774,0.011700000000000226,1,verified affine alias,0
+U33-400/trefoil,eq.cable.2.tube.1.resistance,7.780000000000001e-5,6.871451999999824e-5,9.974738000000178e-5,1,verified affine alias,0
+U33-400/trefoil,eq.cable.2.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.2.tube.2.width,0.0004854398839639236,0.00046872072266855916,0.000522171748378566,1,verified affine alias,0
+U33-400/trefoil,eq.cable.2.tube.2.resistance,0.0002629999999999996,0.00024113569999999256,0.0003353513000000066,1,verified affine alias,0
+U33-400/trefoil,eq.cable.2.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.2.layer.1.width,0.0008500000000000001,0.000764999999999986,0.0009350000000000142,1,verified affine alias,0
+U33-400/trefoil,eq.cable.2.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-400/trefoil,eq.cable.2.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-400/trefoil,eq.cable.2.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.2.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,eq.cable.2.layer.2.width,0.008,0.007599999999999775,0.008400000000000227,1,verified affine alias,0
+U33-400/trefoil,eq.cable.2.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-400/trefoil,eq.cable.2.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-400/trefoil,eq.cable.2.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.2.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-400/trefoil,eq.cable.2.layer.3.width,0.0009000000000000015,0.0008099999999999737,0.0009900000000000295,1,verified affine alias,0
+U33-400/trefoil,eq.cable.2.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-400/trefoil,eq.cable.2.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-400/trefoil,eq.cable.2.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.2.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,eq.cable.2.layer.4.width,0.0037145601160360753,0.003677828251621335,0.004731279277331539,1,verified affine alias,0
+U33-400/trefoil,eq.cable.2.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-400/trefoil,eq.cable.2.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-400/trefoil,eq.cable.2.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.2.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,eq.cable.3.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,eq.cable.3.tube.1.width,0.0115,0.011499999999999774,0.011700000000000226,1,verified affine alias,0
+U33-400/trefoil,eq.cable.3.tube.1.resistance,7.780000000000001e-5,6.871451999999824e-5,9.974738000000178e-5,1,verified affine alias,0
+U33-400/trefoil,eq.cable.3.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.3.tube.2.width,0.0004854398839639236,0.00046872072266855916,0.000522171748378566,1,verified affine alias,0
+U33-400/trefoil,eq.cable.3.tube.2.resistance,0.0002629999999999996,0.00024113569999999256,0.0003353513000000066,1,verified affine alias,0
+U33-400/trefoil,eq.cable.3.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.3.layer.1.width,0.0008500000000000001,0.000764999999999986,0.0009350000000000142,1,verified affine alias,0
+U33-400/trefoil,eq.cable.3.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-400/trefoil,eq.cable.3.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-400/trefoil,eq.cable.3.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.3.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,eq.cable.3.layer.2.width,0.008,0.007599999999999775,0.008400000000000227,1,verified affine alias,0
+U33-400/trefoil,eq.cable.3.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-400/trefoil,eq.cable.3.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-400/trefoil,eq.cable.3.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.3.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-400/trefoil,eq.cable.3.layer.3.width,0.0009000000000000015,0.0008099999999999737,0.0009900000000000295,1,verified affine alias,0
+U33-400/trefoil,eq.cable.3.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-400/trefoil,eq.cable.3.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-400/trefoil,eq.cable.3.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.3.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,eq.cable.3.layer.4.width,0.0037145601160360753,0.003677828251621335,0.004731279277331539,1,verified affine alias,0
+U33-400/trefoil,eq.cable.3.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-400/trefoil,eq.cable.3.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-400/trefoil,eq.cable.3.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-400/trefoil,eq.cable.3.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,eq.formation.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-400/trefoil,eq.formation.y,-0.8,-0.8000000000000144,-0.7999999999999857,1,fixed,0
+U33-400/trefoil,eq.earth.rho,100.0,9.999999999985445,1000.0000000000148,1,verified affine alias,0
+U33-400/trefoil,eq.earth.eps_r,10.0,9.999999999999885,10.000000000000115,1,fixed,0
+U33-400/trefoil,eq.earth.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.1.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,raw.cable.1.tube.1.r_ex,0.01325,0.013249999999999774,0.013450000000000226,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,raw.cable.1.tube.1.rho,3.336852454487441e-8,2.9483043907740957e-8,4.4083058276497326e-8,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,raw.cable.1.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.1.tube.1.mu_r_ins,1.0000000000000002,0.9999999999999851,1.000000000000015,1,fixed,0
+U33-500/trefoil,raw.cable.1.tube.2.r_in,0.023000000000000003,0.02242499999999955,0.023775000000000452,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,raw.cable.1.tube.2.r_ex,0.023449239794701444,0.022885529750245874,0.02423045790178716,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,raw.cable.1.tube.2.rho,1.7241e-8,1.656342869999957e-8,2.1983999100000432e-8,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,raw.cable.1.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.1.tube.2.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.1.layer.1.r_in,0.01325,0.013249999999999774,0.013450000000000226,1,verified affine alias,0
+U33-500/trefoil,raw.cable.1.layer.1.r_ex,0.0141,0.014014999999999774,0.014385000000000226,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,raw.cable.1.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,raw.cable.1.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-500/trefoil,raw.cable.1.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.1.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,raw.cable.1.layer.2.r_in,0.0141,0.014014999999999774,0.014385000000000226,1,verified affine alias,0
+U33-500/trefoil,raw.cable.1.layer.2.r_ex,0.0221,0.021614999999999548,0.02278500000000045,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,raw.cable.1.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,raw.cable.1.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-500/trefoil,raw.cable.1.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.1.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-500/trefoil,raw.cable.1.layer.3.r_in,0.0221,0.021614999999999548,0.02278500000000045,1,verified affine alias,0
+U33-500/trefoil,raw.cable.1.layer.3.r_ex,0.023000000000000003,0.02242499999999955,0.023775000000000452,1,verified affine alias,0
+U33-500/trefoil,raw.cable.1.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-500/trefoil,raw.cable.1.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-500/trefoil,raw.cable.1.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.1.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,raw.cable.1.layer.4.r_in,0.023449239794701444,0.022885529750245874,0.02423045790178716,1,verified affine alias,0
+U33-500/trefoil,raw.cable.1.layer.4.r_ex,0.027300000000000005,0.026724999999999548,0.02910500000000045,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,raw.cable.1.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-500/trefoil,raw.cable.1.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-500/trefoil,raw.cable.1.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.1.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,raw.cable.1.x,1.930246934479331e-18,1.889591550328168e-18,2.0578694882059358e-18,1,verified affine alias,0
+U33-500/trefoil,raw.cable.1.y,-0.7684766753022465,-0.7691406281118222,-0.7663924408304643,1,verified affine alias,0
+U33-500/trefoil,raw.cable.1.radius,0.027300000000000005,0.026724999999999548,0.02910500000000045,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,raw.cable.2.tube.1.r_ex,0.01325,0.013249999999999774,0.013450000000000226,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.tube.1.rho,3.336852454487441e-8,2.9483043907740957e-8,4.4083058276497326e-8,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.2.tube.1.mu_r_ins,1.0000000000000002,0.9999999999999851,1.000000000000015,1,fixed,0
+U33-500/trefoil,raw.cable.2.tube.2.r_in,0.023000000000000003,0.02242499999999955,0.023775000000000452,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.tube.2.r_ex,0.023449239794701444,0.022885529750245874,0.02423045790178716,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.tube.2.rho,1.7241e-8,1.656342869999957e-8,2.1983999100000432e-8,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.2.tube.2.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.2.layer.1.r_in,0.01325,0.013249999999999774,0.013450000000000226,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.layer.1.r_ex,0.0141,0.014014999999999774,0.014385000000000226,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-500/trefoil,raw.cable.2.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.2.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,raw.cable.2.layer.2.r_in,0.0141,0.014014999999999774,0.014385000000000226,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.layer.2.r_ex,0.0221,0.021614999999999548,0.02278500000000045,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-500/trefoil,raw.cable.2.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.2.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-500/trefoil,raw.cable.2.layer.3.r_in,0.0221,0.021614999999999548,0.02278500000000045,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.layer.3.r_ex,0.023000000000000003,0.02242499999999955,0.023775000000000452,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-500/trefoil,raw.cable.2.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.2.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,raw.cable.2.layer.4.r_in,0.023449239794701444,0.022885529750245874,0.02423045790178716,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.layer.4.r_ex,0.027300000000000005,0.026724999999999548,0.02910500000000045,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-500/trefoil,raw.cable.2.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-500/trefoil,raw.cable.2.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.2.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,raw.cable.2.x,-0.027300000000000012,-0.029105000000000457,-0.026724999999999555,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,raw.cable.2.y,-0.8157616623488768,-0.8168037795847716,-0.8154296859440853,1,verified affine alias,0
+U33-500/trefoil,raw.cable.2.radius,0.027300000000000005,0.026724999999999548,0.02910500000000045,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,raw.cable.3.tube.1.r_ex,0.01325,0.013249999999999774,0.013450000000000226,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.tube.1.rho,3.336852454487441e-8,2.9483043907740957e-8,4.4083058276497326e-8,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.3.tube.1.mu_r_ins,1.0000000000000002,0.9999999999999851,1.000000000000015,1,fixed,0
+U33-500/trefoil,raw.cable.3.tube.2.r_in,0.023000000000000003,0.02242499999999955,0.023775000000000452,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.tube.2.r_ex,0.023449239794701444,0.022885529750245874,0.02423045790178716,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.tube.2.rho,1.7241e-8,1.656342869999957e-8,2.1983999100000432e-8,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.3.tube.2.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.3.layer.1.r_in,0.01325,0.013249999999999774,0.013450000000000226,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.layer.1.r_ex,0.0141,0.014014999999999774,0.014385000000000226,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-500/trefoil,raw.cable.3.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.3.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,raw.cable.3.layer.2.r_in,0.0141,0.014014999999999774,0.014385000000000226,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.layer.2.r_ex,0.0221,0.021614999999999548,0.02278500000000045,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-500/trefoil,raw.cable.3.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.3.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-500/trefoil,raw.cable.3.layer.3.r_in,0.0221,0.021614999999999548,0.02278500000000045,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.layer.3.r_ex,0.023000000000000003,0.02242499999999955,0.023775000000000452,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-500/trefoil,raw.cable.3.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.3.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,raw.cable.3.layer.4.r_in,0.023449239794701444,0.022885529750245874,0.02423045790178716,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.layer.4.r_ex,0.027300000000000005,0.026724999999999548,0.02910500000000045,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-500/trefoil,raw.cable.3.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-500/trefoil,raw.cable.3.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.cable.3.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,raw.cable.3.x,0.027299999999999998,0.026724999999999537,0.029105000000000446,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.y,-0.8157616623488768,-0.8168037795847716,-0.8154296859440854,1,verified affine alias,0
+U33-500/trefoil,raw.cable.3.radius,0.027300000000000005,0.026724999999999548,0.02910500000000045,1,verified affine alias,0
+U33-500/trefoil,raw.earth.1.rho,Inf,Inf,Inf,0,fixed,0
+U33-500/trefoil,raw.earth.1.eps_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.earth.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.earth.1.thickness,Inf,Inf,Inf,0,fixed,0
+U33-500/trefoil,raw.earth.2.rho,100.0,9.999999999985445,1000.0000000000148,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,raw.earth.2.eps_r,10.0,9.999999999999885,10.000000000000115,1,fixed,0
+U33-500/trefoil,raw.earth.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,raw.earth.2.thickness,Inf,Inf,Inf,0,fixed,0
+U33-500/trefoil,eq.cable.1.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,eq.cable.1.tube.1.width,0.01325,0.013249999999999774,0.013450000000000226,1,verified affine alias,0
+U33-500/trefoil,eq.cable.1.tube.1.resistance,6.05e-5,5.345528999999825e-5,7.756705000000176e-5,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,eq.cable.1.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.1.tube.2.width,0.00044923979470144065,0.0004348631129837097,0.0004823152099991472,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,eq.cable.1.tube.2.resistance,0.0002630000000000003,0.00024113569999999312,0.00033535130000000754,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,eq.cable.1.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.1.layer.1.width,0.0008500000000000001,0.000764999999999986,0.0009350000000000142,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,eq.cable.1.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-500/trefoil,eq.cable.1.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-500/trefoil,eq.cable.1.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.1.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,eq.cable.1.layer.2.width,0.008000000000000002,0.007599999999999777,0.008400000000000225,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,eq.cable.1.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-500/trefoil,eq.cable.1.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-500/trefoil,eq.cable.1.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.1.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-500/trefoil,eq.cable.1.layer.3.width,0.0009000000000000015,0.0008099999999999737,0.0009900000000000295,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,eq.cable.1.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-500/trefoil,eq.cable.1.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-500/trefoil,eq.cable.1.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.1.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,eq.cable.1.layer.4.width,0.003850760205298561,0.0038176847900007463,0.004895136887016394,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,eq.cable.1.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-500/trefoil,eq.cable.1.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-500/trefoil,eq.cable.1.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.1.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,eq.cable.2.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,eq.cable.2.tube.1.width,0.01325,0.013249999999999774,0.013450000000000226,1,verified affine alias,0
+U33-500/trefoil,eq.cable.2.tube.1.resistance,6.05e-5,5.345528999999825e-5,7.756705000000176e-5,1,verified affine alias,0
+U33-500/trefoil,eq.cable.2.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.2.tube.2.width,0.00044923979470144065,0.0004348631129837097,0.0004823152099991472,1,verified affine alias,0
+U33-500/trefoil,eq.cable.2.tube.2.resistance,0.0002630000000000003,0.00024113569999999312,0.00033535130000000754,1,verified affine alias,0
+U33-500/trefoil,eq.cable.2.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.2.layer.1.width,0.0008500000000000001,0.000764999999999986,0.0009350000000000142,1,verified affine alias,0
+U33-500/trefoil,eq.cable.2.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-500/trefoil,eq.cable.2.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-500/trefoil,eq.cable.2.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.2.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,eq.cable.2.layer.2.width,0.008000000000000002,0.007599999999999777,0.008400000000000225,1,verified affine alias,0
+U33-500/trefoil,eq.cable.2.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-500/trefoil,eq.cable.2.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-500/trefoil,eq.cable.2.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.2.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-500/trefoil,eq.cable.2.layer.3.width,0.0009000000000000015,0.0008099999999999737,0.0009900000000000295,1,verified affine alias,0
+U33-500/trefoil,eq.cable.2.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-500/trefoil,eq.cable.2.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-500/trefoil,eq.cable.2.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.2.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,eq.cable.2.layer.4.width,0.003850760205298561,0.0038176847900007463,0.004895136887016394,1,verified affine alias,0
+U33-500/trefoil,eq.cable.2.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-500/trefoil,eq.cable.2.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-500/trefoil,eq.cable.2.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.2.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,eq.cable.3.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,eq.cable.3.tube.1.width,0.01325,0.013249999999999774,0.013450000000000226,1,verified affine alias,0
+U33-500/trefoil,eq.cable.3.tube.1.resistance,6.05e-5,5.345528999999825e-5,7.756705000000176e-5,1,verified affine alias,0
+U33-500/trefoil,eq.cable.3.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.3.tube.2.width,0.00044923979470144065,0.0004348631129837097,0.0004823152099991472,1,verified affine alias,0
+U33-500/trefoil,eq.cable.3.tube.2.resistance,0.0002630000000000003,0.00024113569999999312,0.00033535130000000754,1,verified affine alias,0
+U33-500/trefoil,eq.cable.3.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.3.layer.1.width,0.0008500000000000001,0.000764999999999986,0.0009350000000000142,1,verified affine alias,0
+U33-500/trefoil,eq.cable.3.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-500/trefoil,eq.cable.3.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-500/trefoil,eq.cable.3.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.3.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,eq.cable.3.layer.2.width,0.008000000000000002,0.007599999999999777,0.008400000000000225,1,verified affine alias,0
+U33-500/trefoil,eq.cable.3.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-500/trefoil,eq.cable.3.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-500/trefoil,eq.cable.3.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.3.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-500/trefoil,eq.cable.3.layer.3.width,0.0009000000000000015,0.0008099999999999737,0.0009900000000000295,1,verified affine alias,0
+U33-500/trefoil,eq.cable.3.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-500/trefoil,eq.cable.3.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-500/trefoil,eq.cable.3.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.3.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,eq.cable.3.layer.4.width,0.003850760205298561,0.0038176847900007463,0.004895136887016394,1,verified affine alias,0
+U33-500/trefoil,eq.cable.3.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-500/trefoil,eq.cable.3.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-500/trefoil,eq.cable.3.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-500/trefoil,eq.cable.3.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,eq.formation.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-500/trefoil,eq.formation.y,-0.8,-0.8000000000000144,-0.7999999999999857,1,fixed,0
+U33-500/trefoil,eq.earth.rho,100.0,9.999999999985445,1000.0000000000148,1,verified affine alias,0
+U33-500/trefoil,eq.earth.eps_r,10.0,9.999999999999885,10.000000000000115,1,fixed,0
+U33-500/trefoil,eq.earth.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.1.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,raw.cable.1.tube.1.r_ex,0.01495,0.014949999999999774,0.015150000000000226,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,raw.cable.1.tube.1.rho,3.2931013785564884e-8,2.9043237278960448e-8,4.335806391843094e-8,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,raw.cable.1.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.1.tube.1.mu_r_ins,1.0,0.9999999999999851,1.000000000000015,1,fixed,0
+U33-630/trefoil,raw.cable.1.tube.2.r_in,0.024900000000000002,0.02430499999999955,0.025695000000000454,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,raw.cable.1.tube.2.r_ex,0.025315545558992198,0.024730545322523466,0.02611699619271484,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,raw.cable.1.tube.2.rho,1.7241e-8,1.656342869999957e-8,2.1983999100000432e-8,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,raw.cable.1.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.1.tube.2.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.1.layer.1.r_in,0.01495,0.014949999999999774,0.015150000000000226,1,verified affine alias,0
+U33-630/trefoil,raw.cable.1.layer.1.r_ex,0.016,0.01589499999999955,0.01630500000000045,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,raw.cable.1.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,raw.cable.1.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-630/trefoil,raw.cable.1.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.1.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,raw.cable.1.layer.2.r_in,0.016,0.01589499999999955,0.01630500000000045,1,verified affine alias,0
+U33-630/trefoil,raw.cable.1.layer.2.r_ex,0.024,0.023494999999999547,0.024705000000000452,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,raw.cable.1.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,raw.cable.1.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-630/trefoil,raw.cable.1.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.1.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-630/trefoil,raw.cable.1.layer.3.r_in,0.024,0.023494999999999547,0.024705000000000452,1,verified affine alias,0
+U33-630/trefoil,raw.cable.1.layer.3.r_ex,0.024900000000000002,0.02430499999999955,0.025695000000000454,1,verified affine alias,0
+U33-630/trefoil,raw.cable.1.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-630/trefoil,raw.cable.1.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-630/trefoil,raw.cable.1.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.1.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,raw.cable.1.layer.4.r_in,0.025315545558992198,0.024730545322523466,0.02611699619271484,1,verified affine alias,0
+U33-630/trefoil,raw.cable.1.layer.4.r_ex,0.029300000000000003,0.02870499999999955,0.031165000000000456,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,raw.cable.1.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-630/trefoil,raw.cable.1.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-630/trefoil,raw.cable.1.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.1.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,raw.cable.1.x,2.071656966309318e-18,2.0295874818398556e-18,2.203521820990823e-18,1,verified affine alias,0
+U33-630/trefoil,raw.cable.1.y,-0.7661672742254879,-0.7668543210458312,-0.764013757721403,1,verified affine alias,0
+U33-630/trefoil,raw.cable.1.radius,0.029300000000000003,0.02870499999999955,0.031165000000000456,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,raw.cable.2.tube.1.r_ex,0.01495,0.014949999999999774,0.015150000000000226,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.tube.1.rho,3.2931013785564884e-8,2.9043237278960448e-8,4.335806391843094e-8,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.2.tube.1.mu_r_ins,1.0,0.9999999999999851,1.000000000000015,1,fixed,0
+U33-630/trefoil,raw.cable.2.tube.2.r_in,0.024900000000000002,0.02430499999999955,0.025695000000000454,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.tube.2.r_ex,0.025315545558992198,0.024730545322523466,0.02611699619271484,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.tube.2.rho,1.7241e-8,1.656342869999957e-8,2.1983999100000432e-8,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.2.tube.2.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.2.layer.1.r_in,0.01495,0.014949999999999774,0.015150000000000226,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.layer.1.r_ex,0.016,0.01589499999999955,0.01630500000000045,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-630/trefoil,raw.cable.2.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.2.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,raw.cable.2.layer.2.r_in,0.016,0.01589499999999955,0.01630500000000045,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.layer.2.r_ex,0.024,0.023494999999999547,0.024705000000000452,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-630/trefoil,raw.cable.2.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.2.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-630/trefoil,raw.cable.2.layer.3.r_in,0.024,0.023494999999999547,0.024705000000000452,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.layer.3.r_ex,0.024900000000000002,0.02430499999999955,0.025695000000000454,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-630/trefoil,raw.cable.2.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.2.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,raw.cable.2.layer.4.r_in,0.025315545558992198,0.024730545322523466,0.02611699619271484,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.layer.4.r_ex,0.029300000000000003,0.02870499999999955,0.031165000000000456,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-630/trefoil,raw.cable.2.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-630/trefoil,raw.cable.2.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.2.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,raw.cable.2.x,-0.02930000000000001,-0.031165000000000463,-0.028704999999999557,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,raw.cable.2.y,-0.8169163628872561,-0.8179931211393022,-0.8165728394770808,1,verified affine alias,0
+U33-630/trefoil,raw.cable.2.radius,0.029300000000000003,0.02870499999999955,0.031165000000000456,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,raw.cable.3.tube.1.r_ex,0.01495,0.014949999999999774,0.015150000000000226,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.tube.1.rho,3.2931013785564884e-8,2.9043237278960448e-8,4.335806391843094e-8,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.3.tube.1.mu_r_ins,1.0,0.9999999999999851,1.000000000000015,1,fixed,0
+U33-630/trefoil,raw.cable.3.tube.2.r_in,0.024900000000000002,0.02430499999999955,0.025695000000000454,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.tube.2.r_ex,0.025315545558992198,0.024730545322523466,0.02611699619271484,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.tube.2.rho,1.7241e-8,1.656342869999957e-8,2.1983999100000432e-8,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.3.tube.2.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.3.layer.1.r_in,0.01495,0.014949999999999774,0.015150000000000226,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.layer.1.r_ex,0.016,0.01589499999999955,0.01630500000000045,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-630/trefoil,raw.cable.3.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.3.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,raw.cable.3.layer.2.r_in,0.016,0.01589499999999955,0.01630500000000045,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.layer.2.r_ex,0.024,0.023494999999999547,0.024705000000000452,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-630/trefoil,raw.cable.3.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.3.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-630/trefoil,raw.cable.3.layer.3.r_in,0.024,0.023494999999999547,0.024705000000000452,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.layer.3.r_ex,0.024900000000000002,0.02430499999999955,0.025695000000000454,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-630/trefoil,raw.cable.3.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.3.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,raw.cable.3.layer.4.r_in,0.025315545558992198,0.024730545322523466,0.02611699619271484,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.layer.4.r_ex,0.029300000000000003,0.02870499999999955,0.031165000000000456,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-630/trefoil,raw.cable.3.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-630/trefoil,raw.cable.3.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.cable.3.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,raw.cable.3.x,0.029299999999999993,0.028704999999999536,0.031165000000000453,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.y,-0.8169163628872561,-0.8179931211393022,-0.8165728394770808,1,verified affine alias,0
+U33-630/trefoil,raw.cable.3.radius,0.029300000000000003,0.02870499999999955,0.031165000000000456,1,verified affine alias,0
+U33-630/trefoil,raw.earth.1.rho,Inf,Inf,Inf,0,fixed,0
+U33-630/trefoil,raw.earth.1.eps_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.earth.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.earth.1.thickness,Inf,Inf,Inf,0,fixed,0
+U33-630/trefoil,raw.earth.2.rho,100.0,9.999999999985445,1000.0000000000148,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,raw.earth.2.eps_r,10.0,9.999999999999885,10.000000000000115,1,fixed,0
+U33-630/trefoil,raw.earth.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,raw.earth.2.thickness,Inf,Inf,Inf,0,fixed,0
+U33-630/trefoil,eq.cable.1.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,eq.cable.1.tube.1.width,0.01495,0.014949999999999774,0.015150000000000226,1,verified affine alias,0
+U33-630/trefoil,eq.cable.1.tube.1.resistance,4.69e-5,4.1363069999999114e-5,6.013049000000089e-5,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,eq.cable.1.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.1.tube.2.width,0.0004155455589921961,0.00040289018195549867,0.00044570686122435293,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,eq.cable.1.tube.2.resistance,0.0002630000000000017,0.00024113569999999193,0.00033535130000000927,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,eq.cable.1.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.1.layer.1.width,0.0010500000000000006,0.0009449999999999717,0.0011550000000000297,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,eq.cable.1.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-630/trefoil,eq.cable.1.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-630/trefoil,eq.cable.1.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.1.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,eq.cable.1.layer.2.width,0.008,0.007599999999999775,0.008400000000000227,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,eq.cable.1.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-630/trefoil,eq.cable.1.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-630/trefoil,eq.cable.1.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.1.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-630/trefoil,eq.cable.1.layer.3.width,0.0009000000000000015,0.0008099999999999737,0.0009900000000000295,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,eq.cable.1.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-630/trefoil,eq.cable.1.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-630/trefoil,eq.cable.1.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.1.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,eq.cable.1.layer.4.width,0.003984454441007805,0.0039542931387755425,0.00506710981804461,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,eq.cable.1.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-630/trefoil,eq.cable.1.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-630/trefoil,eq.cable.1.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.1.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,eq.cable.2.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,eq.cable.2.tube.1.width,0.01495,0.014949999999999774,0.015150000000000226,1,verified affine alias,0
+U33-630/trefoil,eq.cable.2.tube.1.resistance,4.69e-5,4.1363069999999114e-5,6.013049000000089e-5,1,verified affine alias,0
+U33-630/trefoil,eq.cable.2.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.2.tube.2.width,0.0004155455589921961,0.00040289018195549867,0.00044570686122435293,1,verified affine alias,0
+U33-630/trefoil,eq.cable.2.tube.2.resistance,0.0002630000000000017,0.00024113569999999193,0.00033535130000000927,1,verified affine alias,0
+U33-630/trefoil,eq.cable.2.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.2.layer.1.width,0.0010500000000000006,0.0009449999999999717,0.0011550000000000297,1,verified affine alias,0
+U33-630/trefoil,eq.cable.2.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-630/trefoil,eq.cable.2.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-630/trefoil,eq.cable.2.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.2.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,eq.cable.2.layer.2.width,0.008,0.007599999999999775,0.008400000000000227,1,verified affine alias,0
+U33-630/trefoil,eq.cable.2.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-630/trefoil,eq.cable.2.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-630/trefoil,eq.cable.2.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.2.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-630/trefoil,eq.cable.2.layer.3.width,0.0009000000000000015,0.0008099999999999737,0.0009900000000000295,1,verified affine alias,0
+U33-630/trefoil,eq.cable.2.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-630/trefoil,eq.cable.2.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-630/trefoil,eq.cable.2.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.2.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,eq.cable.2.layer.4.width,0.003984454441007805,0.0039542931387755425,0.00506710981804461,1,verified affine alias,0
+U33-630/trefoil,eq.cable.2.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-630/trefoil,eq.cable.2.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-630/trefoil,eq.cable.2.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.2.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,eq.cable.3.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,eq.cable.3.tube.1.width,0.01495,0.014949999999999774,0.015150000000000226,1,verified affine alias,0
+U33-630/trefoil,eq.cable.3.tube.1.resistance,4.69e-5,4.1363069999999114e-5,6.013049000000089e-5,1,verified affine alias,0
+U33-630/trefoil,eq.cable.3.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.3.tube.2.width,0.0004155455589921961,0.00040289018195549867,0.00044570686122435293,1,verified affine alias,0
+U33-630/trefoil,eq.cable.3.tube.2.resistance,0.0002630000000000017,0.00024113569999999193,0.00033535130000000927,1,verified affine alias,0
+U33-630/trefoil,eq.cable.3.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.3.layer.1.width,0.0010500000000000006,0.0009449999999999717,0.0011550000000000297,1,verified affine alias,0
+U33-630/trefoil,eq.cable.3.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-630/trefoil,eq.cable.3.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-630/trefoil,eq.cable.3.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.3.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,eq.cable.3.layer.2.width,0.008,0.007599999999999775,0.008400000000000227,1,verified affine alias,0
+U33-630/trefoil,eq.cable.3.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-630/trefoil,eq.cable.3.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-630/trefoil,eq.cable.3.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.3.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-630/trefoil,eq.cable.3.layer.3.width,0.0009000000000000015,0.0008099999999999737,0.0009900000000000295,1,verified affine alias,0
+U33-630/trefoil,eq.cable.3.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-630/trefoil,eq.cable.3.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-630/trefoil,eq.cable.3.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.3.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,eq.cable.3.layer.4.width,0.003984454441007805,0.0039542931387755425,0.00506710981804461,1,verified affine alias,0
+U33-630/trefoil,eq.cable.3.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-630/trefoil,eq.cable.3.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-630/trefoil,eq.cable.3.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-630/trefoil,eq.cable.3.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,eq.formation.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-630/trefoil,eq.formation.y,-0.8,-0.8000000000000144,-0.7999999999999857,1,fixed,0
+U33-630/trefoil,eq.earth.rho,100.0,9.999999999985445,1000.0000000000148,1,verified affine alias,0
+U33-630/trefoil,eq.earth.eps_r,10.0,9.999999999999885,10.000000000000115,1,fixed,0
+U33-630/trefoil,eq.earth.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.1.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,raw.cable.1.tube.1.r_ex,0.0171,0.01709999999999955,0.01730000000000045,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,raw.cable.1.tube.1.rho,3.371383505758822e-8,2.9798492143354425e-8,4.424152039113574e-8,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,raw.cable.1.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.1.tube.1.mu_r_ins,1.0000000000000002,0.9999999999999851,1.000000000000015,1,fixed,0
+U33-800/trefoil,raw.cable.1.tube.2.r_in,0.02705,0.026454999999999552,0.027845000000000453,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,raw.cable.1.tube.2.r_ex,0.027432997410954015,0.02684648714356099,0.028234880735187876,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,raw.cable.1.tube.2.rho,1.7241e-8,1.656342869999957e-8,2.1983999100000432e-8,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,raw.cable.1.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.1.tube.2.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.1.layer.1.r_in,0.0171,0.01709999999999955,0.01730000000000045,1,verified affine alias,0
+U33-800/trefoil,raw.cable.1.layer.1.r_ex,0.01815,0.01804499999999955,0.01845500000000045,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,raw.cable.1.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,raw.cable.1.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-800/trefoil,raw.cable.1.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.1.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,raw.cable.1.layer.2.r_in,0.01815,0.01804499999999955,0.01845500000000045,1,verified affine alias,0
+U33-800/trefoil,raw.cable.1.layer.2.r_ex,0.02615,0.02564499999999955,0.02685500000000045,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,raw.cable.1.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,raw.cable.1.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-800/trefoil,raw.cable.1.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.1.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-800/trefoil,raw.cable.1.layer.3.r_in,0.02615,0.02564499999999955,0.02685500000000045,1,verified affine alias,0
+U33-800/trefoil,raw.cable.1.layer.3.r_ex,0.02705,0.026454999999999552,0.027845000000000453,1,verified affine alias,0
+U33-800/trefoil,raw.cable.1.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-800/trefoil,raw.cable.1.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-800/trefoil,raw.cable.1.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.1.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,raw.cable.1.layer.4.r_in,0.027432997410954015,0.02684648714356099,0.028234880735187876,1,verified affine alias,0
+U33-800/trefoil,raw.cable.1.layer.4.r_ex,0.0317,0.031104999999999106,0.033655000000000906,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,raw.cable.1.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-800/trefoil,raw.cable.1.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-800/trefoil,raw.cable.1.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.1.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,raw.cable.1.x,2.241349004505303e-18,2.199279520035825e-18,2.379577310619174e-18,1,verified affine alias,0
+U33-800/trefoil,raw.cable.1.y,-0.7633959929333778,-0.7640830397537213,-0.7611385533808385,1,verified affine alias,0
+U33-800/trefoil,raw.cable.1.radius,0.0317,0.031104999999999106,0.033655000000000906,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,raw.cable.2.tube.1.r_ex,0.0171,0.01709999999999955,0.01730000000000045,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.tube.1.rho,3.371383505758822e-8,2.9798492143354425e-8,4.424152039113574e-8,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.2.tube.1.mu_r_ins,1.0000000000000002,0.9999999999999851,1.000000000000015,1,fixed,0
+U33-800/trefoil,raw.cable.2.tube.2.r_in,0.02705,0.026454999999999552,0.027845000000000453,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.tube.2.r_ex,0.027432997410954015,0.02684648714356099,0.028234880735187876,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.tube.2.rho,1.7241e-8,1.656342869999957e-8,2.1983999100000432e-8,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.2.tube.2.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.2.layer.1.r_in,0.0171,0.01709999999999955,0.01730000000000045,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.layer.1.r_ex,0.01815,0.01804499999999955,0.01845500000000045,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-800/trefoil,raw.cable.2.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.2.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,raw.cable.2.layer.2.r_in,0.01815,0.01804499999999955,0.01845500000000045,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.layer.2.r_ex,0.02615,0.02564499999999955,0.02685500000000045,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-800/trefoil,raw.cable.2.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.2.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-800/trefoil,raw.cable.2.layer.3.r_in,0.02615,0.02564499999999955,0.02685500000000045,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.layer.3.r_ex,0.02705,0.026454999999999552,0.027845000000000453,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-800/trefoil,raw.cable.2.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.2.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,raw.cable.2.layer.4.r_in,0.027432997410954015,0.02684648714356099,0.028234880735187876,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.layer.4.r_ex,0.0317,0.031104999999999106,0.033655000000000906,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-800/trefoil,raw.cable.2.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-800/trefoil,raw.cable.2.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.2.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,raw.cable.2.x,-0.031700000000000006,-0.03365500000000091,-0.031104999999999113,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,raw.cable.2.y,-0.8183020035333112,-0.8194307233095844,-0.8179584801231358,1,verified affine alias,0
+U33-800/trefoil,raw.cable.2.radius,0.0317,0.031104999999999106,0.033655000000000906,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.tube.1.r_in,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,raw.cable.3.tube.1.r_ex,0.0171,0.01709999999999955,0.01730000000000045,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.tube.1.rho,3.371383505758822e-8,2.9798492143354425e-8,4.424152039113574e-8,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.3.tube.1.mu_r_ins,1.0000000000000002,0.9999999999999851,1.000000000000015,1,fixed,0
+U33-800/trefoil,raw.cable.3.tube.2.r_in,0.02705,0.026454999999999552,0.027845000000000453,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.tube.2.r_ex,0.027432997410954015,0.02684648714356099,0.028234880735187876,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.tube.2.rho,1.7241e-8,1.656342869999957e-8,2.1983999100000432e-8,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.3.tube.2.mu_r_ins,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.3.layer.1.r_in,0.0171,0.01709999999999955,0.01730000000000045,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.layer.1.r_ex,0.01815,0.01804499999999955,0.01845500000000045,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-800/trefoil,raw.cable.3.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.3.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,raw.cable.3.layer.2.r_in,0.01815,0.01804499999999955,0.01845500000000045,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.layer.2.r_ex,0.02615,0.02564499999999955,0.02685500000000045,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-800/trefoil,raw.cable.3.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.3.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-800/trefoil,raw.cable.3.layer.3.r_in,0.02615,0.02564499999999955,0.02685500000000045,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.layer.3.r_ex,0.02705,0.026454999999999552,0.027845000000000453,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-800/trefoil,raw.cable.3.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.3.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,raw.cable.3.layer.4.r_in,0.027432997410954015,0.02684648714356099,0.028234880735187876,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.layer.4.r_ex,0.0317,0.031104999999999106,0.033655000000000906,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-800/trefoil,raw.cable.3.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-800/trefoil,raw.cable.3.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.cable.3.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,raw.cable.3.x,0.031699999999999985,0.03110499999999909,0.033655000000000906,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.y,-0.8183020035333112,-0.8194307233095844,-0.8179584801231359,1,verified affine alias,0
+U33-800/trefoil,raw.cable.3.radius,0.0317,0.031104999999999106,0.033655000000000906,1,verified affine alias,0
+U33-800/trefoil,raw.earth.1.rho,Inf,Inf,Inf,0,fixed,0
+U33-800/trefoil,raw.earth.1.eps_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.earth.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.earth.1.thickness,Inf,Inf,Inf,0,fixed,0
+U33-800/trefoil,raw.earth.2.rho,100.0,9.999999999985445,1000.0000000000148,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,raw.earth.2.eps_r,10.0,9.999999999999885,10.000000000000115,1,fixed,0
+U33-800/trefoil,raw.earth.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,raw.earth.2.thickness,Inf,Inf,Inf,0,fixed,0
+U33-800/trefoil,eq.cable.1.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,eq.cable.1.tube.1.width,0.0171,0.01709999999999955,0.01730000000000045,1,verified affine alias,0
+U33-800/trefoil,eq.cable.1.tube.1.resistance,3.669999999999999e-5,3.243785999999912e-5,4.705307000000087e-5,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,eq.cable.1.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.1.tube.2.width,0.0003829974109540134,0.0003722087909029218,0.00041006076915253026,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,eq.cable.1.tube.2.resistance,0.0002630000000000003,0.00024113569999999193,0.00033535130000000754,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,eq.cable.1.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.1.layer.1.width,0.0010499999999999989,0.0009449999999999734,0.001155000000000028,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,eq.cable.1.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-800/trefoil,eq.cable.1.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-800/trefoil,eq.cable.1.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.1.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,eq.cable.1.layer.2.width,0.008,0.007599999999999775,0.008400000000000227,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,eq.cable.1.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-800/trefoil,eq.cable.1.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-800/trefoil,eq.cable.1.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.1.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-800/trefoil,eq.cable.1.layer.3.width,0.0009000000000000015,0.0008099999999999737,0.0009900000000000295,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,eq.cable.1.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-800/trefoil,eq.cable.1.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-800/trefoil,eq.cable.1.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.1.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,eq.cable.1.layer.4.width,0.0042670025890459845,0.004239939230847362,0.005437791209097187,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,eq.cable.1.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-800/trefoil,eq.cable.1.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-800/trefoil,eq.cable.1.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.1.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,eq.cable.2.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,eq.cable.2.tube.1.width,0.0171,0.01709999999999955,0.01730000000000045,1,verified affine alias,0
+U33-800/trefoil,eq.cable.2.tube.1.resistance,3.669999999999999e-5,3.243785999999912e-5,4.705307000000087e-5,1,verified affine alias,0
+U33-800/trefoil,eq.cable.2.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.2.tube.2.width,0.0003829974109540134,0.0003722087909029218,0.00041006076915253026,1,verified affine alias,0
+U33-800/trefoil,eq.cable.2.tube.2.resistance,0.0002630000000000003,0.00024113569999999193,0.00033535130000000754,1,verified affine alias,0
+U33-800/trefoil,eq.cable.2.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.2.layer.1.width,0.0010499999999999989,0.0009449999999999734,0.001155000000000028,1,verified affine alias,0
+U33-800/trefoil,eq.cable.2.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-800/trefoil,eq.cable.2.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-800/trefoil,eq.cable.2.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.2.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,eq.cable.2.layer.2.width,0.008,0.007599999999999775,0.008400000000000227,1,verified affine alias,0
+U33-800/trefoil,eq.cable.2.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-800/trefoil,eq.cable.2.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-800/trefoil,eq.cable.2.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.2.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-800/trefoil,eq.cable.2.layer.3.width,0.0009000000000000015,0.0008099999999999737,0.0009900000000000295,1,verified affine alias,0
+U33-800/trefoil,eq.cable.2.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-800/trefoil,eq.cable.2.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-800/trefoil,eq.cable.2.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.2.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,eq.cable.2.layer.4.width,0.0042670025890459845,0.004239939230847362,0.005437791209097187,1,verified affine alias,0
+U33-800/trefoil,eq.cable.2.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-800/trefoil,eq.cable.2.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-800/trefoil,eq.cable.2.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.2.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,eq.cable.3.tube.1.hole,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,eq.cable.3.tube.1.width,0.0171,0.01709999999999955,0.01730000000000045,1,verified affine alias,0
+U33-800/trefoil,eq.cable.3.tube.1.resistance,3.669999999999999e-5,3.243785999999912e-5,4.705307000000087e-5,1,verified affine alias,0
+U33-800/trefoil,eq.cable.3.tube.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.3.tube.2.width,0.0003829974109540134,0.0003722087909029218,0.00041006076915253026,1,verified affine alias,0
+U33-800/trefoil,eq.cable.3.tube.2.resistance,0.0002630000000000003,0.00024113569999999193,0.00033535130000000754,1,verified affine alias,0
+U33-800/trefoil,eq.cable.3.tube.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.3.layer.1.width,0.0010499999999999989,0.0009449999999999734,0.001155000000000028,1,verified affine alias,0
+U33-800/trefoil,eq.cable.3.layer.1.rho,1000.0,999.9999999999926,1000.0000000000074,1,fixed,0
+U33-800/trefoil,eq.cable.3.layer.1.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-800/trefoil,eq.cable.3.layer.1.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.3.layer.1.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,eq.cable.3.layer.2.width,0.008,0.007599999999999775,0.008400000000000227,1,verified affine alias,0
+U33-800/trefoil,eq.cable.3.layer.2.rho,1.1e14,1.0999999999999898e14,1.1000000000000102e14,1,fixed,0
+U33-800/trefoil,eq.cable.3.layer.2.eps_r,2.4,2.0999999999999424,2.5000000000000577,1,verified affine alias,0
+U33-800/trefoil,eq.cable.3.layer.2.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.3.layer.2.tan_delta,0.0003,0.00029999999998578906,0.0003000000000142109,1,fixed,0
+U33-800/trefoil,eq.cable.3.layer.3.width,0.0009000000000000015,0.0008099999999999737,0.0009900000000000295,1,verified affine alias,0
+U33-800/trefoil,eq.cable.3.layer.3.rho,500.0,499.9999999999963,500.0000000000037,1,fixed,0
+U33-800/trefoil,eq.cable.3.layer.3.eps_r,1000.0,99.99999999976714,10000.000000000236,1,verified affine alias,0
+U33-800/trefoil,eq.cable.3.layer.3.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.3.layer.3.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,eq.cable.3.layer.4.width,0.0042670025890459845,0.004239939230847362,0.005437791209097187,1,verified affine alias,0
+U33-800/trefoil,eq.cable.3.layer.4.rho,1.0e14,9.999999999999898e13,1.0000000000000102e14,1,fixed,0
+U33-800/trefoil,eq.cable.3.layer.4.eps_r,8.0,7.999999999999885,8.000000000000115,1,fixed,0
+U33-800/trefoil,eq.cable.3.layer.4.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
+U33-800/trefoil,eq.cable.3.layer.4.tan_delta,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,eq.formation.x,0.0,-1.4210854715202007e-14,1.4210854715202007e-14,1,fixed,0
+U33-800/trefoil,eq.formation.y,-0.8,-0.8000000000000144,-0.7999999999999857,1,fixed,0
+U33-800/trefoil,eq.earth.rho,100.0,9.999999999985445,1000.0000000000148,1,verified affine alias,0
+U33-800/trefoil,eq.earth.eps_r,10.0,9.999999999999885,10.000000000000115,1,fixed,0
+U33-800/trefoil,eq.earth.mu_r,1.0,0.9999999999999857,1.0000000000000144,1,fixed,0
