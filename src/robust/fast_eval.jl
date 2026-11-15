@@ -458,13 +458,14 @@ Compare the two options on the model before relying on `:dual`.
 function fast_violation_gradient(ce::ConstraintEvaluator, j::Int, ξ::AbstractVector, g;
                                  δ::Real = 1e-6, branch_derivative = :central)
     _check_branch_derivative(branch_derivative)
+    ce.exact && branch_derivative === :dual && throw(ArgumentError(
+        "exact moments require branch_derivative = :central"))
     if ce.exact && ce.recomb
         # exact moments: central differences in the latent coordinates (no adjoint yet)
         val = fast_violation(ce, j, ξ, g)
-        h = 1e-6
         grad = map(eachindex(ξ)) do i
-            e = zeros(length(ξ)); e[i] = h
-            (fast_violation(ce, j, ξ .+ e, g) - fast_violation(ce, j, ξ .- e, g)) / (2h)
+            e = zeros(length(ξ)); e[i] = δ
+            (fast_violation(ce, j, ξ .+ e, g) - fast_violation(ce, j, ξ .- e, g)) / (2δ)
         end
         return val, grad
     end

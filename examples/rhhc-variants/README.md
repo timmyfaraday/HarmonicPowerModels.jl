@@ -16,7 +16,9 @@ uses U33-800. The other 33 kV cables use U33-500. The case files give every assi
 Cable lengths follow the scenario's retained routes. The overhead lengths follow
 `length_km = x_pu * zbase / OHL_X[132.0]`, with `OHL_X[132.0] = 0.40 Ω/km`.
 
-The equivalent and surrogate levels live on the branch `experimental/surrogates`.
+The [equivalent and surrogate levels](REDUCTION.md) inherit `ieee30-full-exact`,
+with exact moments and characteristic harmonics through order 25. Their reduction
+script generates the coordinate data, family factor intervals and three level cases.
 
 ## Checks and results
 
@@ -274,6 +276,24 @@ From the repository root, run the physical model, corner adversary and reporting
 julia -t 16 --project=examples/rhhc-variants examples/rhhc-variants/test/runtests.jl
 ```
 
+The exact-table child checks the uncertainty levels from the saved search evidence
+in `data/reduction/ieee30-full-exact/`. The generators rebuild the cases, data and
+reduction reports byte for byte. Fresh containment checks use 256 fixed Sobol
+points per design. The suite also checks the stored subdivision and interior
+results, together with lumping, sharing, nominal identity and factor application.
+
+Set `RHHC_REDERIVE=1` to repeat the full searches and the 4096-point containment
+checks in the same suite:
+
+```sh
+RHHC_REDERIVE=1 julia -t 16 --project=examples/rhhc-variants \
+    examples/rhhc-variants/test/runtests.jl
+```
+
+The exact-table child inherits this environment variable. The explicit
+`reduce.jl` command in [REDUCTION.md](REDUCTION.md#reproduction-and-tests) also runs
+the full derivation. Set `TMPDIR` to the chosen scratch directory before either run.
+
 `compare.jl` compares capacity runs and evaluates their solutions with random posterior
 points and corners predicted from nominal constraint sensitivities. It also accepts a
 single source case, such as `cases/ieee30-full.toml`, for its own-case corner check.
@@ -313,6 +333,27 @@ done
 ```
 
 A zero-sequence IEEE30 case needs about 11 GB of memory.
+
+The five `-exact` cases use exact squared-magnitude moments and the refitted angle
+tables at orders 5, 7, 11, 13, 17, 19, 23 and 25. Each keeps its base's physical
+inputs, box and network model. Set `SHHC_HMAX=25` before Julia loads the shared
+parameters. The builder refuses a mismatch with `angle_tables`. The original
+`h13` cases require the variable unset or set to `13`.
+
+```sh
+for case in hello-world ieee30-tom ieee30-u33 ieee30-physical ieee30-full; do
+    SHHC_HMAX=25 julia -t 10 --project=examples/rhhc-variants \
+        examples/rhhc-variants/run.jl "cases/$case-exact.toml"
+done
+SHHC_HMAX=25 julia -t 10 --project=examples/rhhc-variants examples/rhhc-variants/findings.jl
+```
+
+`findings.jl` uses `ieee30-full-exact` to compare the cutting-set method with and
+without predicted corners. It reports the binding constraint's worst predicted
+corner in physical inputs. It also compares the physical model with square-root
+harmonic scaling of its nominal 50 Hz parameters. The report includes nominal capacity,
+robust hosting capacity and posterior checks. Its scaled model and factor intervals
+come from the same builders and generated data as `ieee30-full-exact-scaled`.
 
 ## Cases and output inventory
 
@@ -366,6 +407,17 @@ A comparison file is listed with its physical case. It also evaluates the source
 | `cases/star3-physical-mix.toml` | `output/star3-physical-mix-comparison.txt`, `output/star3-physical-mix.txt` |
 | `cases/star5-mix.toml` | `output/star5-mix.txt` |
 | `cases/star5-physical-mix.toml` | `output/star5-physical-mix-comparison.txt`, `output/star5-physical-mix.txt` |
+| `cases/hello-world-exact.toml` | `output/hello-world-exact.txt` |
+| `cases/ieee30-full-exact.toml` | `output/ieee30-full-exact.txt`, `output/ieee30-full-exact-findings.txt`, `output/ieee30-full-exact-comparison.txt`, `output/ieee30-full-exact-surrogate-reduction.txt` |
+| `cases/ieee30-physical-exact.toml` | `output/ieee30-physical-exact.txt` |
+| `cases/ieee30-tom-exact.toml` | `output/ieee30-tom-exact.txt` |
+| `cases/ieee30-u33-exact.toml` | `output/ieee30-u33-exact.txt` |
+| `cases/ieee30-full-exact-equivalent.toml` | `output/ieee30-full-exact-equivalent.txt`, `output/ieee30-full-exact-equivalent-reduction.txt` |
+| `cases/ieee30-full-exact-factor.toml` | `output/ieee30-full-exact-factor.txt` |
+| `cases/ieee30-full-exact-scaled.toml` | `output/ieee30-full-exact-scaled.txt` |
+
+The [reduction study](REDUCTION.md#reproduction-and-tests) gives commands to generate
+these data, run the four-level comparison and rerun finding 3 at `SHHC_HMAX=25`.
 
 ## Script inventory
 
@@ -374,12 +426,17 @@ A comparison file is listed with its physical case. It also evaluates the source
 | `builders.jl` | Decode cases, construct physical inputs and declare circuit coordinates. |
 | `run.jl` | Write nominal capacity, robust hosting capacity and posterior checks. |
 | `compare.jl` | Write paired capacity reports, transfer checks and corner checks. |
+| `reduce.jl` | Generate equivalent coordinates, verified family factor intervals, cases and reduction reports. |
+| `findings.jl` | Write exact-moment corner comparisons, binding physical inputs and harmonic-scaling comparisons. |
 | `scan.jl` | Write sequence tables, nominal resonances and physical checks. |
 | `sweep.jl` | Write endpoint sensitivities and coordinate admission decisions. |
 | `networks/convert.jl` | Reproduce the saved IEEE9 and IEEE39 network inputs from PowerImpedance. |
 | `data/register/derive.py` | Reproduce the register arithmetic in `data/register/derived.json`. |
 | `test/runtests.jl` | Run the study suite. |
 | `test/populations.jl` | Check converter parameters, variant networks and refused combinations. |
+| `test/exact_moments.jl` | Check the five exact variants and three uncertainty levels in a child process with the refitted angle tables. |
+| `test/equivalent.jl` | Check lumping, effective maps, subdivision, sharing, containment and regeneration. |
+| `test/surrogates.jl` | Check family factors, scaled data, stored interior results and regeneration. Opt into full searches. |
 | `test/coordinates.jl` | Check declarations, undeclared-coordinate probes and installed length. |
 | `test/stars.jl` | Check Falcon constructions, exact π-models and sequence references. |
 | `test/transmission.jl` | Check the physical transmission cases and Cardinal construction. |

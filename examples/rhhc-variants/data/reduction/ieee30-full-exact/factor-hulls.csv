@@ -1,0 +1,217 @@
+circuit,quantity,nominal,lower,upper,cells,method,escapes
+Bear/O132-D,R.50.0,1.0,0.8627908408350806,1.267430021874998,5,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,L.50.0,1.0,0.9975449672847712,1.0038348386224836,6,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,C.50.0,1.0,0.9981701228737201,1.0018299359328977,9,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,R.250.0,1.0,0.8843468602584169,1.228953859975415,33,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,L.250.0,1.0,0.9970530191866616,1.0043907548146844,3,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,C.250.0,1.0,0.9981701228697135,1.0018299359609637,9,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,R.350.0,1.0,0.8969656594712496,1.2083043345400224,26,interior search and monotone cells,0
+Bear/O132-D,L.350.0,1.0,0.9967767300777086,1.0047055949283141,1,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,C.350.0,1.0,0.9981701228667101,1.0018299359798146,9,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,R.550.0,1.0,0.9101992816436806,1.1833416279771534,12,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,L.550.0,1.0,0.9964108507187197,1.0051325945581862,1,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,C.550.0,1.0,0.9981701228590918,1.0018299360238503,9,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,R.650.0,1.0,0.9125920162376858,1.1773994752038135,11,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,L.650.0,1.0,0.9963251587867268,1.0052250862877374,1,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,C.650.0,1.0,0.9981701228545479,1.0018299360484275,9,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,R.850.0,1.0,0.9132715188110445,1.1735621703404884,24,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,L.850.0,1.0,0.996296509870017,1.005229705207972,6,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,C.850.0,1.0,0.9981701228441091,1.00182993610176,9,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,R.950.0,1.0,0.9122687939404306,1.1737293799644815,34,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,L.950.0,1.0,0.9963210816689614,1.0051776888057953,10,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,C.950.0,1.0,0.9981701228382476,1.0018299361302543,9,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,R.1150.0,1.0,0.9107070666567687,1.1753374955194968,27,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,L.1150.0,1.0,0.9963961667174309,1.0050375316611888,9,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,C.1150.0,1.0,0.9981701228253005,1.0018299361904175,9,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,R.1250.0,1.0,0.9100806227490275,1.1762339176210836,30,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,L.1250.0,1.0,0.9964360625633489,1.0049563518687252,3,corners; projected aggregate faces; golden face search,0
+Bear/O132-D,C.1250.0,1.0,0.9981701228182349,1.0018299362219338,9,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,R.50.0,1.0,0.8634614524186213,1.2663368974958917,5,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,L.50.0,1.0,0.9974708076064237,1.0039147395778922,6,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,C.50.0,1.0,0.9981387765180432,1.0018618768970968,9,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,R.250.0,1.0,0.8916593828914324,1.2151755961518163,38,interior search and monotone cells,0
+Goat/O132-D,L.250.0,1.0,0.9968719053061347,1.004595871619794,3,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,C.250.0,1.0,0.9981387765140397,1.0018618769259924,9,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,R.350.0,1.0,0.9034760905010648,1.1953406778154503,14,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,L.350.0,1.0,0.9965832354502435,1.0049563657921075,1,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,C.350.0,1.0,0.998138776511038,1.0018618769454093,9,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,R.550.0,1.0,0.9124839628027606,1.1761394686874125,12,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,L.550.0,1.0,0.9962862397957297,1.0053025374923557,1,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,C.550.0,1.0,0.9981387765034238,1.001861876990781,9,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,R.650.0,1.0,0.9131870799338057,1.1737381828301434,12,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,L.650.0,1.0,0.9962618928782407,1.005315726528468,3,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,C.650.0,1.0,0.9981387764988817,1.0018618770161116,9,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,R.850.0,1.0,0.9123759657741032,1.1744083347274576,24,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,L.850.0,1.0,0.9963228072900844,1.0051887206329593,16,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,C.850.0,1.0,0.9981387764884477,1.0018618770710932,9,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,R.950.0,1.0,0.9112265291182134,1.175528544170557,34,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,L.950.0,1.0,0.9963716708627156,1.0050931410403663,10,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,C.950.0,1.0,0.998138776482587,1.0018618771004755,9,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,R.1150.0,1.0,0.9099507192754474,1.177453780564725,27,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,L.1150.0,1.0,0.9964667265397693,1.0048902807443352,1,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,C.1150.0,1.0,0.9981387764696437,1.0018618771625267,9,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,R.1250.0,1.0,0.9095327726489342,1.1780990825273137,30,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,L.1250.0,1.0,0.9965080320755781,1.004795578508682,1,corners; projected aggregate faces; golden face search,0
+Goat/O132-D,C.1250.0,1.0,0.9981387764625804,1.0018618771950403,9,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,R.50.0,1.0,0.8625379588552237,1.267843880918615,5,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,L.50.0,1.0,0.99755266204262,1.0038050463242096,6,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,C.50.0,1.0,0.998185712242094,1.001813991948804,9,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,R.250.0,1.0,0.8809860958211975,1.235097205203375,20,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,L.250.0,1.0,0.9971195071770481,1.004301673817728,3,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,C.250.0,1.0,0.9981857122380867,1.0018139919764484,9,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,R.350.0,1.0,0.8930359752606508,1.214860727659235,19,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,L.350.0,1.0,0.9968654983946269,1.0045850406247894,1,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,C.350.0,1.0,0.9981857122350821,1.001813991995011,9,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,R.550.0,1.0,0.9081329349727143,1.1885037303609711,12,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,L.550.0,1.0,0.9964973909723706,1.0050208277688315,1,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,C.550.0,1.0,0.9981857122274616,1.0018139920383686,9,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,R.650.0,1.0,0.9114840172372076,1.1809350516536197,11,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,L.650.0,1.0,0.9963859407720043,1.005141917824997,1,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,C.650.0,1.0,0.9981857122229167,1.0018139920625646,9,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,R.850.0,1.0,0.913422229835636,1.1742697326932001,24,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,L.850.0,1.0,0.9963069700215816,1.0052155197392343,1,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,C.850.0,1.0,0.9981857122124763,1.0018139921150613,9,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,R.950.0,1.0,0.9127168553708936,1.1735387514852678,33,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,L.950.0,1.0,0.9963132937979686,1.0051916920227109,6,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,C.950.0,1.0,0.9981857122066129,1.001813992143106,9,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,R.1150.0,1.0,0.9112661951241003,1.1742989355856674,27,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,L.1150.0,1.0,0.9963670957877754,1.005089092330004,15,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,C.1150.0,1.0,0.998185712193665,1.001813992202312,9,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,R.1250.0,1.0,0.9105769637957118,1.175104113347772,30,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,L.1250.0,1.0,0.9964022416551015,1.005022651299428,11,corners; projected aggregate faces; golden face search,0
+Lion/O132-D,C.1250.0,1.0,0.9981857121865989,1.0018139922333236,9,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,R.50.0,1.0,0.8623096825708542,1.2682189163872188,4,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,L.50.0,1.0,0.9975593301012806,1.0037734395603144,6,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,C.50.0,1.0,0.9982028418706943,1.0017965486253042,9,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,R.250.0,1.0,0.8776151970531867,1.241134182240283,20,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,L.250.0,1.0,0.9971822581714449,1.0042136294250579,3,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,C.250.0,1.0,0.9982028418666846,1.0017965486524987,9,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,R.350.0,1.0,0.88869764943631,1.2224435838408132,21,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,L.350.0,1.0,0.9969550376774488,1.004465072578497,1,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,C.350.0,1.0,0.9982028418636795,1.0017965486707565,9,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,R.550.0,1.0,0.9051805424048227,1.1951433037816086,20,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,L.550.0,1.0,0.9965969732464438,1.0048855353975894,1,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,C.550.0,1.0,0.9982028418560559,1.0017965487133909,9,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,R.650.0,1.0,0.9095167777022257,1.186133033140605,11,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,L.650.0,1.0,0.9964730294121612,1.0050273379979342,1,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,C.650.0,1.0,0.9982028418515101,1.0017965487371794,9,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,R.850.0,1.0,0.9131071678812923,1.176296672563509,24,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,L.850.0,1.0,0.9963411301773251,1.0051665799452485,1,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,C.850.0,1.0,0.9982028418410678,1.0017965487887854,9,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,R.950.0,1.0,0.9129209608978871,1.174322852742464,33,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,L.950.0,1.0,0.9963244361132498,1.0051766745107762,1,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,C.950.0,1.0,0.998202841835205,1.0017965488163514,9,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,R.1150.0,1.0,0.9118980520804313,1.173561973241196,27,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,L.1150.0,1.0,0.9963462867553187,1.0051194621510415,12,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,C.1150.0,1.0,0.9982028418222538,1.0017965488745342,9,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,R.1250.0,1.0,0.9112317606206888,1.1740165549841082,30,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,L.1250.0,1.0,0.9963720675577159,1.0050739109584945,13,corners; projected aggregate faces; golden face search,0
+Panther/O132-D,C.1250.0,1.0,0.9982028418151865,1.0017965489050071,9,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,R.50.0,1.0,0.9031342364062734,1.2323618743221811,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,L.50.0,1.0,0.9769961452211948,1.0418445230750781,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,C.50.0,1.0,0.8343796000043778,1.1052049853966193,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,R.250.0,1.0,0.9608479487525778,1.1045213754898888,13,interior search and monotone cells,0
+U33-400/trefoil,L.250.0,1.0,0.9358998189686606,1.1147058786230666,11,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,C.250.0,1.0,0.8343796000043765,1.1052049853966197,1,verified affine alias,0
+U33-400/trefoil,R.350.0,1.0,0.9510465090873038,1.1268852430478296,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,L.350.0,1.0,0.9272222306268564,1.1278317661996269,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,C.350.0,1.0,0.8343796000043772,1.1052049853966197,1,verified affine alias,0
+U33-400/trefoil,R.550.0,1.0,0.9371777406382688,1.1697275373760558,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,L.550.0,1.0,0.9275897190329789,1.1217080145092615,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,C.550.0,1.0,0.8343796000043768,1.10520498539662,1,verified affine alias,0
+U33-400/trefoil,R.650.0,1.0,0.9333516241126859,1.1828718107790919,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,L.650.0,1.0,0.929805510118316,1.1132551691186012,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,C.650.0,1.0,0.8343796000043772,1.10520498539662,1,verified affine alias,0
+U33-400/trefoil,R.850.0,1.0,0.9291906345569821,1.1983876935892315,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,L.850.0,1.0,0.9338440466594148,1.097545746222038,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,C.850.0,1.0,0.8343796000043772,1.1052049853966204,1,verified affine alias,0
+U33-400/trefoil,R.950.0,1.0,0.9281265664529976,1.2026752817383062,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,L.950.0,1.0,0.935399846948122,1.0912185718443075,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,C.950.0,1.0,0.8343796000043764,1.1052049853966197,1,verified affine alias,0
+U33-400/trefoil,R.1150.0,1.0,0.9270001903322153,1.2073589857009046,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,L.1150.0,1.0,0.9376978850071191,1.0814767996919505,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,C.1150.0,1.0,0.8343796000043763,1.1052049853966195,1,verified affine alias,0
+U33-400/trefoil,R.1250.0,1.0,0.9267208503795028,1.2084903458426177,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,L.1250.0,1.0,0.9385381492206691,1.0777776989352668,1,corners; projected aggregate faces; golden face search,0
+U33-400/trefoil,C.1250.0,1.0,0.8343796000043766,1.1052049853966195,1,verified affine alias,0
+U33-500/trefoil,R.50.0,1.0,0.908904738258233,1.219006669700736,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,L.50.0,1.0,0.9779226559340882,1.042034119287851,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,C.50.0,1.0,0.8341136623341078,1.1041557851049213,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,R.250.0,1.0,0.9665950845638593,1.0889945224991195,10,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,L.250.0,1.0,0.9337359413445494,1.1228048223074694,9,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,C.250.0,1.0,0.8341136623341071,1.1041557851049222,1,verified affine alias,0
+U33-500/trefoil,R.350.0,1.0,0.9534842688201537,1.1187366282188222,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,L.350.0,1.0,0.9245808851283441,1.138017346494566,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,C.350.0,1.0,0.8341136623341073,1.1041557851049222,1,verified affine alias,0
+U33-500/trefoil,R.550.0,1.0,0.937505821578845,1.169754632607392,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,L.550.0,1.0,0.9257838521117643,1.1305031400764711,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,C.550.0,1.0,0.8341136623341072,1.1041557851049224,1,verified affine alias,0
+U33-500/trefoil,R.650.0,1.0,0.9335705192993601,1.1842821913094108,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,L.650.0,1.0,0.9283950490608335,1.1206315518661667,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,C.650.0,1.0,0.8341136623341073,1.1041557851049224,1,verified affine alias,0
+U33-500/trefoil,R.850.0,1.0,0.9294783828799575,1.2004613073850734,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,L.850.0,1.0,0.9328709703240347,1.1028692985610717,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,C.850.0,1.0,0.8341136623341069,1.1041557851049226,1,verified affine alias,0
+U33-500/trefoil,R.950.0,1.0,0.9284212793172352,1.2047574416057825,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,L.950.0,1.0,0.9345466472625202,1.095905448960723,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,C.950.0,1.0,0.8341136623341072,1.104155785104922,1,verified affine alias,0
+U33-500/trefoil,R.1150.0,1.0,0.9272192253872509,1.2094895750874668,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,L.1150.0,1.0,0.9370148814273871,1.085333017079486,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,C.1150.0,1.0,0.8341136623341069,1.1041557851049222,1,verified affine alias,0
+U33-500/trefoil,R.1250.0,1.0,0.9268804524280906,1.2107101586371618,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,L.1250.0,1.0,0.9379244871840016,1.0813431724949094,1,corners; projected aggregate faces; golden face search,0
+U33-500/trefoil,C.1250.0,1.0,0.8341136623341071,1.1041557851049226,1,verified affine alias,0
+U33-630/trefoil,R.50.0,1.0,0.9145752579674077,1.2023483401384691,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,L.50.0,1.0,0.9782362564433713,1.0425154088039317,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,C.50.0,1.0,0.832571704261825,1.104480504637119,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,R.250.0,1.0,0.9700300952599227,1.0778655797030046,10,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,L.250.0,1.0,0.9314722778641363,1.1302194698145565,9,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,C.250.0,1.0,0.832571704261824,1.1044805046371196,1,verified affine alias,0
+U33-630/trefoil,R.350.0,1.0,0.9545538403765204,1.1142273823782898,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,L.350.0,1.0,0.9223167401245711,1.1460213572523357,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,C.350.0,1.0,0.8325717042618243,1.104480504637119,1,verified affine alias,0
+U33-630/trefoil,R.550.0,1.0,0.9377205335837143,1.170037083258548,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,L.550.0,1.0,0.9240298837085356,1.1368193954474166,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,C.550.0,1.0,0.8325717042618243,1.1044805046371196,1,verified affine alias,0
+U33-630/trefoil,R.650.0,1.0,0.9337355776193076,1.1850879042252407,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,L.650.0,1.0,0.926781474101957,1.1261209740857527,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,C.650.0,1.0,0.8325717042618243,1.1044805046371209,1,verified affine alias,0
+U33-630/trefoil,R.850.0,1.0,0.9294744795358512,1.2017319680745262,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,L.850.0,1.0,0.9314461530656784,1.1072822841215595,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,C.850.0,1.0,0.8325717042618244,1.1044805046371196,1,verified affine alias,0
+U33-630/trefoil,R.950.0,1.0,0.9283054643874992,1.2062702837171582,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,L.950.0,1.0,0.9332081514830911,1.099942655306867,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,C.950.0,1.0,0.8325717042618248,1.10448050463712,1,verified affine alias,0
+U33-630/trefoil,R.1150.0,1.0,0.9269011499537656,1.2115387960861033,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,L.1150.0,1.0,0.9358388167209984,1.0887628743357192,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,C.1150.0,1.0,0.8325717042618238,1.10448050463712,1,verified affine alias,0
+U33-630/trefoil,R.1250.0,1.0,0.9264838190803442,1.2130135663535153,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,L.1250.0,1.0,0.9368195503704586,1.0845189476025092,1,corners; projected aggregate faces; golden face search,0
+U33-630/trefoil,C.1250.0,1.0,0.8325717042618244,1.1044805046371193,1,verified affine alias,0
+U33-800/trefoil,R.50.0,1.0,0.9243290819291737,1.182729973409653,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,L.50.0,1.0,0.9787905635647822,1.0438081676489859,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,C.50.0,1.0,0.8324072347466116,1.1035952693694522,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,R.250.0,1.0,0.9726618699455064,1.0721127862415964,10,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,L.250.0,1.0,0.929813248410475,1.1383588345645772,9,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,C.250.0,1.0,0.8324072347466109,1.1035952693694533,1,verified affine alias,0
+U33-800/trefoil,R.350.0,1.0,0.9559594170691748,1.1126884513599278,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,L.350.0,1.0,0.9205434341153378,1.1543234302904137,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,C.350.0,1.0,0.8324072347466106,1.1035952693694533,1,verified affine alias,0
+U33-800/trefoil,R.550.0,1.0,0.9387165100137533,1.1703976448023945,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,L.550.0,1.0,0.9223257633280637,1.144332512144298,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,C.550.0,1.0,0.8324072347466105,1.103595269369453,1,verified affine alias,0
+U33-800/trefoil,R.650.0,1.0,0.9345732232168541,1.1857837696456812,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,L.650.0,1.0,0.9251991447007827,1.1330793063511364,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,C.650.0,1.0,0.8324072347466105,1.103595269369454,1,verified affine alias,0
+U33-800/trefoil,R.850.0,1.0,0.9300172678936837,1.2031584351285929,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,L.850.0,1.0,0.9301866879328,1.1130824831592203,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,C.850.0,1.0,0.8324072347466109,1.1035952693694542,1,verified affine alias,0
+U33-800/trefoil,R.950.0,1.0,0.9287418401534805,1.2080501691853351,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,L.950.0,1.0,0.9321054865748716,1.105195399681774,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,C.950.0,1.0,0.8324072347466105,1.1035952693694535,1,verified affine alias,0
+U33-800/trefoil,R.1150.0,1.0,0.9272009191979377,1.2138857783674526,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,L.1150.0,1.0,0.9349941230264697,1.093074991198372,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,C.1150.0,1.0,0.8324072347466095,1.1035952693694544,1,verified affine alias,0
+U33-800/trefoil,R.1250.0,1.0,0.9267408636994139,1.2155699645891482,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,L.1250.0,1.0,0.9360750686991816,1.0884472415530977,1,corners; projected aggregate faces; golden face search,0
+U33-800/trefoil,C.1250.0,1.0,0.8324072347466099,1.103595269369454,1,verified affine alias,0

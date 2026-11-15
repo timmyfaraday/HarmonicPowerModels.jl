@@ -99,6 +99,16 @@ using Random, Statistics, Distributions
         fd = (fast_violation(ce, j, [0.2 + 1e-4], g) - fast_violation(ce, j, [0.2 - 1e-4], g)) / 2e-4
         @test isapprox(gr[1], fd; rtol = 1e-3, atol = 1e-8)
 
+        for δ in (0.05, 0.2)
+            vδ, grδ = fast_violation_gradient(ce, j, [0.2], g; δ = δ)
+            fdδ = (fast_violation(ce, j, [0.2 + δ], g) - fast_violation(ce, j, [0.2 - δ], g)) / (2δ)
+            @test vδ == v
+            @test grδ[1] == fdδ
+        end
+        @test_throws ArgumentError fast_violation_gradient(ce, j, [0.2], g; branch_derivative = :dual)
+        @test_throws r"exact moments require branch_derivative = :central" fast_violation_gradient(
+            ce, j, [0.2], g; branch_derivative = :dual)
+
         res = solve_rhhc(HPM.replicate(deepcopy(data); H = [1, 5, 7, 13]), model, box, solver_soc;
                          pce_params = deepcopy(pp), hpf_optimizer = solver_nlp,
                          nbackground = 16, posterior = 32)

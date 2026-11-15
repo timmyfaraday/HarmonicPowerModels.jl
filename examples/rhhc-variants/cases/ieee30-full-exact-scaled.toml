@@ -1,0 +1,40 @@
+# Generated. Source: cases/ieee30-full-exact.toml
+# Source commit: ed4e0c95a3d43c4d0fb5bebf87fa7bba927afa61
+# LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+# Method: effective coordinates, subdivision, constrained hull search, positive-sequence R/L/C ratios at case frequencies, 4096 mapped verification samples
+# Regenerate: `SHHC_HMAX=25 julia -t 4 --project=examples/rhhc-variants examples/rhhc-variants/reduce.jl cases/ieee30-full-exact.toml`
+
+base = "ieee30-full-exact"
+box_names = ["kR_ACSR", "kL_ACSR", "kC_ACSR", "kR_U33", "kL_U33", "kC_U33"]
+factor_data = "data/surrogate/ieee30-full-exact.toml"
+model = "scaled"
+note = "Generated scaled surrogate. One factor moves every design of a family at every frequency. The surrogate is neither an inner nor an outer approximation of the source set."
+source_case = "cases/ieee30-full-exact.toml"
+
+[box.kC_ACSR]
+coordinate = "kC_ACSR"
+origin = "data/surrogate/ieee30-full-exact.toml, coordinates.kC_ACSR"
+
+[box.kC_U33]
+coordinate = "kC_U33"
+origin = "data/surrogate/ieee30-full-exact.toml, coordinates.kC_U33"
+
+[box.kL_ACSR]
+coordinate = "kL_ACSR"
+origin = "data/surrogate/ieee30-full-exact.toml, coordinates.kL_ACSR"
+
+[box.kL_U33]
+coordinate = "kL_U33"
+origin = "data/surrogate/ieee30-full-exact.toml, coordinates.kL_U33"
+
+[box.kR_ACSR]
+coordinate = "kR_ACSR"
+origin = "data/surrogate/ieee30-full-exact.toml, coordinates.kR_ACSR"
+
+[box.kR_U33]
+coordinate = "kR_U33"
+origin = "data/surrogate/ieee30-full-exact.toml, coordinates.kR_U33"
+
+[classes]
+ACSR = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 40, 41]
+U33 = [17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 37, 38, 39]

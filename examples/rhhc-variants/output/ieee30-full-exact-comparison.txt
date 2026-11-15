@@ -1,0 +1,85 @@
+Uncertainty levels and transfer to the source case
+HPM commit: 4aec30b05762160dac375a747807c2cf079b6a19
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+Cases: cases/ieee30-full-exact.toml, cases/ieee30-full-exact-equivalent.toml, cases/ieee30-full-exact-factor.toml, cases/ieee30-full-exact-scaled.toml
+Threads: 8; solver: Clarabel; unchanged runner settings.
+Method parameters: (difference_step = 0.0001, zero_band = 1.0e-6, subdivision_depth = 6, sharing_tolerance = 1.0e-10, verification_samples = 4096, admission_threshold = 0.001, interior_starts = (corners = true, center = true), interior_tolerance = 1.0e-10, interior_iterations = 32)
+level | nominal capacity | reported lower bound | upper bound | gap | iterations | LCM stored pairs | solve seconds | signed off | termination | nominal termination
+ieee30-full-exact | 0.09925004102932954 | 0.07691737591970403 | 0.0769428173124481 | 0.00033065325176179135 | 3 | 480616 | 526.268514425 | true | OPTIMAL | OPTIMAL
+ieee30-full-exact-equivalent | 0.09925004102932446 | 0.07672799485525478 | 0.07676228475476923 | 0.0004467024349783361 | 6 | 687826 | 681.507074317 | true | OPTIMAL | OPTIMAL
+ieee30-full-exact-factor | 0.09925004102932954 | 0.07256784198590552 | 0.07256985537667392 | 2.7744175015209784e-5 | 3 | 13704 | 304.547849826 | true | OPTIMAL | OPTIMAL
+ieee30-full-exact-scaled | 0.07862406471916908 | 0.048237627441886734 | 0.04825143780838301 | 0.00028621668334771283 | 6 | 8 | 284.228400193 | true | OPTIMAL | OPTIMAL
+level | harmonic | robust / nominal | robust current
+ieee30-full-exact | 5 | 0.8254609194537844 | 0.0005135382608123252
+ieee30-full-exact | 7 | 0.4474463382796043 | 0.00013665377320504793
+ieee30-full-exact | 11 | 0.874493075812489 | 0.0010589688083603023
+ieee30-full-exact | 13 | 0.5805048463510694 | 0.0002964133566960719
+ieee30-full-exact | 17 | 0.8585159890801835 | 0.0006587610130789935
+ieee30-full-exact | 19 | 0.9366447761704334 | 0.00014597067886879393
+ieee30-full-exact | 23 | 0.867790847371897 | 0.0001750405242186823
+ieee30-full-exact | 25 | 0.7113761560169231 | 0.0006773857714123557
+ieee30-full-exact-equivalent | 5 | 0.8248272258309762 | 0.0005131440254057782
+ieee30-full-exact-equivalent | 7 | 0.4453565303651858 | 0.00013601552876692583
+ieee30-full-exact-equivalent | 11 | 0.8741139167821015 | 0.0010585096651179612
+ieee30-full-exact-equivalent | 13 | 0.579106388645301 | 0.0002956992859258106
+ieee30-full-exact-equivalent | 17 | 0.8568127880495623 | 0.0006574541038884771
+ieee30-full-exact-equivalent | 19 | 0.9228957344693939 | 0.00014382797012589465
+ieee30-full-exact-equivalent | 23 | 0.8528098586848385 | 0.00017201873605273533
+ieee30-full-exact-equivalent | 25 | 0.7110179967806324 | 0.0006770447254428349
+ieee30-full-exact-factor | 5 | 0.8008759388543313 | 0.0004982433778183463
+ieee30-full-exact-factor | 7 | 0.42198845225490555 | 0.00012887872648888684
+ieee30-full-exact-factor | 11 | 0.8643734778028279 | 0.0010467144647390912
+ieee30-full-exact-factor | 13 | 0.5428940875888532 | 0.00027720881202659883
+ieee30-full-exact-factor | 17 | 0.7371238123294159 | 0.0005656137282836594
+ieee30-full-exact-factor | 19 | 0.7896333620737649 | 0.00012305979903141223
+ieee30-full-exact-factor | 23 | 0.7548649716824326 | 0.00015226244982621695
+ieee30-full-exact-factor | 25 | 0.6969303101190072 | 0.0006636301649241464
+ieee30-full-exact-scaled | 5 | 0.7692892336974984 | 0.0004262660379207928
+ieee30-full-exact-scaled | 7 | 0.4876652319543479 | 0.00015994927791314003
+ieee30-full-exact-scaled | 11 | 0.5985990045592476 | 0.0003494785137066548
+ieee30-full-exact-scaled | 13 | 0.701465576768431 | 0.0004005893303006147
+ieee30-full-exact-scaled | 17 | 0.5356046047384716 | 0.0002799191392096598
+ieee30-full-exact-scaled | 19 | 0.7319251164084415 | 0.00012287626542601887
+ieee30-full-exact-scaled | 23 | 0.5312093723406844 | 0.00033885596279976065
+ieee30-full-exact-scaled | 25 | 0.5786861773919548 | 0.0002190953509084409
+Posterior checks: 1024 random points, public HPM defaults (seed 2, tolerance 0.0001).
+Checks below evaluate positive-limit constraints. An infeasible nominal has no feasible capacity.
+solution | target case | maximum normalized violation | constraint | violated fraction
+ieee30-full-exact | ieee30-full-exact | -0.031100932095819656 | (:ihd, (17, 30)) | 0.0
+ieee30-full-exact | ieee30-full-exact-equivalent | -0.03203705111673161 | (:ihd, (17, 30)) | 0.0
+ieee30-full-exact | ieee30-full-exact-factor | 0.3297269034117791 | (:ihd, (17, 30)) | 0.294921875
+ieee30-full-exact | ieee30-full-exact-scaled | 7.780835176889386 | (:ihd, (25, 26)) | 1.0
+ieee30-full-exact-equivalent | ieee30-full-exact | -0.03494149645300626 | (:ihd, (17, 30)) | 0.0
+ieee30-full-exact-equivalent | ieee30-full-exact-equivalent | -0.03345327807726772 | (:ihd, (11, 28)) | 0.0
+ieee30-full-exact-equivalent | ieee30-full-exact-factor | 0.32445607395264653 | (:ihd, (17, 30)) | 0.2666015625
+ieee30-full-exact-equivalent | ieee30-full-exact-scaled | 7.771995562288824 | (:ihd, (25, 26)) | 1.0
+ieee30-full-exact-factor | ieee30-full-exact | -0.06217014521107411 | (:ihd, (11, 28)) | 0.0
+ieee30-full-exact-factor | ieee30-full-exact-equivalent | -0.054874135910868316 | (:ihd, (11, 28)) | 0.0
+ieee30-full-exact-factor | ieee30-full-exact-factor | -0.019728081195831915 | (:ihd, (17, 30)) | 0.0
+ieee30-full-exact-factor | ieee30-full-exact-scaled | 7.427833013118034 | (:ihd, (25, 26)) | 1.0
+ieee30-full-exact-scaled | ieee30-full-exact | 2.4929015736971643 | (:ihd, (23, 3)) | 1.0
+ieee30-full-exact-scaled | ieee30-full-exact-equivalent | 2.39920921709955 | (:ihd, (23, 3)) | 1.0
+ieee30-full-exact-scaled | ieee30-full-exact-factor | 3.424997551865353 | (:ihd, (23, 3)) | 1.0
+ieee30-full-exact-scaled | ieee30-full-exact-scaled | -0.048251208139638235 | (:ihd, (5, 30)) | 0.0
+Corner adversary: nominal finite-difference signs, unique predicted corners.
+Positive own-case violations refute reported feasibility and its lower-bound certificate.
+Positive transfer violations refute feasibility of the level's solution on the source box.
+A transfer failure alone does not refute an own-case certificate.
+The adversary is not a proof of feasibility: resonance constraints can be nonmonotone.
+solution | target case | corners evaluated | maximum normalized violation | constraint | case-coordinate point
+ieee30-full-exact | ieee30-full-exact | 139 | -0.0006545482220675636 | (:ihd, (25, 14)) | (Rscreen_U33 = 0.000251, theta_ACSR = -5.0, eps_semicon_U33 = 100.0, t_ins_U33 = 0.008400000000000001, rho_EARTH = 10.0, t_sc1_U33 = -1.0, eps_U33 = 2.1, ambient_O132 = -5.0, R20_U33 = -1.0, rho_aluminium_ACSR = 2.79e-8, lay_outer_ACSR = 14.0, lay_inner_ACSR = 13.0, theta_U33 = 10.0, d_steel_ACSR = -1.0, diameter_O132 = 0.00315, rho_steel_ACSR = 2.155e-7, mu_steel_ACSR = 50.0, rho_steel_O132 = 1.9157e-7, d_c_U33 = 0.0, t_sc2_U33 = 0.0008100000000000001, mu_steel_O132 = 50.0, t_jkt_U33 = 0.0, d_aluminium_ACSR = -1.0)
+ieee30-full-exact | ieee30-full-exact-equivalent | 222 | 0.030524553152241785 | (:ihd, (19, 5)) | (width_ACSR_1 = -1.0, resistance_ACSR_1 = -1.0, mu_r_ACSR_1 = -1.0, resistance_O132_1 = 1.0, mu_r_O132_1 = 1.0, y_ACSR_1 = -1.0, y_O132_1 = -1.0, rho_EARTH_1 = 1.0, width_ACSR_2 = 1.0, resistance_ACSR_2 = -1.0, mu_r_ACSR_2 = -1.0, y_ACSR_2 = -1.0, width_ACSR_3 = -1.0, resistance_ACSR_3 = -1.0, mu_r_ACSR_3 = -1.0, y_ACSR_3 = -1.0, width_ACSR_4 = 1.0, resistance_ACSR_4 = -1.0, mu_r_ACSR_4 = -1.0, y_ACSR_4 = -1.0, width_U33_1 = -1.0, resistance_U33_1 = 1.0, resistance_U33_2 = 1.0, width_U33_3 = 1.0, eps_r_U33_1 = 1.0, width_U33_4 = 1.0, eps_r_U33_2 = 1.0, width_U33_5 = 1.0, width_U33_6 = -1.0, resistance_U33_3 = 1.0, width_U33_8 = -1.0, resistance_U33_4 = -1.0, width_U33_10 = -1.0, resistance_U33_5 = -1.0, width_U33_12 = -1.0)
+ieee30-full-exact | ieee30-full-exact-factor | 42 | 0.3855993277854115 | (:ihd, (19, 5)) | (kR_ACSR = 0.8623096825708542, kL_ACSR = 1.005315726528468, kC_ACSR = 1.0018618771950403, kR_U33 = 0.9031342364062734, kL_U33 = 1.1543234302904137, kC_U33 = 1.1052049853966204)
+ieee30-full-exact | ieee30-full-exact-scaled | 56 | 8.176492969363597 | (:ihd, (11, 30)) | (kR_ACSR = 0.8623096825708542, kL_ACSR = 1.005315726528468, kC_ACSR = 0.9981387764625804, kR_U33 = 0.9031342364062734, kL_U33 = 1.1543234302904137, kC_U33 = 1.1052049853966204)
+ieee30-full-exact-equivalent | ieee30-full-exact | 138 | -0.0015275875493386826 | (:ihd, (11, 28)) | (Rscreen_U33 = 0.000251, theta_ACSR = 75.0, eps_semicon_U33 = 100.0, t_ins_U33 = 0.008400000000000001, rho_EARTH = 1000.0, t_sc1_U33 = -1.0, eps_U33 = 2.1, ambient_O132 = 45.0, R20_U33 = -1.0, rho_aluminium_ACSR = 2.8264e-8, lay_outer_ACSR = 10.0, lay_inner_ACSR = 16.0, theta_U33 = 10.0, d_steel_ACSR = 1.0, diameter_O132 = 0.0032, rho_steel_ACSR = 1.79e-7, mu_steel_ACSR = 300.0, rho_steel_O132 = 2.155e-7, d_c_U33 = 0.0, t_sc2_U33 = 0.0008100000000000001, mu_steel_O132 = 300.0, t_jkt_U33 = 1.0, d_aluminium_ACSR = 1.0)
+ieee30-full-exact-equivalent | ieee30-full-exact-equivalent | 224 | 0.0004923919623234241 | (:ihd, (19, 5)) | (width_ACSR_1 = -1.0, resistance_ACSR_1 = -1.0, mu_r_ACSR_1 = -1.0, resistance_O132_1 = 1.0, mu_r_O132_1 = 1.0, y_ACSR_1 = -1.0, y_O132_1 = -1.0, rho_EARTH_1 = 1.0, width_ACSR_2 = 1.0, resistance_ACSR_2 = -1.0, mu_r_ACSR_2 = -1.0, y_ACSR_2 = -1.0, width_ACSR_3 = -1.0, resistance_ACSR_3 = -1.0, mu_r_ACSR_3 = -1.0, y_ACSR_3 = -1.0, width_ACSR_4 = 1.0, resistance_ACSR_4 = -1.0, mu_r_ACSR_4 = -1.0, y_ACSR_4 = -1.0, width_U33_1 = -1.0, resistance_U33_1 = 1.0, resistance_U33_2 = 1.0, width_U33_3 = 1.0, eps_r_U33_1 = 1.0, width_U33_4 = 1.0, eps_r_U33_2 = 1.0, width_U33_5 = 1.0, width_U33_6 = -1.0, resistance_U33_3 = 1.0, width_U33_8 = -1.0, resistance_U33_4 = -1.0, width_U33_10 = -1.0, resistance_U33_5 = -1.0, width_U33_12 = -1.0)
+ieee30-full-exact-equivalent | ieee30-full-exact-factor | 42 | 0.35103592956807783 | (:ihd, (17, 30)) | (kR_ACSR = 0.8623096825708542, kL_ACSR = 0.9962618928782407, kC_ACSR = 0.9981387764625804, kR_U33 = 0.9031342364062734, kL_U33 = 1.1543234302904137, kC_U33 = 0.8324072347466095)
+ieee30-full-exact-equivalent | ieee30-full-exact-scaled | 56 | 8.168537283975684 | (:ihd, (11, 30)) | (kR_ACSR = 0.8623096825708542, kL_ACSR = 1.005315726528468, kC_ACSR = 0.9981387764625804, kR_U33 = 0.9031342364062734, kL_U33 = 1.1543234302904137, kC_U33 = 1.1052049853966204)
+ieee30-full-exact-factor | ieee30-full-exact | 140 | -0.02365599077368663 | (:ihd, (11, 28)) | (Rscreen_U33 = 0.000251, theta_ACSR = 75.0, eps_semicon_U33 = 100.0, t_ins_U33 = 0.008400000000000001, rho_EARTH = 1000.0, t_sc1_U33 = -1.0, eps_U33 = 2.1, ambient_O132 = 45.0, R20_U33 = -1.0, rho_aluminium_ACSR = 2.8264e-8, lay_outer_ACSR = 10.0, lay_inner_ACSR = 16.0, theta_U33 = 10.0, d_steel_ACSR = 1.0, diameter_O132 = 0.0032, rho_steel_ACSR = 1.79e-7, mu_steel_ACSR = 300.0, rho_steel_O132 = 2.155e-7, d_c_U33 = 0.0, t_sc2_U33 = 0.0008100000000000001, mu_steel_O132 = 300.0, t_jkt_U33 = 1.0, d_aluminium_ACSR = 1.0)
+ieee30-full-exact-factor | ieee30-full-exact-equivalent | 221 | -0.023055958566355894 | (:ihd, (11, 28)) | (width_ACSR_1 = 1.0, resistance_ACSR_1 = 1.0, mu_r_ACSR_1 = 1.0, resistance_O132_1 = 1.0, mu_r_O132_1 = 1.0, y_ACSR_1 = 1.0, y_O132_1 = -1.0, rho_EARTH_1 = 1.0, width_ACSR_2 = 1.0, resistance_ACSR_2 = 1.0, mu_r_ACSR_2 = 1.0, y_ACSR_2 = -1.0, width_ACSR_3 = 1.0, resistance_ACSR_3 = 1.0, mu_r_ACSR_3 = 1.0, y_ACSR_3 = -1.0, width_ACSR_4 = 1.0, resistance_ACSR_4 = 0.0, mu_r_ACSR_4 = 1.0, y_ACSR_4 = 1.0, width_U33_1 = -1.0, resistance_U33_1 = -1.0, resistance_U33_2 = -1.0, width_U33_3 = -1.0, eps_r_U33_1 = -1.0, width_U33_4 = 1.0, eps_r_U33_2 = -1.0, width_U33_5 = -1.0, width_U33_6 = 1.0, resistance_U33_3 = -1.0, width_U33_8 = 1.0, resistance_U33_4 = 1.0, width_U33_10 = 0.0, resistance_U33_5 = -1.0, width_U33_12 = 1.0)
+ieee30-full-exact-factor | ieee30-full-exact-factor | 41 | -5.5487592680814046e-5 | (:ihd, (11, 7)) | (kR_ACSR = 0.8623096825708542, kL_ACSR = 1.005315726528468, kC_ACSR = 1.0018618771950403, kR_U33 = 0.9031342364062734, kL_U33 = 0.9205434341153378, kC_U33 = 0.8324072347466095)
+ieee30-full-exact-factor | ieee30-full-exact-scaled | 59 | 7.965341795079484 | (:ihd, (11, 30)) | (kR_ACSR = 0.8623096825708542, kL_ACSR = 1.005315726528468, kC_ACSR = 0.9981387764625804, kR_U33 = 0.9031342364062734, kL_U33 = 1.1543234302904137, kC_U33 = 1.1052049853966204)
+ieee30-full-exact-scaled | ieee30-full-exact | 137 | 2.7221245917169345 | (:ihd, (23, 3)) | (Rscreen_U33 = 0.000251, theta_ACSR = -5.0, eps_semicon_U33 = 100.0, t_ins_U33 = 0.008400000000000001, rho_EARTH = 1000.0, t_sc1_U33 = -1.0, eps_U33 = 2.1, ambient_O132 = -5.0, R20_U33 = -1.0, rho_aluminium_ACSR = 2.79e-8, lay_outer_ACSR = 14.0, lay_inner_ACSR = 16.0, theta_U33 = 10.0, d_steel_ACSR = -1.0, diameter_O132 = 0.0032, rho_steel_ACSR = 2.155e-7, mu_steel_ACSR = 50.0, rho_steel_O132 = 1.79e-7, d_c_U33 = 0.0, t_sc2_U33 = 0.00099, mu_steel_O132 = 50.0, t_jkt_U33 = 0.0, d_aluminium_ACSR = 1.0)
+ieee30-full-exact-scaled | ieee30-full-exact-equivalent | 228 | 2.8538120098960174 | (:ihd, (23, 3)) | (width_ACSR_1 = -1.0, resistance_ACSR_1 = -1.0, mu_r_ACSR_1 = -1.0, resistance_O132_1 = -1.0, mu_r_O132_1 = -1.0, y_ACSR_1 = 1.0, y_O132_1 = 1.0, rho_EARTH_1 = 1.0, width_ACSR_2 = -1.0, resistance_ACSR_2 = -1.0, mu_r_ACSR_2 = -1.0, y_ACSR_2 = 1.0, width_ACSR_3 = -1.0, resistance_ACSR_3 = -1.0, mu_r_ACSR_3 = -1.0, y_ACSR_3 = 1.0, width_ACSR_4 = -1.0, resistance_ACSR_4 = -1.0, mu_r_ACSR_4 = -1.0, y_ACSR_4 = -1.0, width_U33_1 = -1.0, resistance_U33_1 = -1.0, resistance_U33_2 = -1.0, width_U33_3 = -1.0, eps_r_U33_1 = -1.0, width_U33_4 = 1.0, eps_r_U33_2 = -1.0, width_U33_5 = 1.0, width_U33_6 = -1.0, resistance_U33_3 = -1.0, width_U33_8 = -1.0, resistance_U33_4 = 1.0, width_U33_10 = -1.0, resistance_U33_5 = -1.0, width_U33_12 = 1.0)
+ieee30-full-exact-scaled | ieee30-full-exact-factor | 40 | 3.9524550182789984 | (:ihd, (23, 3)) | (kR_ACSR = 0.8623096825708542, kL_ACSR = 0.9962618928782407, kC_ACSR = 0.9981387764625804, kR_U33 = 0.9031342364062734, kL_U33 = 1.1543234302904137, kC_U33 = 0.8324072347466095)
+ieee30-full-exact-scaled | ieee30-full-exact-scaled | 47 | -0.0005723514967003185 | (:ihd, (11, 30)) | (kR_ACSR = 0.8623096825708542, kL_ACSR = 1.005315726528468, kC_ACSR = 0.9981387764625804, kR_U33 = 0.9031342364062734, kL_U33 = 1.1543234302904137, kC_U33 = 1.1052049853966204)

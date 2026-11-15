@@ -74,8 +74,7 @@
 
         for population in ("diode", "thyristor", "mix")
             for extra in (Dict("recombination" => false),
-                Dict("harmonics" => Dict("value" => [3, 5])),
-                Dict("base" => "ieee30-tom-mix"))
+                Dict("harmonics" => Dict("value" => [3, 5])))
                 rows = merge(
                     Dict("base" => "ieee30-tom",
                         "population" => Dict("value" => population, "origin" => "test")),
@@ -86,6 +85,11 @@
                 @test_throws ArgumentError study(path)
             end
         end
+        open(path, "w") do io
+            TOML.print(io, Dict("base" => "ieee30-tom-mix"))
+        end
+        @test study(path).pce == study("cases/ieee30-tom-mix.toml").pce
+        @test_throws ArgumentError case_rows(path, (path,))
         for population in ("unknown", "")
             open(path, "w") do io
                 TOML.print(io, Dict("base" => "ieee30-tom", "population" =>
@@ -107,7 +111,7 @@ end
 @testset "Population variants preserve the network" begin
     files = sort(filter(endswith(".toml"), readdir(joinpath(STUDIES, "cases"))))
     bases = filter(file -> !haskey(TOML.parsefile(joinpath(STUDIES, "cases", file)), "base"), files)
-    variants = setdiff(files, bases)
+    variants = filter(file -> haskey(TOML.parsefile(joinpath(STUDIES, "cases", file)), "population"), files)
     expected = [replace(file, ".toml" => "-mix.toml")
                 for file in bases
                 if get(readrecord(joinpath(STUDIES, "cases", file)), :recombination, true)]
@@ -139,4 +143,10 @@ end
             end
         end
     end
+end
+
+@testset "Exact variants in a process with the h25 tables" begin
+    script = joinpath(@__DIR__, "exact_moments.jl")
+    command = `$(Base.julia_cmd()) --startup-file=no --project=$STUDIES $script`
+    @test success(pipeline(addenv(command, "SHHC_HMAX" => "25"); stdout, stderr))
 end
