@@ -1,0 +1,71 @@
+git commit: dcac59ac654605198351fb7fca3007b01d018565
+LCM commit: e180b435e39495eeb7eb16dbdaa5193d374a9f60
+case: examples/rhhc-variants/cases/ieee30-full-exact.toml
+threads: 10; solver: Clarabel
+angle tables: refitted up to the 25th harmonic (SHHC_HMAX=25); moments: exact
+robust 0.076917, 3 iterations, signed off; Gaussian factor 1.6449 at ε = 0.05
+   (:ihd, (11, 28))       point    15 (corner    )  F/a 0.9993  λ* 1.5399  q/a 0.9950  P(X > a) 0.0361
+   (:ihd, (11, 30))       point     7 (corner    )  F/a 0.7794  λ* 1.7010  q/a 0.7854  P(X > a) 0.0001
+   (:ihd, (11, 5))        point   125 (corner    )  F/a 0.8154  λ* 1.7733  q/a 0.8214  P(X > a) 0.0000
+   (:ihd, (11, 6))        point    15 (corner    )  F/a 0.7868  λ* 1.5863  q/a 0.7840  P(X > a) 0.0000
+   (:ihd, (11, 7))        point   125 (corner    )  F/a 0.9938  λ* 1.7201  q/a 0.9962  P(X > a) 0.0445
+   (:ihd, (11, 8))        point    15 (corner    )  F/a 0.8713  λ* 1.6269  q/a 0.8699  P(X > a) 0.0000
+   (:ihd, (13, 25))       point   199 (seed      )  F/a 0.5926  λ* 1.7151  q/a 0.5949  P(X > a) 0.0000
+   (:ihd, (13, 26))       point   199 (seed      )  F/a 0.6392  λ* 1.7202  q/a 0.6419  P(X > a) 0.0000
+   (:ihd, (13, 27))       point   199 (seed      )  F/a 0.7195  λ* 1.7113  q/a 0.7221  P(X > a) 0.0000
+   (:ihd, (13, 29))       point   199 (seed      )  F/a 0.9425  λ* 1.7215  q/a 0.9467  P(X > a) 0.0124
+   (:ihd, (13, 30))       point   199 (seed      )  F/a 0.9993  λ* 1.7233  q/a 1.0040  P(X > a) 0.0536
+   (:ihd, (13, 5))        point   199 (seed      )  F/a 0.5340  λ* 1.7246  q/a 0.5375  P(X > a) 0.0000
+   (:ihd, (13, 7))        point   226 (seed      )  F/a 0.4434  λ* 1.7288  q/a 0.4466  P(X > a) 0.0000
+   (:ihd, (17, 29))       point    99 (corner    )  F/a 0.9162  λ* 1.6971  q/a 0.9212  P(X > a) 0.0064
+   (:ihd, (17, 30))       point   164 (corner    )  F/a 0.9977  λ* 1.7240  q/a 1.0071  P(X > a) 0.0564
+   (:ihd, (17, 30))       point  1371 (refined   )  F/a 0.9993  λ* 1.7015  q/a 1.0054  P(X > a) 0.0559
+   (:ihd, (19, 5))        point    33 (corner    )  F/a 0.9981  λ* 1.7854  q/a 1.0284  P(X > a) 0.0634
+   (:ihd, (19, 5))        point  1387 (refined   )  F/a 0.9993  λ* 1.7854  q/a 1.0297  P(X > a) 0.0641
+   (:ihd, (23, 3))        point    99 (corner    )  F/a 0.9993  λ* 1.6597  q/a 1.0019  P(X > a) 0.0512
+   (:ihd, (25, 10))       point   144 (corner    )  F/a 0.7754  λ* 1.6434  q/a 0.7745  P(X > a) 0.0003
+   (:ihd, (25, 12))       point    56 (corner    )  F/a 0.8907  λ* 1.6544  q/a 0.8914  P(X > a) 0.0100
+   (:ihd, (25, 13))       point    56 (corner    )  F/a 0.5067  λ* 1.6544  q/a 0.5071  P(X > a) 0.0000
+   (:ihd, (25, 14))       point   144 (corner    )  F/a 0.9993  λ* 1.6484  q/a 0.9988  P(X > a) 0.0491
+   (:ihd, (25, 15))       point   144 (corner    )  F/a 0.9637  λ* 1.6441  q/a 0.9629  P(X > a) 0.0314
+   (:ihd, (25, 16))       point   144 (corner    )  F/a 0.8985  λ* 1.6425  q/a 0.8975  P(X > a) 0.0111
+   (:ihd, (25, 17))       point   144 (corner    )  F/a 0.8302  λ* 1.6477  q/a 0.8298  P(X > a) 0.0022
+   (:ihd, (25, 18))       point   144 (corner    )  F/a 0.9731  λ* 1.6390  q/a 0.9711  P(X > a) 0.0350
+   (:ihd, (25, 19))       point   144 (corner    )  F/a 0.9325  λ* 1.6514  q/a 0.9326  P(X > a) 0.0201
+   (:ihd, (25, 20))       point   144 (corner    )  F/a 0.9024  λ* 1.6492  q/a 0.9024  P(X > a) 0.0120
+   (:ihd, (25, 21))       point   144 (corner    )  F/a 0.7492  λ* 1.6363  q/a 0.7476  P(X > a) 0.0000
+   (:ihd, (25, 22))       point   144 (corner    )  F/a 0.7419  λ* 1.6351  q/a 0.7401  P(X > a) 0.0000
+   (:ihd, (25, 23))       point   144 (corner    )  F/a 0.8334  λ* 1.6431  q/a 0.8331  P(X > a) 0.0015
+   (:ihd, (25, 24))       point    53 (corner    )  F/a 0.5702  λ* 1.6141  q/a 0.5671  P(X > a) 0.0000
+   (:ihd, (5, 25))        point   145 (corner    )  F/a 0.8073  λ* 1.5914  q/a 0.8069  P(X > a) 0.0000
+   (:ihd, (5, 26))        point   145 (corner    )  F/a 0.8644  λ* 1.5879  q/a 0.8640  P(X > a) 0.0000
+   (:ihd, (5, 27))        point   145 (corner    )  F/a 0.8501  λ* 1.5823  q/a 0.8497  P(X > a) 0.0000
+   (:ihd, (5, 29))        point   145 (corner    )  F/a 0.9710  λ* 1.5756  q/a 0.9705  P(X > a) 0.0000
+   (:ihd, (5, 30))        point   145 (corner    )  F/a 0.9993  λ* 1.5797  q/a 0.9988  P(X > a) 0.0347
+   (:ihd, (7, 10))        point  1361 (refined   )  F/a 0.5315  λ* 1.5948  q/a 0.5311  P(X > a) 0.0000
+   (:ihd, (7, 12))        point  1361 (refined   )  F/a 0.4833  λ* 1.6006  q/a 0.4830  P(X > a) 0.0000
+   (:ihd, (7, 13))        point  1361 (refined   )  F/a 0.2750  λ* 1.6006  q/a 0.2748  P(X > a) 0.0000
+   (:ihd, (7, 14))        point  1361 (refined   )  F/a 0.5147  λ* 1.6034  q/a 0.5144  P(X > a) 0.0000
+   (:ihd, (7, 15))        point  1361 (refined   )  F/a 0.5283  λ* 1.6009  q/a 0.5280  P(X > a) 0.0000
+   (:ihd, (7, 16))        point  1361 (refined   )  F/a 0.5132  λ* 1.5925  q/a 0.5128  P(X > a) 0.0000
+   (:ihd, (7, 17))        point  1361 (refined   )  F/a 0.5293  λ* 1.5936  q/a 0.5289  P(X > a) 0.0000
+   (:ihd, (7, 18))        point  1361 (refined   )  F/a 0.5440  λ* 1.5978  q/a 0.5436  P(X > a) 0.0000
+   (:ihd, (7, 19))        point  1361 (refined   )  F/a 0.5471  λ* 1.5985  q/a 0.5468  P(X > a) 0.0000
+   (:ihd, (7, 20))        point  1361 (refined   )  F/a 0.5452  λ* 1.5979  q/a 0.5448  P(X > a) 0.0000
+   (:ihd, (7, 21))        point  1361 (refined   )  F/a 0.5537  λ* 1.5931  q/a 0.5533  P(X > a) 0.0000
+   (:ihd, (7, 22))        point  1361 (refined   )  F/a 0.5589  λ* 1.5954  q/a 0.5585  P(X > a) 0.0000
+   (:ihd, (7, 23))        point  1361 (refined   )  F/a 0.5791  λ* 1.5970  q/a 0.5788  P(X > a) 0.0000
+   (:ihd, (7, 24))        point  1361 (refined   )  F/a 0.6325  λ* 1.5969  q/a 0.6321  P(X > a) 0.0000
+   (:ihd, (7, 25))        point  1361 (refined   )  F/a 0.8079  λ* 1.5992  q/a 0.8074  P(X > a) 0.0000
+   (:ihd, (7, 26))        point  1361 (refined   )  F/a 0.8412  λ* 1.6040  q/a 0.8406  P(X > a) 0.0000
+   (:ihd, (7, 27))        point  1361 (refined   )  F/a 0.8727  λ* 1.6050  q/a 0.8722  P(X > a) 0.0000
+   (:ihd, (7, 28))        point    55 (corner    )  F/a 0.3202  λ* 1.6066  q/a 0.3201  P(X > a) 0.0000
+   (:ihd, (7, 29))        point  1361 (refined   )  F/a 0.9729  λ* 1.6048  q/a 0.9723  P(X > a) 0.0000
+   (:ihd, (7, 30))        point  1361 (refined   )  F/a 0.9993  λ* 1.6115  q/a 0.9989  P(X > a) 0.0412
+   (:ihd, (7, 6))         point    55 (corner    )  F/a 0.2377  λ* 1.6035  q/a 0.2375  P(X > a) 0.0000
+   (:ihd, (7, 7))         point    55 (corner    )  F/a 0.2061  λ* 1.6087  q/a 0.2060  P(X > a) 0.0000
+   (:ihd, (7, 8))         point    55 (corner    )  F/a 0.2355  λ* 1.6058  q/a 0.2354  P(X > a) 0.0000
+   (:ihd, (7, 9))         point  1361 (refined   )  F/a 0.3345  λ* 1.6011  q/a 0.3343  P(X > a) 0.0000
+62 worst-case points over 60 constraints; 11 with the Gaussian bound within 1 % of the limit
+all points:     λ* 1.540 to 1.785, q/a 0.2060 to 1.0297, P(X > a) 0.0000 to 0.0641 (ε = 0.05)
+binding points: λ* 1.540 to 1.785, q/a 0.9950 to 1.0297, P(X > a) 0.0347 to 0.0641

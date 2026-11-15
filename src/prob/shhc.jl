@@ -754,8 +754,11 @@ function shhc_constraints(hdata::Dict, moments)
     λfor(kind, key) = (lambdas !== nothing && haskey(lambdas[kind], key)) ?
                        lambdas[kind][key] : lambda
     # With empirical_moments = "pce", λ is recalibrated so that the bound built on the
-    # expansion's own mean and standard deviation equals the sampled (1−ε) quantile;
-    # the aggregates are evaluated at the hosting decision g of the calibration.
+    # moments in use, those of the expansion or the exact ones (`"moments" => "exact"`),
+    # equals the sampled (1−ε) quantile; the aggregates are evaluated at the hosting
+    # decision g of the calibration. K and the norms come from `moments`, whose layout
+    # differs from the expansion's for exact moments (K = 0:H, unit norms).
+    (; K, psi_norms) = moments
     pce_moments = get(pce, "empirical_moments", "pce") == "pce" &&
                   lambdas !== nothing && haskey(lambdas, :q)
     function λfor(kind, key, coef)
@@ -766,9 +769,6 @@ function shhc_constraints(hdata::Dict, moments)
                       for k in K if k != 0; init = 0.0))
         return σ > 0.0 ? max((lambdas[:q][kind][key] - E) / σ, 0.0) : 0.0
     end
-    psi_norms = pce["psi_norms"]
-    K = pce["K"]
-
     cons = ShhcConstraint[]
 
     # IHD — one harmonic per (bus, harmonic)
@@ -1017,6 +1017,10 @@ the cross-harmonic THD/RMS factors are not, the routine iterates
 until the objective converges (`|Δobj|/obj ≤ tol`) or `maxiter` is reached. The
 first solve uses `init_bound` (default `"gaussian"`) to obtain a starting `g`.
 
+With `pce_params["moments"] = "exact"` (`sHHC_SOC` only), λ* is calibrated on the exact
+mean and standard deviation, so the bound reproduces the sampled quantile and the factor
+captures only the shape of the output distribution, not a truncation of the basis.
+
 The returned result is the final solution dict, augmented with
 `"empirical_lambdas"`, `"iterations"` and `"objective_history"`.
 """
@@ -1024,10 +1028,9 @@ function solve_shhc_calibrated(hdata::Dict, ::Type{M}, optimizer;
                                pce_params::Dict, nsamp::Int=20000, maxiter::Int=6,
                                tol::Real=1e-3, init_bound::String="gaussian",
                                verbose::Bool=false, kwargs...) where {M}
-    get(pce_params, "moments", "pce") == "exact" && throw(ArgumentError(
-        "solve_shhc_calibrated: the empirical factor is calibrated on the moments of the " *
-        "expansion; use moments = \"pce\" (exact moments do not need the calibration " *
-        "to correct the truncation of the basis)."))
+    M === sHHC_QCQP && get(pce_params, "moments", "pce") == "exact" && throw(ArgumentError(
+        "solve_shhc_calibrated: exact moments are supported for sHHC_SOC only; the " *
+        "sHHC_QCQP model works on the coefficients of the expansion."))
     # workspace with PCE data (angle ranges, ε, α̂β̂) for λ* sampling. The
     # fundamental power flow runs first, as in solve_shhc: with the local angle
     # reference the sampled angles must include the offsets h·θ_i it produces.
