@@ -68,9 +68,33 @@ using Random, Statistics, Distributions
         end
     end
 
-    @testset "the calibrated factor refuses exact moments" begin
+    @testset "the empirical factor calibrated on exact moments" begin
+        calibrated(params) = HPM.solve_shhc_calibrated(HPM.replicate(deepcopy(data);
+            H = [1, 5, 7, 13]), sHHC_SOC, solver_soc; pce_params = deepcopy(params),
+            hpf_optimizer = solver_nlp, nsamp = 4000, maxiter = 4)
+        sx = calibrated(pp)
+        @test string(sx["termination_status"]) in ("OPTIMAL", "ALMOST_OPTIMAL")
+        @test isfinite(sx["objective_value"]) && sx["objective_value"] > 0
+        @test all(isfinite, values(sx["lambdas_used"][:ihd]))
+        # every positive IHD bound, on the exact mean and standard deviation, equals the
+        # sampled (1−ε) quantile of |V|²/I²
+        hd = prepared(pp); m = HPM.shhc_moments(hd)
+        q  = sx["empirical_lambdas"][:q][:ihd]
+        n_checked = 0
+        for ((h, bus), λ) in sx["lambdas_used"][:ihd]
+            λ > 0 && haskey(q, (h, bus)) || continue   # buses without a sampled quantile keep the scalar factor
+            c = m.alpha_V[h][m.bus_idx[bus], :]
+            @test isapprox(c[1] + λ * sqrt(sum(abs2, c[2:end])), q[(h, bus)]; rtol = 1e-10)
+            n_checked += 1
+        end
+        @test n_checked > 0
+        # the bound reproduces the same sampled quantiles whichever moments it is built on,
+        # so the hosting capacity agrees with the calibration on the expansion
+        sp = calibrated(merge(pp, Dict("moments" => "pce")))
+        @test isapprox(sx["objective_value"], sp["objective_value"]; rtol = 1e-3)
+        # the QCQP works on the coefficients of the expansion
         @test_throws ArgumentError HPM.solve_shhc_calibrated(HPM.replicate(deepcopy(data);
-            H = [1, 5, 7, 13]), sHHC_SOC, solver_soc; pce_params = deepcopy(pp),
+            H = [1, 5, 7, 13]), sHHC_QCQP, solver_nlp; pce_params = deepcopy(pp),
             hpf_optimizer = solver_nlp)
     end
 
